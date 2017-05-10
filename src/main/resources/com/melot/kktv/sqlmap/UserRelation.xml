@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="UserRelation">
+
+	<!-- 获取用户关注列表 -->
+	<resultMap id="room" class="com.melot.kktv.model.Room">
+		<result property="userId" column="userId" />
+		<result property="nickname" column="nickname" />
+		<result property="signature" column="signature" />
+		<result property="gender" column="gender" />
+		<result property="portrait_path_original" column="portrait_path_original" />
+		<result property="iconTag" column="iconTag" />
+		<result property="maxCount" column="maxCount" />
+		<result property="livestarttime" column="livestarttime"
+			javaType="java.util.Date" jdbcType="TIMESTAMP" />
+		<result property="liveendtime" column="liveendtime" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+		<result property="nextstarttime" column="nextstarttime"
+			javaType="java.util.Date" jdbcType="TIMESTAMP" />
+		<result property="fansCount" column="fansCount" />
+		<result property="enterConditionType" column="enterConditionType" />
+		<result property="actorTag" column="actorTag" />
+
+	</resultMap>
+	
+	<parameterMap id="getUserFollowedListMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="pageIndex" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="countPerPage" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="pageTotal" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="roomList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="room" />
+	</parameterMap>
+
+	<procedure id="getUserFollowedList" parameterMap="getUserFollowedListMap">
+		{call
+		p_getUserFollowedList(?,?,?,?,?,?)}
+	</procedure>
+
+	<!-- 获取用户粉丝列表 -->
+	<parameterMap id="getUserFansListMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="fanIds" mode="IN" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="selfTag" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="roomList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="room" />
+	</parameterMap>
+
+	<procedure id="getUserFansList" parameterMap="getUserFansListMap">
+		{call
+		p_getUserFansList(?,?,?,?,?)}
+	</procedure>
+
+	<!-- 授权管理 -->
+	<parameterMap id="grantMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="grantedId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+	</parameterMap>
+
+	<procedure id="grant" parameterMap="grantMap">
+		{call p_grant(?,?,?)}
+	</procedure>
+
+	<!-- 收回管理权限 -->
+	<parameterMap id="revokeMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="revokedId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+	</parameterMap>
+
+	<procedure id="revoke" parameterMap="revokeMap">
+		{call p_revoke(?,?,?)}
+	</procedure>
+
+	<!-- 获取用户房间的管理员列表 -->
+	<parameterMap id="roomManagerListMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="pageIndex" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="countPerPage" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="pageTotal" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="roomList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="room" />
+	</parameterMap>
+
+	<procedure id="getRoomManagerList" parameterMap="roomManagerListMap">
+		{call
+		p_getRoomManagerList(?,?,?,?,?,?)}
+	</procedure>
+
+	<!-- 获取用户管理的房间列表 -->
+	<parameterMap id="getUserManagedRoomListMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="pageIndex" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="countPerPage" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="pageTotal" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="roomList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="room" />
+	</parameterMap>
+
+	<procedure id="getUserManagedRoomList" parameterMap="getUserManagedRoomListMap">
+		{call
+		p_getUserManagedRoomList(?,?,?,?,?,?)}
+	</procedure>
+
+	<!-- 举报用户 -->
+	<parameterMap id="reportUserMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="reportId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="roomId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="platform" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="newsId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="reason" mode="IN" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+	</parameterMap>
+
+	<procedure id="reportUser" parameterMap="reportUserMap">
+		{call
+		p_reportUser(?,?,?,?,?,?,?)}
+	</procedure>
+	
+</sqlMap>

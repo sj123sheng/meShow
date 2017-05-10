@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMapConfig PUBLIC "-//ibatis.apache.org//DTD SQL Map Config 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-config-2.dtd">
+<sqlMapConfig>
+
+	<settings 
+		cacheModelsEnabled="true" 
+		enhancementEnabled="true"
+		useStatementNamespaces="true" />
+
+	<sqlMap resource="com/melot/kkgame/sqlmap/pg/User.xml" />
+	<sqlMap resource="com/melot/kkgame/sqlmap/pg/UserGamble.xml" />
+	
+	<sqlMap resource="com/melot/game/config/sqlmap/extraRoomInfo.map.xml"/>
+	<sqlMap resource="com/melot/game/config/sqlmap/chatPhrase.map.xml"/>
+	<sqlMap resource="com/melot/game/config/sqlmap/videoBarrageInfo.map.xml"/>
+	<sqlMap resource="com/melot/game/config/sqlmap/actorVisitingCard.map.xml"/>
+	<sqlMap resource="com/melot/game/config/sqlmap/matchConfigInfo.map.xml"/>
+	<sqlMap resource="com/melot/game/config/sqlmap/matchGroupApplyInfo.map.xml"/>
+	<sqlMap resource="com/melot/game/config/sqlmap/matchPlayerApplyInfo.map.xml"/>
+	<sqlMap resource="com/melot/game/config/sqlmap/confMatchNews.map.xml"/>
+	
+	<sqlMap resource="com/melot/game/config/sqlmap/confActivity.map.xml"/>
+	<sqlMap resource="com/melot/game/config/sqlmap/confMatchFight.map.xml"/>
+	<sqlMap resource="com/melot/game/config/sqlmap/confMatchPlayer.map.xml"/>
+	
+	<sqlMap resource="com/melot/game/config/sqlmap/userSignInfo.map.xml"/>
+	<sqlMap resource="com/melot/game/config/sqlmap/lotteryPool.map.xml"/>
+	<sqlMap resource="com/melot/game/config/sqlmap/lotteryTicket.map.xml"/>
+	<sqlMap resource="com/melot/game/config/sqlmap/confLotteryTicket.map.xml"/>
+	<sqlMap resource="com/melot/game/config/sqlmap/shareRecordInfo.map.xml"/>
+	<sqlMap resource="com/melot/game/config/sqlmap/userSignFlowInfo.map.xml"/>
+	<sqlMap resource="com/melot/game/config/sqlmap/actorLiveInfo.map.xml"/>
+	<sqlMap resource="com/melot/game/config/sqlmap/eventPreviewInfo.map.xml"/>
+	<sqlMap resource="com/melot/game/config/sqlmap/eventNews.map.xml"/>
+	
+	<sqlMap resource="com/melot/game/config/sqlmap/partnerPromote.map.xml"/>
+	<sqlMap resource="com/melot/game/config/sqlmap/giftStarRecord.map.xml"/>
+	
+	<sqlMap resource="com/melot/game/config/sqlmap/familyInfo.map.xml"/>
+	<sqlMap resource="com/melot/game/config/sqlmap/familyTop.map.xml"/>
+	<sqlMap resource="com/melot/game/config/sqlmap/pictureAlbum.map.xml"/>
+	<sqlMap resource="com/melot/game/config/sqlmap/albumContent.map.xml"/>
+</sqlMapConfig>

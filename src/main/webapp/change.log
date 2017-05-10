@@ -1,0 +1,227 @@
+===============================
+melot-meshow-2.0.3.1.jar
+From	: 2013/04/15  
+To		: 2013/04/23   
+==================
+1.添加10002018(获取礼物排行榜列表)接口
+2.添加10005035(获取用户抢星礼物排名信息)接口
+3.修改appleCharge/affirmAppleCharge/getAppleChargeProduct接口
+	苹果平台分iphone和ipad返回不同充值项目
+4.添加mongodb表项
+/** 周礼物排行榜日消费额 */"weekGiftRanking";
+/** 周星礼物配置 */"starGiftConfig";
+/** 周星礼物记录 */"starGiftRecord";
+5.添加10005042接口,获取用户直播状态
+6.修改代码中所有平台常量platform=1/2/3,使用枚举PlatformEnum标示
+7.getUserInfo接口,web用户不返回用户相册列表
+
+===============================
+melot-meshow-2.0.2.1.jar
+From	: 2013/04/1  
+To		: 2013/04/12   
+==================
+1.代码中所有的MongoHelper改成CommonDB
+代码中所有的RankingDB改成CacheDB
+CommonDB中保存的roomlist是各个房间信息
+CacheDB中保存的roomlist是大厅各分类房间列表缓存信息
+2.修改getRoomList(10002002)接口
+从CacheDB中获取大厅分类房间列表
+3.修改getFollowRecommendedList(10002003)接口
+从CommonDB中获取推荐房间信息,无需传参category=14
+4.修改10002004getRankingList接口
+从CacheDB中获取排行榜榜单信息
+5.修改10002014getLiveRecommendedList
+从CommonDB中获取推荐房间信息,无需传参category=14
+6.修改addNews(10006002)(web平台使用)
+添加返回值06020008,用户动态最大长度500字
+7.修改getUserInfo(10005001)
+添加判断userId是否>0
+8.修改getUserFromByUserId(10001012)(web平台使用)
+添加返回值01120103,该userId非第三方来源用户
+9.修改getFansRankingList(10003013)
+从CacheDB中获取主播富豪排行榜
+10.整理大厅房间列表返回字段,精简TransRoom
+
+===============================
+melot-meshow-2.0.1.1.jar
+From	: 2013/03/1  
+To		: 2013/03/25   
+==================
+1.签到任务
+修改getNewUserTaskList接口,返回连续签到日数checkedDays
+2.主页主播列表中添加"新人"标识
+3.排行榜和房间粉丝榜的actorLevel、richLevel和starLevel从mongodb中查询获取
+4.确认苹果订单中,添加保存苹果支付清单receiptData数据逻辑
+
+===============================
+melot-meshow-2.0.0.1.jar
+From	: 2013/03/1  
+To		: 2013/03/25   
+==================
+调整consumetotal和earntotal数据来源,
+从mongodb中获取consumetotal和earntotal,查询得到actorLevel、richLevel和starLevel
+
+===============================
+melot-meshow-1.2.10.1.jar
+From	: 2013/02/23  
+To		: 2013/02/27   
+==================
+1.修改getUserCount接口逻辑,采用web的计算算法返回当前在线用户数
+2.修改getLiveRecommendedList接口,随机返回推荐直播房间
+3.添加getCatalogInfo接口,获取房间分类信息
+
+===============================
+melot-meshow-1.2.9.1.jar
+From	: 2013/02/16  
+To		: 2013/02/19   
+==================
+修改获取粉丝排行榜接口逻辑
+1.判断mongodb中是否存在房间粉丝排行榜记录
+2.判断该记录是否超出更新时间
+3.若存在且无需更新,则返回粉丝排行榜记录
+4.若不存在或需要更新,则调用oracle存储过程,更新房间粉丝排行榜记录
+
+===============================
+melot-meshow-1.2.8.1.jar
+From	: 2013/01/31  
+To		: 2013/02/03   
+==================
+getChargeInfo
+添加返回ratio
+==================
+unionPayChargeForMobile
+因银联支付接入版本更新,修改此接口,服务端推送交易请求,且不通过xml通信
+==================
+queryUnionPayCharge
+银联支付客户端查询接口
+==================
+ProfileFunction中删除affirmUnionPayCharge接口
+CallbackAction中添加affirmUnionPayCharge接口
+==================
+不记录api调用历史
+==================
+将原10005027接口affirmUnionPayCharge改为queryUnionPayCharge
+
+===============================
+melot-meshow-1.2.7.1.jar
+From	: 2013/01/21  
+To		: 2013/01/30   
+==================
+修改神州支付超时确认时记录其错误码
+==================
+1.10005026 移动端银联充值 unionPayChargeForMobile
+2.10005027 确认移动端银联充值 affirmUnionPayCharge
+3.10005028 移动端支付宝充值 alipayChargeForMobile
+4.10005029 确认移动端支付宝充值 affirmAlipayCharge
+==================
+添加获取用户秀币接口10005030:
+ProfileFunctions.getUserMoney
+==================
+affirmChargingRecord接口,对ip进行限制
+非web调用的都定为非法IP,手机端不做限制
+
+===============================
+melot-meshow-1.2.6.1.jar
+From	: 2012/12/24   
+To		: 2012/12/26   
+==================
+修改存储过程p_register
+==================
+修改存储过程p_registerViaOtherPlatform
+==================
+修改存储过程p_getNewUserTaskList
+==================
+修改存储过程p_mobileGetUserId
+==================
+修改存储过程p_getUserFromByUserId
+==================
+添加接口(10001014) bindQQ-绑定QQ账号接口
+添加表user_account_qq
+添加存储过程p_bind_account_qq
+==================
+添加接口(10001015) bindWeibo-绑定新浪微博账号接口
+添加表user_account_weibo
+添加存储过程p_bind_account_weibo
+==================
+添加接口(10001016) unbindQQ-解除QQ账号接口绑定
+添加存储过程p_unbind_account_qq
+==================
+添加接口(10001017) unbindWeibo-解除Weibo账号接口绑定
+添加存储过程p_unbind_account_weibo
+==================
+添加接口(10001018) bindQQ-绑定手机号账号接口
+添加表user_account_qq
+添加存储过程p_bind_account_phone
+==================
+添加接口(10001019) bindWeibo-绑定邮箱账号接口
+添加表user_account_weibo
+添加存储过程p_bind_account_email
+==================
+添加接口(10001020) unbindQQ-解除手机号账号接口绑定
+添加存储过程p_unbind_account_phone
+==================
+添加接口(10001021) unbindWeibo-解除邮箱账号接口绑定
+添加存储过程p_unbind_account_email
+==================
+添加接口(10001022) verifyPhone-验证手机号激活码
+添加存储过程p_verify_account_phone
+==================
+添加接口(10001023) verifyEmail-验证邮箱激活码
+添加存储过程p_verify_account_email
+==================
+修改接口(10005001)getUserInfo
+修改存储过程p_getUserInfo
+==================
+新增接口10001013login_new
+新增存储过程p_login_new
+==================
+接口10001003,10001007,10001010都通过调用10001013进行登录.
+删除存储过程p_login,p_loginViaOtherPlatform,p_loginViaUserIdAndToken
+==================
+修改各个java文件的格式
+==================
+HtmlUtil类解析xss标签
+==================
+affirmChargingRecord取出对token的检查
+
+===============================
+melot-meshow-1.2.4.1.jar（bugfix）
+From	: 2012/12/24
+To		: 2012/12/26
+db change :
+1.APPLYFORACTOR city,phoneNumber,qq 字段使用varchar2类型替代原来的integer类型
+2.修改存储过程p_applyForActor
+
+app_interface change :
+1.修改接口20000001 : 用户提交直播申请
+
+===============================
+melot-meshow-1.2.0.3.jar
+From	: 2012/12/17
+To		: 2012/12/24
+db change :
+1. 对表USER_INFO新增一个字段deviceUId,用于存储用户注册时关联的设备唯一标识
+2. 添加注册白名单表(register_white_deviceUId,register_white_IP),注册黑名单表(register_black_deviceUId,register_black_IP);
+3. 修改存储过程p_mobileGetUserId, p_register
+
+4. 修改存储过程p_login,p_loginViaOtherPlatform,p_loginViaUserIdAndToken,p_getUserInfo.增加返回字段actorTag
+
+5. 新增表APPLYFORACTOR,新增存储过程p_applyForActor
+
+app_interface change :
+1. 接口10001011修改,增加参数deviceUId
+2. 接口10001002修改,增加参数deviceUId
+
+3. 接口10005001,10001010,10001007,10001003 修改,增加返回字段actorTag
+
+4. 新增接口20000001 : 用户提交直播申请
+
+===============================
+melot-meshow-1.2.0.2.jar
+From	: 2012/12/13   
+To		: 2012/12/17
+1.新增change.log文件
+2.调试环境的tomcat端口由8888变为8080
+3.修改接口 10002015,10002016 删除存储过程 : getGiftReceiverList,getGiftConsumerList,新增存储过程p_getGiftConsumerList,p_getGiftReceiverList
+4.第三步中两个接口的刷新时间(giftCompeteRefreshIntervel)配置到config.xml中 
+5.第三步中将model中的GiftConsumer, 更名为GiftCompeteRanking

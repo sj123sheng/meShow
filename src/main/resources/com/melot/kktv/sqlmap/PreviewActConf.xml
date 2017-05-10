@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="PreviewActConf">
+  <typeAlias alias="previewActConf" type="com.melot.kktv.model.PreviewAct"/>
+	<!-- 添加节目预告 -->
+	<insert id="addPreviewAct" parameterClass="previewActConf">
+		<selectKey keyProperty="actId" resultClass="java.lang.Integer">
+			select max(act_id) + 1 as actId from conf_preview_act  
+		</selectKey>
+        insert into conf_preview_act(act_id, act_title, act_banner, act_url, act_room,
+        	 start_time, end_time, is_hall, day_week, sd_time, ed_time, useable, app_id, belong, aid) 
+        values(#actId#, #actTitle#
+        <isNotNull property="actBanner"  prepend=",">
+        	#actBanner#
+        </isNotNull>
+        <isNull property="actBanner"  prepend=",">
+        	null
+        </isNull>
+        <isNotNull property="actUrl"  prepend=",">
+        	#actUrl#
+        </isNotNull>
+        <isNull property="actUrl"  prepend=",">
+        	null
+        </isNull>
+        <isNotNull property="actRoom" prepend=",">
+        	#actRoom#
+        </isNotNull>
+        <isNull property="actRoom"  prepend=",">
+        	null
+        </isNull>
+        <isNotNull property="stime" prepend=",">
+        	#stime#
+        </isNotNull>
+        <isNull property="stime" prepend=",">
+        	null
+        </isNull>
+        <isNotNull property="etime" prepend=",">
+        	#etime#
+        </isNotNull>
+        <isNull property="etime" prepend=",">
+        	null
+        </isNull>
+        <isNotNull property="isHall" prepend=",">
+			#isHall#
+		</isNotNull>
+        <isNull property="isHall" prepend=",">
+        	null
+        </isNull>
+        <isNotNull property="dayOfWeek" prepend=",">
+			#dayOfWeek#
+		</isNotNull>
+        <isNull property="dayOfWeek" prepend=",">
+			null
+		</isNull>
+        <isNotNull property="SDTime" prepend=",">
+			#SDTime#
+		</isNotNull>
+        <isNull property="SDTime" prepend=",">
+			null
+		</isNull>
+        <isNotNull property="EDTime" prepend=",">
+			#EDTime#
+		</isNotNull>
+        <isNull property="EDTime" prepend=",">
+			null
+		</isNull>
+		<isNotNull property="useable" prepend=",">
+			#useable#
+		</isNotNull>
+        <isNull property="useable" prepend=",">
+			null
+		</isNull>
+		<isNotNull property="appId" prepend=",">
+			#appId#
+		</isNotNull>
+        <isNull property="appId" prepend=",">
+			null
+		</isNull>
+		<isNotNull property="belong" prepend=",">
+			#belong#
+		</isNotNull>
+        <isNull property="belong" prepend=",">
+			null
+		</isNull>
+		<isNotNull property="aid" prepend=",">
+			#aid#
+		</isNotNull>
+        <isNull property="aid" prepend=",">
+			null
+		</isNull>
+       )
+	</insert>
+	
+	<!-- 更新节目预告 -->
+	<update id="updatePreviewAct" parameterClass="previewActConf">
+		update conf_preview_act cpa 
+			<dynamic prepend="set">
+			 	<isNotNull prepend="," property="useable">
+			 		cpa.useable = #useable#
+			 	</isNotNull>
+			</dynamic>
+			where cpa.act_id = #actId# and cpa.app_id = #appId#
+			<isNotNull property="aid" prepend="and">
+				cpa.aid = #aid#
+			</isNotNull>
+	</update>
+	
+	<!-- 删除预告 -->
+	<delete id="delPreviewAct" parameterClass="java.lang.Integer">
+		delete from conf_preview_act cpa where cpa.act_id = #actId# and cpa.app_id = #appId#
+	</delete>
+
+</sqlMap>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMapConfig      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map Config 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-config-2.dtd">
+
+<sqlMapConfig>
+	
+	<settings 
+		cacheModelsEnabled="true" 
+		enhancementEnabled="true"
+		useStatementNamespaces="true" 
+	/>
+	
+	<sqlMap resource="com/melot/kktv/sqlmap/slave/Index.xml" />
+	<sqlMap resource="com/melot/kktv/sqlmap/slave/Payment.xml" />
+	<sqlMap resource="com/melot/kktv/sqlmap/Mobile.xml" />
+	
+	<!-- melot-api-common -->
+	<sqlMap resource="com/melot/common/kktv/sqlmap/ApiCommonUser.xml"/>
+	
+</sqlMapConfig>

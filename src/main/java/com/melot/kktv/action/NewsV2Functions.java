@@ -1,0 +1,1458 @@
+package com.melot.kktv.action;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
+import java.util.regex.Pattern;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.log4j.Logger;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
+import com.melot.api.menu.sdk.dao.domain.RoomInfo;
+import com.melot.kkcore.user.api.UserProfile;
+import com.melot.kkcx.service.GeneralService;
+import com.melot.kkcx.service.RoomService;
+import com.melot.kktv.redis.NewsSource;
+import com.melot.kktv.redis.NewsV2Source;
+import com.melot.kktv.service.NewsService;
+import com.melot.kktv.service.ResourceService;
+import com.melot.kktv.util.AppIdEnum;
+import com.melot.kktv.util.CollectionEnum;
+import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
+import com.melot.kktv.util.ConfigHelper;
+import com.melot.kktv.util.Constant;
+import com.melot.kktv.util.NewsMediaTypeEnum;
+import com.melot.kktv.util.PlatformEnum;
+import com.melot.kktv.util.StringUtil;
+import com.melot.kktv.util.TagCodeEnum;
+import com.melot.kktv.util.mongodb.CommonDB;
+import com.melot.module.ModuleService;
+import com.melot.news.domain.NewsCommentHist;
+import com.melot.news.model.NewsInfo;
+import com.melot.resource.driver.domain.Resource;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+
+public class NewsV2Functions {
+
+	private static Logger logger = Logger.getLogger(NewsV2Functions.class);
+	
+	/**
+	 * 发布动态(20006002)
+	 * 
+	 * @param jsonObject 请求对象
+	 * @param checkTag 是否验证token标记
+	 * @return 结果字符串
+	 */
+	public JsonObject addNews(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+	    JsonObject result = new JsonObject();
+	    
+		// 该接口需要验证token,未验证的返回错误码
+		if (!checkTag) {
+			result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+			return result;
+		}
+		
+		// 验证参数
+		int userId, mediaType, appId, mediaFrom, platform;
+		@SuppressWarnings("unused")
+        String content = null, mediaUrl = null, imageUrl = null, videoTitle = null, topic = null;
+		Integer mediaDur = null, resType = null;
+		try {
+            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 1, Integer.MAX_VALUE);
+            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, 1, Integer.MAX_VALUE);
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "06020001", 1, Integer.MAX_VALUE);
+            //媒体类型 
+            mediaType = CommonUtil.getJsonParamInt(jsonObject, "mediaType", 0, null, 1, Integer.MAX_VALUE);
+            content = CommonUtil.getJsonParamString(jsonObject, "content", null, null, 1, 500);
+            if (content != null) {
+            	if(CommonUtil.matchXSSTag(content)) {
+            		throw new CommonUtil.ErrorGetParameterException("06020007");
+            	}
+            	content = GeneralService.replaceSensitiveWords(userId, content);
+            }
+            
+            mediaUrl = CommonUtil.getJsonParamString(jsonObject, "mediaUrl", null, null, 1, Integer.MAX_VALUE);
+            if (!StringUtil.strIsNull(mediaUrl)) {
+                mediaUrl = mediaUrl.replaceFirst(ConfigHelper.getMediahttpdir(), "");
+                mediaUrl = mediaUrl.replaceFirst("/kktv", "");
+            }
+            
+            imageUrl = CommonUtil.getJsonParamString(jsonObject, "imageUrl", null, null, 1, Integer.MAX_VALUE);
+            
+            mediaDur = CommonUtil.getJsonParamInt(jsonObject, "mediaDur", -1, null, 1, Integer.MAX_VALUE);
+            if (mediaDur > 7200) {
+                mediaDur = mediaDur / 1000;
+            } else if (mediaDur == -1) {
+                mediaDur = 0;
+            }
+            
+            videoTitle = CommonUtil.getJsonParamString(jsonObject, "videoTitle", null, null, 1, 40);
+            
+            //1-upyun 2-qiniu
+            mediaFrom = CommonUtil.getJsonParamInt(jsonObject, "mediaFrom", 1, null, 1, Integer.MAX_VALUE);
+            
+            resType = CommonUtil.getJsonParamInt(jsonObject, "newsType", 8, null, 1, Integer.MAX_VALUE);
+            
+            topic = CommonUtil.getJsonParamString(jsonObject, "topic", null, null, 1, 10);
+        } catch(CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch(Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+		
+		//不是主播不可发动态
+		UserProfile userProfile = com.melot.kktv.service.UserService.getUserInfoV2(userId);
+		if (userProfile == null || userProfile.getIsActor() == 0) {
+		    result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+            return result;
+		}
+		
+		NewsInfo newsInfo = new NewsInfo();
+		newsInfo.setUserId(userId);
+		newsInfo.setNewsType(resType);
+		newsInfo.setPublishedTime(new Date());
+		if (content != null) {
+			newsInfo.setContent(content);
+		}
+		newsInfo.setPlatform(platform);
+		newsInfo.setAppId(appId);
+		 //校验媒体类型
+		if (mediaType > NewsMediaTypeEnum.VIDEO) {
+           result.addProperty("TagCode", "06020010");
+           return result;
+		}
+		
+		if (mediaType == NewsMediaTypeEnum.AUDIO || mediaType == NewsMediaTypeEnum.VIDEO) {
+			Resource resource = new Resource();
+			resource.setState(0);
+			resource.setType(mediaType);
+			resource.setSpecificUrl(mediaUrl);
+			resource.setDuration(mediaDur);
+			resource.setTitle(String.valueOf(mediaFrom));
+			if (!StringUtil.strIsNull(imageUrl)) {
+                imageUrl = imageUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
+                imageUrl = imageUrl.replaceFirst("/kktv", "");
+            }
+			resource.setImageUrl(imageUrl != null ? imageUrl : Pattern.compile("mp4$").matcher(mediaUrl).replaceAll("jpg"));
+			int resId = ResourceService.addResource(resource);
+			if (resId > 0) {
+		       	if (mediaType == NewsMediaTypeEnum.AUDIO) {
+		       		newsInfo.setRefAudio(String.valueOf(resId));
+		       	} else if (mediaType == NewsMediaTypeEnum.VIDEO) {
+		       		newsInfo.setRefVideo(String.valueOf(resId));
+		       	}
+	        } else {
+		       	//插入资源失败
+		       	result.addProperty("TagCode", "06020009");
+		       	return result;
+	        }
+		}  else {
+			//multi picture
+			String[] imageList = imageUrl.split(",");
+			List<Resource> resourceList = new ArrayList<Resource>();
+			for (String tempUrl : imageList) {
+				Resource resource = new Resource();
+				resource.setState(0);
+				resource.setType(mediaType);
+				if (!StringUtil.strIsNull(tempUrl)) {
+					tempUrl = tempUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
+					tempUrl = tempUrl.replaceFirst("/kktv", "");
+	            }
+				resource.setImageUrl(tempUrl);
+				resourceList.add(resource);
+			}
+			String resIds = ResourceService.addResources(resourceList);
+			if (resIds != null) {
+				newsInfo.setRefImage(resIds);
+			} else {
+		       	//插入资源失败
+		       	result.addProperty("TagCode", "06020009");
+		       	return result;
+	        }
+		}
+       
+		if (NewsService.isWhiteUser(userId)) {
+			newsInfo.setState(1);
+		}
+        int newsId = NewsService.addNews(newsInfo, topic);
+        if (newsId > 0) {
+        	result.addProperty("newsId", newsId);
+        	result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        	return result;
+        } else {
+        	result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
+        	return result;
+        }
+	}
+	
+	/**
+	 * 删除动态(20006003)
+	 * 
+	 * @param jsonObject 请求对象
+	 * @param checkTag 是否验证token标记
+	 * @return 结果字符串
+	 */
+	public JsonObject deleteNews(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+		// 该接口需要验证token,未验证的返回错误码
+		if (!checkTag) {
+			JsonObject result = new JsonObject();
+			result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+			return result;
+		}
+
+		// 验证参数
+		int userId;
+		int newsId;
+		
+		JsonObject result = new JsonObject();
+		// 解析参数
+		try {
+			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 1, "06030002", 1, Integer.MAX_VALUE);
+			newsId = CommonUtil.getJsonParamInt(jsonObject, "newsId", 1, "06030004", 1, Integer.MAX_VALUE);
+		} catch (ErrorGetParameterException e) {
+			result.addProperty("TagCode", e.getErrCode());
+			return result;
+		}
+		NewsInfo newsInfo = NewsService.getNewsInfoById(newsId, 0);
+		if (newsInfo == null) {
+			result.addProperty("TagCode", "06030103");
+			return result;
+		}
+		if (newsInfo.getUserId() != userId) {
+			result.addProperty("TagCode", "06030104");
+			return result;
+		}	
+
+		if (NewsService.deleteNews(newsId, userId)) {
+			NewsV2Source.delHotRef(String.valueOf(newsId));
+			NewsV2Source.delHot(newsId);
+			ResourceService.delResource(newsInfo);
+			//查询该动态是否为mongo中最新动态
+			DBObject newsDBObj = (DBObject) CommonDB.getInstance(CommonDB.CACHEDB).getCollection(CollectionEnum.USERLATESTNEWS)
+					.findOne(new BasicDBObject("userId", userId));
+			int lastNewsId = 0;
+			if (newsDBObj != null && newsDBObj.containsField("latestNews") && newsDBObj.get("latestNews") != null) {
+				String str = (String) newsDBObj.get("latestNews");
+				try {
+					JsonObject json = new JsonParser().parse(str).getAsJsonObject();
+					lastNewsId = json.get("newsId").getAsInt();
+				} catch (Exception e) {
+				}
+			}
+			//如果删除的动态为用户最新动态  则将用户的上一条最新动态保存到Mongodb中
+			if (lastNewsId == newsId) {
+				com.melot.resource.driver.ResourceService resourceService = (com.melot.resource.driver.ResourceService)ModuleService.getService("ResourceService");
+				if (resourceService != null) {
+					List<NewsInfo> lastNews = NewsService.getSelfNewsList(userId, 1, 1, 0, 0);
+					if (lastNews != null && lastNews.size() > 0 && lastNews.get(0) != null) {
+						NewsInfo temp = lastNews.get(0);
+						//审核通过置为最新动态
+    					DBObject updateDBObj = new BasicDBObject();
+    					JsonObject lastNewsJson = new JsonObject();
+    					lastNewsJson.addProperty("newsId", temp.getNewsId());
+    					if (newsInfo.getTopic() != null) {
+        					lastNewsJson.addProperty("topic", temp.getTopic());
+    					}
+    					if (newsInfo.getTopicId() != null) {
+        					lastNewsJson.addProperty("topicId", temp.getTopicId());
+    					}
+    					lastNewsJson.addProperty("content", temp.getContent());
+    					lastNewsJson.addProperty("publishedTime", temp.getPublishedTime().getTime());
+    					if (temp.getRefVideo() == null) {
+    						JsonObject mediaSource = new JsonObject();
+    						//图片类型存一张
+    						mediaSource.addProperty("mediaType", 1);//1-图片  3-视频
+    						String[] urls = getRegexAdmin(temp.getRefImage()).split(",");
+    						mediaSource.addProperty("picCount", urls.length);
+    						Resource resource = resourceService.getResource(Integer.valueOf(urls[0]), 1);
+    						mediaSource.addProperty("imageUrl_1280", resource.getImageUrl());
+    						mediaSource.addProperty("imageUrl_272", resource.getImageUrl());
+    						mediaSource.addProperty("imageUrl_128", resource.getImageUrl());
+    						lastNewsJson.addProperty("mediaSource", new Gson().toJson(mediaSource));
+    					} else {
+    						JsonObject mediaSource = new JsonObject();
+    						
+    						//图片类型存一张
+    						mediaSource.addProperty("mediaType", 3);//1-图片  3-视频
+    						Resource resource = resourceService.getResource(Integer.valueOf(getRegexAdmin(temp.getRefVideo())), 3);
+    						mediaSource.addProperty("imageUrl_1280", resource.getImageUrl());
+    						mediaSource.addProperty("imageUrl_272", resource.getImageUrl());
+    						mediaSource.addProperty("imageUrl_128", resource.getImageUrl());
+    						lastNewsJson.addProperty("mediaSource", new Gson().toJson(mediaSource));
+    					}
+    					updateDBObj.put("latestNews", new Gson().toJson(lastNewsJson)); 
+    					CommonDB.getInstance(CommonDB.CACHEDB).getCollection(CollectionEnum.USERLATESTNEWS).update(
+								new BasicDBObject("userId", userId), 
+								new BasicDBObject("$set", updateDBObj), true, false);
+					} else {
+						CommonDB.getInstance(CommonDB.CACHEDB).getCollection(CollectionEnum.USERLATESTNEWS).remove(
+								new BasicDBObject("userId", userId));
+					}
+				}
+				
+			}
+			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+			return result;
+		} else {
+			result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
+			return result;
+		}
+		
+	}
+
+	/**
+	 * 获取个人动态列表(20006004)
+	 * 
+	 * @param jsonObject 请求对象
+	 * @return 结果字符串
+	 */
+	public JsonObject getUserNewsList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+		
+		JsonObject result = new JsonObject();
+		// 定义所需参数
+		int userId, orderId;
+		int start = 0;
+		int offset = Constant.return_news_count;
+		int platform = 0;
+		//新加参数,老版本默认传0
+		int isSelf = 0;
+		// 解析参数
+		try {
+			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
+			orderId = CommonUtil.getJsonParamInt(jsonObject, "orderId", 0, "06040001", 1, Integer.MAX_VALUE);
+			start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, null, 0, Integer.MAX_VALUE);
+			offset = CommonUtil.getJsonParamInt(jsonObject, "offset", Constant.return_news_count, null, 1, Integer.MAX_VALUE);
+			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+		} catch (ErrorGetParameterException e) {
+			result.addProperty("TagCode", e.getErrCode());
+			return result;
+		}
+		
+		isSelf = userId == orderId ? 1 : 0;
+		int count = NewsService.getNewsCountByUserId(orderId, isSelf);
+		if (count > 0 && start >= count) {
+			/* '02';分页超出范围 */
+			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+			return result;
+		}
+		
+		if (count > 0) {
+			//登录返回是否点赞过
+			List<NewsInfo> newsList = NewsService.getSelfNewsList(orderId, start, offset, isSelf, checkTag ? userId : 0);
+			if (newsList != null && newsList.size() > 0) {
+				JsonArray jNewsList = new JsonArray();
+				for (NewsInfo newsInfo : newsList) {
+					JsonObject json = NewsService.getNewResourceJson(newsInfo, platform, false);
+					jNewsList.add(json);
+				}
+				
+				RoomInfo actorInfo = RoomService.getRoomInfo(orderId);
+				if (actorInfo != null) {
+					result.addProperty("nickname", actorInfo.getNickname());
+					if (actorInfo.getGender() != null) {
+						result.addProperty("gender", actorInfo.getGender());
+					}
+					if (actorInfo.getPortrait() != null) {
+						if (platform == PlatformEnum.WEB) {
+							result.addProperty("portrait_path_256", actorInfo.getPortrait() + "!256");
+						} else if (platform == PlatformEnum.ANDROID) {
+							result.addProperty("portrait_path_48",  actorInfo.getPortrait() + "!48");
+							result.addProperty("portrait_path_128", actorInfo.getPortrait() + "!128");
+						} else if (platform == PlatformEnum.IPHONE) {
+							result.addProperty("portrait_path_128", actorInfo.getPortrait() + "!128");
+						} else if (platform == PlatformEnum.IPAD) {
+							result.addProperty("portrait_path_128", actorInfo.getPortrait() + "!128");
+						} else {
+							result.addProperty("portrait_path_1280",actorInfo.getPortrait() + "!1280");
+							result.addProperty("portrait_path_256", actorInfo.getPortrait() + "!256");
+							result.addProperty("portrait_path_128", actorInfo.getPortrait() + "!128");
+							result.addProperty("portrait_path_48",  actorInfo.getPortrait() + "!48");
+						}
+					}
+					result.addProperty("actorLevel", actorInfo.getActorLevel());
+					result.addProperty("richLevel", actorInfo.getRichLevel());
+					//直播状态
+					result.addProperty("isLive", actorInfo.getLiveStarttime() != null && actorInfo.getLiveEndtime() == null ? 1 : 0);
+					result.addProperty("roomSource", actorInfo.getRoomSource());
+					result.addProperty("screenType", actorInfo.getScreenType());
+					result.addProperty("actorTag", 1);
+				} else {
+					UserProfile userInfo = com.melot.kktv.service.UserService.getUserInfoV2(orderId);
+					if (userInfo != null) {
+						result.addProperty("nickname", userInfo.getNickName());
+						result.addProperty("gender", userInfo.getGender());
+						result.addProperty("actorLevel", userInfo.getActorLevel());
+						result.addProperty("richLevel", userInfo.getUserLevel());
+						result.addProperty("actorTag", 0);
+						if (userInfo.getPortrait() != null) {
+							if (platform == PlatformEnum.WEB) {
+								result.addProperty("portrait_path_256", userInfo.getPortrait() + "!256");
+							} else if (platform == PlatformEnum.ANDROID) {
+								result.addProperty("portrait_path_48",  userInfo.getPortrait() + "!48");
+								result.addProperty("portrait_path_128", userInfo.getPortrait() + "!128");
+							} else if (platform == PlatformEnum.IPHONE) {
+								result.addProperty("portrait_path_128", userInfo.getPortrait() + "!128");
+							} else if (platform == PlatformEnum.IPAD) {
+								result.addProperty("portrait_path_128", userInfo.getPortrait() + "!128");
+							} else {
+								result.addProperty("portrait_path_1280", userInfo.getPortrait() + "!1280");
+								result.addProperty("portrait_path_256", userInfo.getPortrait() + "!256");
+								result.addProperty("portrait_path_128", userInfo.getPortrait() + "!128");
+								result.addProperty("portrait_path_48", userInfo.getPortrait() + "!48");
+							}
+						}
+					} 
+				}
+				//返回关注关系
+				result.addProperty("isFollowed", com.melot.kktv.service.UserRelationService.isFollowed(userId, orderId) ? 1 : 0);
+				result.add("newsList", jNewsList);
+				result.addProperty("countTotal", count);
+				result.addProperty("pathPrefix", ConfigHelper.getHttpdir()); // 图片前缀
+				result.addProperty("mediaPathPrefix", ConfigHelper.getMediahttpdir()); // 多媒体前缀
+				result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());//七牛前缀
+				result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+				return result;
+			} else {
+				result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
+				return result;
+			}
+		} else {
+			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+			return result;
+		}
+	}
+	
+	/**
+	 * 评论动态(20006005)
+	 * 
+	 * @param jsonObject 请求对象
+	 * @param checkTag 是否验证token标记
+	 * @return 结果字符串
+	 */
+	public JsonObject addNewsComment(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+		
+		JsonObject result = new JsonObject();
+        
+		// 该接口需要验证token,未验证的返回错误码
+		if (!checkTag) {
+			result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+			return result;
+		}
+
+		// 定义所需参数
+		int userId, newsId, toUserId, platform;
+		String content;
+		// 解析参数
+		try {
+			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "06050001", 1, Integer.MAX_VALUE);
+			newsId = CommonUtil.getJsonParamInt(jsonObject, "newsId", 0, "06050003", 1, Integer.MAX_VALUE);
+			toUserId = CommonUtil.getJsonParamInt(jsonObject, "toUserId", 0, null, 1, Integer.MAX_VALUE);
+			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, 1, Integer.MAX_VALUE);
+			content = CommonUtil.getJsonParamString(jsonObject, "content", null, "06050005", 1, 250);
+			// matchXSSTag,字符长度要小于等于7
+			if (CommonUtil.matchXSSTag(content) || content.length() > 7) {
+				result.addProperty("TagCode", "06050006");
+				return result;
+			}
+			content = GeneralService.replaceSensitiveWords(userId, content);
+		} catch (ErrorGetParameterException e) {
+			result.addProperty("TagCode", e.getErrCode());
+			return result;
+		}
+		
+		//1.if newsId exist ? o_tagCode := '03'; -- 动态不存在
+		NewsInfo newsInfo = NewsService.getNewsInfoById(newsId, 0);
+		
+		if (newsInfo == null) {
+			result.addProperty("TagCode", "06050008");
+			return result;
+		}
+		int oldId = NewsService.ifCommentExist(newsId, content);
+		if (oldId > 0) {
+			result.addProperty("TagCode", "06050007");
+			result.addProperty("commentId", oldId);
+			return result;
+		}
+		
+		//2.insert comment
+		NewsCommentHist newsCommentHist = new NewsCommentHist();
+		newsCommentHist.setNewsId(newsId);
+		if (toUserId > 0) {
+			newsCommentHist.setUserId(toUserId);
+		}
+		newsCommentHist.setUserId(userId);
+		newsCommentHist.setContent(content);
+		newsCommentHist.setPlatform(platform);
+		int commentId = NewsService.addCommentPg(newsCommentHist);
+		if (commentId > 0) {
+			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+			result.addProperty("commentId", commentId);
+			return result;
+		}
+		else {
+			// 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
+			logger.error("调用存储过程未的到正常结果 jsonObject:" + jsonObject.toString());
+			result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
+			return result;
+		}
+	}
+	
+	/**
+	 * 点赞接口(20006019)
+	 * @param jsonObject
+	 * @param checkTag
+	 * @param request
+	 * @return
+	 * @throws Exception
+	 */
+	public JsonObject addPraise(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+		JsonObject result = new JsonObject();
+		
+		// 该接口需要验证token,未验证的返回错误码
+		if (!checkTag) {
+			result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+			return result;
+		}
+
+		// 定义所需参数
+		int userId, commentId;
+		// 解析参数
+		try {
+			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "06190001", 1, Integer.MAX_VALUE);
+			commentId = CommonUtil.getJsonParamInt(jsonObject, "commentId", 0, "06190003", 1, Integer.MAX_VALUE);
+		} catch (ErrorGetParameterException e) {
+			result.addProperty("TagCode", e.getErrCode());
+			return result;
+		}
+		
+		NewsCommentHist newsCommentHist = NewsService.getComment(commentId);
+		if (newsCommentHist == null) {
+			result.addProperty("TagCode", "06190002");
+			return result;
+		}
+		
+		if (newsCommentHist.getUserId() == userId) {
+			result.addProperty("TagCode", "06190005");
+			return result;
+		}
+		 
+		int histId = NewsService.addPraise(userId, commentId);
+		if (histId > 0) {
+			result.addProperty("histId", histId);
+			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+		} else {
+			result.addProperty("TagCode", "06190004");
+		}
+		return result;
+	}
+	
+	/**
+	 * 获取推荐短评(20006021)
+	 * @param jsonObject
+	 * @param checkTag
+	 * @param request
+	 * @return
+	 * @throws Exception
+	 */
+	public JsonObject getRecommendTopicOrComment(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+		JsonObject result = new JsonObject();
+		
+		// 定义所需参数
+		int type, count;
+		// 解析参数
+		try {
+			//0-短评, 1-话题
+			type = CommonUtil.getJsonParamInt(jsonObject, "type", 0, null, 0, Integer.MAX_VALUE);
+			count = CommonUtil.getJsonParamInt(jsonObject, "count", 6, null, 0, Integer.MAX_VALUE);
+		} catch (ErrorGetParameterException e) {
+			result.addProperty("TagCode", e.getErrCode());
+			return result;
+		}
+		
+		if (type == 0) {
+			Set<String> commentList = NewsV2Source.getRecommendComment(0, count - 1);
+			JsonArray commentArray = new JsonArray();
+			for (String temp : commentList) {
+				JsonObject json = new JsonObject();
+				json.addProperty("content", temp);
+				commentArray.add(json);
+			}
+			result.add("commentList", commentArray);
+		} else {
+			Set<String> topicList = NewsV2Source.getHotTopic(0, count - 1);
+			JsonArray topicArray = new JsonArray();
+			for (String temp : topicList) {
+				JsonObject json = new JsonParser().parse(temp).getAsJsonObject();
+				topicArray.add(json);
+			}
+			result.add("topicList", topicArray);
+		}
+		result.addProperty("pathPrefix", ConfigHelper.getHttpdir()); // 图片前缀
+		result.addProperty("mediaPathPrefix", ConfigHelper.getMediahttpdir()); // 多媒体前缀
+		result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());//七牛前缀
+		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+		return result;
+	}
+	
+	/**
+	 * 热门短评换一换接口(20006020)
+	 * @param jsonObject
+	 * @param checkTag
+	 * @param request
+	 * @return
+	 * @throws Exception
+	 */
+	public JsonObject changeHotComments(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+		JsonObject result = new JsonObject();
+		
+		// 定义所需参数
+		@SuppressWarnings("unused")
+        int userId;
+		// 解析参数
+		try {
+			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
+		} catch (ErrorGetParameterException e) {
+			result.addProperty("TagCode", e.getErrCode());
+			return result;
+		}
+		
+		//获取热门短评,6条
+		Set<String> commentList = NewsV2Source.getHotComment();
+		if (commentList != null && commentList.size() > 0) {
+			int length = commentList.size();
+			JsonArray hotCommentList = new JsonArray();
+			if (length <= 12) {
+				for (String temp : commentList) {
+					JsonObject json = new JsonParser().parse(temp).getAsJsonObject();
+					hotCommentList.add(json);
+				}
+			} else {
+				Set<Integer> set = new HashSet<Integer>();
+				String[] list = commentList.toArray(new String[]{});
+				while (set.size() < 12) {
+					int i = (int) (Math.random() * length);
+					if (!set.contains(i)) {
+						hotCommentList.add( new JsonParser().parse(list[i]).getAsJsonObject());
+						set.add(i);
+					}
+				}
+				result.add("hotCommentList", hotCommentList);
+			}
+		}
+		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+		return result;
+	}
+	
+	/**
+	 * 获取热门动态(20006022)
+	 * @param jsonObject
+	 * @param checkTag
+	 * @param request
+	 * @return
+	 * @throws Exception
+	 */
+	public JsonObject getHotNews(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+		JsonObject result = new JsonObject();
+		
+		// 定义所需参数
+		int userId, start, offset;
+		// 解析参数
+		try {
+			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
+			start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, null, 1, Integer.MAX_VALUE);
+			offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 10, null, 1, Integer.MAX_VALUE);
+		} catch (ErrorGetParameterException e) {
+			result.addProperty("TagCode", e.getErrCode());
+			return result;
+		}
+		
+		
+		//获取热门动态,2条
+		Set<String> hotNews = NewsV2Source.getHotNews(start, offset);
+		if (hotNews != null && hotNews.size() > 0) {
+			JsonArray hotNewsList = new JsonArray();
+			for (String str : hotNews) {
+				try {
+					NewsInfo newsInfo = NewsService.getNewsInfoById(Integer.valueOf(str), checkTag ? userId : 0);
+					if (newsInfo == null) {
+						continue;
+					}
+					JsonObject json = NewsService.getNewResourceJson(newsInfo, 1, true);
+					json.addProperty("isFollowed", com.melot.kktv.service.UserRelationService.isFollowed(userId, newsInfo.getUserId()) ? 1 : 0);
+					hotNewsList.add(json);
+					if (hotNewsList.size() == offset) {
+						break;
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			result.add("hotNewsList", hotNewsList);
+		}
+		
+		result.addProperty("pathPrefix", ConfigHelper.getHttpdir()); // 图片前缀
+		result.addProperty("mediaPathPrefix", ConfigHelper.getMediahttpdir()); // 多媒体前缀
+		result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());//七牛前缀
+		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+		return result;
+	}
+	
+	/**
+	 * 获取话题相关动态(20006023)
+	 * @param jsonObject
+	 * @param checkTag
+	 * @param request
+	 * @return
+	 * @throws Exception
+	 */
+	public JsonObject getTopicPage(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+		JsonObject result = new JsonObject();
+		
+		// 定义所需参数
+		int topicId, userId, start, offset, sortType, platform;
+		// 解析参数
+		try {
+			sortType = CommonUtil.getJsonParamInt(jsonObject, "sortType", 0, null, 0, Integer.MAX_VALUE);
+			topicId = CommonUtil.getJsonParamInt(jsonObject, "topicId", 0, "06230001", 1, Integer.MAX_VALUE);
+			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
+			start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, null, 0, Integer.MAX_VALUE);
+			offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 10, null, 0, Integer.MAX_VALUE);
+			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+		} catch (ErrorGetParameterException e) {
+			result.addProperty("TagCode", e.getErrCode());
+			return result;
+		}
+		
+		int count = NewsService.getTopicNewsCount(topicId);
+		if (count > 0 && start >= count) {
+			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+			return result;
+		}
+		
+		//若是推荐话题则返回图片和简介
+		Set<String> hotTopic = NewsV2Source.getHotTopic(0, -1);
+		if (hotTopic != null && hotTopic.size() > 0) {
+			for (String str : hotTopic) {
+				try {
+					JsonObject json = new JsonParser().parse(str).getAsJsonObject();
+					if (json.get("topicId").getAsInt() == topicId) {
+						result.addProperty("imageUrl", json.get("imageUrl").getAsString());
+						result.addProperty("introduction", json.get("introduction").getAsString());
+						break;
+					}
+				} catch (Exception e) {
+				}
+			}
+		}
+		
+		if (count > 0) {
+			List<NewsInfo> newsList = NewsService.getNewsListByTopicId(topicId, sortType, start, offset, checkTag ? userId : 0);
+			if (newsList != null && newsList.size() > 0) {
+				JsonArray jNewsList = new JsonArray();
+				for (NewsInfo newsInfo : newsList) {
+					JsonObject json = NewsService.getNewResourceJson(newsInfo, platform, true);
+					json.addProperty("isFollowed", com.melot.kktv.service.UserRelationService.isFollowed(userId, newsInfo.getUserId()) ? 1 : 0);
+					jNewsList.add(json);
+				}
+				result.add("newsList", jNewsList);
+				result.addProperty("countTotal", count);
+				result.addProperty("pathPrefix", ConfigHelper.getHttpdir()); // 图片前缀
+				result.addProperty("mediaPathPrefix", ConfigHelper.getMediahttpdir()); // 多媒体前缀
+				result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());//七牛前缀
+				result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+				return result;
+			} else {
+				result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+				return result;
+			}
+		} else {
+			result.addProperty("countTotal", count);
+			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+			return result;
+		}
+		
+	}
+	
+	/**
+	 * 获取短评相关动态(20006024)
+	 * @param jsonObject
+	 * @param checkTag
+	 * @param request
+	 * @return
+	 * @throws Exception
+	 */
+	public JsonObject getCommentPage(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+		JsonObject result = new JsonObject();
+		
+		// 定义所需参数
+		int userId, start, offset, platform, sortType;
+		String content;
+		// 解析参数
+		try {
+			content = CommonUtil.getJsonParamString(jsonObject, "content", null, "06240001", 1, 7);
+			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 0, Integer.MAX_VALUE);
+			start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, null, 0, Integer.MAX_VALUE);
+			offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 10, null, 0, Integer.MAX_VALUE);
+			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+			sortType = CommonUtil.getJsonParamInt(jsonObject, "sortType", 0, null, 0, Integer.MAX_VALUE);
+		} catch (ErrorGetParameterException e) {
+			result.addProperty("TagCode", e.getErrCode());
+			return result;
+		}
+		
+		int count = NewsService.getCommentNewsCount(content);
+		if (count > 0 && start >= count) {
+			result.addProperty("TagCode", "06240002");
+			return result;
+		}
+		
+		if (count > 0) {
+			List<NewsInfo> newsList = NewsService.getNewsListByComment(content, sortType, start, offset, checkTag ? userId : 0);
+			if (newsList != null && newsList.size() > 0) {
+				JsonArray jNewsList = new JsonArray();
+				for (NewsInfo newsInfo : newsList) {
+					JsonObject json = NewsService.getNewResourceJson(newsInfo, platform, true);
+					json.addProperty("isFollowed", com.melot.kktv.service.UserRelationService.isFollowed(userId, newsInfo.getUserId()) ? 1 : 0);
+					jNewsList.add(json);
+				}
+				
+				result.add("newsList", jNewsList);
+				result.addProperty("countTotal", count);
+				result.addProperty("pathPrefix", ConfigHelper.getHttpdir()); // 图片前缀
+				result.addProperty("mediaPathPrefix", ConfigHelper.getMediahttpdir()); // 多媒体前缀
+				result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());//七牛前缀
+				result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+				return result;
+			} else {
+				result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+				return result;
+			}
+		} else {
+			result.addProperty("countTotal", count);
+			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+			return result;
+		}
+	}
+	
+	/**
+	 * 获取动态审核状态(20006025)
+	 * @param jsonObject
+	 * @param checkTag
+	 * @param request
+	 * @return
+	 * @throws Exception
+	 */
+	public JsonObject getStateByNewId(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+		JsonObject result = new JsonObject();
+		
+		// 该接口需要验证token,未验证的返回错误码
+		if (!checkTag) {
+			result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+			return result;
+		}
+				
+		// 定义所需参数
+		@SuppressWarnings("unused")
+        int userId, platform;
+		String newsIds;
+		// 解析参数
+		try {
+			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 0, Integer.MAX_VALUE);
+			newsIds = CommonUtil.getJsonParamString(jsonObject, "newsIds", null, "06250001", 1, Integer.MAX_VALUE);
+			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+		} catch (ErrorGetParameterException e) {
+			result.addProperty("TagCode", e.getErrCode());
+			return result;
+		}
+		
+		List<NewsInfo> newsList = NewsService.getStateByNewsIds(newsIds);
+		if(newsList == null) {
+			result.addProperty("TagCode", "06250002");
+			return result;
+		}
+		JsonArray stateArray = new JsonArray();
+		for (NewsInfo newsInfo : newsList) {
+			if (newsInfo.getState() != null) {
+				JsonObject json = new JsonObject();
+				json.addProperty("newsId", newsInfo.getNewsId());
+				json.addProperty("state", newsInfo.getState());
+				stateArray.add(json);
+			}
+		}
+		result.add("stateArray", stateArray);
+		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+		return result;
+	}
+	
+	/**
+	 * 删除评论(20006006)
+	 * 
+	 * @param jsonObject 请求对象
+	 * @param checkTag 是否验证token标记
+	 * @return 结果字符串
+	 */
+	public JsonObject deleteNewsComment(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+		
+		JsonObject result = new JsonObject();
+		
+		// 该接口需要验证token,未验证的返回错误码
+		if (!checkTag) {
+			result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+			return result;
+		}
+
+		// 定义所需参数
+		int userId, commentId;
+		// 解析参数
+		try {
+			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "06060001", 1, Integer.MAX_VALUE);
+			commentId = CommonUtil.getJsonParamInt(jsonObject, "commentId", 0, "06060003", 1, Integer.MAX_VALUE);
+		} catch (ErrorGetParameterException e) {
+			result.addProperty("TagCode", e.getErrCode());
+			return result;
+		}
+		//1.if the commentId exist
+		NewsCommentHist newsCommentHist = NewsService.getComment(commentId);
+		if (newsCommentHist == null) {
+			result.addProperty("TagCode", "06060103");
+			return result;
+		}
+		//2.if the news exist
+		NewsInfo newsInfo = NewsService.getNewsInfoById(newsCommentHist.getNewsId(), 0);
+		if (newsInfo == null) {
+			result.addProperty("TagCode", "06060104");
+			return result;
+		}
+		//3.if the userId is news or comment owner
+		if (userId != newsCommentHist.getUserId() && userId != newsInfo.getUserId()) {
+			result.addProperty("TagCode", "06060105");
+			return result;
+		}
+		//4.delete the comment 
+		if (!NewsService.deleteComment(commentId, newsInfo.getNewsId())) {
+			result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
+			return result;
+		}
+			
+		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+		return result;
+	}
+	
+	/**
+	 * 获取评论(20006007)
+	 * @param jsonObject
+	 * @param checkTag
+	 * @param request
+	 * @return
+	 * @throws Exception
+	 */
+	public JsonObject getNewsComment(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+		JsonObject result = new JsonObject();
+		
+		// 验证参数
+		int userId;
+		int newsId;
+		int start;
+		int offset;
+		
+		// 解析参数
+		try {
+			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
+			newsId = CommonUtil.getJsonParamInt(jsonObject, "newsId", 1, "06070002", 1, Integer.MAX_VALUE);
+			start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, "06070003", 0, Integer.MAX_VALUE);
+			offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 1, "06070004", 1, Integer.MAX_VALUE);
+		} catch (ErrorGetParameterException e) {
+			result.addProperty("TagCode", e.getErrCode());
+			return result;
+		}
+		
+		List<NewsCommentHist> commentList = NewsService.getCommentList(newsId, start, offset, userId);
+		if (commentList != null && commentList.size() > 0) {
+			JsonArray commentArray = new JsonArray();
+			for (NewsCommentHist temp : commentList) {
+				JsonObject json = new JsonObject();
+				json.addProperty("userId", temp.getUserId());
+				json.addProperty("commentId", temp.getCommentId());
+				json.addProperty("content", temp.getContent());
+				json.addProperty("praiseNum", temp.getPraiseNum());
+				json.addProperty("isPraise", temp.getIsPraise());
+				json.addProperty("portrait_path", temp.getPortrait_path());
+				commentArray.add(json);
+			}
+			result.addProperty("pathPrefix", ConfigHelper.getHttpdir()); // 图片前缀
+			result.addProperty("mediaPathPrefix", ConfigHelper.getMediahttpdir()); // 多媒体前缀
+			result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());//七牛前缀
+			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+			result.add("commentList", commentArray);
+		} else if (start == 0) {
+			result.addProperty("TagCode", "06070006");
+		} else {
+			result.addProperty("TagCode", "00000000");
+		}
+		return result;
+	}
+	
+	/**
+	 * 根据动态Id获取动态详细信息(20006012)
+	 * 
+	 * @param jsonObject 请求对象
+	 * @param checkTag 是否验证token标记
+	 * @return 结果字符串
+	 */
+    public JsonObject getNewsInfoByNewsId(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+		
+		// 验证参数
+		Integer newsId, userId;
+		int platform = 0;
+		
+		JsonObject result = new JsonObject();
+		try {
+			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
+			newsId = CommonUtil.getJsonParamInt(jsonObject, "newsId", 0, "06120001", 1, Integer.MAX_VALUE);
+			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, 1, Integer.MAX_VALUE);
+		} catch (ErrorGetParameterException e) {
+			result.addProperty("TagCode", e.getErrCode());
+			return result;
+		}
+		
+		NewsInfo newsInfo = NewsService.getNewsInfoByNewsIdForState(newsId, checkTag ? userId : 0);
+		if (newsInfo == null) {
+			result.addProperty("TagCode", "06120003");
+			return result;
+		}
+		result = NewsService.getNewResourceJson(newsInfo, platform, false);
+		RoomInfo actorInfo = RoomService.getRoomInfo(newsInfo.getUserId());
+		if (actorInfo != null) {
+			result.addProperty("nickname", actorInfo.getNickname());
+			if (actorInfo.getGender() != null) {
+				result.addProperty("gender", actorInfo.getGender());
+			}
+			if (actorInfo.getPortrait() != null) {
+				if (platform == PlatformEnum.WEB) {
+					result.addProperty("portrait_path_256", actorInfo.getPortrait() + "!256");
+				} else if (platform == PlatformEnum.ANDROID) {
+					result.addProperty("portrait_path_48",  actorInfo.getPortrait() + "!48");
+					result.addProperty("portrait_path_128", actorInfo.getPortrait() + "!128");
+				} else if (platform == PlatformEnum.IPHONE) {
+					result.addProperty("portrait_path_128", actorInfo.getPortrait() + "!128");
+				} else if (platform == PlatformEnum.IPAD) {
+					result.addProperty("portrait_path_128", actorInfo.getPortrait() + "!128");
+				} else {
+					result.addProperty("portrait_path_1280",actorInfo.getPortrait() + "!1280");
+					result.addProperty("portrait_path_256", actorInfo.getPortrait() + "!256");
+					result.addProperty("portrait_path_128", actorInfo.getPortrait() + "!128");
+					result.addProperty("portrait_path_48",  actorInfo.getPortrait() + "!48");
+				}
+			}
+			result.addProperty("actorLevel", actorInfo.getActorLevel());
+			result.addProperty("richLevel", actorInfo.getRichLevel());
+			//直播状态
+			result.addProperty("isLive", actorInfo.getLiveStarttime() != null && actorInfo.getLiveEndtime() == null ? 1 : 0);
+			result.addProperty("roomSource", actorInfo.getRoomSource());
+			result.addProperty("screenType", actorInfo.getScreenType());
+			result.addProperty("actorTag", 1);
+		} else {
+			UserProfile userInfo = com.melot.kktv.service.UserService.getUserInfoV2(newsInfo.getUserId());
+			if (userInfo != null) {
+				result.addProperty("nickname", userInfo.getNickName());
+				result.addProperty("gender", userInfo.getGender());
+				result.addProperty("actorLevel", userInfo.getActorLevel());
+				result.addProperty("richLevel", userInfo.getUserLevel());
+				result.addProperty("actorTag", 0);
+				if (userInfo.getPortrait() != null) {
+					if (platform == PlatformEnum.WEB) {
+						result.addProperty("portrait_path_256", userInfo.getPortrait() + "!256");
+					} else if (platform == PlatformEnum.ANDROID) {
+						result.addProperty("portrait_path_48",  userInfo.getPortrait() + "!48");
+						result.addProperty("portrait_path_128", userInfo.getPortrait() + "!128");
+					} else if (platform == PlatformEnum.IPHONE) {
+						result.addProperty("portrait_path_128", userInfo.getPortrait() + "!128");
+					} else if (platform == PlatformEnum.IPAD) {
+						result.addProperty("portrait_path_128", userInfo.getPortrait() + "!128");
+					} else {
+						result.addProperty("portrait_path_1280", userInfo.getPortrait() + "!1280");
+						result.addProperty("portrait_path_256", userInfo.getPortrait() + "!256");
+						result.addProperty("portrait_path_128", userInfo.getPortrait() + "!128");
+						result.addProperty("portrait_path_48", userInfo.getPortrait() + "!48");
+					}
+				}
+			} 
+		}
+		//返回关注关系
+		result.addProperty("isFollowed", com.melot.kktv.service.UserRelationService.isFollowed(userId, newsInfo.getUserId()) ? 1 : 0);
+		result.addProperty("pathPrefix", ConfigHelper.getHttpdir()); // 图片前缀
+		result.addProperty("mediaPathPrefix", ConfigHelper.getMediahttpdir()); // 多媒体前缀
+		result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());//七牛前缀
+		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+		return result;
+
+	}
+	
+	/**
+	 * 获取热门动态列表(20000402)
+	 * @return
+	 */
+	public JsonObject getHotMediaNewsList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+		
+		// 定义使用的参数
+		@SuppressWarnings("unused")
+        int userId = 0, pageIndex = 0, totalCount = 0,
+				platform = PlatformEnum.WEB, countPerPage = Constant.return_news_count;
+		// 定义返回结果
+		JsonObject result = new JsonObject();
+		
+		// 解析参数
+		try {
+			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 0, Integer.MAX_VALUE);
+			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.WEB, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+			pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
+			countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", Constant.return_news_count, null, 0, Integer.MAX_VALUE);
+		} catch (ErrorGetParameterException e) {
+			result.addProperty("TagCode", e.getErrCode());
+			return result;
+		}
+
+		//获取热门话题,返回8条
+		Set<String> hotTopic = NewsV2Source.getHotTopic(0, -1);
+		if (hotTopic != null && hotTopic.size() > 0) {
+			JsonArray hotTopicList = new JsonArray();
+			for (String str : hotTopic) {
+				try {
+					JsonObject json = new JsonParser().parse(str).getAsJsonObject();
+					hotTopicList.add(json);
+				} catch (Exception e) {
+				}
+			}
+			result.add("hotTopicList", hotTopicList);
+		}
+		
+		//获取热门动态,2条
+		Set<String> hotNews = NewsV2Source.getHotNews(0, 500);
+		if (hotNews != null && hotNews.size() > 0) {
+			JsonArray hotNewsList = new JsonArray();
+			for (String str : hotNews) {
+				try {
+					NewsInfo newsInfo = NewsService.getNewsInfoById(Integer.valueOf(str), checkTag ? userId : 0);
+					if (newsInfo == null) {
+						continue;
+					}
+					JsonObject json = NewsService.getNewResourceJson(newsInfo, 1, true);
+					json.addProperty("isFollowed", com.melot.kktv.service.UserRelationService.isFollowed(userId, newsInfo.getUserId()) ? 1 : 0);
+					hotNewsList.add(json);
+					if (hotNewsList.size() == 2) {
+						break;
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			result.add("hotNewsList", hotNewsList);
+		}
+		
+		//获取推荐动态,返回n <= 20条, 随意返回一条
+		Set<String> recommendNews = NewsV2Source.getRecommendNews();
+		@SuppressWarnings({ "unchecked", "rawtypes" })
+		List rlist = new ArrayList(recommendNews);
+		if (recommendNews != null && recommendNews.size() > 0) {
+			JsonArray recommendList = new JsonArray();
+			int size = rlist.size();
+			int flag = 3;
+			while (flag -- > 0) {
+				int i = new Random().nextInt(size);
+				String str = (String) rlist.get(i);
+				try {
+					NewsInfo newsInfo = new Gson().fromJson(str, new TypeToken<NewsInfo>(){}.getType()); 
+					//判断是否被删除了
+					if (newsInfo == null) {
+						continue;
+					}
+					NewsInfo stateInfo = NewsService.getNewsInfoById(Integer.valueOf(newsInfo.getNewsId()), 0);
+					if (stateInfo == null) {
+						continue;
+					}
+					int orderId = newsInfo.getUserId();
+					List<NewsCommentHist> commentList = NewsService.getCommentList(newsInfo.getNewsId(), 0, 6, userId);
+					newsInfo.setCommentMsg(new Gson().toJson(commentList));
+					JsonObject json = NewsService.getNewResourceJson(newsInfo, 1, true);
+					json.addProperty("isFollowed", com.melot.kktv.service.UserRelationService.isFollowed(userId, orderId) ? 1 : 0);
+					recommendList.add(json);
+					break;
+				} catch (Exception e) {
+				}
+			}
+			result.add("recommendNewsList", recommendList);
+		}
+		
+		//获取热门短评,6条
+		Set<String> commentList = NewsV2Source.getHotComment();
+		if (commentList != null && commentList.size() > 0) {
+			int length = commentList.size();
+			JsonArray hotCommentList = new JsonArray();
+			if (length <= 12) {
+				for (String temp : commentList) {
+					JsonObject json = new JsonParser().parse(temp).getAsJsonObject();
+					hotCommentList.add(json);
+				}
+			} else {
+				Set<Integer> set = new HashSet<Integer>();
+				String[] list = commentList.toArray(new String[]{});
+				while (set.size() < 12) {
+					int i = (int) (Math.random() * length);
+					if (!set.contains(i)) {
+						hotCommentList.add( new JsonParser().parse(list[i]).getAsJsonObject());
+						set.add(i);
+					}
+				}
+				result.add("hotCommentList", hotCommentList);
+			}
+		}
+		
+		
+		result.addProperty("pathPrefix", ConfigHelper.getHttpdir()); // 图片前缀
+		result.addProperty("mediaPathPrefix", ConfigHelper.getMediahttpdir()); // 多媒体前缀
+		result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());//七牛前缀
+		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+		return result;
+	}
+
+	/**
+	 * 获取推荐动态（用户关注）列表 （20000403）
+	 * @param paramJsonObject
+	 * @return
+	 */
+	public JsonObject getRecNewsList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+		// 定义使用的参数
+		int start = 0, offset = 0, platform = 0, userId = 0;
+		// 定义返回结果
+		JsonObject result = new JsonObject();
+		try {
+			// 解析参数
+			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 1, TagCodeEnum.USERID_MISSING, 0, Integer.MAX_VALUE);
+			start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, null, 0, Integer.MAX_VALUE);
+			offset = CommonUtil.getJsonParamInt(jsonObject, "offset", Constant.return_news_count, null, 1, Integer.MAX_VALUE);
+			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+		} catch(CommonUtil.ErrorGetParameterException e) {
+			result.addProperty("TagCode", e.getErrCode());
+			return result;
+		} catch(Exception e) {
+			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+			return result;
+		}
+
+		//登录返回是否点赞过
+		List<NewsInfo> newsList = NewsService.getFollowNewsList(userId, start, offset);
+		if (newsList != null && newsList.size() > 0) {
+			JsonArray jNewsList = new JsonArray();
+			for (NewsInfo newsInfo : newsList) {
+				JsonObject json = NewsService.getNewResourceJson(newsInfo, platform, true);
+				jNewsList.add(json);
+			}
+			
+			if (start <= 0 && userId > 0) {
+	            NewsSource.setNewsRemindTime(String.valueOf(userId), String.valueOf(System.currentTimeMillis()));
+	        }
+			
+			result.addProperty("isLastPage", false);
+			result.add("newsList", jNewsList);
+			result.addProperty("countTotal", newsList.size());
+			result.addProperty("pathPrefix", ConfigHelper.getHttpdir()); // 图片前缀
+			result.addProperty("mediaPathPrefix", ConfigHelper.getMediahttpdir()); // 多媒体前缀
+			result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());//七牛前缀
+			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+			return result;
+		} else {
+			//判断下页是否有数据
+			List<NewsInfo> list = NewsService.getFollowNewsList(userId, start + offset, offset);
+			if (list != null && list.size() > 0) {
+				result.addProperty("isLastPage", false);
+			} else {
+				result.addProperty("isLastPage", true);
+			}
+			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+			return result;
+		}
+		
+	}
+	
+	/**
+	 * 模糊搜索动态(20000404)
+	 * @param jsonObject
+	 * @param checkTag
+	 * @param request
+	 * @return
+	 */
+	public JsonObject searchNewsList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+	    JsonObject result = new JsonObject();
+	    
+	    String key;
+        try {
+            key = CommonUtil.getJsonParamString(jsonObject, "key", null, "00440001", 0, 10);
+        } catch(CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch(Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+	    
+        if (StringUtil.strIsNull(key)) {
+            result.addProperty("TagCode", "00440002");
+            return result;
+        }
+        
+        /*com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) ModuleService.getService("NewsService");
+        List<SearchNewsUser> list = newsService.getNewsListByKey(key);
+        
+        JsonArray jsonArray = new JsonArray();
+        if (list != null && list.size() > 0) {
+            for (SearchNewsUser temp : list) {
+                JsonObject jObject = new JsonObject();
+                if (temp.getUserId() != null) {
+                    jObject.addProperty("userId", temp.getUserId());
+                }
+                if (temp.getActorLevel() != null) {
+                    jObject.addProperty("actorLevel", temp.getActorLevel());
+                }
+                if (temp.getRichLevel() != null) {
+                    jObject.addProperty("richLevel", temp.getRichLevel());
+                }
+                if (temp.getActorTag() != null) {
+                    jObject.addProperty("actorTag", temp.getActorTag());
+                    if (temp.getActorTag() == 1 && temp.getLiveType() != null) {
+                        jObject.addProperty("liveType", temp.getLiveType());
+                    }
+                }
+                if (temp.getOnlineCount() != null) {
+                    jObject.addProperty("onlineCount", temp.getOnlineCount());
+                }
+                if (temp.getLastTime() != null) {
+                    jObject.addProperty("lastTime", temp.getLastTime().getTime());
+                }
+                if (temp.getPortrait_path() != null) {
+                    String portraitAddress = temp.getPortrait_path();
+                    jObject.addProperty("portrait_path_original", portraitAddress);
+                    jObject.addProperty("portrait_path_48", portraitAddress + "!48");
+                    jObject.addProperty("portrait_path_128", portraitAddress + "!128");
+                    jObject.addProperty("portrait_path_256", portraitAddress + "!256");
+                    jObject.addProperty("portrait_path_272", portraitAddress + "!272");
+                    jObject.addProperty("portrait_path_1280", portraitAddress + "!1280");
+                    jObject.addProperty("portrait_path_400", portraitAddress + "!400");
+                    jObject.addProperty("portrait_path_756", portraitAddress + "!756x567");
+                }
+                if (temp.getNickname() != null) {
+                    jObject.addProperty("nickname", temp.getNickname());
+                }
+                if (temp.getRoomSource() != null) {
+                    jObject.addProperty("roomSource", temp.getRoomSource());
+                }
+                if (temp.getScreenType() != null) {
+                    jObject.addProperty("screenType", temp.getScreenType());
+                }
+                if (temp.getComments() != null) {
+                    List<String> comments = temp.getComments();
+                    JsonArray jArray = new JsonArray();
+                    if (comments != null && comments.size() > 0) {
+                        for (String string : comments) {
+                            JsonObject jObject2 = new JsonObject();
+                            jObject2.addProperty("comment", string);
+                            jArray.add(jObject2);
+                        }
+                    }
+                    jObject.add("comments", jArray);
+                }
+                jsonArray.add(jObject);
+            }
+        }*/
+        
+        result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        result.add("data", null);
+        
+	    return result;
+	}
+	
+	/**
+     * 獲取熱門搜索(20000405)
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getHotWordList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        /*com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) ModuleService.getService("NewsService");
+        List<String> list = newsService.getHotKeyWord();
+        
+        JsonArray jsonArray = new JsonArray();
+        if (list != null && list.size() > 0) {
+            for (String str : list) {
+                JsonObject jObject = new JsonObject();
+                jObject.addProperty("hotWord", str);
+                jsonArray.add(jObject);
+            }
+        }*/
+        
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        result.add("hotWords", null);
+        
+        return result;
+    }
+	
+    /**
+     * 获取热门话题列表(分数排序)(20000406)
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getPopularTopicList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+    	JsonObject result = new JsonObject();
+ 	    int start;
+ 	    int offset;
+        try {
+        	start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, null, 0, Integer.MAX_VALUE);
+			offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 1, null, 1, Integer.MAX_VALUE);
+        } catch(CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch(Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+ 	    
+        Set<String> topicList = NewsService.getPopularTopic(start, offset);
+        JsonArray topicArray = new JsonArray();
+        if (topicList != null && topicList.size() > 0) {
+	        for (String temp : topicList) {
+				JsonObject json = new JsonParser().parse(temp).getAsJsonObject();
+				topicArray.add(json);
+			}
+        }
+		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+		result.addProperty("pathPrefix", ConfigHelper.getHttpdir()); // 图片前缀
+		result.addProperty("mediaPathPrefix", ConfigHelper.getMediahttpdir()); // 多媒体前缀
+		result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());//七牛前缀
+		result.add("topicList", topicArray);
+		return result;
+    }
+    
+	public String getRegexAdmin(String str) {
+    	return Pattern.compile("\\{|\\}|^,*").matcher(str).replaceAll("");
+    }
+
+	
+}

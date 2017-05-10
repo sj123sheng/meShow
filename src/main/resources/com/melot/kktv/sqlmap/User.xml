@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="User">
+
+	<!-- 获取用户粉丝排行榜 -->
+	<resultMap id="fansRankingItem" class="com.melot.kktv.model.FansRankingItem">
+		<result property="userId" column="userId" />
+		<result property="contribution" column="contribution" />
+		<result property="roomSource" column="roomSource" />
+	</resultMap>
+	
+	<!-- 更新快牙用户手机号信息 -->
+	<update id="updateKuaiyaUserPhoneNum" parameterClass="java.util.Map">
+		update user_account_kuaiya set phonenum = #phoneNum# where userid = #userId# and uuid = #uuid#
+	</update>
+	
+	<!-- 根据用户ID,获取用户来自的第三方平台 -->
+	<parameterMap id="getUserFromByUserIdMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="openPlatform" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+			
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="uuid" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+	</parameterMap>
+	<procedure id="getUserFromByUserId" parameterMap="getUserFromByUserIdMap"
+		resultClass="java.util.Map">
+		{call p_getUserFromByUserId_V2(?,?,?,?)}
+	</procedure>
+	
+	<!-- SQL -->
+	<typeAlias alias="User" type="com.melot.kktv.domain.UserInfo" />
+	<resultMap class="User" id="userInfoMap">
+		<result property="userId" column="USERID" />
+		<result property="roomTheme" column="THEME" />
+		<result property="greetMsg" column="GREETMSG" />
+		<result property="greetMsgHref" column="GREETMSGHREF" />
+		<result property="noticeContent" column="NOTICECONTENT" />
+		<result property="noticeHref" column="NOTICEHREF" />
+	</resultMap>
+
+	<!-- 根据用户ID和房间编号查询信息 -->
+	<select id="getUserInfo" parameterClass="java.lang.Integer" resultMap="userInfoMap">
+		select ro.roomid as USERID,
+               ro.theme,
+		       ro.noticecontent,
+		       ro.noticehref,
+		       ro.greetmsg,
+		       ro.greetmsghref
+		from room_info ro where ro.roomid = #userId#
+	</select>
+	
+	<!-- 获取用户官方号类型 -->
+	<select id="getAdminType" parameterClass="java.lang.Integer" resultClass="java.lang.Integer">
+		select type from officialid_info where userid = #userid# and rownum = 1
+	</select>
+
+	<!-- 判断用户是否封号 -->
+	<select id="isInUserBlackList" parameterClass="java.lang.Integer" resultClass="java.lang.Integer">
+		select count(*) from login_black_userid where userid = #userid#
+	</select>
+	
+	<!-- 获取用户最近登录时间 -->
+	<select id="getUserLastLoginTime" parameterClass="java.lang.Integer" resultClass="java.util.Date">
+		select t.time1 from 
+		(
+		select time1, rank() over (partition by #userId# order by time1 desc)  rk
+		from user_log where userid = #userId#
+		) t where t.rk = 2
+	</select>
+	
+	<select id="getWeeklyFansRanking" resultMap="fansRankingItem" parameterClass="Integer">
+		select t3.userId, t3.contribution, ai.type as roomSource 
+		  	from (select t2.userId, t2.contribution
+				  from (select t1.*, rownum as rn
+				          from (select t.userid, sum(t.amount) AS contribution
+				                  from gift_history t
+				                 where t.touserid = #roomId#
+				                   and t.dtime >= trunc(sysdate) - 7
+				                   and <![CDATA[t.dtime < trunc(sysdate)]]>
+				                   and not exists(select 1
+				                   		  from hist_xman_consume p
+				                   		 where t.histid = p.histid
+				                   		 and p.dtime >= trunc(sysdate) - 7
+				                   		 and <![CDATA[p.dtime < trunc(sysdate)]]>)
+				                 group by t.userid
+				                 order by sum(t.amount) desc) t1) t2
+			 where rn >= 1
+			   and <![CDATA[rn < 21]]>) t3
+			   left join actor_info ai on ai.actorid = t3.userId
+			   order by t3.contribution desc
+	</select>
+	
+	<select id="getMonthlyFansRanking" resultMap="fansRankingItem" parameterClass="Integer">
+		select t3.userId, t3.contribution, ai.type as roomSource 
+		 	from (select t2.userId, t2.contribution
+			      from (select t1.*, rownum as rn
+				          from (select t.userid, sum(t.amount) AS contribution
+				                  from gift_history t
+				                 where t.touserid = #roomId#
+				                   and t.dtime >= trunc(sysdate) - 30
+				                   and <![CDATA[t.dtime < trunc(sysdate)]]>
+				                   and not exists(select 1
+				                   		  from hist_xman_consume p
+				                   		 where t.histid = p.histid
+				                   		 and p.dtime >= trunc(sysdate) - 30
+				                   		 and <![CDATA[p.dtime < trunc(sysdate)]]>)
+				                 group by t.userid
+				                 order by sum(t.amount) desc) t1) t2
+			 where rn >= 1
+			   and <![CDATA[rn < 21]]>)t3
+			   left join actor_info ai on ai.actorid = t3.userId
+			   order by t3.contribution desc
+	</select>
+	
+	<!-- 插入消费历史(oracle) -->
+	<insert id="insertConsumeHistory" parameterClass="java.util.Map">
+	 	<selectKey keyProperty="histId" resultClass="java.lang.Integer">
+			select seq_consumehistory.nextval as histId from dual   
+		</selectKey>
+		insert into consume_history (histid, ntype, userid, amount, dtime, typedesc, product, count) 
+       		values (#histId#, #type#, #userId#, #amount#, sysdate, #desc#, #product#, #count#)
+	</insert>
+	
+	<!-- 插入举报消费历史(oracle) -->
+	<insert id="insertReportHistory" parameterClass="java.util.Map">
+	 	<selectKey keyProperty="histId" resultClass="java.lang.Integer">
+			select seq_hist_report_consume.nextval as histId from dual   
+		</selectKey>
+		insert into hist_report_consume (histid, reportid, userid, amount, dtime, status) 
+       		values (#histId#, #reportId#, #userId#, #amount#, sysdate, #status#)
+	</insert>
+	
+	<resultMap id="fansInfoResult" class="com.melot.kktv.model.FansRankingItem">
+        <result column="userId" property="userId" />
+        <result column="roomSource" property="roomSource" />
+    </resultMap>
+    
+	<!-- 获取粉丝信息 -->
+	<select id="getFansInfo" parameterClass="java.util.List" resultMap="fansInfoResult">
+		select actorid as userId, type as roomSource from actor_info where actorid in
+			<iterate open="(" close=")" conjunction=",">
+	            #fids[]#
+	        </iterate>
+	</select>
+	
+	<!-- 判断该设备是否可以被邀请 -->
+	<select id="getCanInvite" parameterClass="java.lang.String" resultClass="java.lang.Integer">
+		select  count(1) from user_info t where t.deviceuid = #deviceUId# and t.inviter is not null
+	</select>
+	
+	<!-- 获取用户短信保护开关 -->
+	<select id="getUserSmsSwitch" parameterClass="java.lang.Integer" resultClass="java.lang.Integer">
+		select count(1) from user_sms_switch where userid = #userId#
+	</select>
+	
+	<!-- 开启用户账号保护 -->
+	<delete id="delUserSmsSwitch" parameterClass="java.lang.Integer">
+		delete from user_sms_switch where userid = #userId#
+	</delete>
+	
+	<!-- 插入更改短信异常开关流水记录 -->
+	<insert id="insertUserSmsSwitchRecord" parameterClass="java.util.Map">
+		insert into USER_SMS_SWITCH_RECORD(userid, dtime, state)values(#userId#, #dtime#, #state#)
+	</insert>
+	
+	<!-- 插入短信异常开关表 -->
+	<insert id="insertUserSmsSwitch" parameterClass="java.util.Map">
+		insert into user_sms_switch(userid, dtime)values(#userId#, #dtime#) 
+	</insert>
+	
+	<!-- 插入用户临时密码表 -->
+	<insert id="insertUserTempPassword" parameterClass="java.util.Map">
+		insert into temp_user_password(userid, origin_password, record_time) values(#userId#, #password#, #dtime#)
+	</insert>
+	
+	<!-- 获取游客首次登录记录 -->
+	<select id="getGuestFirstRecord" parameterClass="java.lang.Integer" resultClass="java.lang.Integer">
+		select count(1) from user_first_record where userid = #userId#
+	</select>
+	
+	<!-- 插入游客首次登录记录 -->
+	<insert id="insertGuestFirstRecord" parameterClass="java.util.Map">
+		insert into user_first_record(userid, newtime, appid, platform, channel, deviceuid) values(#userId#, #dtime#, #appId#, #platform#, #channelId#, #deviceUId#)
+	</insert>
+</sqlMap>

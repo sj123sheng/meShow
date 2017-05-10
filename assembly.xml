@@ -1,0 +1,34 @@
+<assembly>
+	<id>assembly</id>
+	<includeBaseDirectory>false</includeBaseDirectory>
+	<formats>
+		<format>dir</format>
+		<format>war</format>
+	</formats>
+	<dependencySets>
+		<dependencySet>
+			<outputDirectory>WEB-INF/lib</outputDirectory>
+		</dependencySet>
+
+	</dependencySets>
+
+	<fileSets>
+		<fileSet>
+			<directory>./src/main/webapp</directory>
+			<outputDirectory>/</outputDirectory>
+			<excludes>
+				<exclude>*/classes/**</exclude>
+				<!-- <exclude>*/lib/**</exclude> -->
+			</excludes>
+		</fileSet>
+	</fileSets>
+
+	<files>
+		<file>
+			<source>target/${project.artifactId}-${project.version}.jar</source>
+			<outputDirectory>WEB-INF/lib</outputDirectory>
+		</file>
+	</files>
+
+
+</assembly>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd">
+        
+    <!-- oracle master database -->
+	<bean id="sqlMapClient_oracle_master" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean" lazy-init="true">
+		<property name="configLocation">
+			<value>conf/SqlMapConfig-oracle_master.xml</value>
+		</property>
+		<property name="dataSource">
+			<ref bean="dataSource_master" />
+		</property>
+	</bean>
+	
+	<!-- oracle master database -->
+	<bean id="sqlMapClient_oracle_backup" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean" lazy-init="true">
+		<property name="configLocation">
+			<value>conf/SqlMapConfig-oracle_backup.xml</value>
+		</property>
+		<property name="dataSource">
+			<ref bean="dataSource_backup" />
+		</property>
+	</bean>
+	
+	<!-- postgresql database -->
+	<bean id="sqlMapClient_pg_master" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean">
+		<property name="configLocation">
+			<value>conf/SqlMapConfig-pg_master.xml</value>
+		</property>
+		<property name="dataSource">
+			<ref bean="dataSource_pg_master" />
+		</property>
+	</bean>
+	
+	<!-- postgresql database -->
+	<bean id="sqlMapClient_pg_slave" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean">
+		<property name="configLocation">
+			<value>conf/SqlMapConfig-pg_slave.xml</value>
+		</property>
+		<property name="dataSource">
+			<ref bean="dataSource_pg_slave" />
+		</property>
+	</bean>
+	
+	<bean id="sqlMapClient_pg_kkgame" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean">
+		<property name="configLocation">
+			<value>conf/SqlMapConfig-pg_kkgame.xml</value>
+		</property>
+		<property name="dataSource">
+			<ref bean="dataSource_pg_kkgame" />
+		</property>
+	</bean>
+	
+	<bean id="sqlMapClient_pg_kkcx" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean">
+		<property name="configLocation">
+			<value>conf/SqlMapConfig-pg_kkcx.xml</value>
+		</property>
+		<property name="dataSource">
+			<ref bean="dataSource_pg_kkcx" />
+		</property>
+	</bean>
+	
+</beans>

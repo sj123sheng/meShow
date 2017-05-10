@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd  
+                http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd  
+                http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
+
+	<bean id="lotteryPrizeList" class="com.melot.kkcx.model.LotteryPrizeList">
+		<property name="list">
+			<map>
+				<entry key="100004" value-ref="gift1" />
+				<entry key="100001" value-ref="gift2" />
+				<entry key="1427" value-ref="gift3" />
+				<entry key="1390" value-ref="gift4" />
+				<entry key="5" value-ref="gift5" />
+				<entry key="6" value-ref="gift6" />
+				<entry key="7" value-ref="gift7" />
+				<entry key="8" value-ref="gift8" />
+				<entry key="9" value-ref="gift9" />
+			</map>
+		</property>
+	</bean>
+
+	<bean id="gift1" class="com.melot.kkcx.model.LotteryPrize">
+		<property name="prizeIcon"   value="http://www.kktv1.com/Share/other/svip.png" />
+		<property name="prizeDesc" value="恭喜您获得3天SVIP体验" />
+	</bean>
+	
+	<bean id="gift2" class="com.melot.kkcx.model.LotteryPrize">
+		<property name="prizeIcon"   value="http://www.kktv1.com/Share/other/vip.png" />
+		<property name="prizeDesc" value="恭喜您获得3天VIP体验" />
+	</bean>
+	
+	<bean id="gift3" class="com.melot.kkcx.model.LotteryPrize">
+		<property name="prizeIcon"   value="http://www.kktv1.com/Share/other/lbjn.png" />
+		<property name="prizeDesc" value="恭喜您获得1天兰博基尼座驾体验" />
+	</bean>
+	
+	<bean id="gift4" class="com.melot.kkcx.model.LotteryPrize">
+		<property name="prizeIcon"   value="http://www.kktv1.com/Share/other/msld.png" />
+		<property name="prizeDesc" value="恭喜您获得3天玛莎拉蒂座驾体验" />
+	</bean>
+	
+	<bean id="gift5" class="com.melot.kkcx.model.LotteryPrize">
+		<property name="prizeIcon"   value="http://www.kktv1.com/Share/other/jb.png" />
+		<property name="prizeDesc" value="恭喜您获得10万秀币" />
+	</bean>
+	
+	<bean id="gift6" class="com.melot.kkcx.model.LotteryPrize">
+		<property name="prizeIcon"   value="http://www.kktv1.com/Share/other/jb.png" />
+		<property name="prizeDesc" value="恭喜您获得1万秀币" />
+	</bean>
+	
+	<bean id="gift7" class="com.melot.kkcx.model.LotteryPrize">
+		<property name="prizeIcon"   value="http://www.kktv1.com/Share/other/jb.png" />
+		<property name="prizeDesc" value="恭喜您获得1000秀币" />
+	</bean>
+	
+	<bean id="gift8" class="com.melot.kkcx.model.LotteryPrize">
+		<property name="prizeIcon"   value="http://www.kktv1.com/Share/other/jb.png" />
+		<property name="prizeDesc" value="恭喜您获得200秀币" />
+	</bean>
+	
+	<bean id="gift9" class="com.melot.kkcx.model.LotteryPrize">
+		<property name="prizeIcon"   value="http://www.kktv1.com/Share/other/yg.png" />
+		<property name="prizeDesc" value="恭喜您获得30个阳光" />
+	</bean>
+
+</beans>

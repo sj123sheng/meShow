@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+	
+	<bean id="thirdVerifyUtil" class="com.melot.kktv.third.ThirdVerifyUtil">
+		<constructor-arg name="serviceMap">
+			<map>
+				<entry key="1" value-ref="qqService" />
+				<entry key="2" value-ref="weiboService" />
+				<entry key="11" value-ref="kascendService" />
+				<entry key="20" value-ref="weixinService" />
+				<entry key="21" value-ref="walaService" />
+				<entry key="23" value-ref="alipayService" />
+				<entry key="27" value-ref="didaService" />
+				<entry key="29" value-ref="meiliaoService" />
+				<entry key="32" value-ref="tongChengService" />
+				<entry key="33" value-ref="sweetOrangeService" />
+				<entry key="34" value-ref="qunduiService" />
+				<entry key="37" value-ref="haofangService" />
+			</map>
+		</constructor-arg>
+		<constructor-arg name="ignoreSet">
+			<set>  
+                <value>14</value>  
+                <value>16</value>  
+                <value>22</value>  
+                <value>24</value>  
+                <value>26</value>  
+                <value>28</value>  
+                <value>30</value>  
+                <value>31</value>  
+                <value>35</value>  
+            </set>  
+		</constructor-arg>
+	</bean>	
+	
+	<bean id="qqService" class="com.melot.kktv.third.service.QQService">
+		<property name="thirdName" value="QQ"/>
+		<property name="openPlatform" value="1"/>
+		<property name="serverUrl" value="https://graph.qq.com/user/get_user_info"/>
+	</bean>
+	
+	<bean id="weiboService" class="com.melot.kktv.third.service.WeiboService">
+		<property name="thirdName" value="微博"/>
+		<property name="openPlatform" value="2"/>
+		<property name="serverUrl" value="https://api.weibo.com/2/account/get_uid.json"/>
+	</bean>
+	
+	<bean id="kascendService" class="com.melot.kktv.third.service.KascendService">
+		<property name="thirdName" value="开讯"/>
+		<property name="openPlatform" value="11"/>
+		<property name="limitPlatform" value="2"/>
+		<property name="serverUrl" value="http://auth.kascend.com/osm-user/openapi/validate.htm"/>
+	</bean>
+	
+	<bean id="weixinService" class="com.melot.kktv.third.service.WeixinService">
+		<property name="thirdName" value="微信"/>
+		<property name="openPlatform" value="20"/>
+		<property name="serverUrl" value="https://api.weixin.qq.com/sns/auth"/>
+	</bean>
+	
+	<bean id="walaService" class="com.melot.kktv.third.service.WalaService">
+		<property name="thirdName" value="哇啦"/>
+		<property name="openPlatform" value="21"/>
+		<property name="limitPlatform" value="2"/>
+		<property name="serverUrl" value="http://api.51wala.com/external/auth.json"/>
+	</bean>
+	
+	<bean id="alipayService" class="com.melot.kktv.third.service.AlipayService">
+		<property name="thirdName" value="支付宝"/>
+		<property name="openPlatform" value="23"/>
+	</bean>
+	
+	<bean id="didaService" class="com.melot.kktv.third.service.DidaService">
+		<property name="thirdName" value="嘀嗒"/>
+		<property name="openPlatform" value="27"/>
+	</bean>
+	
+	<bean id="meiliaoService" class="com.melot.kktv.third.service.MeiliaoService">
+		<property name="thirdName" value="美聊"/>
+		<property name="openPlatform" value="29"/>
+		<property name="limitPlatform" value="2"/>
+	</bean>
+	
+	<bean id="tongChengService" class="com.melot.kktv.third.service.TongChengService">
+		<property name="thirdName" value="同城游"/>
+		<property name="openPlatform" value="32"/>
+	</bean>
+	
+	<bean id="sweetOrangeService" class="com.melot.kktv.third.service.SweetOrangeService">
+		<property name="thirdName" value="甜橙"/>
+		<property name="openPlatform" value="33"/>
+	</bean>
+	
+	<bean id="qunduiService" class="com.melot.kktv.third.service.QunduiService">
+		<property name="thirdName" value="群队"/>
+		<property name="openPlatform" value="34"/>
+		<property name="serverUrl" value="http://driverh-api.fuxingrun.com/V1_1/customer/user/customerLoginStatus.json"/>
+	</bean>
+	
+	<bean id="haofangService" class="com.melot.kktv.third.service.HaofangService">
+		<property name="thirdName" value="浩方"/>
+		<property name="openPlatform" value="37"/>
+		<property name="serverUrl" value="http://passport.cga.com.cn/login/service/LoginService.ashx"/>
+	</bean>
+	
+</beans>

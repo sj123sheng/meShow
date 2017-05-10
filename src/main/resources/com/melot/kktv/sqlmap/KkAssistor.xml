@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="KkAssistor">
+	<!-- kk小秘书提醒关注 -->
+	<resultMap id="KkNotice" class="com.melot.kktv.model.KkAssistor">
+		<result column="dtime" property="msgtime"  javaType="java.util.Date" jdbcType="TIMESTAMP" />
+		<result column="userid" property="id" />
+		<result column="message" property="message" />
+		<result column="portrait_path_original"  property="portrait_path_original"/>
+		<result column="portrait_path_1280" property="portrait_path_1280"/>
+		<result column="portrait_path_256"  property="portrait_path_256"/>
+		<result column="portrait_path_128"  property="portrait_path_128"/>
+		<result column="portrait_path_48"   property="portrait_path_48"/>
+		<result column="nickname" property="nickname" />		
+		<result column="gender"  property="gender"/>
+	</resultMap>
+	<!-- kk 小秘书提醒消息 -->
+	<parameterMap id="KkAssistorNoticeMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="startTime" mode="IN" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+		<parameter property="endTime" mode="IN" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+		<parameter property="min" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="max" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="totalNotices" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="kkNotices" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="KkNotice" />
+	</parameterMap>
+	<procedure id="getKkAssistorNoticeList" parameterMap="KkAssistorNoticeMap"
+		resultClass="java.util.Map">
+		{call p_getKkAssistorNoticeList(?,?,?,?,?,?,?,?)}
+	</procedure>
+</sqlMap>

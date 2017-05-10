@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="NewsTagConf">
+
+	<resultMap class="com.melot.kktv.model.NewsTagConf" id="newsTagInfo">
+		<result property="tagId" column="tagid"/>
+		<result property="tagName" column="tagname"/>
+		<result property="isHot" column="ishot"/>
+		<result property="dtime" column="dtime"/>
+	</resultMap>
+	
+	<!-- 根据Id或name获取标签信息 -->
+	<select id="getNewsTagInfoByIdOrName" parameterClass="java.util.Map" resultMap="newsTagInfo">
+		select tagid, tagname, ishot, dtime from conf_news_tag 
+		 <dynamic prepend="where">
+		 	<isNotNull prepend="and" property="tagId">
+		 		tagid = #tagId#
+		 	</isNotNull>
+			<isNotNull prepend="and" property="tagName">
+				tagName = #tagName#
+			</isNotNull>
+		 </dynamic>
+	</select>
+
+	<!-- 添加动态标签 -->
+	<insert id="addNewsTag" parameterClass="com.melot.kktv.model.NewsTagConf">
+		<selectKey keyProperty="tagId" resultClass="java.lang.Integer">
+			select seq_conf_news_tag.nextval as tagId from dual   
+		</selectKey>
+        insert into conf_news_tag(tagid, tagname, ishot, dtime) 
+        	values (#tagId#, #tagName#, #isHot#, #dtime#)
+	</insert>
+	
+	<!-- 删除动态标签 -->
+	<delete id="delConfNewsTagById" parameterClass="java.lang.Integer">
+		delete conf_news_tag where tagid = #tagId#
+	</delete>
+	
+	<!-- 修改热门标签 -->
+	<update id="updateNewsTagById" parameterClass="java.util.Map">
+		update conf_news_tag 
+		  <dynamic prepend="set">
+		 	 <isNotNull prepend="," property="isHot">ishot = decode(isHot, 1, 0, 1)</isNotNull>
+			 <isNotNull prepend="," property="tagName">tagname = #tagName#</isNotNull>
+		  </dynamic>
+		 where tagid = #tagId#
+	</update>
+
+	<!-- 获取动态标签 -->
+	<select id="getNewsTagList" parameterClass="java.util.Map" resultMap="newsTagInfo">
+		select cnt.tagid, cnt.tagname, cnt.ishot, cnt.dtime from conf_news_tag cnt
+			<dynamic prepend="where">
+				<isNotNull property="tagId" prepend="and">
+					cnt.tagid = #tagId#
+				</isNotNull>
+				<isNotNull property="tagName" prepend="and">
+					cnt.tagname like '%'||#tagName#||'%'
+				</isNotNull>
+				<isNotNull property="isHot" prepend="and">
+					cnt.ishot = #isHot#
+				</isNotNull>
+				<isNotNull property="startTime" prepend="and">
+					 cnt.dtime >= #startTime#
+				</isNotNull>
+				<isNotNull property="endTime" prepend="and">
+					 <![CDATA[ cnt.dtime <= #endTime# ]]>
+				</isNotNull>
+			</dynamic>
+			order by cnt.dtime desc
+	</select>
+	
+	<!-- 获取动态标签总数 -->
+	<select id="getNewsTagCount" parameterClass="java.util.Map" resultClass="java.lang.Integer">
+		select count(cnt.tagid) as totalCount from conf_news_tag cnt
+			<dynamic prepend="where">
+				<isNotNull property="tagId" prepend="and">
+					cnt.tagid = #tagId#
+				</isNotNull>
+				<isNotNull property="tagName" prepend="and">
+					cnt.tagname like '%'||#tagName#||'%'
+				</isNotNull>
+				<isNotNull property="isHot" prepend="and">
+					cnt.ishot = #isHot#
+				</isNotNull>
+				<isNotNull property="startTime" prepend="and">
+					 cnt.dtime >= #startTime#
+				</isNotNull>
+				<isNotNull property="endTime" prepend="and">
+					 <![CDATA[ cnt.dtime <= #endTime# ]]>
+				</isNotNull>
+			</dynamic>
+	</select>
+	
+	<resultMap class="com.melot.kktv.model.NewsTagConf" id="simpleNewsTagList">
+		<result property="tagId" column="tagid"/>
+		<result property="tagName" column="tagname"/>
+	</resultMap>
+	<!-- 获取更多标签 -->
+	<select id="getMoreNewsTag" resultMap="simpleNewsTagList">
+	 	select cnt.tagid tagId, cnt.tagname as tagName from(
+       		select a.tag_id from (
+             	 select rnt.tag_id, count(rnt.newsid) as hot from res_news_tag rnt 
+             	 	group by rnt.tag_id  order by hot desc 
+              ) a where <![CDATA[ rownum < 51 ]]>
+       ) b join conf_news_tag cnt on cnt.tagid = b.tag_id
+	</select>
+	
+</sqlMap>

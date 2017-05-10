@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lotterArithmetic>
+	<awardRule id="lotteryAtweeklyCheckIn" startDate="20170103" endDate="20210217" prizePoolType="0" period="1000" userLotteryPerPeriod="0" userAwardPerPeriod="0" userOrPhone="0" needReceiveAward="2">
+		<awardPeriods>
+			<awardPeriod id="1" startTime="000000" endTime="235959" childPeriod="0"/>
+		</awardPeriods>
+		<awardGifts>
+			<awardGift id="100004" awardGiftName="SVIP(有效期3天)" num="489" type="2" value="3"/>
+			<awardGift id="100001" awardGiftName="VIP(有效期3天)" num="500" type="2" value="3"/>
+			<awardGift id="1427" awardGiftName="兰博(1天)" num="500" type="3" value="1"/>
+			<awardGift id="1390" awardGiftName="玛莎(3天)" num="500" type="3" value="3"/>
+			<awardGift id="5" awardGiftName="10W秀币" num="1" type="0" value="100000"/>
+			<awardGift id="6" awardGiftName="1W秀币" num="10" type="0" value="10000"/>
+			<awardGift id="7" awardGiftName="1000秀币" num="1000" type="0" value="1000"/>
+			<awardGift id="8" awardGiftName="200秀币" num="1500" type="0" value="200"/>
+			<awardGift id="9" awardGiftName="阳光*30" num="5500" type="0" value="30"/>
+		</awardGifts>
+		<awardGiftPeriodRates>
+			<awardGiftPeriodRate id="1_1" awardGiftId="100004" awardPeriodId="1" rate="1" cleanPoolFlag="1"/>
+			<awardGiftPeriodRate id="2_1" awardGiftId="100001" awardPeriodId="1" rate="1" cleanPoolFlag="1"/>
+			<awardGiftPeriodRate id="3_1" awardGiftId="1427" awardPeriodId="1" rate="1" cleanPoolFlag="1"/>
+			<awardGiftPeriodRate id="4_1" awardGiftId="1390" awardPeriodId="1" rate="1" cleanPoolFlag="1"/>
+			<awardGiftPeriodRate id="5_1" awardGiftId="5" awardPeriodId="1" rate="1" cleanPoolFlag="1"/>
+			<awardGiftPeriodRate id="6_1" awardGiftId="6" awardPeriodId="1" rate="1" cleanPoolFlag="1"/>
+			<awardGiftPeriodRate id="7_1" awardGiftId="7" awardPeriodId="1" rate="1" cleanPoolFlag="1"/>
+			<awardGiftPeriodRate id="8_1" awardGiftId="8" awardPeriodId="1" rate="1" cleanPoolFlag="1"/>
+			<awardGiftPeriodRate id="9_1" awardGiftId="9" awardPeriodId="1" rate="1" cleanPoolFlag="1"/>
+		</awardGiftPeriodRates>
+		<lotteryCaculateRule formula="1>0">
+		</lotteryCaculateRule>
+	</awardRule>
+</lotterArithmetic>

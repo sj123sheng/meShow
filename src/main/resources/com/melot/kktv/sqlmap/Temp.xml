@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Temp">
+
+	<!-- 获取用户 -->
+	<select id="getUserSendGiftAmount" parameterClass="java.util.Map" resultClass="java.lang.Long">
+		select nvl(sum(t.amount), 0) as totalAmount
+    	from gift_history t 
+    	where t.userid = #userId#
+    	and t.dtime >= #startTime#
+    	and <![CDATA[t.dtime < #endTime#]]>
+	</select>
+	
+	<parameterMap id="getUserMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer" jdbcType="INTEGER" />
+		<parameter property="phoneNum" mode="IN" javaType="java.lang.String" jdbcType="VARCHAR" />
+		<parameter property="chanelId" mode="IN" javaType="java.lang.Integer" jdbcType="INTEGER" />
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String" jdbcType="VARCHAR" />
+	</parameterMap>
+	
+	<!-- 检测是否为兑吧新注册用户-->
+	<procedure id="checkDuibaNewuser" parameterMap="getUserMap">
+		{call p_check_duiba_newuser(?,?,?,?)}
+	</procedure>
+	
+	<parameterMap id="newUserMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer" jdbcType="INTEGER" />
+		<parameter property="phoneNum" mode="IN" javaType="java.lang.String" jdbcType="VARCHAR" />
+		<parameter property="channelId" mode="OUT" javaType="java.lang.Integer" jdbcType="INTEGER" />
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String" jdbcType="VARCHAR" />
+	</parameterMap>
+	
+	<!-- 检测是否为第三方新注册用户-->
+	<procedure id="checkThirdChannelNewUser" parameterMap="newUserMap">
+		{call p_check_newuser(?,?,?,?)}
+	</procedure>
+	
+</sqlMap>

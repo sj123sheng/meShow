@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+    
+<sqlMap namespace="EffectiveActivities">
+	<resultMap class="com.melot.kktv.model.EffectiveActivity" id="effectiveActivitiesMap">
+		<result property="activityId" column="activityid"/>
+		<result property="title" column="title" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result property="message" column="message" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result property="genDate" column="gendate" javaType="java.util.Date" jdbcType="TIMESTAMP"/>
+		<result property="startDate" column="startdate" javaType="java.util.Date" jdbcType="TIMESTAMP"/>
+		<result property="endDate" column="enddate" javaType="java.util.Date" jdbcType="TIMESTAMP"/>
+		<result property="imgUrl" column="imgurl" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result property="activityMobileUrl" column="activitymobileurl" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result property="activityUrl" column="activityurl" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result property="topUrl" column="topurl" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result property="topMobileUrl" column="topmobileurl" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result property="topMobileUrlIOS" column="topmobileurlios" javaType="java.lang.String" jdbcType="VARCHAR"/>
+	</resultMap>
+	
+	<parameterMap id="getEffectActsParamMap" class="java.util.Map">
+		<parameter property="startDate" mode="IN" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+		<parameter property="start" mode="IN" javaType="java.lang.Integer" jdbcType="INTEGER" />
+		<parameter property="offset" mode="IN" javaType="java.lang.Integer" jdbcType="INTEGER" />
+
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String" jdbcType="VARCHAR" />
+		<parameter property="actTotal" mode="OUT" javaType="java.lang.Integer" jdbcType="INTEGER" />
+		<parameter property="actList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="effectiveActivitiesMap" />
+	</parameterMap>
+	
+	<procedure id="getEffectiveActivities" parameterMap="getEffectActsParamMap">
+		{call p_getEffActListMessage(?,?,?,?,?,?)}
+	</procedure>
+	
+</sqlMap>

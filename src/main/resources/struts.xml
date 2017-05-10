@@ -1,0 +1,24 @@
+<!DOCTYPE struts PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+        "http://struts.apache.org/dtds/struts-2.0.dtd">
+<struts>
+
+	<constant name="struts.multipart.maxSize" value="30720000" />
+
+	<package name="struts2" extends="struts-default">
+
+		<action name="uploadCrash" class="com.melot.kkcx.functions.CommonAction"
+			method="uploadCrash">
+			<interceptor-ref name="fileUpload"></interceptor-ref>
+			<interceptor-ref name="defaultStack"></interceptor-ref>
+		</action>
+		
+		<action name="entrance" class="com.melot.kktv.action.EntranceAction"/>
+
+		<action name="callback" class="com.melot.kktv.action.CallbackAction"/>
+		
+		<action name="timMsgCallback" class="com.melot.kkcx.action.TimMsgAction" method="timMsgCallback">
+		</action>
+		
+	</package>
+</struts>

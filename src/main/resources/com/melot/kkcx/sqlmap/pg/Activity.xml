@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Activity">
+	
+	<resultMap id="PaymentActivity" class="com.melot.kktv.payment.domain.ConfPaymentActivity">
+		<result property="activityId" column="activity_id" />
+		<result property="activityURL" column="activityurl" />
+		<result property="activityMobileURL" column="activitymobileurl" />
+		<result property="topURL" column="topurl" />
+		<result property="topMobileURL" column="topmobileurl" />
+		<result property="topMobileURLIOS" column="topmobileurlios" />
+		<result property="activityType" column="activity_type" />
+	</resultMap>
+	
+	<!-- 充值活动列表 -->
+	<select id="getConfActivityList" resultMap="PaymentActivity" parameterClass="java.lang.Integer">
+		select t.activity_id, t.activityurl, t.activitymobileurl, t.topurl, t.topmobileurl, t.topmobileurlios, t.activity_type
+		from conf_payment_activity t where t.useable = 1 and t.app_id = #appId#
+	</select>
+		
+</sqlMap>

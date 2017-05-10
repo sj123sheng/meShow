@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="UserGamble">
+	<typeAlias alias="userGamble" type="com.melot.kkgame.model.UserGamble"/>
+	<typeAlias alias="gambleResult" type="com.melot.kkgame.model.GambleResult"/>
+	<!-- 获得用户押注列表 -->
+	<select id="getUserGamble" parameterClass="java.util.Map" resultClass="userGamble">
+		select 
+		i_user_id userId,
+		o_hist_id histId,
+		o_option_id optionId,
+		o_option_title optionTitle,
+		o_gamble_id gambleId,
+		o_gamble_title gambleTitle,
+		o_amount amount,
+		o_bet_rate betRate,
+		o_win_amount winAmount,
+		o_create_time createTime,
+		o_update_time updateTime,
+		o_gamble_state gambleState,
+		o_room_id roomId
+ 		from kkgame.p_hist_user_gamble_getlist(#userId#,#startTime#,#endTime#,#limit#,#offset#)
+	</select>
+	
+	<!-- 用户押注计数-->
+	<select id="getUserGambleCount" parameterClass="java.util.Map" resultClass="java.lang.Integer">
+		select * from kkgame.p_hist_user_gamble_getlistcount(#userId#,#startTime#,#endTime#)
+	</select>
+		
+	<!-- 获得用户押注统计 -->
+	<select id="getGambleResult" parameterClass="java.util.Map" resultClass="gambleResult">
+		select 
+			i_user_id userId,
+			o_total_count totalCount,
+			o_win_count winCount,
+			o_total_win totalWin
+		from kkgame.p_hist_user_gamble_getwintimes(#userId#)
+	</select>
+	
+	<!-- 获得弹幕数量 -->
+	<select id="getBarrageCount" parameterClass="java.lang.Integer" resultClass="java.lang.Integer">
+				SELECT * FROM kkgame.p_hist_video_barrage_getbarragecount(#videoId#)
+	</select>
+</sqlMap>

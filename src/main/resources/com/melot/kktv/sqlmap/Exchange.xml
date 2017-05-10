@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Exchange">
+
+    <!-- 读取兑换配置信息 -->
+    <resultMap id="expMap" class="com.melot.kktv.domain.ExpConfInfo">
+        <result property="expId" column="exp_id" 
+            javaType="java.lang.Integer" jdbcType="Integer" />
+        <result property="expName" column="exp_name" 
+            javaType="java.lang.String" jdbcType="VARCHAR" />
+        <result property="expIn" column="exp_in" 
+            javaType="java.lang.String" jdbcType="VARCHAR" />
+        <result property="expOut" column="exp_out" 
+            javaType="java.lang.String" jdbcType="VARCHAR" />    
+        <result property="expireTime" column="expire_time" 
+            javaType="java.util.Date" jdbcType="Date" /> 
+        <result property="confTime" column="conf_time" 
+            javaType="java.util.Date" jdbcType="Date" />
+        <result property="limitTime" column="limit_Time" 
+            javaType="java.lang.Long" jdbcType="Number" />
+    </resultMap>
+    
+    <select id="getExpInfo" parameterClass="java.lang.Integer" resultMap="expMap">
+        select exp_id, exp_name, exp_in, exp_out, expire_time, conf_time, limit_time 
+        	 from conf_exchange_expression t where t.exp_id = #expId# 
+    </select>
+    
+    <!-- 插入兑换记录 -->
+    <insert id="insertHistExchange" parameterClass="java.util.Map">
+    	insert into hist_exchange values (seq_hist_exchange.nextval, #userId#, #expId#, sysdate)
+    </insert>
+    
+</sqlMap>

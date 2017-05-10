@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Resource">
+
+	<!--获取礼物信息列表 -->
+	<resultMap id="Gift" class="com.melot.kktv.model.Gift">
+		<result property="catalogId" column="catalogId" />
+		<result property="catalogName" column="catalogName" />
+		<result property="giftId" column="giftId" />
+		<result property="giftName" column="giftName" />
+		<result property="unit" column="unit" />
+		<result property="sendPrice" column="sendPrice" />
+		<result property="rsvPrice" column="rsvPrice" />
+	</resultMap>
+
+	<parameterMap id="giftListMap" class="java.util.Map">
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="giftList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="Gift" />
+	</parameterMap>
+
+	<procedure id="getGiftList" parameterMap="giftListMap">
+		{call
+		p_getGiftList(?,?)}
+	</procedure>
+
+	<!-- 获取热门礼物列表 -->
+	<resultMap id="Gift" class="com.melot.kktv.model.Gift">
+		<result property="catalogId" column="catalogId" />
+		<result property="catalogName" column="catalogName" />
+		<result property="giftId" column="giftId" />
+		<result property="giftName" column="giftName" />
+		<result property="unit" column="unit" />
+		<result property="sendPrice" column="sendPrice" />
+		<result property="rsvPrice" column="rsvPrice" />
+	</resultMap>
+	<parameterMap id="hotGiftListMap" class="java.util.Map">
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="giftList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="Gift" />
+	</parameterMap>
+
+	<procedure id="getHotGiftList" parameterMap="hotGiftListMap">
+		{call
+		p_getHotGiftList(?,?)}
+	</procedure>
+	
+	<!-- 获得某类别车型数-->
+	<select id ="getCountByCategory" parameterClass="java.lang.Integer" resultClass="java.lang.Integer">
+		select count(*) from car_info where category = #category#
+	</select>
+	
+	<!-- 获取车辆信息列表 -->
+	 <resultMap id="carMap" class="com.melot.kktv.domain.CarInfo">
+        <result property="id" column="carid" 
+            javaType="java.lang.Integer" jdbcType="Integer"/> 
+        <result property="name" column="name"
+        	javaType="java.lang.String" jdbcType="VARCHAR"/>
+        <result property="photo" column="photo" 
+        	javaType="java.lang.String" jdbcType="VARCHAR"/>
+        <result property="icon" column="icon"
+			javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result property="total" column="iflimit"
+			javaType="java.lang.Integer" jdbcType="Integer"/> 
+		<result property="remain" column="remain"
+		    javaType="java.lang.Integer" jdbcType="Integer"/> 
+    </resultMap>
+	<select id ="getCarList" parameterClass="java.util.Map" resultMap="carMap">
+		select carid,name,photo,icon,iflimit,iflimit-hassold as remain from 
+			(select ta.*,rownum as rn from 
+				(select carid,name,photo,icon,iflimit,hassold from car_info where category = #category# order by carid desc
+				) ta where <![CDATA[rownum<=#endIndex#]]>
+			) where rn > #startIndex#
+	</select>
+	
+	<!-- 获得车辆是否为限量和剩余数量信息-->
+	<resultMap id="limitMap" class="com.melot.kktv.domain.CarInfo">
+		<result property="total" column="iflimit"
+			javaType="java.lang.Integer" jdbcType="Integer"/> 
+		<result property="remain" column="remain"
+		    javaType="java.lang.Integer" jdbcType="Integer"/> 
+    </resultMap>
+	<select id ="getCarRemain" parameterClass="java.lang.Integer"  resultMap="limitMap">
+	    select iflimit,iflimit-hassold as remain from car_info where carid = #id#
+	</select>
+	
+	<!-- 获取用户送阳光中奖详细明细信息 -->
+	<resultMap class="java.util.HashMap" id="getSendSunshineInfoResultMap">
+		<result property="nickname" column="nickname" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result property="showmoney" column="showmoney" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+		<result property="giftname" column="giftname" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result property="unit" column="unit" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result property="gcnt" column="gcnt" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+		<result property="dtime" column="dtime" javaType="java.lang.String" jdbcType="VARCHAR"/>
+	</resultMap>
+	<select id="getSendSunshineInfo" parameterClass="java.lang.Integer" resultMap="getSendSunshineInfoResultMap">
+		<![CDATA[
+			SELECT b.nickname,
+			       a.showmoney,
+			       c.giftname,
+			       c.unit,
+			       a.gcnt,
+			       to_char(a.dtime, 'yyyy/mm/dd hh24:mi') dtime
+			  FROM (SELECT *
+			          FROM (SELECT t.userid, t.showmoney, t.giftid, t.gcnt, t.dtime
+			                  FROM hist_sunshine_showmoney_income t
+			                 WHERE t.showmoney + t.giftid > 0
+			                   AND t.dtime >= TRUNC(SYSDATE)
+			                 ORDER BY t.dtime DESC)
+			         WHERE ROWNUM <= #count#) a,
+			       user_info b,
+			       gift_info c
+			 WHERE a.userid = b.userid
+			   AND a.giftid = c.giftid(+)
+		]]>
+	</select>
+	
+	<select id="selectUserSendFamilyTicketCount" parameterClass="java.lang.Integer" resultClass="java.lang.Long">
+		SELECT nvl(SUM(t.giftcount),0) FROM gift_history t WHERE t.userid = #userId# AND t.giftid = 40000508 AND t.dtime >= trunc(SYSDATE)
+	</select>
+	
+	<!-- 日半价礼物用户\主播榜 -->
+	<resultMap class="java.util.HashMap" id="getDayHalfGiftRankMap">
+		<result property="giftId" column="giftid" javaType="java.lang.Double" jdbcType="NUMBER"/>
+		<result property="giftName" column="giftname" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result property="userId" column="userid" javaType="java.lang.Double" jdbcType="NUMBER"/>
+		<result property="giftCount" column="giftcount" javaType="java.lang.Double" jdbcType="NUMBER"/>
+	</resultMap>
+	<select id="getDayHalfUserGiftRank" parameterClass="java.util.Map" resultMap="getDayHalfGiftRankMap">
+		<![CDATA[
+		SELECT x.giftid, y.giftname, x.userid, x.giftcount
+		  FROM (SELECT giftid, userid, giftcount
+		          FROM (SELECT m.giftid,
+		                       m.userid,
+		                       m.giftcount,
+		                       row_number() over(PARTITION BY m.giftid ORDER BY m.giftcount DESC, m.userid) user_rank
+		                  FROM (SELECT t.giftid, t.userid, SUM(t.giftcount) giftcount
+		                          FROM gift_history t
+		                         WHERE t.dtime >= #startTime#
+		                           AND t.dtime < #endTime#
+		                           AND NOT EXISTS
+		                         (SELECT 1
+		                                  FROM hist_xman_consume b
+		                                 WHERE b.histid = t.histid
+		                                   AND b.cons_type = 1
+		                                   AND b.xman_type = 1
+		                                   AND b.dtime >= #startTime#
+		                                   AND b.dtime < #endTime#)
+		                           AND t.giftid IN ($giftIds$)
+		                         GROUP BY t.giftid, t.userid) m)
+		         WHERE user_rank = 1) x,
+		       gift_info y
+		 WHERE x.giftId = y.giftid
+		 ORDER BY x.giftid
+		 ]]>
+	</select>
+	
+	<select id="getDayHalfActorGiftRank" parameterClass="java.util.Map" resultMap="getDayHalfGiftRankMap">
+		<![CDATA[
+		SELECT x.giftid, y.giftname, x.userid, x.giftcount
+		  FROM (SELECT giftid, userid, giftcount
+		          FROM (SELECT m.giftid,
+		                       m.userid,
+		                       m.giftcount,
+		                       row_number() over(PARTITION BY m.giftid ORDER BY m.giftcount DESC, m.userid) user_rank
+		                  FROM (SELECT t.giftid,
+		                               t.touserid userid,
+		                               SUM(t.giftcount) giftcount
+		                          FROM gift_history t
+		                         WHERE t.dtime >= #startTime#
+		                           AND t.dtime < #endTime#
+		                           AND t.giftid IN ($giftIds$)
+		                         GROUP BY t.giftid, t.touserid) m)
+		         WHERE user_rank = 1) x,
+		       gift_info y
+		 WHERE x.giftId = y.giftid
+		 ORDER BY x.giftid
+		 ]]>
+	</select>
+</sqlMap>

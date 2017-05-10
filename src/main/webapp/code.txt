@@ -1,0 +1,1003 @@
+
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+通用部分
+*******************************************************************************************************************************
+1.成功
+TagCode : 00000000 : 表示成功.
+
+2.后台错误
+TagCode : 20001001 : 产生了消息处理函数未捕获的异常,记录到日志了.
+TagCode : 20001002 : 调用存储过程发生异常,记录到日志了.
+TagCode : 20001003 : 调用存储过程未的到正常结果,记录到日志了.
+
+3.前台错误
+TagCode : 30001000 : 请求参数中不包含parameter
+TagCode : 30001001 : 参数parameter值格式不对,不能转化成json对象
+TagCode : 30001002 : 参数parameter值格式不对,不包含FuncTag字段
+TagCode : 30001003 : 参数parameter值格式不对,FuncTag字段对应的值不能转化为整数类型
+TagCode : 30001004 : 参数parameter值格式不对,userId字段对应的值不能转化为整数类型
+TagCode : 30001005 : token验证失败
+TagCode : 30001006 : 参数parameter值格式不对,FuncTag字段对应的整数值类型后台尚未处理
+TagCode : 30001007 : 没有验证token(参数中不存在userId或token)
+
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+各个接口私有的错误
+*******************************************************************************************************************************
+1.1.验证用户名是否可用接口 parameter={"FuncTag":10001001,"username":"zuoanhuayuan"}
+TagCode : 01010001 : 参数parameter中username字段缺失
+TagCode : 01010002 : 参数parameter中username长度不合法
+
+TagCode : 01010103 : username已被注册
+
+
+1.2.注册接口parameter={"FuncTag":10001002,"username":"zzaoyi","psword":"zzaoyi","platform":1,"referrerId":100001,"channel":1001,"clientIp":"192.168.1.1","userId":1000010}
+TagCode : 01020001 : 参数parameter中username字段缺失
+TagCode : 01020002 : 参数parameter中psword字段缺失
+TagCode : 01020003 : 参数parameter中platform字段缺失
+TagCode : 01020004 : 参数parameter中platform字段不是有效整数
+TagCode : 01020005 : 参数parameter中username字段长度非法
+TagCode : 01020006 : 参数parameter中psword字段长度非法
+TagCode : 01020007 : 参数parameter中platform参数非法
+TagCode : 01020008 : 参数parameter中referrer字段不是有效整数
+TagCode : 01020009 : 参数parameter中channel字段缺失
+TagCode : 01020010 : 参数parameter中userId字段不是有效整数
+
+
+TagCode : 01020103 : 用户名已存在
+TagCode : 01020104 : userId已经被注册,或未预留.
+
+
+
+1.3.登陆接口parameter={"FuncTag":10001003,"username":"zzaoyi","psword":"zzaoyi","platform":"1"}
+TagCode : 01030001 : 参数parameter中username字段缺失
+TagCode : 01030002 : 参数parameter中psword字段缺失
+TagCode : 01030003 : 参数parameter中platform字段缺失
+TagCode : 01030004 : 参数parameter中platform字段不是有效整数
+
+
+TagCode : 01030102 : 用户名或密码错误
+
+1.4.修改昵称接口parameter={"FuncTag":10001004,"userId":"100184","token":"BF2001D712BBD621E040A8C005012D28","newNickname":"zaoyizhen"}
+TagCode : 01040001 : 参数parameter中userId字段缺失
+TagCode : 01040002 : 参数parameter中userId字段不是有效整数
+TagCode : 01040003 : 参数parameter中newNickname字段缺失
+
+TagCode : 01040102 : newNickname昵称已存在
+
+
+1.5.修改密码接口parameter={"FuncTag":10001005,"userId":"100184","token":"BF2001D712BBD621E040A8C005012D28","oldpwd":"zzaoyi","newpwd":"password"}
+TagCode : 01050001 : 参数parameter中userId字段缺失
+TagCode : 01050002 : 参数parameter中userId字段不是有效整数
+TagCode : 01050003 : 参数parameter中oldpwd字段缺失
+TagCode : 01050004 : 参数parameter中newpwd字段缺失
+
+TagCode : 01050102 : 旧密码错误
+
+1.6.第三方平台注册接口parameter={"FuncTag":10001006,"openPlatform":1,"uuid":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","platform":1,"nickname":"nickname","gender":1,"photo":"http://photo","referrerId":100001,"channel":1001,"clientIp":"192.168.1.1","userId":1086088}
+TagCode : 01060001 : 参数parameter中openPlatform字段缺失
+TagCode : 01060002 : 参数parameter中openPlatform字段不是有效整数
+TagCode : 01060003 : 参数parameter中uuid字段缺失
+TagCode : 01060004 : 参数parameter中platform字段缺失
+TagCode : 01060005 : 参数parameter中platform字段不是有效整数
+TagCode : 01060006 : 参数parameter中gender字段不是有效整数
+TagCode : 01060007 : 参数parameter中uuid长度不合法
+TagCode : 01060008 : 参数parameter中platform参数非法
+TagCode : 01060009 : 参数parameter中referrer字段不是有效整数
+TagCode : 01060010 : 参数parameter中channel字段缺失
+TagCode : 01060009 : 参数parameter中userId字段不是有效整数
+
+TagCode : 01060103 : uuid已存在
+TagCode : 01060104 : userId已经被注册,或未预留.
+
+1.7.第三方平台登陆接口parameter={"FuncTag":10001007,"uuid":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaae","openPlatform":"1","platform":"1"}
+TagCode : 01070001 : 参数parameter中username字段缺失
+TagCode : 01070002 : 参数parameter中psword字段缺失
+TagCode : 01070003 : 参数parameter中uuid字段缺失
+TagCode : 01070004 : 参数parameter中platform字段缺失
+TagCode : 01070005 : 参数parameter中platform字段不是有效整数
+
+TagCode : 01070102 : uuid长度非法
+TagCode : 01070103 : uuid未注册
+
+1.8.注册成功后初始化更新parameter={"FuncTag":10001008,"userId":"100001","token":"000000000","gender":"0","nickname":"nickname","followedIds":"100001,100002"}
+TagCode : 01080001 : 参数parameter中userId字段缺失
+TagCode : 01080002 : 参数parameter中userId字段不是有效整数
+TagCode : 01080003 : 参数parameter中gender字段缺失
+TagCode : 01080004 : 参数parameter中gender字段不是有效整数
+TagCode : 01080005 : 参数parameter中nickname字段缺失
+
+1.10.用userId和token登录parameter={"FuncTag":10001010,"userId":"100001","token":"dfsdfsdfdsfsdf","platform":"1"}
+TagCode : 01100001 : 参数parameter中userId字段缺失
+TagCode : 01100002 : 参数parameter中userId字段不是有效整数
+TagCode : 01100003 : 参数parameter中platform字段缺失
+TagCode : 01100004 : 参数parameter中platform字段不是有效整数
+
+TagCode : 01100102 : userId错误
+
+1.11 手机客户端安装后获取用户IDparameter={"FuncTag":10001011,"platform":2}
+
+1.12. 根据用户ID,获取用户来自的第三方平台 parameter={"FuncTag":10001012,"userId":1000011,"platform":1}
+TagCode : 01120001 : 参数parameter中userId字段缺失
+TagCode : 01120002 : 参数parameter中userId字段不是有效整数
+
+TagCode : 01120102 : 用户不存在
+
+2.1.获取大厅目录人数parameter={"FuncTag":10002001}
+2.2.获取房间列表 parameter={"FuncTag":10002002,"catalogId":"12","start":"0","offset":"10"}
+start大于0小于最大条数,否则返回空列表。offset为获取条数。
+TagCode : 02020001 : 参数parameter中catalogId字段缺失
+TagCode : 02020002 : 参数parameter中catalogId字段不是有效整数
+TagCode : 02020003 : 参数parameter中offset字段缺失
+TagCode : 02020004 : 参数parameter中offset字段不是有效整数
+TagCode : 02020005 : 参数parameter中start字段缺失
+TagCode : 02020006 : 参数parameter中start字段不是有效整数
+
+2.3.获取推荐房间列表 parameter={"FuncTag":10002003}
+
+2.4.获取排行榜接口parameter={"FuncTag":10002004,"rankType":"1","slotType":"1","count":"1"}
+TagCode : 02040001 : 参数parameter中rankType字段缺失
+TagCode : 02040002 : 参数parameter中rankType字段不是有效整数
+TagCode : 02040003 : 参数parameter中slotType字段缺失
+TagCode : 02040004 : 参数parameter中slotType字段不是有效整数
+TagCode : 02040005 : 参数parameter中count字段缺失
+TagCode : 02040006 : 参数parameter中count字段不是有效整数
+
+2.6.获取活动列表parameter={"FuncTag":10002006}
+
+2.7.获取公告列表parameter={"FuncTag":10002007}
+
+2.8.查找房间接口parameter={"FuncTag":10002008,"fuzzyString":"test"}
+TagCode : 02080001 : 参数parameter中fuzzyString字段缺失
+
+2.9.获取本周礼物之星列表parameter={"FuncTag":10002009}
+
+2.10.获取上周礼物之星列表parameter={"FuncTag":10002010}
+
+2.11. 从粉丝列表,关注列表中查找房间parameter={"FuncTag":10002011,"userId":"100001","type":"1","fuzzyString":"a"}
+type 0: 表示查找粉丝列表, 1 查找关注列表
+TagCode : 02110001 : 参数parameter中userId字段缺失
+TagCode : 02110002 : 参数parameter中userId字段不是有效整数
+TagCode : 02110003 : 参数parameter中type字段缺失
+TagCode : 02110004 : 参数parameter中type字段不是有效整数
+TagCode : 02110005 : 参数parameter中type值超出范围
+TagCode : 02110006 : 参数parameter中fuzzyString字段缺失
+
+2.12. 根据ID获取活动详细parameter={"FuncTag":10002012,"activityId":10000001}
+TagCode : 02120001 : 参数parameter中activityId字段缺失
+TagCode : 02120002 : 参数parameter中activityId字段不是有效整数
+
+2.13. 根据ID获取公告详细parameter={"FuncTag":10002013,"noticeId":10000001}
+TagCode : 02130001 : 参数parameter中noticeId字段缺失
+TagCode : 02130002 : 参数parameter中noticeId字段不是有效整数
+
+2.14.获取推荐房间列表parameter={"FuncTag":10002014}
+
+2.15.获取指定时间段单种礼物送出的排行parameter={"FuncTag":10002015,"giftId":10000014,"startTime":"1344413451000","endTime":"1344413451000","count":10}
+
+2.16.获取指定时间段单种礼物收到的排行parameter={"FuncTag":10002016,"giftId":10000014,"startTime":"1344413451000","endTime":"1344413451000","count":10}
+
+3.1.关注接口parameter={"FuncTag":10003001,"userId":"100001","token":"BF2001D712BCD621E040A8C005012D28","followedIds":"100002,100003,100004"}
+TagCode : 03010001 : 参数parameter中userId字段缺失
+TagCode : 03010002 : 参数parameter中userId字段不是有效整数
+TagCode : 03010003 : 参数parameter中followedIds字段缺失
+
+3.2.取消关注接口parameter={"FuncTag":10003002,"userId":"100001","token":"BF2001D712BCD621E040A8C005012D28","canceledId":"100002"}
+TagCode : 03020001 : 参数parameter中userId字段缺失
+TagCode : 03020002 : 参数parameter中userId字段不是有效整数
+TagCode : 03020003 : 参数parameter中canceledId字段缺失
+TagCode : 03020004 : 参数parameter中canceledId字段不是有效整数
+
+3.3.获取用户关注列表接口parameter={"FuncTag":10003003,"userId":"100001","pageIndex":"1"}
+TagCode : 03030001 : 参数parameter中userId字段缺失
+TagCode : 03030002 : 参数parameter中userId字段不是有效整数
+TagCode : 03030003 : 参数parameter中pageIndex字段缺失
+TagCode : 03030004 : 参数parameter中pageIndex字段不是有效整数
+
+3.4.获取用户粉丝列表接口parameter={"FuncTag":10003004,"userId":"100001","token":"BF2001D712BCD621E040A8C005012D28","pageIndex":"1"}
+如果用户是查看自己的粉丝列表,带上token,查看别人的粉丝列表,不需要token.
+TagCode : 03040001 : 参数parameter中userId字段缺失
+TagCode : 03040002 : 参数parameter中userId字段不是有效整数
+TagCode : 03040003 : 参数parameter中pageIndex字段缺失
+TagCode : 03040004 : 参数parameter中pageIndex字段不是有效整数
+
+3.9.授权管理接口parameter={"FuncTag":10003009,"userId":"100001","token":"BF2001D712BCD621E040A8C005012D28","grantedId":"100004"}
+TagCode : 03090001 : 参数parameter中userId字段缺失
+TagCode : 03090002 : 参数parameter中userId字段不是有效整数
+TagCode : 03090003 : 参数parameter中grantedId字段缺失
+TagCode : 03090004 : 参数parameter中grantedId字段不是有效整数
+
+
+3.10.收回管理权限接口parameter={"FuncTag":10003010,"userId":"100001","token":"BF2001D712BCD621E040A8C005012D28","revokedId":"100004"}
+TagCode : 03100001 : 参数parameter中userId字段缺失
+TagCode : 03100002 : 参数parameter中userId字段不是有效整数
+TagCode : 03100003 : 参数parameter中revokedId字段缺失
+TagCode : 03100004 : 参数parameter中revokedId字段不是有效整数
+
+
+3.11.获取用户房间的管理员列表接口parameter={"FuncTag":10003011,"userId":"100001"}
+TagCode : 03110001 : 参数parameter中userId字段缺失
+TagCode : 03110002 : 参数parameter中userId字段不是有效整数
+
+
+3.12.获取用户管理的房间的列表接口parameter={"FuncTag":10003012,"userId":"100001"}
+TagCode : 03120001 : 参数parameter中userId字段缺失
+TagCode : 03120002 : 参数parameter中userId字段不是有效整数
+
+
+3.13.获取用户粉丝排行榜接口parameter={"FuncTag":10003013,"userId":"100001","slotType":"1"}
+TagCode : 03130001 : 参数parameter中userId字段缺失
+TagCode : 03130002 : 参数parameter中userId字段不是有效整数
+TagCode : 03130003 : 参数parameter中slotType字段缺失
+TagCode : 03130004 : 参数parameter中slotType字段不是有效整数
+
+TagCode : 03130102 : slotType排行榜类型错误
+
+3.14.判断是否关注接口parameter={"FuncTag":10003014,"userId":"100001","followedId":"100001"}
+TagCode : 03140001 : 参数parameter中userId字段缺失
+TagCode : 03140002 : 参数parameter中userId字段不是有效整数
+TagCode : 03140003 : 参数parameter中followedId字段缺失
+TagCode : 03140004 : 参数parameter中followedId字段不是有效整数
+
+3.15. 获取用户未关注的主播列表parameter={"FuncTag":10003015,"userId":"100001""}
+TagCode : 03150001 : 参数parameter中userId字段缺失
+TagCode : 03150002 : 参数parameter中userId字段不是有效整数
+
+3.16. 举报用户接口parameter={"FuncTag":10003016,"userId":"1000010","token":"BF2001D712BCD621E040A8C005012D28","reportId":"1000011","roomId":"1000011","platform":1}
+TagCode : 03160001 : 参数parameter中userId字段缺失
+TagCode : 03160002 : 参数parameter中userId字段不是有效整数
+TagCode : 03160003 : 参数parameter中reportId字段缺失
+TagCode : 03160004 : 参数parameter中reportId字段不是有效整数
+TagCode : 03160005 : 参数parameter中roomId字段不是有效整数
+TagCode : 03160006 : 参数parameter中platform字段不是有效整数
+
+4.1.上传照片接口parameter={"FuncTag":10004001,"userId":"1000011","token":"CF724C2489B24FECE040A8C03701279E","pictureType":0,"posterIndex":0}
+pictureType:0.头像 2.照片3.资源图片4.背景图
+TagCode : 04010001 : 参数parameter中userId字段缺失
+TagCode : 04010002 : 参数parameter中userId字段不是有效整数
+TagCode : 04010003 : 参数parameter中pictureType字段缺失
+TagCode : 04010004 : 参数parameter中pictureType字段不是有效整数
+TagCode : 04010005 : 参数parameter中pictureType值超出范围
+TagCode : 04010006 : 参数parameter中x字段缺失
+TagCode : 04010007 : 参数parameter中x字段不是有效整数
+TagCode : 04010008 : 参数parameter中y字段缺失
+TagCode : 04010009 : 参数parameter中y字段不是有效整数
+TagCode : 04010010 : 参数parameter中width字段缺失
+TagCode : 04010011 : 参数parameter中width字段不是有效整数
+TagCode : 04010012 : 参数parameter中height字段缺失
+TagCode : 04010003 : 参数parameter中height字段不是有效整数
+
+TagCode : 04010014 : 获取图片上传所用的链接失败.
+
+4.2.删除照片接口parameter={"FuncTag":10004002,"userId":"1000011","token":"CF724C2489B24FECE040A8C03701279E","photoId":"100123"}
+TagCode : 04020001 : 参数parameter中userId字段缺失
+TagCode : 04020002 : 参数parameter中userId字段不是有效整数
+TagCode : 04020003 : 参数parameter中photoId字段缺失
+TagCode : 04020004 : 参数parameter中photoId字段不是有效整数
+
+TagCode : 04020103 : 该照片不属于用户,没有权限删除
+TagCode : 04020104 : 该照片存在
+
+4.3.获取用户照片列表接口parameter={"FuncTag":10004003,"userId":"100002","pageIndex":"1"}
+TagCode : 04030001 : 参数parameter中userId字段缺失
+TagCode : 04030002 : 参数parameter中userId字段不是有效整数
+TagCode : 04030003 : 参数parameter中pageIndex字段缺失
+TagCode : 04030004 : 参数parameter中pageIndex字段不是有效整数
+
+4.4.评论照片接口parameter={"FuncTag":10004004,"userId":"1000011","token":"CF724C2489B24FECE040A8C03701279E","photoId":"100124","content":"content"}
+TagCode : 04040001 : 参数parameter中userId字段缺失
+TagCode : 04040002 : 参数parameter中userId字段不是有效整数
+TagCode : 04040003 : 参数parameter中photoId字段缺失
+TagCode : 04040004 : 参数parameter中photoId字段不是有效整数
+TagCode : 04040005 : 参数parameter中content字段缺失
+
+TagCode : 04040103 : 照片不存在
+
+4.5.删除照片评论接口parameter={"FuncTag":10004005,"userId":"1000011","token":"CF724C2489B24FECE040A8C03701279E","photoCommentId":"100181"}
+TagCode : 04050001 : 参数parameter中userId字段缺失
+TagCode : 04050002 : 参数parameter中userId字段不是有效整数
+TagCode : 04050003 : 参数parameter中photoCommentId字段缺失
+TagCode : 04050004 : 参数parameter中photoCommentId字段不是有效整数
+
+TagCode : 04050103 : 评论不存在
+TagCode : 04050104 : 用户不是照片所有者,没有权限删除
+
+4.6.获取照片详情接口parameter={"FuncTag":10004006,"photoId":"100124"}
+TagCode : 04060001 : 参数parameter中photoId字段缺失
+TagCode : 04060002 : 参数parameter中photoId字段不是有效整数
+
+TagCode : 04060103 : 照片不存在
+
+4.8.将照片设置为海报接口parameter={"FuncTag":10004008,"userId":"1000011","token":"CF724C2489B24FECE040A8C03701279E","photoId":"100181"}
+TagCode : 04080001 : 参数parameter中userId字段缺失
+TagCode : 04080002 : 参数parameter中userId字段不是有效整数
+TagCode : 04080003 : 参数parameter中photoId字段缺失
+TagCode : 04080004 : 参数parameter中photoId字段不是有效整数
+
+TagCode : 04080103 : 该照片不属于用户
+TagCode : 04080104 : 该照片存在
+
+4.10.设置系统主题为背景接口parameter={"FuncTag":10004010,"userId":"1000011","token":"CF724C2489B24FECE040A8C03701279E","themeId":0}
+TagCode : 04100001 : 参数parameter中userId字段缺失
+TagCode : 04100002 : 参数parameter中userId字段不是有效整数
+TagCode : 04100003 : 参数parameter中themeId字段缺失
+TagCode : 04100004 : 参数parameter中themeId字段不是有效整数
+
+4.11.设置背景属性parameter={"FuncTag":10004011,"userId":"1000011","token":"CF724C2489B24FECE040A8C03701279E","showType":0,"scrollType":0}
+TagCode : 04110001 : 参数parameter中userId字段缺失
+TagCode : 04110002 : 参数parameter中userId字段不是有效整数
+TagCode : 04110003 : 参数parameter中showType字段缺失
+TagCode : 04110004 : 参数parameter中showType字段不是有效整数
+TagCode : 04110005 : 参数parameter中showType不在合法范围内
+TagCode : 04110006 : 参数parameter中scrollType字段缺失
+TagCode : 04110007 : 参数parameter中scrollType字段不是有效整数
+TagCode : 04110008 : 参数parameter中scrollType不在合法范围内
+
+5.1.获取用户信息接口parameter={"FuncTag":10005001,"userId":"1000011","token":"BF2001D712C5D621E040A8C005012D28"}
+TagCode : 05010001 : 参数parameter中userId字段缺失
+TagCode : 05010002 : 参数parameter中userId字段不是有效整数
+
+TagCode : 05010102 : userId错误
+
+5.2.更新用户信息接口parameter={"FuncTag":10005002,"userId":"1000011","token":"BF2001D712C5D621E040A8C005012D28","nickname":"nickname","introduce":"introduce","gender":"1","birthday":"0","bloodType":"1","bodyType":"1","city":"1"}
+TagCode : 05020001 : 参数parameter中userId字段缺失
+TagCode : 05020002 : 参数parameter中userId字段不是有效整数
+TagCode : 05020003 : 参数parameter中gender字段不是有效整数
+TagCode : 05020005 : 参数parameter中bloodType字段不是有效整数
+TagCode : 05020006 : 参数parameter中bodyType字段不是有效整数
+TagCode : 05020007 : 参数parameter中city字段不是有效整数
+
+
+5.3.获取用户荣誉列表接口parameter={"FuncTag":10005003,"userId":"1000011"}
+TagCode : 05030001 : 参数parameter中userId字段缺失
+TagCode : 05030002 : 参数parameter中userId字段不是有效整数
+
+
+5.4.增加充值记录接口
+TagCode : 05040001 : 参数parameter中userId字段缺失
+TagCode : 05040002 : 参数parameter中userId字段不是有效整数
+TagCode : 05040003 : 参数parameter中orderId字段缺失
+TagCode : 05040004 : 参数parameter中amount字段缺失
+TagCode : 05040005 : 参数parameter中amount字段不是有效DOUBLE类型
+TagCode : 05040006 : 参数parameter中paymentMode字段缺失
+TagCode : 05040007 : 参数parameter中paymentMode字段不是有效整数
+TagCode : 05040008 : 参数parameter中referrer字段不是有效整数
+
+TagCode : 05040102 : 记录已存在
+
+5.5.获取用户充值记录列表parameter={"FuncTag":10005005,"userId":"100184","token":"BF2001D712C5D621E040A8C005012D28","startTime":"1344413451000","endTime":"1344413451000"}
+TagCode : 05050001 : 参数parameter中userId字段缺失
+TagCode : 05050002 : 参数parameter中userId字段不是有效整数
+TagCode : 05050003 : 参数parameter中startTime字段缺失
+TagCode : 05050004 : 参数parameter中startTime字段不是有效整数
+TagCode : 05050005 : 参数parameter中endTime字段缺失
+TagCode : 05050006 : 参数parameter中endTime字段不是有效整数
+
+
+5.6.获取用户消费记录列表parameter={"FuncTag":10005006,"userId":"100184","token":"BF2001D712C5D621E040A8C005012D28","startTime":"1344413451000","endTime":"1344413451000","pageIndex":1}
+TagCode : 05060001 : 参数parameter中userId字段缺失
+TagCode : 05060002 : 参数parameter中userId字段不是有效整数
+TagCode : 05060003 : 参数parameter中startTime字段缺失
+TagCode : 05060004 : 参数parameter中startTime字段不是有效整数
+TagCode : 05060005 : 参数parameter中endTime字段缺失
+TagCode : 05060006 : 参数parameter中endTime字段不是有效整数
+TagCode : 05060007 : 参数parameter中pageIndex字段缺失
+TagCode : 05060008 : 参数parameter中pageIndex字段不是有效整数
+
+
+5.7.获取用户充值记录列表parameter={"FuncTag":10005007,"userId":"100184","token":"BF2001D712C5D621E040A8C005012D28","startTime":"1344413451000","endTime":"1344413451000","pageIndex":1}
+TagCode : 05070001 : 参数parameter中userId字段缺失
+TagCode : 05070002 : 参数parameter中userId字段不是有效整数
+TagCode : 05070003 : 参数parameter中startTime字段缺失
+TagCode : 05070004 : 参数parameter中startTime字段不是有效整数
+TagCode : 05070005 : 参数parameter中endTime字段缺失
+TagCode : 05070006 : 参数parameter中endTime字段不是有效整数
+TagCode : 05070007 : 参数parameter中pageIndex字段缺失
+TagCode : 05070008 : 参数parameter中pageIndex字段不是有效整数
+
+
+5.8.根据orderId查找充值记录parameter={"FuncTag":10005008,"userId":"100184","token":"BF2001D712C5D621E040A8C005012D28","orderId":"aaaaaa"}
+TagCode : 05080001 : 参数parameter中userId字段缺失
+TagCode : 05080002 : 参数parameter中userId字段不是有效整数
+TagCode : 05080003 : 参数parameter中orderId字段缺失
+
+5.9.获取用户道具列表parameter={"FuncTag":10005009,"userId":"100184"}
+TagCode : 05090001 : 参数parameter中userId字段缺失
+TagCode : 05090002 : 参数parameter中userId字段不是有效整数
+
+5.10.购买道具parameter={"FuncTag":10005010,"userId":"100184","token":"BF2001D712C5D621E040A8C005012D28","propId":100001,"periodOfValidity":1,"referrerId":100001}
+TagCode : 05100001 : 参数parameter中userId字段缺失
+TagCode : 05100002 : 参数parameter中userId字段不是有效整数
+TagCode : 05100003 : 参数parameter中propId字段缺失
+TagCode : 05100004 : 参数parameter中propId字段不是有效整数
+TagCode : 05100005 : 参数parameter中periodOfValidity字段缺失
+TagCode : 05100006 : 参数parameter中periodOfValidity字段不是有效整数
+TagCode : 05100007 : 参数parameter中referrer字段不是有效整数
+
+TagCode : 05100104 : 购买的道具不存在或道具期限不在预设范围内.
+TagCode : 05100105 : 用户已经是该道具的终身用户,无需继续购买,请选择商城其他道具
+TagCode : 05100106 : 余额不足
+
+5.11.商城车市获取车辆列表parameter={"FuncTag":10005011,"pageIndex":1,"numPerPage":16,"orderBy":0,"sortMode":"asc","category":0}
+TagCode : 05110001 : 参数parameter中pageIndex字段无效或格式错误
+TagCode : 05110002 : 参数parameter中numPerPage字段无效或格式错误
+TagCode : 05110003 : 参数parameter中sortMode字段无效,请传入有效的排序方式 asc/desc
+TagCode : 05110004 : 参数parameter中orderBy字段无效
+
+5.12.购买车辆parameter={"FuncTag":10005012,"userId":"100004","token":"BF2001D712C5D621E040A8C005012D28","carId":1,"validity":12,"accessMode":1,"giveTo":"","referrerId":100001}
+TagCode : 05120001 : 参数parameter中userId字段缺失
+TagCode : 05120002 : 参数parameter中userId字段不是有效整数
+TagCode : 05120003 : 参数parameter中carId字段缺失
+TagCode : 05120004 : 参数parameter中carId字段不是有效整数
+TagCode : 05120005 : 参数parameter中validity字段缺失
+TagCode : 05120006 : 参数parameter中validity字段不是有效整数
+TagCode : 05120007 : 参数parameter中accessMode字段不是有效整数
+TagCode : 05120008 : 参数parameter中accessMode字段不在有效范围内 允许是1-为自己购买 2-为他人购买
+TagCode : 05120009 : 参数parameter中giveTo字段缺失
+TagCode : 05120010 : 参数parameter中giveTo字段不是有效整数
+TagCode : 05120011 : 参数parameter中referrer字段不是有效整数
+
+TagCode : 05120101 : 余额不足
+TagCode : 05120102 : 该车是限量版，已售完
+TagCode : 05120103 : 该车不存在
+
+5.13.获取用户所拥有的车辆列表parameter={"FuncTag":10005013,"userId":"100004","platform":1}
+TagCode : 05130001 : 参数parameter中userId字段缺失
+TagCode : 05130002 : 参数parameter中userId字段不是有效整数
+
+5.14.获取指定停车位的具体信息
+TagCode : 05140001 : 参数parameter中的roomId字段缺失
+TagCode : 05140002 : 参数parameter中的roomId字段不是有效整数
+TagCode : 05140003 : 参数parameter中的position字段缺失
+TagCode : 05140004 : 参数parameter中的position字段不是有效整数
+TagCode : 05140005 : 参数parameter中的position字段超出有效范围
+
+5.15.确认订单
+TagCode : 05110001 : 参数parameter中userId字段缺失
+TagCode : 05110002 : 参数parameter中userId字段不是有效整数
+TagCode : 05110003 : 参数parameter中orderId字段缺失
+
+TagCode : 05110102 : orderId不存在
+
+5.16.获取用户直播历史记录parameter={"FuncTag":10005016,"userId":"100184","startTime":"1344413451000","endTime":"1344413451000","pageIndex":1}
+TagCode : 05160001 : 参数parameter中userId字段缺失
+TagCode : 05160002 : 参数parameter中userId字段不是有效整数
+TagCode : 05160003 : 参数parameter中startTime字段缺失
+TagCode : 05160004 : 参数parameter中startTime字段不是有效整数
+TagCode : 05160005 : 参数parameter中endTime字段缺失
+TagCode : 05160006 : 参数parameter中endTime字段不是有效整数
+TagCode : 05160007 : 参数parameter中pageIndex字段缺失
+TagCode : 05160008 : 参数parameter中pageIndex字段不是有效整数
+
+5.17.移动端神州付充值parameter={"FuncTag":10005017, "userId":"100006","token":"C87737ECCDAEF702E040A8C005014231", "payMoney":"1","orderId":"20120831-191180-55553335452315","cardValue":"30","cardCode":"11795110112432277","cardPwd":"111296737577685850","cardType":"0"}
+TagCode : 05170001 : 参数parameter中userId字段缺失
+TagCode : 05170002 : 参数parameter中userId字段不是有效整数
+TagCode : 05170003 : 参数parameter中payMoney字段缺失
+TagCode : 05170004 : 参数parameter中payMoney字段不是有效整数
+TagCode : 05170005 : 参数parameter中orderId字段缺失
+TagCode : 05170006 : 参数parameter中cardValue字段缺失
+TagCode : 05170007 : 参数parameter中cardValue字段不是有效整数
+TagCode : 05170008 : 参数parameter中cardCode字段缺失
+TagCode : 05170009 : 参数parameter中cardPwd字段缺失
+TagCode : 05170010 : 参数parameter中cardType字段缺失
+TagCode : 05170011 : 参数parameter中cardType字段不是有效整数
+TagCode : 05170012 : 参数parameter中referrerId字段不是有效整数
+
+TagCode : 05170101 : 添加订单失败
+TagCode : 05170102 : 等待反馈时查询订单失败
+TagCode : 05170103 : 等待反馈时发现无此订单
+TagCode : 05170104 : 等待反馈超时
+TagCode : 05170105 : 神州付支付失败 (返回errcode)
+TagCode : 05170106 : 发送到神州付平台的数据错误 (返回errcode)
+TagCode : 05170107 : 向神州付发送支付请求失败
+TagCode : 05170108 : 向神州付平台发送支付请求时发生异常,详细见日志
+errcode ：
+9001 移动端神州支付服务器等待超时
+9002 未连接到神州付服务器
+9003 未知错误
+
+5.19.获取用户道具+车辆等列表parameter={"FuncTag":10005019,"userId":"100004","platform":1}
+
+5.20.获取新用户任务信息parameter={"FuncTag":10005020,"userId":"100004","platform":1}
+TagCode : 05200001 : 参数parameter中userId字段不是有效整数
+TagCode : 05200002 : 参数parameter中platform字段不是有效整数
+
+5.21.完成任务接口parameter={"FuncTag":10005021,"userId":"100004","token":"BF2001D712C5D621E040A8C005012D28","taskId":"10000001","platform":1}
+TagCode : 05210001 : 参数parameter中userId字段缺失
+TagCode : 05210002 : 参数parameter中userId字段不是有效整数
+TagCode : 05210003 : 参数parameter中taskId字段缺失
+TagCode : 05210004 : 参数parameter中taskId字段不是有效整数
+TagCode : 05210005 : 参数parameter中platform字段不是有效整数
+
+TagCode : 05210102 : 该用户任务不存在
+TagCode : 05210103 : 该用户任务已完成
+
+5.22.领取任务奖励接口parameter={"FuncTag":10005022,"userId":"100004","token":"BF2001D712C5D621E040A8C005012D28","taskId":"10000001","platform":1}
+TagCode : 05220001 : 参数parameter中userId字段缺失
+TagCode : 05220002 : 参数parameter中userId字段不是有效整数
+TagCode : 05220003 : 参数parameter中taskId字段缺失
+TagCode : 05220004 : 参数parameter中taskId字段不是有效整数
+TagCode : 05220005 : 参数parameter中platform字段不是有效整数
+
+TagCode : 05220102 : 该用户任务不存在
+TagCode : 05220103 : 该用户任务未完成
+TagCode : 05220104 : 该用户任务奖励已领取
+
+5.23.增加充值记录接口parameter={"FuncTag":10005023,"userId":"100184","token":"BF2001D712C5D621E040A8C005012D28","orderId":"dfdsffgf","amount":"1.1","paymentMode":"5","iphoneChargeId":"aaa","referrerId":100001,"platform":3}
+TagCode : 05230001 : 参数parameter中userId字段缺失
+TagCode : 05230002 : 参数parameter中userId字段不是有效整数
+TagCode : 05230003 : 参数parameter中orderId字段缺失
+TagCode : 05230004 : 参数parameter中amount字段缺失
+TagCode : 05230005 : 参数parameter中amount字段不是有效DOUBLE类型
+TagCode : 05230006 : 参数parameter中paymentMode字段缺失
+TagCode : 05230007 : 参数parameter中paymentMode字段不是有效整数
+TagCode : 05230008 : 参数parameter中referrer字段不是有效整数
+TagCode : 05230009 : 参数parameter中iphoneChargeId字段缺失
+
+TagCode : 05230102 : 记录已存在
+
+5.24.获取用户中奖记录列表parameter={"FuncTag":10005024,"userId":"1000122","startTime":"1344413451000","endTime":"1344413451000","pageIndex":1,"countPerPage":10,"platform":1}
+TagCode : 05240001 : 参数parameter中userId字段缺失
+TagCode : 05240002 : 参数parameter中userId字段不是有效整数
+TagCode : 05240003 : 参数parameter中startTime字段缺失
+TagCode : 05240004 : 参数parameter中startTime字段不是有效整数
+TagCode : 05240005 : 参数parameter中endTime字段缺失
+TagCode : 05240006 : 参数parameter中endTime字段不是有效整数
+TagCode : 05240007 : 参数parameter中pageIndex字段缺失
+TagCode : 05240008 : 参数parameter中pageIndex字段不是有效整数
+TagCode : 05240009 : 参数parameter中countPerPage字段缺失
+TagCode : 05240010 : 参数parameter中countPerPage字段不是有效整数
+
+TagCode : 05240102 : 分页超出范围
+
+
+5.25.获取用户本周上榜礼物列表parameter={"FuncTag":10005025,"userId":"1000122","platform":1}
+TagCode : 05250001 : 参数parameter中userId字段缺失
+TagCode : 05250002 : 参数parameter中userId字段不是有效整数
+
+5.26.获取用户本周上榜礼物详情(数量,比上一排名还差多少)parameter={"FuncTag":10005025,"userId":"1000122","giftId":"1000122","platform":1}
+TagCode : 05260001 : 参数parameter中userId字段缺失
+TagCode : 05260002 : 参数parameter中userId字段不是有效整数
+TagCode : 05260003 : 参数parameter中giftId字段缺失
+TagCode : 05260004 : 参数parameter中giftId字段不是有效整数
+TagCode : 05260005 : 该用户未上改礼物的榜单
+
+
+5.40.增加快币充值记录接口parameter={"FuncTag":10005040,"userId":"1000011","orderId":10000,"paymentMode":6,"referrerId":41021,"platform":1}
+TagCode : 05400001 : 参数parameter中userId字段缺失
+TagCode : 05400002 : 参数parameter中userId字段不是有效整数
+TagCode : 05400003 : 参数parameter中orderId字段缺失
+TagCode : 05400004 : 参数parameter中paymentMode字段缺失
+TagCode : 05400005 : 参数parameter中paymentMode字段不是有效整数
+TagCode : 05400006 : 参数parameter中referrer字段不是有效整数
+
+TagCode : 05400102 : orderId已存在
+
+5.41.确认快币充值记录接口parameter={"FuncTag":10005041,"userId":"1000011","orderId":10000,"amount":50.0,"platform":1}
+TagCode : 05410001 : 参数parameter中userId字段缺失
+TagCode : 05410002 : 参数parameter中userId字段不是有效整数
+TagCode : 05410003 : 参数parameter中orderId字段缺失
+TagCode : 05410004 : 参数parameter中amount字段缺失
+TagCode : 05410005 : 参数parameter中amount字段不是有效整数
+
+TagCode : 05410102 : orderId不存在
+
+6.1.获取用户收到的礼物列表接口parameter={"FuncTag":10006001,"userId":"1000011","startTime":"1344413451000","endTime":"1344413451000","pageIndex":"1"}
+TagCode : 06010001 : 参数parameter中userId字段缺失
+TagCode : 06010002 : 参数parameter中userId字段不是有效整数
+TagCode : 06010003 : 参数parameter中startTime字段缺失
+TagCode : 06010004 : 参数parameter中startTime字段不是有效整数
+TagCode : 06010005 : 参数parameter中endTime字段缺失
+TagCode : 06010006 : 参数parameter中endTime字段不是有效整数
+TagCode : 06010007 : 参数parameter中pageIndex字段缺失
+TagCode : 06010008 : 参数parameter中pageIndex字段不是有效整数
+
+6.2.发布动态接口parameter={"FuncTag":10006002,"userId":"1000011","token":"BF2001D712C7D621E040A8C005012D28","type":"0","content":"content","resourceUrl":"String","resourceId":"1"}
+TagCode : 06020001 : 参数parameter中userId字段缺失
+TagCode : 06020002 : 参数parameter中userId字段不是有效整数
+TagCode : 06020003 : 参数parameter中type字段缺失
+TagCode : 06020004 : 参数parameter中type字段不是有效整数
+TagCode : 06020005 : 参数parameter中content字段缺失
+TagCode : 06020006 : 参数parameter中resourceId字段不是有效整数
+
+
+6.3.删除动态接口parameter={"FuncTag":10006003,"userId":"1000011","token":"BF2001D712C7D621E040A8C005012D28","newsId":"100183"}
+TagCode : 06030001 : 参数parameter中userId字段缺失
+TagCode : 06030002 : 参数parameter中userId字段不是有效整数\
+TagCode : 06030003 : 参数parameter中newsId字段缺失
+TagCode : 06030004 : 参数parameter中newsId字段不是有效整数
+
+TagCode : 06030103 : 动态不存在
+TagCode : 06030104 : 动态不存在,没有权限删除
+
+
+6.4.获取用户动态列表接口parameter={"FuncTag":10006004,"userId":"1000011","pageIndex":"1"}
+TagCode : 06040001 : 参数parameter中userId字段缺失
+TagCode : 06040002 : 参数parameter中userId字段不是有效整数
+TagCode : 06040003 : 参数parameter中pageIndex字段缺失
+TagCode : 06040004 : 参数parameter中pageIndex字段不是有效整数
+
+TagCode : 06040102 : 参数parameter中pageIndex超出范围
+
+
+6.5.评论动态接口parameter={"FuncTag":10006005,"userId":"1000011","token":"BF2001D712C7D621E040A8C005012D28","newsId":"100088","content":"content1"}
+TagCode : 06050001 : 参数parameter中userId字段缺失
+TagCode : 06050002 : 参数parameter中userId字段不是有效整数\
+TagCode : 06050003 : 参数parameter中newsId字段缺失
+TagCode : 06050004 : 参数parameter中newsId字段不是有效整数
+TagCode : 06050005 : 参数parameter中content字段缺失
+
+
+6.6.删除评论接口parameter={"FuncTag":10006006,"userId":"1000011","token":"BF2001D712C7D621E040A8C005012D28","commentId":"100184"}
+TagCode : 06060001 : 参数parameter中userId字段缺失
+TagCode : 06060002 : 参数parameter中userId字段不是有效整数\
+TagCode : 06060003 : 参数parameter中commentId字段缺失
+TagCode : 06060004 : 参数parameter中commentId字段不是有效整数
+
+TagCode : 06060103 : 评论不存在
+TagCode : 06060104 : 评论的动态不存在
+TagCode : 06060105 : 评论的动态不属于该用户,没有权限删除
+
+
+6.7.获取动态的评论列表接口parameter={"FuncTag":10006007,"newsId":"100088"}
+TagCode : 06070001 : 参数parameter中newsId字段缺失
+TagCode : 06070002 : 参数parameter中newsId字段不是有效整数
+
+
+6.8.新评论提醒列表接口parameter={"FuncTag":10006008,"userId":"1000011","token":"BF2001D712C7D621E040A8C005012D28"}
+TagCode : 06080001 : 参数parameter中userId字段缺失
+TagCode : 06080002 : 参数parameter中userId字段不是有效整数
+
+6.9. 新评论的动态列表parameter={"FuncTag":10006009,"userId":"1000011","token":"BF2001D712C7D621E040A8C005012D28","pageIndex":"1"}
+TagCode : 06090001 : 参数parameter中userId字段缺失
+TagCode : 06090002 : 参数parameter中userId字段不是有效整数
+TagCode : 06090003 : 参数parameter中pageIndex字段缺失
+TagCode : 06090004 : 参数parameter中pageIndex字段不是有效整数
+
+6.10. 系统消息列表parameter={"FuncTag":10006010,"userId":"1000011","token":"BF2001D712C7D621E040A8C005012D28"}
+TagCode : 06100001 : 参数parameter中userId字段缺失
+TagCode : 06100002 : 参数parameter中userId字段不是有效整数
+
+6.11.清除系统消息接口parameter={"FuncTag":10006011,"userId":"1000011","token":"BF2001D712C7D621E040A8C005012D28","msgId":"100001"}
+TagCode : 06110001 : 参数parameter中userId字段缺失
+TagCode : 06110002 : 参数parameter中userId字段不是有效整数
+TagCode : 06110003 : 参数parameter中msgId字段缺失
+TagCode : 06110004 : 参数parameter中msgId字段不是有效整数
+
+TagCode : 06110103 : 该系统消息不属于用户,没有权限删除
+TagCode : 06110104 : 该系统消息不存在
+
+
+7.1.手机用户反馈接口parameter={"FuncTag":10007001,"userId":"100001","token":"BF2001D712C6D621E040A8C005012D28","content":"content"}
+TagCode : 07010001 : 参数parameter中userId字段缺失
+TagCode : 07010002 : 参数parameter中userId字段不是有效整数
+TagCode : 07010003 : 参数parameter中content字段缺失
+
+7.2.版本检测parameter={"FuncTag":10007002,versionCode:1,versionName:"bate1",sdkVersion:1,platform:2}
+TagCode : 07020001 : 参数parameter中versionCode字段缺失
+TagCode : 07020002 : 参数parameter中versionCode不是数字
+TagCode : 07020003 : 参数parameter中sdkVersion字段缺失
+TagCode : 07020004 : 参数parameter中sdkVersion不是数字
+TagCode : 07020005 : 参数parameter中platForm字段缺失
+TagCode : 07020006 : 参数parameter中platForm不是数字
+
+7.3.上传设备信息和安装渠道信息
+参数值:parameter={"FuncTag":10007003,"userId":"100076","token":"C07269A6C4821ED9E040A8C005012A5E","platform":2,"imei":"358537041306050","model":"GT-I9100","screenWidth":"480","screenHeight":"800","ipVersion":1,"ipSource":100,"release":"4.0.3"}
+正确返回值:{"TagCode":"00000000"}
+异常返回值:
+TagCode : 07030001 : 参数parameter中userId字段缺失
+TagCode : 07030002 : 参数parameter中imei字段缺失
+TagCode : 07030003 : 参数parameter中model字段缺失
+TagCode : 07030004 : 参数parameter中screenWidth字段缺失
+TagCode : 07030005 : 参数parameter中screenHeight字段缺失
+TagCode : 07030006 : 参数parameter中osType字段缺失
+TagCode : 07030007 : 参数parameter中osRelease字段缺失
+TagCode : 07030008 : 参数parameter中ipVersion字段缺失
+TagCode : 07030009 : 参数parameter中ipChannel字段缺失
+
+
+7.4parameter={"FuncTag":10007004,"userId":"100076","platform":2,"crashInfo":"aaaaaaaaaaaaa"}
+
+7.5.查询递交版本不需要传入version参数. 设置新的递交版本加入该字段, 取消递交版本,可将该版本设置为更高的版本即可. parameter={"FuncTag":10007005,"version":"1.0.0"}
+
+9.1.获取道具列表parameter={"FuncTag":10009001}
+
+9.2.获取礼物列表parameter={"FuncTag":10009002}
+
+9.3.获取热门礼物列表parameter={"FuncTag":10009010}
+
+
+回调接口
+20001002 调用存储过程发生异常.
+20001003 调用存储过程未得到正常结果
+30001000 缺少参数parameter
+30001001 参数parameter值格式不对,不能转化成json对象 
+40001001 解析回调参数时发生异常
+
+3.17.订阅房间开播推送消息
+参数值:parameter={"FuncTag":10003017,"userId":"1000022","roomId":1000122,"token":"C07269A6C4821ED9E040A8C005012A5E"}
+正确返回值:{"TagCode":"00000000"}
+异常返回值:
+TagCode(03170001):json数据中userId字段缺少
+TagCode(03170002):解析json数据中userId字段失败
+TagCode(03170003):json数据中roomId字段缺少
+TagCode(03170004):解析json数据中roomId字段失败
+TagCode(03170102):用户不存在
+TagCode(03170103):房间不存在
+TagCode(03170104):用户已订阅该房间开播消息推送
+
+3.18.取消订阅房间开播推送消息
+参数值:parameter={"FuncTag":10003018,"userId":"1000022","roomId":1000122,"token":"C07269A6C4821ED9E040A8C005012A5E"}
+正确返回值:{"TagCode":"00000000"}
+异常返回值:
+TagCode(03180001):json数据中userId字段缺少
+TagCode(03180002):解析json数据中userId字段失败
+TagCode(03180003):json数据中roomId字段缺少
+TagCode(03180004):解析json数据中roomId字段失败
+TagCode(03180102):用户未订阅该房间开播消息
+
+3.19.判断是否订阅房间开播推送消息
+参数值:parameter={"FuncTag":10003019,"userId":"1000022","roomId":1000122,"token":"C07269A6C4821ED9E040A8C005012A5E"}
+正确返回值:{"TagCode":"00000000","isSubscribed":0} (0:未订阅,1:已订阅)
+异常返回值:
+TagCode(03190001):json数据中userId字段缺少
+TagCode(03190002):解析json数据中userId字段失败
+TagCode(03190003):json数据中roomId字段缺少
+TagCode(03190004):解析json数据中roomId字段失败
+
+5.35.更新用户个推clientId
+参数值:parameter={"FuncTag":10005035,"userId":"1000022","gtClientId":"645d9ed6ee0fb193d33a6e56865c8a7a"}
+正确返回值:{"TagCode":"00000000"}
+异常返回值:
+TagCode(05350001):json数据中userId字段缺少
+TagCode(05350002):解析json数据中userId字段失败
+TagCode(05350003):json数据中gtClientId字段缺少
+TagCode(05350004):用户不存在
+TagCode(05350102):用户不存在
+
+1.21.登出(注销用户token)
+参数值:parameter={"FuncTag":10001025,"userId":"1000022","token":"C07269A6C4821ED9E040A8C005012A5E"}
+正确返回值:{"TagCode":"00000000"}
+异常返回值:
+TagCode(01250001):json数据中userId字段缺少
+TagCode(01250002):解析json数据中userId字段失败
+TagCode(01250102):用户不存在
+
+5.36.用户是否充值过秀币
+参数值:parameter={"FuncTag":10005036,"userId":"1000022","token":"C07269A6C4821ED9E040A8C005012A5E"}
+正确返回值:{"TagCode":"00000000","isRecharged":0} (0:未充值,1:已充值)
+异常返回值:
+TagCode(01250001):json数据中userId字段缺少
+TagCode(01250002):解析json数据中userId字段失败
+
+5.42.获取用户直播状态
+参数值:parameter={"FuncTag":10005042,"userId":"1000022"}
+(livestarttime:开始直播时间,liveendtime:结束直播时间,nextstarttime:下次直播时间)
+正确返回值:{"TagCode":"00000000","livestarttime":1367762160000,"liveendtime":1367771521000,"nextstarttime":1367841600000}
+异常返回值:
+TagCode(05420001):json数据中userId字段缺少
+TagCode(05420002):解析json数据中userId字段失败
+TagCode(05420003):解析json数据中userId字段失败
+
+5.37用户兑换秀豆到秀币
+参数值:parameter={"FuncTag":10005037,"userId":2444698,"showBean":2870,"token":"DCF8FE6533135758E040007F01001007"}
+正确返回值:{showMoney: 28800000,showBean: 0,TagCode: "00000000"}
+异常返回值:
+TagCode(05370001):json数据中userId字段缺少
+TagCode(05370002):解析json数据中userId字段失败
+TagCode(05370003):json数据中showBean字段缺少
+TagCode(05370004):解析json数据中showBean字段失败
+TagCode(05370005):调用存储过程,未获取到用户秀豆或秀币
+TagCode(05370102):调用存储过程,该用户不存在
+TagCode(05370104):调用存储过程,秀豆不足	
+TagCode(20001002):调用存储过程发生异常
+TagCode(20001003):调用存储过程未得到正常结果
+
+2.18.查看主播当前注册量及其排名
+参数值:parameter={"FuncTag":10002018,"userId":"1000122"}
+正确返回值:{sortIndex: 1, lastCount: 3242, TagCode: "00000000"}
+异常返回值:
+TagCode(02180001):json数据中userId字段缺少
+TagCode(02180002):解析json数据中userId字段失败
+TagCode(02180003):未找到该主播排行信息
+
+2.19.查看所有按照注册量排序的主播排行榜
+参数值:parameter={"FuncTag":10002019}
+正确返回值:
+{	
+	startTime: 1367337600000,
+	endTime: 1370793600000,
+	updateTime: 1370335160034,
+	roomList: [{
+	userId: 1000122,
+	roomId: 1000122,
+	nickname: "❀ゝ麦霸小扣゜",
+	portrait_path_256: "/portrait/2013/02/26/1361811936722_kktv_portrait_256.jpeg"
+	}],
+	TagCode: "00000000"
+}
+异常返回值:
+
+1.26.根据userId获取用户token(仅供Node使用,密码secretKey)(10001026)
+参数值:parameter={"FuncTag":10001026,"userId":1881035,"secretKey":"kktvnode@melot"}
+正确返回值:
+{
+	token: "DEAD75AA0BD17740E040A8C00864218C",
+	TagCode: "00000000"
+}
+异常返回值:
+TagCode(01260001):json数据中userId字段缺少
+TagCode(01260002):解析json数据中userId字段失败
+TagCode(01260003):json数据中secretKey字段缺少
+TagCode(01260004):解析json数据中secretKey字段失败
+TagCode(01260005):secretKey错误
+TagCode(01260006):无法获取token
+
+5.44.获取用户进入的房间信息(For Node)
+参数值:parameter={"FuncTag":10005044,"userId":1881035}
+正确返回值:
+异常返回值:
+
+5.45.获取用户靓号列表
+参数值:parameter={"FuncTag":10005045,"userId":2444698}
+正确返回值:
+{
+	validLuckyId: 2444888,
+	luckyIdList: [
+		{
+			luckyId: 2444666,
+			startTime: 1372767559000,
+			endTime: 1372853959000
+		},
+		{
+			luckyId: 2444999,
+			startTime: 1372767713000,
+			endTime: 1372854113000
+		},
+		{
+			luckyId: 2444888,
+			startTime: 1372767706000,
+			endTime: 1372854106000
+		}
+	],
+	TagCode: "00000000"
+}
+异常返回值:
+TagCode(05450001):json数据中userId字段缺少
+TagCode(05450002):解析json数据中userId字段失败
+
+5.46.激活用户靓号
+参数值:parameter={"FuncTag":10005046,"userId":2444698,"luckyId":2444888,"token":E039969129123734E040A8C00C645D22}
+正确返回值:
+{
+	TagCode: "00000000"
+}
+异常返回值:
+TagCode(05460001):json数据中luckyId字段缺少
+TagCode(05460002):解析json数据中luckyId字段失败
+TagCode(05460003):json数据中userId字段缺少
+TagCode(05460004):解析json数据中userId字段失败
+TagCode(05460005):用户未拥有该靓号
+
+5.47.靓号ID转化为用户ID
+参数值:parameter={"FuncTag":10005047,"luckyId":2444888}
+正确返回值:
+{
+	userId: 2444698,
+	TagCode: "00000000"
+}
+异常返回值:
+TagCode(05470001):json数据中luckyId字段缺少
+TagCode(05470002):解析json数据中luckyId字段失败
+
+1.27.更新QQ会员有效期
+参数值:parameter={"FuncTag":10005047,"userId":2444888,"expireTime":1375792901000}
+正确返回值:
+{
+	TagCode: "00000000"
+}
+异常返回值:
+TagCode(01270001):json数据中userId字段缺少
+TagCode(01270002):解析json数据中userId字段失败
+TagCode(01270003):json数据中expireTime字段缺少
+TagCode(01270004):解析json数据中expireTime字段失败
+TagCode(01270102):用户非QQ会员
+TagCode(20001002):调用存储过程发生异常
+TagCode(20001003):调用存储过程未得到正常结果
+
+2.20.获取指定时间段礼物收送礼物排名
+参数值:parameter={"FuncTag":10002020,"giftIds":"10000041,10000066,10000064,10000008","startTime":1377964800000,"endTime":1378137600000}
+正确返回值:
+{
+	giftRanking: [
+		{
+			giftId: 10000041,
+			totalWorth: 151996950
+		},
+		{
+			giftId: 10000064,
+			totalWorth: 78090000
+		},
+		{
+			giftId: 10000066,
+			totalWorth: 61991400
+		},
+		{
+			giftId: 10000008,
+			totalWorth: 61636800
+		}
+	],
+	TagCode: "00000000"
+}
+异常返回值:
+TagCode(02200001):json数据中giftIds字段缺少
+TagCode(02200002):解析json数据中giftIds字段失败
+TagCode(02200003):json数据中startTime字段缺少
+TagCode(02200004):解析json数据中startTime字段失败
+TagCode(02200005):json数据中endTime字段缺少
+TagCode(02200006):解析json数据中endTime字段失败
+
+2.21.抽奖
+参数值:parameter={"FuncTag":10010001,"userId":1000011,"token":"F82A3D6704992393E040007F01007D57","platform":2,"lotteryId":"201405_Gewala"}
+正确返回值:
+{
+	prizeId: "奖品标识", 
+	prizeName: "奖品名", 
+	TagCode: "00000000"
+}
+异常返回值:
+TagCode(10010001):json数据中userId字段缺少
+TagCode(10010002):解析json数据中userId字段失败
+TagCode(10010003):json数据中token字段缺少
+TagCode(10010004):解析json数据中token字段失败
+TagCode(10010005):json数据中lotteryId字段缺少
+TagCode(10010006):解析json数据中lotteryId字段失败
+TagCode(10010007):json数据中platform字段缺少
+TagCode(10010008):解析json数据中platform字段失败
+TagCode(10010009):不允许在请求平台 platform 中抽奖
+TagCode(10010010):用户未绑定手机号，不允许抽奖
+TagCode(10010011):中奖次数已达到峰值
+TagCode(10010012):未中奖
+
+2.22.获取奖品
+参数值:parameter={"FuncTag":10010002,"userId":1000011,"token":"F82A3D6704992393E040007F01007D57","platform":2,"lotteryId":"201405_Gewala","prizeId":"奖品标识"}
+正确返回值:
+{
+	prizeEntry: 
+		{
+			prizeName: "奖品名", 
+			prizeValue: "验证码"
+		}, 
+	TagCode: "00000000"
+}
+异常返回值:
+TagCode(10020001):json数据中userId字段缺少
+TagCode(10020002):解析json数据中userId字段失败
+TagCode(10020003):json数据中token字段缺少
+TagCode(10020004):解析json数据中token字段失败
+TagCode(10020005):json数据中lotteryId字段缺少
+TagCode(10020006):解析json数据中lotteryId字段失败
+TagCode(10020007):json数据中platform字段缺少
+TagCode(10020008):解析json数据中platform字段失败
+TagCode(10020009):不允许在请求平台 platform 获取奖品
+TagCode(10020010):用户未绑定手机号，不允许抽奖
+TagCode(10020011):json数据中prizeId字段缺少
+TagCode(10020012):解析json数据中prizeId字段失败
+TagCode(10020013):用户未抽中请求的奖品
+TagCode(10020014):奖品标识对应的奖品库存不足
+
+2.23.抽奖活动分享
+参数值:parameter={"FuncTag":10010003,"userId":1000011,"token":"F82A3D6704992393E040007F01007D57","platform":2,"lotteryId":"201405_Gewala"}
+正确返回值:
+{
+	TagCode: "00000000"
+}
+异常返回值:
+TagCode(10030001):json数据中userId字段缺少
+TagCode(10030002):解析json数据中userId字段失败
+TagCode(10030003):json数据中token字段缺少
+TagCode(10030004):解析json数据中token字段失败
+TagCode(10030005):json数据中lotteryId字段缺少
+TagCode(10030006):解析json数据中lotteryId字段失败
+TagCode(10030007):json数据中platform字段缺少
+TagCode(10030008):解析json数据中platform字段失败
+TagCode(10030010):用户未绑定手机号
