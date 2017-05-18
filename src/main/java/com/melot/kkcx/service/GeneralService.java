@@ -458,6 +458,10 @@ public class GeneralService {
 		}
 		Map<String, Integer> map = new HashMap<String, Integer>();
 		
+		if (!isValidCity(cityId)) {
+			cityId = 1; // 默认城市 北京：1
+		}
+		
 		Integer parentId = CityUtil.getParentCityId(cityId);
 		map.put("city", cityId);
 		map.put("area", parentId);

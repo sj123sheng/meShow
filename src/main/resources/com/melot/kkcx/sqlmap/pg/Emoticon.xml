@@ -48,20 +48,5 @@
 		select * from kkcx.conf_activity_emoticon where begin_time <![CDATA[<=]]> current_date and (end_time <![CDATA[>=]]> current_date or end_time is null)
 		order by end_time desc, id desc
 	</select>
-	
-	<resultMap class="com.melot.kkcx.model.ActorNotice" id="actorNoticeMap">
-		<result property="id" column= "id"/>
-		<result property="title" column= "title"/>
-		<result property="content" column= "content"/>
-		<result property="linkURL" column= "link"/>
-		<result property="picture" column= "pic"/>
-		<result property="beginTime" column= "begin_time"/>
-		<result property="endTime" column= "end_time"/>
-		<result property="type" column= "type"/>
-	</resultMap>
-	
-	<select id="getactorNoticeList" parameterClass="java.util.Map" resultMap="actorNoticeMap">
-		select * from kkcx.p_conf_actor_notice_getlistbytype(#type#,#start#,#offset#)
-	</select>
 		
 </sqlMap>

@@ -153,7 +153,7 @@ public class NewsTF {
 		return jObject;
 	}
 	
-	public static JsonArray toRewardJsonObject(News news, int platform, List<News> rewardsLit) {	
+	public static JsonArray toRewardJsonObject(News news, int platform, List<Object> rewardsLit) {	
 		JsonArray jArray = new JsonArray();
 		for(int i = 0; i < rewardsLit.size(); i++){
 			JsonObject jObject = new JsonObject();

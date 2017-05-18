@@ -14,7 +14,6 @@ import com.google.gson.JsonObject;
 import com.melot.common.driver.service.ShareService;
 import com.melot.feedback.driver.domain.Award;
 import com.melot.feedback.driver.service.FeedbackService;
-import com.melot.game.config.sdk.utils.StringUtils;
 import com.melot.kk.activity.driver.MissionService;
 import com.melot.kk.activity.driver.domain.ShareInfo;
 import com.melot.kktv.domain.RechargerPackage;
@@ -1601,7 +1600,7 @@ public class ActivityFunctions {
         	return result;
         }
         
-        int amount = 0;
+        long amount = 0;
         try {
 			ShareService shareService = MelotBeanFactory.getBean("shareService", ShareService.class);
 			amount = shareService.getShareCoffersByRoomId(roomId);

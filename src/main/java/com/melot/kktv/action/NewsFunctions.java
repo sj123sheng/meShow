@@ -25,7 +25,6 @@ import com.melot.family.driver.domain.FamilyInfo;
 import com.melot.kkcore.user.api.ShowMoneyHistory;
 import com.melot.kkcx.service.FamilyService;
 import com.melot.kkcx.service.RoomService;
-import com.melot.kkcx.service.UserService;
 import com.melot.kkcx.transform.NewsCommentTF;
 import com.melot.kkcx.transform.NewsTF;
 import com.melot.kktv.model.News;
@@ -282,8 +281,7 @@ public class NewsFunctions {
 		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
 			// 取出列表
 			@SuppressWarnings("unchecked")
-			List<News> newsList = (ArrayList<News>) map.get("newsList");
-			newsList = UserService.addUserExtra(newsList);
+			List<Object> newsList = (ArrayList<Object>) map.get("newsList");
 			result.addProperty("TagCode", TagCode);
 			result.addProperty("pageTotal", (Integer) map.get("pageTotal"));
 			JsonArray jNewsList = new JsonArray();
@@ -688,8 +686,7 @@ public class NewsFunctions {
 				result.addProperty("TagCode", TagCode);
 				JsonArray jCommentList = new JsonArray();
 				@SuppressWarnings("unchecked")
-				List<NewsComment> commentList = (ArrayList<NewsComment>) map.get("commentList");
-				commentList = UserService.addUserExtra(commentList);
+				List<Object> commentList = (ArrayList<Object>) map.get("commentList");
 				for (Object object : commentList) {
 					jCommentList.add(NewsCommentTF.toJsonObject((NewsComment) object, platform));
 				}
@@ -854,9 +851,8 @@ public class NewsFunctions {
 		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
 			// 取出列表
 			@SuppressWarnings("unchecked")
-			List<NewsComment> commentList = (ArrayList<NewsComment>) map.get("commentList");
-			commentList = UserService.addUserExtra(commentList);
-			
+			List<Object> commentList = (ArrayList<Object>) map.get("commentList");
+
 			JsonObject result = new JsonObject();
 			result.addProperty("TagCode", TagCode);
 			result.addProperty("pageTotal", (Integer) map.get("pageTotal"));
@@ -1100,12 +1096,9 @@ public class NewsFunctions {
 			if (TagCode.equals(TagCodeEnum.SUCCESS)) {
 				// 取出列表
 				try {
-					List<News> newsInfoList = (ArrayList<News>)map.get("newsInfo");
-					List<News> rewardsInfoList = (ArrayList<News>) map.get("rewardInfo");
+					List<Object> newsInfoList = (ArrayList<Object>)map.get("newsInfo");
+					List<Object> rewardsInfoList = (ArrayList<Object>) map.get("rewardInfo");
 					News newsInfo = (News) newsInfoList.get(0);
-					
-					newsInfoList = UserService.addUserExtra(newsInfoList);
-					rewardsInfoList = UserService.addUserExtra(rewardsInfoList);
 					
 					JsonObject result = NewsTF.toJsonObject(newsInfo, platform, 0);
 					int totalRewarders = (Integer)map.get("totalRewarders");
@@ -1265,8 +1258,7 @@ public class NewsFunctions {
 				result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 				// 取出列表
 				@SuppressWarnings("unchecked")
-				List<News> rewardUserList = (ArrayList<News>) map.get("topRewardUsers");
-				rewardUserList = UserService.addUserExtra(rewardUserList);
+				List<Object> rewardUserList = (ArrayList<Object>) map.get("topRewardUsers");
 				
 				result.addProperty("TagCode", TagCode);
 				JsonArray jRecordList = new JsonArray();
@@ -1623,8 +1615,7 @@ public class NewsFunctions {
 		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
 			// 取出列表
 			@SuppressWarnings("unchecked")
-			List<News> newsList = (ArrayList<News>) map.get("newsList");
-			newsList = UserService.addUserExtra(newsList);
+			List<Object> newsList = (ArrayList<Object>) map.get("newsList");
 			result.addProperty("TagCode", TagCode);
 			result.addProperty("pageTotal", (Integer) map.get("pageTotal"));
 			JsonArray jNewsList = new JsonArray();

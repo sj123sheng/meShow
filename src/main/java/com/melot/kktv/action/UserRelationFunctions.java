@@ -26,9 +26,6 @@ import com.melot.api.menu.sdk.handler.FirstPageHandler;
 import com.melot.api.menu.sdk.service.RoomInfoService;
 import com.melot.blacklist.driver.domain.ReturnResult;
 import com.melot.blacklist.driver.service.RoomAdminService;
-import com.melot.kkcore.relation.api.ActorRelation;
-import com.melot.kkcore.relation.api.RelationType;
-import com.melot.kkcore.relation.service.ActorRelationService;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcx.service.GeneralService;
 import com.melot.kkcx.service.RoomService;
@@ -193,22 +190,15 @@ public class UserRelationFunctions {
             // 推送房间关注数变化给房间
             if (!isEvil) {
                 int msgToroom = followedId;
-                boolean flag = false;
-                try {
-                    ActorRelationService actorRelationService = (ActorRelationService) MelotBeanFactory.getBean("kkActorRelationService");
-                    ActorRelation actorRelation = actorRelationService.getRelationByUserAndActor(followedId, userId, RelationType.ADMIN.typeId());
-                    if (actorRelation != null) {
-                        flag = true;
-                    }
-                } catch (Exception e) {
-                    logger.error("actorRelationService.getRelationByUserAndActor(actorId:" + followedId + ",userId:" + userId + ",type:" + RelationType.ADMIN.typeId() + ") execute exception.", e);
-                }
+            	com.melot.blacklist.driver.service.RoomAdminService roomService = 
+            			(com.melot.blacklist.driver.service.RoomAdminService) ModuleService.getService("RoomAdminService");
+				boolean flag = roomService.queryRoomAdmin(userId, followedId);
                 
                 if (roomId != 0) {
                     //关注主播如果是轮播房代理房主，则关注消息发轮播房间，否则发被关注主播房间
                     RoomInfoService roomInfoServie = MelotBeanFactory.getBean("roomInfoService", RoomInfoService.class);
-                    RoomInfo followRoomInfo = roomInfoServie.getRoomInfoById(roomId);
-                    if (followRoomInfo != null && followRoomInfo.getRoomSource() == 8 && followRoomInfo.getActorId() == followedId) {
+                    RoomInfo followRoomInfo = roomInfoServie.getRoomInfoById(followedId);
+                    if (followRoomInfo != null && followRoomInfo.getRoomSource() == 8 && followRoomInfo.getRoomId() == roomId) {
                         msgToroom = roomId;
                     }
                 }
@@ -297,17 +287,9 @@ public class UserRelationFunctions {
         }
         // 推送房间关注数变化给房间
         if (!isEvil) {
-            boolean flag = false;
-            try {
-                ActorRelationService actorRelationService = (ActorRelationService) MelotBeanFactory.getBean("kkActorRelationService");
-                ActorRelation actorRelation = actorRelationService.getRelationByUserAndActor(canceledId, userId, RelationType.ADMIN.typeId());
-                if (actorRelation != null) {
-                    flag = true;
-                }
-            } catch (Exception e) {
-                logger.error("actorRelationService.getRelationByUserAndActor(actorId:" + canceledId + ",userId:" + userId + ",type:" + RelationType.ADMIN.typeId() + ") execute exception.", e);
-            }
-            
+        	com.melot.blacklist.driver.service.RoomAdminService roomService = 
+        			(com.melot.blacklist.driver.service.RoomAdminService) ModuleService.getService("RoomAdminService");
+			boolean flag = roomService.queryRoomAdmin(userId, canceledId);
         	JsonObject msg = new JsonObject();
         	msg.addProperty("MsgTag", 10010321);
         	msg.addProperty("isRoomAdmin", flag ? 1 : 0);

@@ -22,17 +22,17 @@
 	<parameterMap id="getUserFromByUserIdMap" class="java.util.Map">
 		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
 			jdbcType="INTEGER" />
-		<parameter property="openPlatform" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-			
+
 		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
 			jdbcType="VARCHAR" />
+		<parameter property="openPlatform" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
 		<parameter property="uuid" mode="OUT" javaType="java.lang.String"
 			jdbcType="VARCHAR" />
 	</parameterMap>
 	<procedure id="getUserFromByUserId" parameterMap="getUserFromByUserIdMap"
 		resultClass="java.util.Map">
-		{call p_getUserFromByUserId_V2(?,?,?,?)}
+		{call p_getUserFromByUserId(?,?,?,?)}
 	</procedure>
 	
 	<!-- SQL -->
@@ -40,6 +40,25 @@
 	<resultMap class="User" id="userInfoMap">
 		<result property="userId" column="USERID" />
 		<result property="roomTheme" column="THEME" />
+		<result property="nickname" column="NICKNAME" />
+		<result property="gender" column="GENDER" />
+		<result property="phone" column="PHONE" />
+		<result property="signature" column="SIGNATURE" />
+		<result property="introduce" column="INTRODUCE" />
+		<result property="iconTag" column="ICONTAG" />
+		<result property="actorTag" column="ACTORTAG" />
+		<result property="birthday" column="BIRTHDAY" />
+		<result property="bloodType" column="BLOODTYPE" />
+		<result property="bodyType" column="BODYTYPE" />
+		<result property="city" column="CITY" />
+		<result property="registerTime" column="REGISTERTIME" />
+		<result property="showMoney" column="SHOWMONEY" />
+		<result property="liveVideoQuality" column="LIVEVIDEOQUALITY" />
+		<result property="openPlatform" column="OPENPLATFORM" />
+		<result property="portrait_path" column="PORTRAIT_PATH" />
+		<result property="background_path" column="BACKGROUND_PATH" />
+		<result property="backgroundShow" column="BACKGROUNDSHOW" />
+		<result property="backgroundScroll" column="BACKGROUNDSCROLL" />		
 		<result property="greetMsg" column="GREETMSG" />
 		<result property="greetMsgHref" column="GREETMSGHREF" />
 		<result property="noticeContent" column="NOTICECONTENT" />
@@ -48,13 +67,39 @@
 
 	<!-- 根据用户ID和房间编号查询信息 -->
 	<select id="getUserInfo" parameterClass="java.lang.Integer" resultMap="userInfoMap">
-		select ro.roomid as USERID,
+		select u.userid,
                ro.theme,
+		       u.nickname,
+		       u.gender,
+		       u.phone,
+		       u.signature,
+		       u.introduce,
+		       u.icontag,
+		       u.actortag,
+		       u.birthday,
+		       u.bloodtype,
+		       u.bodytype,
+		       u.city,
+		       u.registertime,
+		       u.backgroundshow,
+		       u.backgroundscroll,
+		       u.showmoney,
+		       u.openplatform,
+		       u.livevideoquality,
 		       ro.noticecontent,
 		       ro.noticehref,
 		       ro.greetmsg,
-		       ro.greetmsghref
-		from room_info ro where ro.roomid = #userId#
+		       ro.greetmsghref,
+		       po.path_original   as portrait_path,
+		       ba.path_original   as background_path
+		from user_info u
+		left join room_info ro
+			on ro.roomid = u.userid
+		left join user_portrait po
+			on po.portraitid = u.portraitid and po.useable = 1
+		left join user_background ba
+			on u.backgroundid = ba.backgroundid and ba.useable = 1
+		where u.userid = #userId#
 	</select>
 	
 	<!-- 获取用户官方号类型 -->

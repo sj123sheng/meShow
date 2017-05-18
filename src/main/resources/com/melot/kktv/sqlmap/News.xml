@@ -346,6 +346,27 @@
 		<result property="viewTimes" column="viewtimes" />
 		<result property="mediaFrom" column="mediafrom" />
 	</resultMap>
+
+	<parameterMap id="getMediaNewsListMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="pageIndex" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="countPerPage" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+			
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="pageTotal" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="mediaNewsInfo" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="MediaNewsInfo" />
+	</parameterMap>
+	
+	<procedure id="getMediaNewsList" parameterMap="getMediaNewsListMap">
+		{call
+		p_getMediaNewsList(?,?,?,?,?,?)}
+	</procedure>
 	
 	<!-- 打赏 -->
 	<parameterMap id="rewardNewsMap" class="java.util.Map">

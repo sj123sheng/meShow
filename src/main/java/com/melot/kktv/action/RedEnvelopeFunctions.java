@@ -1,6 +1,8 @@
 package com.melot.kktv.action;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -11,10 +13,12 @@ import com.google.gson.JsonObject;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kktv.redis.HotDataSource;
+import com.melot.kktv.service.GeneralService;
 import com.melot.kktv.service.RoomService;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConfigHelper;
+import com.melot.kktv.util.PlatformEnum;
 import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.module.api.exceptions.MelotModuleException;
@@ -206,13 +210,14 @@ public class RedEnvelopeFunctions {
         }
       
         //解析参数
-        int userId, roomId, appId;
+        int userId, roomId, appId, platform;
         String sendId;
         try {
             userId = CommonUtil.getJsonParamInt(paramJsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
             roomId = CommonUtil.getJsonParamInt(paramJsonObject, "roomId", 0, TagCodeEnum.ROOMID_MISSING, 1, Integer.MAX_VALUE);
             appId = CommonUtil.getJsonParamInt(paramJsonObject, "a", AppIdEnum.AMUSEMENT, null, 1, Integer.MAX_VALUE);
             sendId = CommonUtil.getJsonParamString(paramJsonObject, "sendId", "", "31070001", 1, 36);
+            platform = CommonUtil.getJsonParamInt(paramJsonObject, "platform", PlatformEnum.WEB, null, PlatformEnum.WEB, PlatformEnum.IPAD);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -221,11 +226,15 @@ public class RedEnvelopeFunctions {
             return result;
         }
         
+        String userIp = GeneralService.getIpAddr(request, appId, platform, null);
+        Map<String, Object> extraParams = new HashMap<String, Object>();
+        extraParams.put("userIp", userIp);
+        
         //调用模块
         JsonArray redEvelopArray = new JsonArray();
         try {
             RedEnvelopersService redEnvelopersService = (RedEnvelopersService) MelotBeanFactory.getBean("redEnvelopersService");
-            CurrentGetRedEnvelopersModel evelopModel = redEnvelopersService.insertGetRedEnvelopersNew(userId, roomId, sendId, appId);
+            CurrentGetRedEnvelopersModel evelopModel = redEnvelopersService.insertGetRedEnvelopers(userId, roomId, sendId, extraParams);
             
             // 设置抢到的红包金额和用户当前秀币额
             if (evelopModel.getAmount() < 0) {

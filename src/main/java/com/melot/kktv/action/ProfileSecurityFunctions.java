@@ -827,7 +827,7 @@ public class ProfileSecurityFunctions {
 		String data = SmsSource.getPhoneSmsData(phoneNum, String.valueOf(type));
 		if (data != null && data.equals(verifyCode)) {
 			if (type == 30) {
-				HotDataSource.setTempData("identifyFormalPhone_" + userId, "1", System.currentTimeMillis() / 1000 + 300);
+				HotDataSource.setTempDataString("identifyFormalPhone_" + userId, "1", 300);
 			}
 			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 		} else {
@@ -838,7 +838,7 @@ public class ProfileSecurityFunctions {
 	}
 	
 	/**
-	 * 认证手机号(40000019)
+	 * 认证手机号(40000019 或 40000025)
 	 * @param jsonObject
 	 * @param checkTag
 	 * @param request
@@ -857,8 +857,9 @@ public class ProfileSecurityFunctions {
 		}
 		
 		String phoneNum, verifyCode;
-		int userId, appId, platform;
+		int userId, appId, platform, functag;
 		try {
+		    functag = CommonUtil.getJsonParamInt(jsonObject, "FuncTag", 0, null, 1, Integer.MAX_VALUE);
 			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
 			phoneNum = CommonUtil.getJsonParamString(jsonObject, "phoneNum", null, "01440001", 1, Integer.MAX_VALUE);
 			if (phoneNum != null) phoneNum = CommonUtil.validatePhoneNum(phoneNum, "86");
@@ -889,7 +890,7 @@ public class ProfileSecurityFunctions {
 	    	bindPhoneNum = userProfile.getPhoneNum();
 	    	identifyPhone = userProfile.getIdentifyPhone();
 	    }
-	    if (identifyPhone != null && !"1".equals(HotDataSource.getTempDataString("identifyFormalPhone_" + userId))) {
+	    if (identifyPhone != null && (functag == 40000025 && !"1".equals(HotDataSource.getTempDataString("identifyFormalPhone_" + userId)))) {
 	    	result.addProperty("TagCode", "01440009");
 	    	return result;
 	    }

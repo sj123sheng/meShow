@@ -346,6 +346,7 @@ src/main/resources/META-INF/cat/config.xsd -text
 src/main/resources/com/melot/kkcx/sqlmap/pg/Activity.xml -text
 src/main/resources/com/melot/kkcx/sqlmap/pg/Emoticon.xml -text
 src/main/resources/com/melot/kkcx/sqlmap/pg/NewsMessage.xml -text
+src/main/resources/com/melot/kkcx/sqlmap/pg/Other.xml -text
 src/main/resources/com/melot/kkcx/sqlmap/pg/actor.xml -text
 src/main/resources/com/melot/kkgame/sqlmap/pg/User.xml -text
 src/main/resources/com/melot/kkgame/sqlmap/pg/UserGamble.xml -text

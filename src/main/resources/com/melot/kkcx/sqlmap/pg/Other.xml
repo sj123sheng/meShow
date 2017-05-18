@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Other">	
+	<resultMap class="com.melot.kkcx.model.ActorNotice" id="actorNoticeMap">
+		<result property="id" column= "id"/>
+		<result property="title" column= "title"/>
+		<result property="content" column= "content"/>
+		<result property="linkURL" column= "link"/>
+		<result property="picture" column= "pic"/>
+		<result property="beginTime" column= "begin_time"/>
+		<result property="endTime" column= "end_time"/>
+		<result property="type" column= "type"/>
+	</resultMap>
+	
+	<select id="getactorNoticeList" parameterClass="java.util.Map" resultMap="actorNoticeMap">
+		select * from kkcx.p_conf_actor_notice_getlistbytype(#type#,#start#,#offset#)
+	</select>
+		
+</sqlMap>

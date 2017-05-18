@@ -197,8 +197,9 @@ public class ActorFunction extends BaseAction {
     public JsonObject getActorLiveFlowAddress(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
 
-        int roomId, appId;
+        int roomId, appId, userId;
         try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 100, Integer.MAX_VALUE);
             roomId = CommonUtil.getJsonParamInt(jsonObject, "roomId", 0, "03031001", 100, Integer.MAX_VALUE);
             appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 1, Integer.MAX_VALUE);
         } catch (Exception ex) {
@@ -210,7 +211,7 @@ public class ActorFunction extends BaseAction {
             LiveStreamConfigService liveStreamConfigService = (LiveStreamConfigService) MelotBeanFactory.getBean("liveStreamConfigService");
             ClientDetail detail = new ClientDetail();
             detail.setActorId(roomId);
-            detail.setUserId(roomId);
+            detail.setUserId(userId);
             detail.setClientIp(com.melot.kktv.service.GeneralService.getIpAddr(request, appId, appId, null));
             String resObj = liveStreamConfigService.getPullStreamAddress(detail);
             JsonParser jsonParser = new JsonParser();

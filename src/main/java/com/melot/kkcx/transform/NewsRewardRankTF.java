@@ -2,7 +2,6 @@ package com.melot.kkcx.transform;
 
 import com.google.gson.JsonObject;
 import com.melot.kktv.model.NewsRewardRank;
-import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcx.service.UserAssetServices;
 import com.melot.kkcx.service.UserService;
 
@@ -11,18 +10,15 @@ public class NewsRewardRankTF {
 	public static JsonObject toJsonObject(NewsRewardRank newsRewardRank) {
 		JsonObject result = new JsonObject();
 		result.addProperty("userId", newsRewardRank.getUserId());
+		result.addProperty("nickname", newsRewardRank.getNickname());
 		result.addProperty("rcount", newsRewardRank.getRcount());
-		UserProfile userProfile = UserService.getUserInfoNew(newsRewardRank.getUserId());
-		if (userProfile != null) {
-			result.addProperty("nickname", userProfile.getNickName());
-			if (userProfile.getPortrait() != null) {
-				result.addProperty("portrait_path_original", userProfile.getPortrait());
-			}
-			// 读取明星等级
-			result.addProperty("actorLevel", userProfile.getActorLevel());
-			// 读取富豪等级
-			result.addProperty("richLevel", userProfile.getUserLevel());
+		if (newsRewardRank.getPortrait_path_original()!=null) {
+			result.addProperty("portrait_path_original", newsRewardRank.getPortrait_path_original());
 		}
+		// 读取明星等级
+		result.addProperty("actorLevel", UserService.getActorLevel(newsRewardRank.getUserId()));
+		// 读取富豪等级
+		result.addProperty("richLevel", UserService.getRichLevel(newsRewardRank.getUserId()));
 		// 读取靓号
 		JsonObject validVirtualId =  UserAssetServices.getValidVirtualId(newsRewardRank.getUserId()); //获取用户虚拟账号
 		if (validVirtualId != null) {

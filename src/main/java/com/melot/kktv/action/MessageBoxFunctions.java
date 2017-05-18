@@ -23,7 +23,6 @@ import com.google.gson.JsonParser;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.service.MessageBoxServices;
-import com.melot.kkcx.service.UserService;
 import com.melot.kktv.model.KkAssistor;
 import com.melot.kktv.model.NewsComment;
 import com.melot.kktv.model.EffectiveActivity;
@@ -647,9 +646,7 @@ public class MessageBoxFunctions {
 			result.addProperty("TagCode", TagCode);
 			JsonArray jCommentList = new JsonArray();
 			@SuppressWarnings("unchecked")
-			List<NewsComment> commentList = (ArrayList<NewsComment>) map.get("commentList");
-			commentList = UserService.addUserExtra(commentList);
-			
+			List<Object> commentList = (ArrayList<Object>) map.get("commentList");
 			for (Object object : commentList) {
 				JsonObject jsonObj=new JsonObject();
 				NewsComment obj=(NewsComment)object;
@@ -1204,7 +1201,6 @@ public class MessageBoxFunctions {
 			JsonObject result = new JsonObject();
 			List<KkSystemNotice> kSysNotice = (List<KkSystemNotice>) map.get("kkSysNotices");
 			if (kSysNotice != null && kSysNotice.size() > 0) {
-				kSysNotice = UserService.addUserExtra(kSysNotice);
 				for (KkSystemNotice k : kSysNotice) {
 					jsonArr.add(new JsonParser().parse(new Gson().toJson(k
 							.toJsonObject(lastReadTime,platform))));

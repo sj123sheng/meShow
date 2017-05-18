@@ -13,7 +13,6 @@ import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 
-import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcx.service.MessageService;
 import com.melot.kkcx.service.UserService;
 import com.melot.kkcx.transform.RoomTF;
@@ -58,6 +57,7 @@ import com.melot.sdk.core.util.MelotBeanFactory;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+import com.mongodb.QueryOperators;
 
 public class FamilyService {
 	
@@ -239,14 +239,15 @@ public class FamilyService {
 	 * @return
 	 */
 	public static Family getFamilyInfo(int familyId, int platform) {
-	    Family family = null;
-	    FamilyInfo familyInfo;
-	    if ((familyInfo = getFamilyInfoByFamilyId(familyId)) != null) {
-            family = new Family();
-            family.initJavaBean(familyInfo, platform);
-        }
-	    
-	    return family;
+		BasicDBObject dbObj = (BasicDBObject) CommonDB.getInstance(CommonDB.COMMONDB)
+				.getCollection(CollectionEnum.FAMILYLIST)
+				.findOne(new BasicDBObject("familyId", familyId));
+		if (dbObj != null) {
+			Family family = new Family();
+			family.initJavaBean(dbObj, platform);
+			return family;
+		}
+		return null;
 	}
 	
 	
@@ -594,13 +595,27 @@ public class FamilyService {
 	 * @param memberCount
 	 * @param actorCount
 	 */
-	private static void updateFamilyMemberCount(int familyId, int memberCount) {
+	private static void updateFamilyMemberCount(int familyId, int memberCount, int actorCount) {
 		DBObject updateDBObj = new BasicDBObject();
 		updateDBObj.put("memberCount", memberCount);
+		updateDBObj.put("actorCount", actorCount);
 		CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.FAMILYLIST).update(
 				new BasicDBObject("familyId", familyId),
 				new BasicDBObject("$set", updateDBObj),
 				false, false);
+		
+		try {
+		    FamilyAdminService familyAdminService = (FamilyAdminService) MelotBeanFactory.getBean("familyAdminService");
+	        if (familyAdminService != null) {
+	            FamilyInfo familyInfo = new FamilyInfo();
+	            familyInfo.setFamilyId(familyId);
+	            familyInfo.setMemberCount(memberCount);
+	            familyInfo.setActorCount(actorCount);
+	            familyAdminService.updateFamilyInfo(familyInfo);
+	        }
+		} catch (Exception e) {
+		    logger.info("fail to familyAdminService.updateFamilyInfo()", e);
+		}
 	}
 	
 	/**
@@ -649,8 +664,9 @@ public class FamilyService {
 			if (TagCode.equals(TagCodeEnum.SUCCESS)) {
 				// 更新家族成员个数和家族主播个数
 				Integer memberCount = (Integer) map.get("memberCount");
-				if (memberCount != null) {
-					updateFamilyMemberCount(familyId, memberCount.intValue());
+				Integer actorCount = (Integer) map.get("actorCount");
+				if (memberCount != null && actorCount != null) {
+					updateFamilyMemberCount(familyId, memberCount.intValue(), actorCount.intValue());
 				}
 				// 更新mongodb的userList中familyId字段
 				updateUserFamilyId(userId, null);
@@ -795,26 +811,6 @@ public class FamilyService {
 					resMap.put("pageTotal", CommonUtil.getPageTotal(total.intValue(), countPerPage));
 					@SuppressWarnings("unchecked")
 					List<FamilyMember> memberList = (List<FamilyMember>) map.get("memberList");
-					if (memberList != null && memberList.size() > 0) {
-						List<Integer> userIds = new ArrayList<Integer>();
-						Map<Integer, UserProfile> profileMap = new HashMap<Integer, UserProfile>();
-						for (FamilyMember familyMember : memberList) {
-							userIds.add(familyMember.getUserId());
-						}
-						List<UserProfile> profileList = UserService.getUserProfileAll(userIds);
-						if (profileList != null && profileList.size() > 0) {
-							for (UserProfile userProfile : profileList) {
-								profileMap.put(userProfile.getUserId(), userProfile);
-							}
-							for (FamilyMember familyMember : memberList) {
-								if (profileMap.containsKey(familyMember.getUserId()) && profileMap.get(familyMember.getUserId()) != null) {
-									familyMember.setNickname(profileMap.get(familyMember.getUserId()).getNickName());
-									familyMember.setActorTag(profileMap.get(familyMember.getUserId()).getIsActor());
-								}
-							}
-						}
-					}
-					
 					resMap.put("memberList", memberList);
 				} else {
 					resMap.put("pageTotal", 0l);
@@ -855,8 +851,9 @@ public class FamilyService {
 				
 				// 更新家族成员个数和家族主播个数
 				Integer memberCount = (Integer) map.get("memberCount");
-				if (memberCount != null) {
-					updateFamilyMemberCount(family.getFamilyId().intValue(), memberCount.intValue());
+				Integer actorCount = (Integer) map.get("actorCount");
+				if (memberCount != null && actorCount != null) {
+					updateFamilyMemberCount(family.getFamilyId().intValue(), memberCount.intValue(), actorCount.intValue());
 				}
 				
 				List<String> notPassUseridsList = new ArrayList<String>();
@@ -1027,7 +1024,6 @@ public class FamilyService {
 					resMap.put("pageTotal", CommonUtil.getPageTotal(total.intValue(), countPerPage));
 					@SuppressWarnings("unchecked")
 					List<FamilyApplicant> applicantList = (List<FamilyApplicant>) map.get("applicantList");
-					applicantList = UserService.addUserExtra(applicantList);
 					resMap.put("applicantList", applicantList);
 				} else {
 					resMap.put("pageTotal", 0l);
@@ -1073,8 +1069,9 @@ public class FamilyService {
 				
 				// 更新家族成员个数和家族主播个数
 				Integer memberCount = (Integer) map.get("memberCount");
-				if (memberCount != null) {
-					updateFamilyMemberCount(family.getFamilyId().intValue(), memberCount.intValue());
+				Integer actorCount = (Integer) map.get("actorCount");
+				if (memberCount != null && actorCount != null) {
+					updateFamilyMemberCount(family.getFamilyId().intValue(), memberCount.intValue(), actorCount.intValue());
 				}
 				
 				List<String> notPassUseridsList = new ArrayList<String>();
@@ -1165,14 +1162,15 @@ public class FamilyService {
 	 */
 	public static List<Family> getFamilyListByIds(List<Integer> familyIdList, int platform) {
 		List<Family> familyList = new ArrayList<Family>();
-		FamilyInfo familyInfo;
-		Family family;
 		for (Integer familyId : familyIdList) {
-		    if ((familyInfo = getFamilyInfoByFamilyId(familyId)) != null) {
-		        family = new Family();
-		        family.initJavaBean(familyInfo, platform);
-		        
-		        familyList.add(family);
+		    DBObject queryObject = new BasicDBObject();
+		    queryObject.put("familyId", familyId);
+		    queryObject.put("open", new BasicDBObject(QueryOperators.NIN, new int[]{2}));
+			DBObject dbObj = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.FAMILYLIST).findOne(queryObject);
+			if (dbObj != null) {
+			    Family family = new Family();
+			    family.initJavaBean(dbObj, platform);
+			    familyList.add(family);
             }
 		}
 		return familyList;
@@ -1180,7 +1178,17 @@ public class FamilyService {
 	
 	/* ------ 申请主播获取家族相关service ------ */
 	public static FamilyInfo getFamilyInfoByFamilyId(int familyId) {
-		return getFamilyInfoByFamilyId(familyId, AppIdEnum.AMUSEMENT);
+		try {
+			FamilyInfoService familyInfoService = (FamilyInfoService) MelotBeanFactory.getBean("newFamilyInfoService");
+			if (familyInfoService == null) {
+				logger.error("FamilyService.getFamilyInfoByFamilyId exception(FamilyService is null), familyId : " + familyId);
+				return null;
+			}
+			return familyInfoService.getFamilyInfoByFamilyId(familyId);
+		} catch (Exception e) {
+			logger.error("FamilyService.getFamilyInfoByFamilyId exception, familyId : " + familyId);
+			return null;
+		}
 	}
 
     public static FamilyInfo getFamilyInfoByFamilyId(int familyId, int appId) {

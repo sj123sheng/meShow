@@ -103,8 +103,7 @@ public class NewsService {
 		map.put("max", max);
 		map.put("includeQiniu", includeQiniu);
 		try {
-			List<News> newsList = SqlMapClientHelper.getInstance(DB.MASTER).queryForList("News.getFocusUserNewsList", map);
-			return UserService.addUserExtra(newsList);
+			return SqlMapClientHelper.getInstance(DB.MASTER).queryForList("News.getFocusUserNewsList", map);
 		} catch (Exception e) {
 			logger.error("NewsService.getUserFocusNews exception, userId : " + userId 
 					+ " ,min : " + min + " ,max : " + max, e);
@@ -180,7 +179,6 @@ public class NewsService {
 					map.put("includeQiniu", includeQiniu);
 					List<News> newsList = SqlMapClientHelper.getInstance(DB.MASTER)
 							.queryForList("News.getHotFactorNewsList", map);
-					newsList = UserService.addUserExtra(newsList);
 					if (newsList != null && newsList.size() > 0) {
 						newsmap.put(key, new Gson().toJson(newsList));
 						NewsSource.setFilterNewsList(newsmap, includeQiniu);
@@ -232,7 +230,6 @@ public class NewsService {
 				paramsMap.put("includeQiniu", includeQiniu);
 				newslist = SqlMapClientHelper.getInstance(DB.MASTER)
 						.queryForList("News.getHotFactorNewsList", paramsMap);
-				newslist = UserService.addUserExtra(newslist);
 			} catch (Exception e) {
 				logger.error("getHotFactorNewsList(syncFilterNewsList) error ! ", e);
 			}
@@ -281,7 +278,6 @@ public class NewsService {
 				map.put("includeQiniu", includeQiniu);
 				newlist = SqlMapClientHelper.getInstance(DB.MASTER).queryForList(
 						"News.getHotFactorNewsList", map);
-				newlist = UserService.addUserExtra(newlist);
 			}
 		} catch (Exception e) {
 			logger.error("NewsService.getNewsList error ! ", e);
@@ -724,8 +720,7 @@ public class NewsService {
 				 map.put("newsId", newsId);
 				 map.put("keywords", keywords);
 				 map.put("userId", userId);
-				 newsList = SqlMapClientHelper.getInstance(DB.MASTER).queryForList("News.getRePaiNewsInfoByParams", map);
-				 newsList = UserService.addUserExtra(newsList);
+				 newsList = SqlMapClientHelper.getInstance(DB.MASTER).queryForList("News.getRePaiNewsInfoByParams", map); 
 			 } else {
 				 Set<Tuple> tupleSet = NewsSource.getRankOfHotVideoNews(start, end);
 				 List<Integer> newsIdList = new ArrayList<Integer>();
@@ -742,7 +737,6 @@ public class NewsService {
 						map.put("newsIdList", newsIdList);
 						try {
 							newsList = SqlMapClientHelper.getInstance(DB.MASTER).queryForList("News.getHotFactorNewsList", map);
-							newsList = UserService.addUserExtra(newsList);
 							// 排序
 							List<News> newsListNew = new ArrayList<News>();
 							for (Integer newsid : newsIdList) {
@@ -841,7 +835,6 @@ public class NewsService {
 						map.put("newsIdList", manualNewIds);
 						map.put("includeQiniu", 1);
 						List<News> manualNewsList = SqlMapClientHelper.getInstance(DB.MASTER).queryForList("News.getHotFactorNewsList", map);
-						manualNewsList = UserService.addUserExtra(manualNewsList);
 						if (manualNewsList != null && manualNewsList.size() > 0) {
 							for (Map.Entry<String, String> entry : manualNewsMap.entrySet()) {
 								String newsIdStr = entry.getValue();

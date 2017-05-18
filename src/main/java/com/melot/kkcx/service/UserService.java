@@ -1,18 +1,14 @@
 package com.melot.kkcx.service;
 
-import java.lang.reflect.Method;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.log4j.Logger;
 
-import com.esotericsoftware.reflectasm.MethodAccess;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.common.driver.service.StarService;
 import com.melot.kkcore.user.api.UserInfoDetail;
@@ -77,78 +73,6 @@ public class UserService {
 		}
 		
 		return nickname;
-	}
-	
-	private static ConcurrentHashMap<Class<?>, MethodAccess> accessMap = new ConcurrentHashMap<Class<?>, MethodAccess>();
-	
-	private static ConcurrentHashMap<Class<?>, List<String>> methodMap = new ConcurrentHashMap<Class<?>, List<String>>();
-
-	public static <T> List<T> addUserExtra(List<T> tList) {
-		if (tList == null || tList.size() <= 0) {
-			return null;
-		}
-		MethodAccess access = null;
-		Method[] methods = null;
-		List<Integer> userIdList = new ArrayList<Integer>();
-		List<String> methodName = new ArrayList<String>();
-		Class<?> clazz = tList.get(0).getClass();
-		try {
-			if (methodMap.containsKey(clazz)) {
-				methodName = methodMap.get(clazz);
-			} else {
-				methods = clazz.getDeclaredMethods();
-				for (Method method : methods) {
-					methodName.add(method.getName());
-				}
-				methodMap.putIfAbsent(clazz, methodName);
-			}
-			if (accessMap.containsKey(clazz)) {
-				access = accessMap.get(clazz);
-			} else {
-				access = MethodAccess.get(clazz);
-				accessMap.putIfAbsent(clazz, access);
-			}
-			for (T t : tList) {
-				userIdList.add((int) access.invoke(t, "getUserId"));
-			}
-			List<UserProfile> profileList = getUserProfileAll(userIdList);
-			if (profileList != null && profileList.size() > 0) {
-				Map<Integer, UserProfile> profileMap = new HashMap<Integer, UserProfile>();
-				for (UserProfile userProfile : profileList) {
-					profileMap.put(userProfile.getUserId(), userProfile);
-				}
-				for (T t : tList) {
-					int userId = (int) access.invoke(t, "getUserId");
-					if (profileMap.containsKey(userId) && profileMap.get(userId) != null) {
-						if (methodName.contains("setActorTag")) {
-							access.invoke(t, "setActorTag", profileMap.get(userId).getIsActor());
-						}
-						if (methodName.contains("setPortrait_path_original")) {
-							access.invoke(t, "setPortrait_path_original", profileMap.get(userId).getPortrait());
-						}
-						if (methodName.contains("setNickname")) {
-							access.invoke(t, "setNickname", profileMap.get(userId).getNickName());
-						}
-						if (methodName.contains("setGender")) {
-							access.invoke(t, "setGender", profileMap.get(userId).getGender());
-						}
-					}
-				}
-			}
-		} catch (IllegalArgumentException e) {
-			logger.error("reflect java bean, " + clazz + " : {" + tList + "} catched exception", e);
-		}
-		return tList;
-	}
-	
-	public static UserRegistry getUserRegistryInfo(int userId) {
-		try {
-			KkUserService userService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
-			return userService.getUserRegistry(userId);
-		} catch (Exception e) {
-			logger.error("call KkUserService getUserRegistry catched exception, userId : " + userId, e);
-		}
-		return null;
 	}
 	
 	/**
@@ -374,40 +298,17 @@ public class UserService {
      * @return userInfo
      */
     public static UserInfo getUserInfo(int userId) {
-    	try {
-    		UserInfoDetail userInfoDetail = getUserInfoDetail(userId);
-			if (userInfoDetail != null) {
-				UserInfo userInfo = (UserInfo) SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("User.getUserInfo", userId);
-				if (userInfo == null) {
-					userInfo = new UserInfo();
-				}
-				if (userInfoDetail.getProfile() != null ) {
-					UserProfile userProfile = userInfoDetail.getProfile();
-					userInfo.setNickname(userProfile.getNickName());
-					userInfo.setGender(userProfile.getGender());
-					userInfo.setPhone(userProfile.getPhoneNum());
-					userInfo.setSignature(userProfile.getSignature());
-					userInfo.setIntroduce(userProfile.getIntroduce());
-					userInfo.setBirthday(userProfile.getBirthday());
-					userInfo.setActorTag(userProfile.getIsActor());
-					userInfo.setActorLevel(userProfile.getActorLevel());
-					userInfo.setRichLevel(userProfile.getUserLevel());
-				}
-				if (userInfoDetail.getRegisterInfo() != null) {
-					UserRegistry userRegistry = userInfoDetail.getRegisterInfo();
-					userInfo.setCity(userRegistry.getCityId());
-					userInfo.setRegisterTime(new Date(userRegistry.getRegisterTime()));
-					userInfo.setOpenPlatform(userRegistry.getOpenPlatform());
-				}
-				if (userInfoDetail.getAssets() != null) {
-					userInfo.setShowMoney(new Long(userInfoDetail.getAssets().getShowMoney()).intValue());
-				}
-				return userInfo;
-			}
-		} catch (Exception e) {
-			 logger.error("Fail to execute getUserInfo sql, userId " + userId, e);
-		}
-        return null;
+    	UserInfo userInfo = null;
+        try {
+        	userInfo = (UserInfo) SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("User.getUserInfo", userId);
+        	if (userInfo != null) {
+        		userInfo.setActorLevel(getActorLevel(userId));
+            	userInfo.setRichLevel(getRichLevel(userId));
+        	}
+        } catch (Exception e) {
+            logger.error("Fail to execute getUserInfo sql, userId " + userId, e);
+        }
+        return userInfo;
     }
     
     /**

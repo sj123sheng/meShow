@@ -90,6 +90,20 @@
 	    select iflimit,iflimit-hassold as remain from car_info where carid = #id#
 	</select>
 	
+	<resultMap class="java.util.HashMap" id="getUserListByChannelResultMap">
+		<result property="userId" column="userid" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+		<result property="nickname" column="nickname" javaType="java.lang.String" jdbcType="VARCHAR"/>
+	</resultMap>
+	<select id="getUserListByChannel" parameterClass="java.util.Map" resultMap="getUserListByChannelResultMap">
+		select t.userid,t.nickname from user_info t where t.qudaoid=#channelId# and t.registertime>=to_date(#startTime#, 'yyyy-mm-dd hh24:mi:ss')
+	</select>
+	<select id="getUserListByRoom" parameterClass="java.util.Map" resultMap="getUserListByChannelResultMap">
+		select t.userid,b.nickname from gift_history t,user_info b where t.dtime>=to_date(#startTime#, 'yyyy-mm-dd hh24:mi:ss')
+		and t.roomid=#roomId#
+		and t.userid = b.userid
+		group by t.userid,b.nickname
+	</select>
+	
 	<!-- 获取用户送阳光中奖详细明细信息 -->
 	<resultMap class="java.util.HashMap" id="getSendSunshineInfoResultMap">
 		<result property="nickname" column="nickname" javaType="java.lang.String" jdbcType="VARCHAR"/>

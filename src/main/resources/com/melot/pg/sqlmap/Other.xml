@@ -116,7 +116,7 @@
 			insert into conf_admin_city(id, parent_id, name) values(#id#, #parentId#, #name#)
 	</insert>
 	
-	<!-- 获取roomSource-->
+	<!-- 获取roomType-->
 	<select id="getroomTypeById" parameterClass="java.util.Map" resultClass="java.lang.Integer">
 		 select type from res_room_info where actorid = #actorId#
 	</select>
