@@ -12,8 +12,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
-import com.melot.content.config.apply.service.ApplyActorService;
-import com.melot.content.config.domain.ApplyActor;
 import com.melot.kk.activity.domain.FamilyDefineActivity;
 import com.melot.kk.activity.service.FamilyDefineActivityService;
 import com.melot.kk.activity.service.GiftHistoryBoardService;
@@ -880,7 +878,7 @@ public class ActivityCenterFunctions {
             if (type > 0) {
                 map.put("type", type);
             }
-            actorNoticeList = (List<ActorNotice>) SqlMapClientHelper.getInstance(DBEnum.KKCX_PG).queryForList("Emoticon.getactorNoticeList", map);
+            actorNoticeList = (List<ActorNotice>) SqlMapClientHelper.getInstance(DBEnum.KKCX_PG).queryForList("Other.getactorNoticeList", map);
         } catch (Exception e) {
             logger.error("ActivityCenterFunctions.getActorNotice() return exception.", e);
             result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
