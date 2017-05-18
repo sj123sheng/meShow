@@ -514,11 +514,33 @@ public class KKHallFunctions {
             return result;
         }
         
+        // 获取右边的推荐信息【取KK推荐的房间列表接口（55000002）】
+        List<RoomInfo> recommendedRoomList = null;
+        List<Integer> recommendedRoomIdList = new ArrayList<Integer>();
+        try {
+        	FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
+            recommendedRoomList = firstPageHandler.getKKRecommendRooms(1, 0, 0, 9);
+		} catch (Exception e) {
+			logger.error("Fail to call firstPageHandler.getKKRecommendRooms(1, 0, 0, 9)", e);
+		}
+        
+        //记录需要过滤的roomId号
+        if (recommendedRoomList != null && recommendedRoomList.size() > 0) {
+			for (RoomInfo roomInfo : recommendedRoomList) {
+				if (roomInfo != null && roomInfo.getActorId() != null) {
+					recommendedRoomIdList.add(roomInfo.getActorId());
+				}
+			}
+		}
+        int recommendedRoomCount = recommendedRoomIdList == null ? 0 : recommendedRoomIdList.size();
+        recommendedRoomCount *= 2; // 由于存在连麦房，过滤空间加大一点
+        
+        // 获取HD主播
         SysMenu sysMenu = null;
         FirstPageHandler firstPageHandler = null;
         try {
             firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
-            sysMenu = firstPageHandler.getPartList(486, null, null, 0, 3);
+            sysMenu = firstPageHandler.getPartList(486, null, null, 0, 3 + recommendedRoomCount);
         } catch(Exception e) {
             logger.error("Fail to call firstPageHandler.getPartList, cataId: 486", e);
         }
@@ -545,13 +567,44 @@ public class KKHallFunctions {
             JsonArray roomArray = new JsonArray();
             List<RoomInfo> roomList = sysMenu.getRooms();
             if (roomList == null || roomList.size() == 0) {
-                roomList = firstPageHandler.getHotRooms(1, -1, 0, 3);
+                roomList = firstPageHandler.getHotRooms(1, -1, 0, 3 + recommendedRoomCount);
             }
             StringBuffer sb = new StringBuffer();
             if (roomList != null) {
                 for (RoomInfo roomInfo : roomList) {
-                    roomArray.add(RoomTF.roomInfoToJson(roomInfo, platform));
+
+                	// 添加对于右边推荐数据的过滤
+                	if (recommendedRoomIdList != null 
+                			&& recommendedRoomIdList.size() > 0 
+                			&& recommendedRoomIdList.contains(roomInfo.getRoomId())) {
+                		continue;
+					}
+                	
+                	// 添加对于连麦房的过滤
+                	if (roomInfo != null && roomInfo.getRoomMode() != null && 100 == roomInfo.getRoomMode()) {
+						continue;
+					}
+                	
+                	// 添加到array中
+                	roomArray.add(RoomTF.roomInfoToJson(roomInfo, platform));
                     sb.append(roomInfo.getActorId()).append(",");
+                    
+                    // 高清推荐暂时只有3个
+                    if (roomArray.size() >= 3) {
+                        break;
+                    }
+                }
+            }
+            
+            //如果roomArray数据是空的，则还原为热门的三条数据（这块没有进行数据的过滤，希望不要走到这一步···）
+            if (roomArray == null || roomArray.size() == 0) {
+                roomList = firstPageHandler.getHotRooms(1, -1, 0, 3);
+                if (roomList != null) {
+                	for (RoomInfo roomInfo : roomList) {
+                		//添加到array中
+                    	roomArray.add(RoomTF.roomInfoToJson(roomInfo, platform));
+                        sb.append(roomInfo.getActorId()).append(",");
+                	}
                 }
             }
             
