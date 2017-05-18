@@ -31,9 +31,8 @@
 				<value>com.melot.client.api.TimSystemService</value>
 				<value>com.melot.video.driver.service.VideoInfoService</value>
 				<!-- kkGame使用 -->
-				<!-- <value>com.melot.gambling.service.GambleInfoService</value>
+				<value>com.melot.gambling.service.GambleInfoService</value>
 				<value>com.melot.lottery.service.LotteryTicketModuleService</value>
-				<value>com.melot.bang.profit.driver.service.ConfigService</value> -->
 			</list>
 		</constructor-arg>
 		<constructor-arg name="zkServices" ref="zkServices" />

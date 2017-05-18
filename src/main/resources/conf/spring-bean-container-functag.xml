@@ -467,11 +467,6 @@
 		<constructor-arg name="t" ref="profileFunction" />
 		<constructor-arg name="methodName" value="replenishSignIn" />
 	</bean>
-	<!-- 7日签到抽奖 -->
-	<bean id="50005003" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="profileFunction" />
-		<constructor-arg name="methodName" value="weeklyLottery" />
-	</bean>
 	<!-- 7日签到抽奖资格校验 -->
 	<bean id="50005004" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="profileFunction" />
@@ -1426,7 +1421,7 @@
 		<constructor-arg name="methodName" value="uniteLogin" />
 	</bean>
 	<!-- 认证手机号 -->
-	<bean id="40000019" class="com.melot.sdk.core.function.GenericFunction">
+	<bean id="40000019" name ="40000025" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="profileSecurityFunction" />
 		<constructor-arg name="methodName" value="identifyPhone" />
 	</bean>

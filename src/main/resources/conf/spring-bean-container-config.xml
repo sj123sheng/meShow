@@ -16,11 +16,11 @@
 	</bean>
 	
 	<bean id="mcmURL" class="java.lang.String">
-		<constructor-arg type="java.lang.String" value="http://10.0.3.12:60000/mcm/" />
+		<constructor-arg type="java.lang.String" value="http://10.0.13.33:60000/mcm/" />
 	</bean>
 	
 	<bean id="mfsURL" class="java.lang.String">
-		<constructor-arg type="java.lang.String" value="http://10.0.3.12:60001/mfs/" />
+		<constructor-arg type="java.lang.String" value="http://10.0.13.33:60001/mfs/" />
 	</bean>
 	
 	<bean id="versionSavePath" class="java.lang.String">

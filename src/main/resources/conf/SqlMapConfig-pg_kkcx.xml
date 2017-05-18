@@ -11,5 +11,6 @@
 	<sqlMap resource="com/melot/kkcx/sqlmap/pg/NewsMessage.xml" />
 	<sqlMap resource="com/melot/kkcx/sqlmap/pg/Activity.xml" />
 	<sqlMap resource="com/melot/kkcx/sqlmap/pg/Emoticon.xml" />
+	<sqlMap resource="com/melot/kkcx/sqlmap/pg/Other.xml" />
 	
 </sqlMapConfig>
