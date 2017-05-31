@@ -1502,16 +1502,13 @@ public class ProfileFunctions {
 		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
 			// 取出列表
 			@SuppressWarnings("unchecked")
-			List<GiftRecord> recordList = (ArrayList<GiftRecord>) map.get("recordList");
-			recordList = UserService.addUserExtra(recordList);
-			
+			List<Object> recordList = (ArrayList<Object>) map.get("recordList");
+
 			result.addProperty("TagCode", TagCode);
 			result.addProperty("pageTotal", (Integer) map.get("pageTotal"));
 			JsonArray jRecordList = new JsonArray();
-			if (recordList != null) {
-				for (Object object : recordList) {
-					jRecordList.add(((GiftRecord) object).toSendJsonObject());
-				}
+			for (Object object : recordList) {
+				jRecordList.add(((GiftRecord) object).toSendJsonObject());
 			}
 			result.add("recordList", jRecordList);
 
