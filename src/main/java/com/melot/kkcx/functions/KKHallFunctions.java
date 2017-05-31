@@ -47,8 +47,8 @@ import com.melot.sdk.core.util.MelotBeanFactory;
  * @since 2016-3-12 上午10:02:10
  */
 public class KKHallFunctions {
-	
-	private static Logger logger = Logger.getLogger(KKHallFunctions.class);
+
+    private static Logger logger = Logger.getLogger(KKHallFunctions.class);
 
     private static final String KK_USER_ROOM_CACHE_KEY = "KKHallFunctions.getKKUserRelationRoomList.%s.%s";
 
@@ -63,7 +63,7 @@ public class KKHallFunctions {
     @SuppressWarnings("unchecked")
     public JsonObject getKKUserRelationRoomList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
         JsonObject result = new JsonObject();
-        
+
         int userId, appId, platform, start, offset, filter;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
@@ -81,46 +81,46 @@ public class KKHallFunctions {
         }
 
         appId = 0;
-        
+
         int roomCount = 0;
-        
+
         final String ROOM_CACHE_KEY = String.format(KK_USER_ROOM_CACHE_KEY, appId, userId);
         if (!KKHallSource.exists(ROOM_CACHE_KEY)) {
             List<String> roomJsonList = new ArrayList<String>();
             try {
                 List<RoomInfo> guardRoomList = null;
                 List<Integer> roomIdList = new ArrayList<Integer>();
-                
+
                 // 查询守护的在线主播
                 guardRoomList = SqlMapClientHelper.getInstance(DB.SLAVE_PG).queryForList("Other.getUserGuardActors", userId);
                 if (guardRoomList != null && guardRoomList.size() > 0) {
                     for (int i = 0; i < guardRoomList.size(); i++) {
                         roomIdList.add(guardRoomList.get(i).getActorId());
                     }
-                    
+
                     // 排序
                     Collections.sort(guardRoomList, new RenqiRoomComparator());
-                    
+
                     for (RoomInfo roomInfo : guardRoomList) {
-                    	// 轮播房代理房主信息替换
-                    	if (roomInfo.getRoomId() != null && roomInfo.getActorId().intValue() != roomInfo.getRoomId()) {
-							RoomInfo tempRoomInfo = RoomService.getRoomInfo(roomInfo.getRoomId());
-							if (tempRoomInfo != null && tempRoomInfo.getRoomSource().intValue() == 8) {
-								roomInfo.setMaxCount(tempRoomInfo.getMaxCount());
-								roomInfo.setScreenType(tempRoomInfo.getScreenType());
-								roomInfo.setRoomSource(tempRoomInfo.getRoomSource());
-								roomInfo.setRoomLock(tempRoomInfo.getRoomLock());
-								roomInfo.setRoomTheme(tempRoomInfo.getRoomTheme());
-								roomInfo.setRoomMode(tempRoomInfo.getRoomMode());
+                        // 轮播房代理房主信息替换
+                        if (roomInfo.getRoomId() != null && roomInfo.getActorId().intValue() != roomInfo.getRoomId()) {
+                            RoomInfo tempRoomInfo = RoomService.getRoomInfo(roomInfo.getRoomId());
+                            if (tempRoomInfo != null && tempRoomInfo.getRoomSource().intValue() == 8) {
+                                roomInfo.setMaxCount(tempRoomInfo.getMaxCount());
+                                roomInfo.setScreenType(tempRoomInfo.getScreenType());
+                                roomInfo.setRoomSource(tempRoomInfo.getRoomSource());
+                                roomInfo.setRoomLock(tempRoomInfo.getRoomLock());
+                                roomInfo.setRoomTheme(tempRoomInfo.getRoomTheme());
+                                roomInfo.setRoomMode(tempRoomInfo.getRoomMode());
                                 roomInfo.setPeopleInRoom(tempRoomInfo.getPeopleInRoom());
-							}
-						}else{
-							roomInfo.setRoomId(roomInfo.getActorId());
-						}
+                            }
+                        } else {
+                            roomInfo.setRoomId(roomInfo.getActorId());
+                        }
                         roomJsonList.add(RoomTF.roomInfoToJson(roomInfo, platform).toString());
                     }
                 }
-                
+
                 // 取用户管理的主播
                 List<Integer> list = SqlMapClientHelper.getInstance(DB.BACKUP).queryForList("Index.getUserAdminRoomList", userId);
                 if (list != null && list.size() > 0) {
@@ -130,7 +130,7 @@ public class KKHallFunctions {
                             iterator.remove();
                         }
                     }
-                    
+
                     if (list.size() > 0) {
                         String[] roomIds = new String[list.size()];
                         int i = 0;
@@ -143,17 +143,17 @@ public class KKHallFunctions {
                             if (roomInfos != null && roomInfos.size() > 0) {
                                 // 排序
                                 Collections.sort(roomInfos, new RenqiRoomComparator());
-                                
+
                                 for (RoomInfo roomInfo : roomInfos) {
                                     roomJsonList.add(RoomTF.roomInfoToJson(roomInfo, platform).toString());
                                 }
                             }
-                        } catch(Exception e) {
+                        } catch (Exception e) {
                             logger.error("Fail to call firstPageHandler.getLiveRooms(" + roomIds + ").", e);
                         }
                     }
                 }
-                
+
                 // 取用户关注数中的 1000 个
                 Set<String> followIdSet = UserRelationService.getFollowIds(userId, 0, 1000);
                 if (followIdSet != null && followIdSet.size() > 0) {
@@ -168,7 +168,7 @@ public class KKHallFunctions {
                             roomIdList.add(followId);
                         }
                     }
-                    
+
                     if (followIdSet.size() > 0) {
                         String[] roomIds = new String[followIdSet.size()];
                         int i = 0;
@@ -181,31 +181,31 @@ public class KKHallFunctions {
                             if (roomInfos != null && roomInfos.size() > 0) {
                                 // 排序
                                 Collections.sort(roomInfos, new RenqiRoomComparator());
-                                
+
                                 for (RoomInfo roomInfo : roomInfos) {
                                     roomJsonList.add(RoomTF.roomInfoToJson(roomInfo, platform).toString());
                                 }
                             }
-                        } catch(Exception e) {
+                        } catch (Exception e) {
                             logger.error("Fail to call firstPageHandler.getLiveRooms(" + roomIds + ").", e);
                         }
                     }
                 }
-            } catch(Exception e) {
+            } catch (Exception e) {
                 logger.error("KKHallFunctions.getKKUserRelationRoomList(" + jsonObject.toString() + ") execute exception.", e);
             }
-            
+
             if (roomJsonList.size() < 1) {
                 roomJsonList.add("null");
             }
             KKHallSource.del(ROOM_CACHE_KEY);
             KKHallSource.addSortedSet(ROOM_CACHE_KEY, roomJsonList, 120);
         }
-        
+
         JsonArray roomArray = new JsonArray();
-        
+
         start = start <= 1 ? 0 : start; // 起始位置从 0 开始
-        
+
         Set<String> roomSet = KKHallSource.rangeSortedSet(ROOM_CACHE_KEY, start, start + offset - 1);
         List<Integer> roomIdList = new ArrayList<Integer>();
         if (roomSet != null && roomSet.size() > 0 && !roomSet.contains("null")) {
@@ -220,12 +220,14 @@ public class KKHallFunctions {
                 roomIdList.add(roomJsonObject.get("roomId").getAsInt());
             }
         }
-        
+
         if (start == 0 && roomCount < offset && (platform == PlatformEnum.WEB || roomCount > 0)) {
             JsonArray recommendRoomList = new JsonArray();
             try {
                 FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
-                // List<RoomInfo> roomList = firstPageHandler.getRecommendRooms(null, null, appId, 2 * offset);
+                // List<RoomInfo> roomList =
+                // firstPageHandler.getRecommendRooms(null, null, appId, 2 *
+                // offset);
                 // 将兴趣推荐作为优质主播库，从中随机推荐1~4个在播主播，推荐的主播不能与兴趣推荐前14个相同
                 List<RoomInfo> roomList = firstPageHandler.getKKRecommendRooms(userId, appId, start + filter, 2 * offset);
                 if (roomList != null && roomList.size() > 0) {
@@ -238,23 +240,23 @@ public class KKHallFunctions {
                             break;
                         }
                     }
-                    
+
                     result.add("recommendRoomList", recommendRoomList);
                     result.addProperty("recommendRoomTotal", recommendRoomList.size());
                 }
-            } catch(Exception e) {
+            } catch (Exception e) {
                 logger.error("Fail to call firstPageHandler.getRecommendRooms(null, null, " + appId + ", " + (2 * offset) + ")", e);
             }
         }
-        
+
         result.add("roomList", roomArray);
         result.addProperty("roomTotal", roomCount);
         result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        
+
         return result;
     }
-	
+
     /**
      * 获取KK推荐的房间列表接口（55000002）
      * @param jsonObject
@@ -265,7 +267,7 @@ public class KKHallFunctions {
      */
     public JsonObject getKKRecommendedList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
         JsonObject result = new JsonObject();
-        
+
         int appId, start, offset, platform, userId;
         try {
             platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, TagCodeEnum.PLATFORM_MISSING, 1, Integer.MAX_VALUE);
@@ -280,9 +282,9 @@ public class KKHallFunctions {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-        
+
         appId = 0;
-        
+
         JsonArray roomArray = new JsonArray();
         int roomCount = 0;
 
@@ -295,18 +297,18 @@ public class KKHallFunctions {
                     roomArray.add(RoomTF.roomInfoToJson(roomInfo, platform));
                 }
             }
-        } catch(Exception e) {
+        } catch (Exception e) {
             logger.error("Fail to call firstPageHandler.getKKRecommendRooms(" + userId + ", " + appId + ", " + start + ", " + offset + ")", e);
         }
-        
+
         result.add("roomList", roomArray);
         result.addProperty("roomTotal", roomCount < 1 ? roomArray.size() : roomCount);
         result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        
+
         return result;
     }
-    
+
     /**
      * 获取KK热门的房间列表接口（55000003）
      * @param jsonObject
@@ -317,12 +319,12 @@ public class KKHallFunctions {
      */
     public JsonObject getKKHotRoomList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
         JsonObject result = new JsonObject();
-        
+
         int type, gender, platform, start, offset;
         try {
             // 热门类型：1-默认排序（评分系统），2-人气，3-主播等级，4-最近开播， 5-web端默认
             type = CommonUtil.getJsonParamInt(jsonObject, "type", 2, null, 1, 5);
-            // 性别： -1：全部  0：女  1：男
+            // 性别： -1：全部 0：女 1：男
             gender = CommonUtil.getJsonParamInt(jsonObject, "gender", -1, null, 0, 1);
             platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, TagCodeEnum.PLATFORM_MISSING, 1, Integer.MAX_VALUE);
             start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, TagCodeEnum.START_MISSING, 0, Integer.MAX_VALUE);
@@ -336,17 +338,17 @@ public class KKHallFunctions {
         }
 
         start = start <= 1 ? 0 : start; // 起始位置从 0 开始
-        
+
         JsonArray roomArray = new JsonArray();
         int roomCount = 0;
-        
+
         FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
         List<RoomInfo> roomList = null;
         if (type == 5) {
-            //第一页前5个栏目优先放最近开播，其后栏目用主播等级内容补充
+            // 第一页前5个栏目优先放最近开播，其后栏目用主播等级内容补充
             roomCount = firstPageHandler.getHotRoomCount(4, gender) + firstPageHandler.getHotRoomCount(3, gender);
-            
-            //最近开播
+
+            // 最近开播
             HashSet<Integer> filterIds = new HashSet<Integer>();
             List<RoomInfo> recentList = firstPageHandler.getHotRooms(4, gender, start, offset <= 5 ? offset : 5);
             if (recentList != null && recentList.size() > 0) {
@@ -354,7 +356,7 @@ public class KKHallFunctions {
                     filterIds.add(room.getActorId());
                 }
             }
-            
+
             if (start == 0) {
                 try {
                     int filterSize = 0;
@@ -367,13 +369,13 @@ public class KKHallFunctions {
                     if (fillCount > 0) {
                         roomList.addAll(firstPageHandler.getFilterHotRooms(3, gender, filterIds, start, fillCount));
                     }
-                    
+
                     if (roomList != null && roomList.size() > 0) {
                         for (RoomInfo roomInfo : roomList) {
                             roomArray.add(RoomTF.roomInfoToJson(roomInfo, platform));
                         }
                     }
-                } catch(Exception e) {
+                } catch (Exception e) {
                     logger.error("Fail to call firstPageHandler.getHotRooms(" + type + ", " + start + ", " + offset + ")", e);
                 }
             } else {
@@ -384,10 +386,10 @@ public class KKHallFunctions {
                             roomArray.add(RoomTF.roomInfoToJson(roomInfo, platform));
                         }
                     }
-                } catch(Exception e) {
+                } catch (Exception e) {
                     logger.error("Fail to call firstPageHandler.getHotRooms(" + type + ", " + start + ", " + offset + ")", e);
                 }
-            }  
+            }
         } else {
             try {
                 roomCount = firstPageHandler.getHotRoomCount(type, gender);
@@ -397,19 +399,19 @@ public class KKHallFunctions {
                         roomArray.add(RoomTF.roomInfoToJson(roomInfo, platform));
                     }
                 }
-            } catch(Exception e) {
+            } catch (Exception e) {
                 logger.error("Fail to call firstPageHandler.getHotRooms(" + type + ", " + start + ", " + offset + ")", e);
             }
         }
-        
+
         result.add("roomList", roomArray);
         result.addProperty("roomTotal", roomCount);
         result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        
+
         return result;
     }
-    
+
     /**
      * 获得大厅显示板块(55000004)
      * @param jsonObject
@@ -417,7 +419,7 @@ public class KKHallFunctions {
      */
     public JsonObject getKKHallPlateList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
-        
+
         int platform = 0;
         int appId = 0;
         int channel = 0;
@@ -432,15 +434,15 @@ public class KKHallFunctions {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-        
+
         List<HomePage> tempList = null;
         try {
             FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
             tempList = firstPageHandler.getFistPagelist(appId, channel, platform, null, null, true, 1, true);
-        } catch(Exception e) {
+        } catch (Exception e) {
             logger.error("Fail to call firstPageHandler.getFistPagelist ", e);
         }
-        
+
         if (tempList != null) {
             JsonArray plateList = new JsonArray();
             for (HomePage temp : tempList) {
@@ -452,7 +454,7 @@ public class KKHallFunctions {
                 }
                 json.addProperty("cdnState", temp.getCdnState());
                 json.addProperty("icon", temp.getIcon());
-                if(temp.getSubTitle() != null ) {
+                if (temp.getSubTitle() != null) {
                     json.addProperty("subTitle", temp.getSubTitle());
                 }
                 if (temp.getRoomTotal() != null) {
@@ -461,12 +463,12 @@ public class KKHallFunctions {
                 if (temp.getLiveTotal() != null) {
                     json.addProperty("liveTotal", temp.getLiveTotal());
                 }
-                if(temp.getDetailId() != null) {
-                    //专区编号
+                if (temp.getDetailId() != null) {
+                    // 专区编号
                     json.addProperty("id", temp.getDetailId());
                 }
-                if(temp.getCdnState() != null) {
-                    if(temp.getCdnState() > 0 && temp.getSeatType() != 3) {
+                if (temp.getCdnState() != null) {
+                    if (temp.getCdnState() > 0 && temp.getSeatType() != 3) {
                         JsonArray roomArray = new JsonArray();
                         List<RoomInfo> roomList = temp.getRooms();
                         if (roomList != null) {
@@ -487,10 +489,10 @@ public class KKHallFunctions {
         } else {
             result.addProperty("TagCode", TagCodeEnum.FAIL_TO_CALL_API_MENU_MODULE);
         }
-        
+
         return result;
     }
-    
+
     /**
      * 获取高清房55000005
      * @param jsonObject
@@ -500,7 +502,7 @@ public class KKHallFunctions {
      */
     public JsonObject getHDRoomList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
-        
+
         @SuppressWarnings("unused")
         int platform, appId;
         try {
@@ -513,40 +515,41 @@ public class KKHallFunctions {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-        
+
         // 获取右边的推荐信息【取KK推荐的房间列表接口（55000002）】
         List<RoomInfo> recommendedRoomList = null;
         List<Integer> recommendedRoomIdList = new ArrayList<Integer>();
         try {
-        	FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
+            FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
             recommendedRoomList = firstPageHandler.getKKRecommendRooms(1, 0, 0, 9);
-		} catch (Exception e) {
-			logger.error("Fail to call firstPageHandler.getKKRecommendRooms(1, 0, 0, 9)", e);
-		}
-        
-        //记录需要过滤的roomId号
+        } catch (Exception e) {
+            logger.error("Fail to call firstPageHandler.getKKRecommendRooms(1, 0, 0, 9)", e);
+        }
+
+        // 记录需要过滤的roomId号
         if (recommendedRoomList != null && recommendedRoomList.size() > 0) {
-			for (RoomInfo roomInfo : recommendedRoomList) {
-				if (roomInfo != null && roomInfo.getActorId() != null) {
-					recommendedRoomIdList.add(roomInfo.getActorId());
-				}
-			}
-		}
+            for (RoomInfo roomInfo : recommendedRoomList) {
+                if (roomInfo != null && roomInfo.getActorId() != null 
+                        && roomInfo.getPartPosition() == null) {
+                    recommendedRoomIdList.add(roomInfo.getActorId());
+                }
+            }
+        }
         int recommendedRoomCount = recommendedRoomIdList == null ? 0 : recommendedRoomIdList.size();
         recommendedRoomCount *= 2; // 由于存在连麦房，过滤空间加大一点
-        
+
         // 获取HD主播
         SysMenu sysMenu = null;
         FirstPageHandler firstPageHandler = null;
         try {
             firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
             sysMenu = firstPageHandler.getPartList(486, null, null, 0, 3 + recommendedRoomCount);
-        } catch(Exception e) {
+        } catch (Exception e) {
             logger.error("Fail to call firstPageHandler.getPartList, cataId: 486", e);
         }
-        
+
         if (sysMenu != null) {
-            if(sysMenu.getTitleName() != null) {
+            if (sysMenu.getTitleName() != null) {
                 result.addProperty("titleName", sysMenu.getTitleName());
             }
             String subTitle = sysMenu.getSubTitle();
@@ -559,11 +562,11 @@ public class KKHallFunctions {
             } else {
                 roomTotal = 0;
             }
-            if(subTitle != null) {
+            if (subTitle != null) {
                 result.addProperty("subTitle", subTitle);
             }
             result.addProperty("roomTotal", roomTotal);
-            
+
             JsonArray roomArray = new JsonArray();
             List<RoomInfo> roomList = sysMenu.getRooms();
             if (roomList == null || roomList.size() == 0) {
@@ -573,42 +576,43 @@ public class KKHallFunctions {
             if (roomList != null) {
                 for (RoomInfo roomInfo : roomList) {
 
-                	// 添加对于右边推荐数据的过滤
-                	if (recommendedRoomIdList != null 
-                			&& recommendedRoomIdList.size() > 0 
-                			&& recommendedRoomIdList.contains(roomInfo.getRoomId())) {
-                		continue;
-					}
-                	
-                	// 添加对于连麦房的过滤
-                	if (roomInfo != null && roomInfo.getRoomMode() != null && 100 == roomInfo.getRoomMode()) {
-						continue;
-					}
-                	
-                	// 添加到array中
-                	roomArray.add(RoomTF.roomInfoToJson(roomInfo, platform));
+                    // 添加对于右边推荐数据的过滤
+                    if (recommendedRoomIdList != null && recommendedRoomIdList.size() > 0 
+                            && recommendedRoomIdList.contains(roomInfo.getRoomId()) 
+                            && roomInfo.getPartPosition() == null) {
+                        continue;
+                    }
+
+                    // 添加对于连麦房的过滤
+                    if (roomInfo != null && roomInfo.getRoomMode() != null && 100 == roomInfo.getRoomMode()) {
+                        continue;
+                    }
+
+                    // 添加到array中
+                    roomArray.add(RoomTF.roomInfoToJson(roomInfo, platform));
                     sb.append(roomInfo.getActorId()).append(",");
-                    
+
                     // 高清推荐暂时只有3个
                     if (roomArray.size() >= 3) {
                         break;
                     }
                 }
             }
-            
-            //如果roomArray数据是空的，则还原为热门的三条数据（这块没有进行数据的过滤，希望不要走到这一步···）
+
+            // 如果roomArray数据是空的，则还原为热门的三条数据（这块没有进行数据的过滤，希望不要走到这一步···）
             if (roomArray == null || roomArray.size() == 0) {
                 roomList = firstPageHandler.getHotRooms(1, -1, 0, 3);
                 if (roomList != null) {
-                	for (RoomInfo roomInfo : roomList) {
-                		//添加到array中
-                    	roomArray.add(RoomTF.roomInfoToJson(roomInfo, platform));
+                    for (RoomInfo roomInfo : roomList) {
+
+                        // 添加到array中
+                        roomArray.add(RoomTF.roomInfoToJson(roomInfo, platform));
                         sb.append(roomInfo.getActorId()).append(",");
-                	}
+                    }
                 }
             }
-            
-            //高清房间无在播主播时用热门房间替代，无配置海报，使用前端默认海报
+
+            // 高清房间无在播主播时用热门房间替代，无配置海报，使用前端默认海报
             if (sysMenu != null && sysMenu.getLiveTotal() != 0) {
                 // 高清房间海报
                 String roomIds = sb.toString().substring(0, sb.toString().length() - 1);
@@ -629,19 +633,19 @@ public class KKHallFunctions {
                         }
                     }
                 }
-                result.add("posterList", posterArray);                
+                result.add("posterList", posterArray);
             }
-            
+
             result.add("roomList", roomArray);
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
         } else {
             result.addProperty("TagCode", TagCodeEnum.FAIL_TO_CALL_API_MENU_MODULE);
         }
-        
+
         return result;
     }
-    
+
 }
 
 class RenqiRoomComparator implements Comparator<RoomInfo> {
@@ -649,7 +653,7 @@ class RenqiRoomComparator implements Comparator<RoomInfo> {
     @Override
     public int compare(RoomInfo o1, RoomInfo o2) {
         int compareValue = 0;
-        
+
         Integer peopleInRoom1 = o1.getPeopleInRoom();
         peopleInRoom1 = peopleInRoom1 == null ? 0 : peopleInRoom1;
         Integer peopleInRoom2 = o2.getPeopleInRoom();
@@ -669,8 +673,8 @@ class RenqiRoomComparator implements Comparator<RoomInfo> {
                 compareValue = (int) (date2.getTime() - date1.getTime());
             }
         }
-        
+
         return compareValue;
     }
-    
+
 }
