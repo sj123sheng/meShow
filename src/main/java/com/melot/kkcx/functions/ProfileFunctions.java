@@ -128,8 +128,10 @@ public class ProfileFunctions {
             fromLogin = CommonUtil.getJsonParamInt(jsonObject, "fromLogin", 0, null, 0, 1);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
+            return result;
         } catch (Exception e) {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
         }
 		
         Transaction t;
@@ -312,7 +314,7 @@ public class ProfileFunctions {
 			} finally {
 				t.complete();
 			}
-		    if (userInfoDetail == null) {
+		    if (userInfoDetail == null || userInfoDetail.getRegisterInfo() == null) {
 		    	JsonObject reResult = new JsonObject();
 		    	reResult.addProperty("TagCode", TagCodeEnum.USER_NOT_EXIST);
 				return reResult;
@@ -1500,13 +1502,16 @@ public class ProfileFunctions {
 		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
 			// 取出列表
 			@SuppressWarnings("unchecked")
-			List<Object> recordList = (ArrayList<Object>) map.get("recordList");
-
+			List<GiftRecord> recordList = (ArrayList<GiftRecord>) map.get("recordList");
+			recordList = UserService.addUserExtra(recordList);
+			
 			result.addProperty("TagCode", TagCode);
 			result.addProperty("pageTotal", (Integer) map.get("pageTotal"));
 			JsonArray jRecordList = new JsonArray();
-			for (Object object : recordList) {
-				jRecordList.add(((GiftRecord) object).toSendJsonObject());
+			if (recordList != null) {
+				for (Object object : recordList) {
+					jRecordList.add(((GiftRecord) object).toSendJsonObject());
+				}
 			}
 			result.add("recordList", jRecordList);
 
