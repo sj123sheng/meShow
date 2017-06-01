@@ -423,4 +423,33 @@ public class TagCodeEnum {
     
     /** 置顶用户ID无效 */
     public static final String TOP_USERID_MISSING = "05510001";
+    
+    /** 配置信息不存在 */
+    public static final String CONFIG_KEY_NOT_EXIST = "05110102";
+    
+    /*---------礼物配置信息相关错误码-------------*/
+    
+    /** 模块没有数据返回 */
+    public static final String GIFT_MODULE_NULL = "05110301";
+    
+    /** 对应{com.melot.room.gift.constant.ReturnResultCode#ERROR_PARMETER}*/
+    public static final String GIFT_MODULE_ERROR_PARMETER = "05110302";
+    
+    /** 对应{com.melot.room.gift.constant.ReturnResultCode#ERROR_SQL*/
+    public static final String GIFT_MODULE_ERROR_SQL = "05110303";
+    
+    /** 对应{com.melot.room.gift.constant.ReturnResultCode#ERROR_REQUEST_TIMEOUT}*/
+    public static final String GIFT_MODULE_ERROR_REQUEST_TIMEOUT = "05110304";
+    
+    /** 我们不知道的module错误*/
+    public static final String GIFT_MODULE_ERROR_UNDEFINED = "05110305";
+    
+    /** 没有成功获取版本号*/
+    public static final String GIFT_VERSION_IS_NULL = "05110306";
+    
+    /*-------------------END----------------------*/
+    
+    /** 交友房表情信息获取失败 */
+    public static final String EMOTICON_NOT_FIND = "05110401";
+    
 }

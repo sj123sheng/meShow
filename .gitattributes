@@ -62,6 +62,7 @@ src/main/java/com/melot/kkcx/service/TimService.java -text
 src/main/java/com/melot/kkcx/service/UserAssetServices.java -text
 src/main/java/com/melot/kkcx/service/UserRelationService.java -text
 src/main/java/com/melot/kkcx/service/UserService.java -text
+src/main/java/com/melot/kkcx/transform/FriendEmoticonTF.java -text
 src/main/java/com/melot/kkcx/transform/GuardTF.java -text
 src/main/java/com/melot/kkcx/transform/LiveShowTF.java -text
 src/main/java/com/melot/kkcx/transform/NewsCommentTF.java -text
@@ -137,6 +138,7 @@ src/main/java/com/melot/kktv/action/AssetFunctions.java -text
 src/main/java/com/melot/kktv/action/BackgroundAction.java -text
 src/main/java/com/melot/kktv/action/CallbackAction.java -text
 src/main/java/com/melot/kktv/action/ChargingFunctions.java -text
+src/main/java/com/melot/kktv/action/ConfigFunctions.java -text
 src/main/java/com/melot/kktv/action/ConflictFunctions.java -text
 src/main/java/com/melot/kktv/action/ConsumAction.java -text
 src/main/java/com/melot/kktv/action/FamilyAction.java -text
@@ -172,6 +174,7 @@ src/main/java/com/melot/kktv/domain/BuyTicketHistory.java -text
 src/main/java/com/melot/kktv/domain/CarConfigInfo.java -text
 src/main/java/com/melot/kktv/domain/CarInfo.java -text
 src/main/java/com/melot/kktv/domain/CarPriceInfo.java -text
+src/main/java/com/melot/kktv/domain/ConfigGiftInfo.java -text
 src/main/java/com/melot/kktv/domain/ExpConfInfo.java -text
 src/main/java/com/melot/kktv/domain/HistTicketOpt.java -text
 src/main/java/com/melot/kktv/domain/Honour.java -text

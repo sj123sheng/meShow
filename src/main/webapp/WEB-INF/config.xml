@@ -41,6 +41,7 @@
 	<vip1kickout>0</vip1kickout>
 	<vip1shutup>0</vip1shutup>
 	
+	<kkDomain>http://rescdn.kktv8.com/kktv</kkDomain>
 	<parkCarResURL>http://rescdn.kktv8.com/kktv/car/big/</parkCarResURL>
 	<parkLogoResURL>http://rescdn.kktv8.com/kktv/car/logo/</parkLogoResURL>
 	<vipResURL>http://rescdn.kktv8.com/kktv/icon/iphone/vip/</vipResURL>

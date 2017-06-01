@@ -2491,4 +2491,27 @@
 		<constructor-arg name="methodName" value="getRoundRoomActList" />
 	</bean>
 	
+	<!-- 根据KEY获取配置信息 -->
+	<bean id="50001101" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="configFunctions" />
+		<constructor-arg name="methodName" value="getConfigInfoByKey" />
+	</bean>
+	
+	<!-- 根据KEY获取对应的版本信息 -->
+	<bean id="50001102" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="configFunctions" />
+		<constructor-arg name="methodName" value="getVersionByKey" />
+	</bean>
+	
+	<!-- 获取礼物配置信息 -->
+	<bean id="50001103" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="configFunctions" />
+		<constructor-arg name="methodName" value="getGiftConfigInfo" />
+	</bean>
+	
+	<!-- 获取交友房表情配置信息 -->
+	<bean id="50001104" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="configFunctions" />
+		<constructor-arg name="methodName" value="getFriendEmoticonConfigInfo" />
+	</bean>
 </beans>

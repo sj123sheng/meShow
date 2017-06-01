@@ -166,4 +166,7 @@
 	<!-- 获取轮播房节目列表 -->
 	<bean id="roundRoomFunction" class="com.melot.kktv.action.RoundRoomFunction" />
 	
+	<!-- 配置信息相关接口 -->
+	<bean id="configFunctions" class="com.melot.kktv.action.ConfigFunctions" />
+	
 </beans>

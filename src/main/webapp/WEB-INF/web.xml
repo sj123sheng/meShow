@@ -67,9 +67,9 @@
 	<context-param>
 		<param-name>tlsSoLocation</param-name>
 		<!-- linux jnisigcheck.so -->
-		<!-- <param-value>WEB-INF/jnisigcheck.so</param-value> -->
+		<param-value>WEB-INF/jnisigcheck.so</param-value>
 		<!-- windows jnisigcheck.dll -->
-		<param-value>WEB-INF/jnisigcheck.dll</param-value>
+		<!-- <param-value>WEB-INF/jnisigcheck.dll</param-value> -->
 	</context-param>
 	
 	<listener>

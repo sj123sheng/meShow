@@ -183,6 +183,11 @@ public class ConfigHelper {
     private static String sdk_appid;
     private static String expire_after;
     
+    /**
+     * KK自己维护的资源服务器域名
+     */
+    private static String kkDomain = "";
+    
 	@SuppressWarnings("unchecked")
     public static void initConfig(String path) {
 
@@ -376,6 +381,8 @@ public class ConfigHelper {
             accountType = root.getChildText("accountType");
 			sdk_appid = root.getChildText("sdk_appid");
 			expire_after = root.getChildText("expire_after");
+			
+			kkDomain = root.getChildText("kkDomain");
             
 		} catch (Exception e) {
 			logger.error("读取配置文件config.xml异常!", e);
@@ -1192,5 +1199,12 @@ public class ConfigHelper {
 	public static String getExpire_after() {
 		return expire_after;
 	}
+    
+    public static String getKkDomain() {
+        return kkDomain;
+    }
 
+    public static void setKkDomain(String kkDomain) {
+        ConfigHelper.kkDomain = kkDomain;
+    }
 }
