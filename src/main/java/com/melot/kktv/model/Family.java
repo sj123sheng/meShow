@@ -2,8 +2,8 @@ package com.melot.kktv.model;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.melot.family.driver.domain.FamilyInfo;
 import com.melot.kktv.util.PlatformEnum;
-import com.mongodb.DBObject;
 
 public class Family {
 	
@@ -119,20 +119,20 @@ public class Family {
         this.open = open;
     }
 
-    public void initJavaBean(DBObject dbObj, int platform) {
-		this.familyId = (Integer) dbObj.get("familyId");
-		if (dbObj.containsField("familyName")) this.familyName = (String) dbObj.get("familyName");
-		if (dbObj.containsField("memberCount")) this.memberCount = (Integer) dbObj.get("memberCount");
-		if (dbObj.containsField("actorCount")) this.actorCount = (Integer) dbObj.get("actorCount");
-		if (dbObj.containsField("familyNotice")) this.familyNotice = (String) dbObj.get("familyNotice");
-		if (dbObj.containsField("createTime")) this.createTime = (Long) dbObj.get("createTime");
-		if (dbObj.containsField("familyMedal")) this.familyMedal = (Integer) dbObj.get("familyMedal");
-		if (dbObj.containsField("familyLeader")) this.familyLeader = (Integer) dbObj.get("familyLeader");
-		if (dbObj.containsField("maxCount")) this.maxCount = (Integer) dbObj.get("maxCount");
-		if (dbObj.containsField("familyRoomId")) this.familyRoomId = (Integer) dbObj.get("familyRoomId");
-		if (dbObj.containsField("open")) this.open = (Integer) dbObj.get("open");
-		if (dbObj.containsField("familyPoster")) {
-			String familyPosterStr = (String) dbObj.get("familyPoster");
+    public void initJavaBean(FamilyInfo familyInfo, int platform) {
+		this.familyId = familyInfo.getFamilyId();
+		this.familyName = familyInfo.getFamilyName();
+		this.memberCount = familyInfo.getMemberCount();
+		this.actorCount = familyInfo.getActorCount();
+		this.familyNotice = familyInfo.getFamilyNotice();
+		this.createTime = familyInfo.getCreateTime().getTime();
+		this.familyMedal = familyInfo.getMedalId();
+		this.familyLeader = familyInfo.getFamilyLeader();
+		this.maxCount = familyInfo.getMaxCount();
+		this.familyRoomId = familyInfo.getFamilyRoomId();
+		this.open = familyInfo.getOpen();
+		if (familyInfo.getFamilyPoster() != null) {
+			String familyPosterStr = familyInfo.getFamilyPoster();
 			try {
 				FamilyPoster familyPoster = new Gson().fromJson(familyPosterStr, FamilyPoster.class);
 				switch (platform) {
