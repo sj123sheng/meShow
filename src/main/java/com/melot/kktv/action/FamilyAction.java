@@ -29,6 +29,7 @@ import com.melot.family.driver.domain.ApplyFamilyHist;
 import com.melot.family.driver.domain.FamilyInfo;
 import com.melot.family.driver.domain.RespMsg;
 import com.melot.family.driver.service.FamilyAdminNewService;
+import com.melot.family.driver.service.FamilyInfoService;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcx.service.FamilyMatchService;
 import com.melot.kkcx.service.FamilyService;
@@ -2630,6 +2631,59 @@ public class FamilyAction {
                     result.addProperty("TagCode", TagCodeEnum.SUCCESS);
                 }
             }
+        }
+        
+        return result;
+    }
+	
+    /**
+     * 根据家族id模糊查询（50001023）
+     * 
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getFamilyInfoList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        int familyId, pageIndex, countPerPage;
+        
+        try {
+            familyId = CommonUtil.getJsonParamInt(jsonObject, "familyId", 0, null, 0, Integer.MAX_VALUE);
+            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
+            countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 5, null, 0, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        try {
+            FamilyInfoService familyInfoService = (FamilyInfoService) MelotBeanFactory.getBean("newFamilyInfoService");
+            int familyCount = familyInfoService.getFamilyInfoListCount(familyId);
+            if (familyCount > 0) {
+                List<FamilyInfo> familyInfoList = familyInfoService.getFamilyInfoListByFamilyIdKey(familyId, pageIndex, countPerPage);
+                if (familyInfoList != null && familyInfoList.size() > 0) {
+                    JsonArray familyInfoArray = new JsonArray();
+                    for (FamilyInfo familyInfo : familyInfoList) {
+                        JsonObject jsonObj = new JsonObject();
+                        jsonObj.addProperty("familyId", familyInfo.getFamilyId());
+                        jsonObj.addProperty("familyName", familyInfo.getFamilyName());
+                        familyInfoArray.add(jsonObj);
+                    }
+                    result.add("familyInfoList", familyInfoArray);
+                }
+                result.addProperty("count", familyCount);
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            } else {
+                result.addProperty("TagCode", "01230001");
+            }
+        } catch(Exception e) {
+            logger.error("familyInfoService.getFamilyInfoListByFamilyIdKey(" + familyId + ") return exception.", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
         }
         
         return result;
