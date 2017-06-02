@@ -13,9 +13,6 @@ import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 
-import com.melot.kkcx.service.MessageService;
-import com.melot.kkcx.service.UserService;
-import com.melot.kkcx.transform.RoomTF;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -28,15 +25,13 @@ import com.melot.family.driver.domain.RespMsg;
 import com.melot.family.driver.service.FamilyAdminService;
 import com.melot.family.driver.service.FamilyInfoService;
 import com.melot.family.driver.service.FamilyOperatorService;
+import com.melot.kkcx.transform.RoomTF;
 import com.melot.kktv.domain.Honour;
 import com.melot.kktv.model.Family;
 import com.melot.kktv.model.FamilyApplicant;
 import com.melot.kktv.model.FamilyHonor;
 import com.melot.kktv.model.FamilyMember;
 import com.melot.kktv.model.FamilyPoster;
-import com.melot.kktv.util.db.DB;
-import com.melot.kktv.util.db.SqlMapClientHelper;
-import com.melot.kktv.util.mongodb.CommonDB;
 import com.melot.kktv.redis.FamilyApplySource;
 import com.melot.kktv.redis.FamilyHonorSource;
 import com.melot.kktv.redis.FamilyRoomSource;
@@ -53,11 +48,13 @@ import com.melot.kktv.util.FamilyRankingEnum;
 import com.melot.kktv.util.PlatformEnum;
 import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
+import com.melot.kktv.util.db.DB;
+import com.melot.kktv.util.db.SqlMapClientHelper;
+import com.melot.kktv.util.mongodb.CommonDB;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
-import com.mongodb.QueryOperators;
 
 public class FamilyService {
 	
@@ -239,15 +236,14 @@ public class FamilyService {
 	 * @return
 	 */
 	public static Family getFamilyInfo(int familyId, int platform) {
-		BasicDBObject dbObj = (BasicDBObject) CommonDB.getInstance(CommonDB.COMMONDB)
-				.getCollection(CollectionEnum.FAMILYLIST)
-				.findOne(new BasicDBObject("familyId", familyId));
-		if (dbObj != null) {
-			Family family = new Family();
-			family.initJavaBean(dbObj, platform);
-			return family;
-		}
-		return null;
+	    Family family = null;
+	    FamilyInfo familyInfo;
+	    if ((familyInfo = getFamilyInfoByFamilyId(familyId)) != null) {
+            family = new Family();
+            family.initJavaBean(familyInfo, platform);
+        }
+	    
+	    return family;
 	}
 	
 	
@@ -595,27 +591,14 @@ public class FamilyService {
 	 * @param memberCount
 	 * @param actorCount
 	 */
-	private static void updateFamilyMemberCount(int familyId, int memberCount, int actorCount) {
-		DBObject updateDBObj = new BasicDBObject();
-		updateDBObj.put("memberCount", memberCount);
-		updateDBObj.put("actorCount", actorCount);
-		CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.FAMILYLIST).update(
-				new BasicDBObject("familyId", familyId),
-				new BasicDBObject("$set", updateDBObj),
-				false, false);
-		
-		try {
-		    FamilyAdminService familyAdminService = (FamilyAdminService) MelotBeanFactory.getBean("familyAdminService");
-	        if (familyAdminService != null) {
-	            FamilyInfo familyInfo = new FamilyInfo();
-	            familyInfo.setFamilyId(familyId);
-	            familyInfo.setMemberCount(memberCount);
-	            familyInfo.setActorCount(actorCount);
-	            familyAdminService.updateFamilyInfo(familyInfo);
-	        }
-		} catch (Exception e) {
-		    logger.info("fail to familyAdminService.updateFamilyInfo()", e);
-		}
+	private static void updateFamilyMemberCount(int familyId, int memberCount) {
+	    FamilyAdminService familyAdminService = (FamilyAdminService) MelotBeanFactory.getBean("familyAdminService");
+	    if (familyAdminService != null) {
+	        FamilyInfo familyInfo = new FamilyInfo();
+	        familyInfo.setFamilyId(familyId);
+	        familyInfo.setMemberCount(memberCount);
+	        familyAdminService.updateFamilyInfo(familyInfo);
+	    }
 	}
 	
 	/**
@@ -664,9 +647,8 @@ public class FamilyService {
 			if (TagCode.equals(TagCodeEnum.SUCCESS)) {
 				// 更新家族成员个数和家族主播个数
 				Integer memberCount = (Integer) map.get("memberCount");
-				Integer actorCount = (Integer) map.get("actorCount");
-				if (memberCount != null && actorCount != null) {
-					updateFamilyMemberCount(familyId, memberCount.intValue(), actorCount.intValue());
+				if (memberCount != null) {
+					updateFamilyMemberCount(familyId, memberCount.intValue());
 				}
 				// 更新mongodb的userList中familyId字段
 				updateUserFamilyId(userId, null);
@@ -851,9 +833,8 @@ public class FamilyService {
 				
 				// 更新家族成员个数和家族主播个数
 				Integer memberCount = (Integer) map.get("memberCount");
-				Integer actorCount = (Integer) map.get("actorCount");
-				if (memberCount != null && actorCount != null) {
-					updateFamilyMemberCount(family.getFamilyId().intValue(), memberCount.intValue(), actorCount.intValue());
+				if (memberCount != null) {
+					updateFamilyMemberCount(family.getFamilyId().intValue(), memberCount.intValue());
 				}
 				
 				List<String> notPassUseridsList = new ArrayList<String>();
@@ -1069,9 +1050,8 @@ public class FamilyService {
 				
 				// 更新家族成员个数和家族主播个数
 				Integer memberCount = (Integer) map.get("memberCount");
-				Integer actorCount = (Integer) map.get("actorCount");
-				if (memberCount != null && actorCount != null) {
-					updateFamilyMemberCount(family.getFamilyId().intValue(), memberCount.intValue(), actorCount.intValue());
+				if (memberCount != null) {
+					updateFamilyMemberCount(family.getFamilyId().intValue(), memberCount.intValue());
 				}
 				
 				List<String> notPassUseridsList = new ArrayList<String>();
@@ -1162,15 +1142,14 @@ public class FamilyService {
 	 */
 	public static List<Family> getFamilyListByIds(List<Integer> familyIdList, int platform) {
 		List<Family> familyList = new ArrayList<Family>();
+		FamilyInfo familyInfo;
+		Family family;
 		for (Integer familyId : familyIdList) {
-		    DBObject queryObject = new BasicDBObject();
-		    queryObject.put("familyId", familyId);
-		    queryObject.put("open", new BasicDBObject(QueryOperators.NIN, new int[]{2}));
-			DBObject dbObj = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.FAMILYLIST).findOne(queryObject);
-			if (dbObj != null) {
-			    Family family = new Family();
-			    family.initJavaBean(dbObj, platform);
-			    familyList.add(family);
+		    if ((familyInfo = getFamilyInfoByFamilyId(familyId)) != null) {
+		        family = new Family();
+		        family.initJavaBean(familyInfo, platform);
+		        
+		        familyList.add(family);
             }
 		}
 		return familyList;
@@ -1178,17 +1157,7 @@ public class FamilyService {
 	
 	/* ------ 申请主播获取家族相关service ------ */
 	public static FamilyInfo getFamilyInfoByFamilyId(int familyId) {
-		try {
-			FamilyInfoService familyInfoService = (FamilyInfoService) MelotBeanFactory.getBean("newFamilyInfoService");
-			if (familyInfoService == null) {
-				logger.error("FamilyService.getFamilyInfoByFamilyId exception(FamilyService is null), familyId : " + familyId);
-				return null;
-			}
-			return familyInfoService.getFamilyInfoByFamilyId(familyId);
-		} catch (Exception e) {
-			logger.error("FamilyService.getFamilyInfoByFamilyId exception, familyId : " + familyId);
-			return null;
-		}
+		return getFamilyInfoByFamilyId(familyId, AppIdEnum.AMUSEMENT);
 	}
 
     public static FamilyInfo getFamilyInfoByFamilyId(int familyId, int appId) {
@@ -1363,12 +1332,12 @@ public class FamilyService {
 		return false;
 	}
 	
-	public static void checkBecomeFamilyMember(int userId, int status, int appId) {
+	public static boolean checkBecomeFamilyMember(int userId, int status, int appId) {
 		try {
 			FamilyOperatorService familyOperatorService = (FamilyOperatorService) MelotBeanFactory.getBean("familyOperatorService");
 			RespMsg respMsg = familyOperatorService.checkBecomeFamilyMember(userId, 0, appId, status, null, null);
 			if (respMsg.getTagCode().equals("00000000")) {
-				return;
+				return true;
 			} else {
 				logger.error("FamilyService.checkBecomeFamilyMember fail respTagCode :"
 						+ respMsg.getTagCode() + "respMsg : " + respMsg.getRespMsg());
@@ -1376,6 +1345,7 @@ public class FamilyService {
 		} catch (Exception e) {
 			logger.error("FamilyService.checkBecomeFamilyMember exception, userId :" + userId, e);
 		}
+		return false;
 	}
     
     public static String checkBecomeFamilyActor(int userId, int status) {
