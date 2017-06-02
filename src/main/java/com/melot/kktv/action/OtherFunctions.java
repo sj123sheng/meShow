@@ -24,6 +24,7 @@ import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.blacklist.service.BlacklistService;
 import com.melot.content.config.apply.service.ApplyActorService;
 import com.melot.content.config.domain.ApplyActor;
+import com.melot.content.config.domain.BrokerageFirmInfo;
 import com.melot.content.config.domain.GalleryInfo;
 import com.melot.content.config.domain.GalleryOrderRecord;
 import com.melot.content.config.domain.RecordProcessedRecord;
@@ -931,6 +932,12 @@ public class OtherFunctions {
 				if (applyActor.getOperatorId() != null) {
 				    result.addProperty("operatorId", applyActor.getOperatorId());
                 }
+				if (applyActor.getApplyFamilyId() != null) {
+                    result.addProperty("familyId", applyActor.getApplyFamilyId());
+                }
+				if (applyActor.getBrokerageFirm() != null) {
+				    result.addProperty("brokerageFirm", applyActor.getBrokerageFirm());
+				}
 			} else {
 				// 返回家族信息
 			    Integer familyId = null;
@@ -1928,6 +1935,424 @@ public class OtherFunctions {
         result.addProperty("TagCode",  TagCodeEnum.SUCCESS);
         return result;
     }
+    
+    /**
+     * 50001020-申请主播
+     * @param jsonObject
+     * @param checkTag
+     * @return
+     */
+    public JsonObject applyForActor(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+        
+        int userId, gender, appId, operatorId, familyId, isOk;
+        String realName, identityId, mobileNum, qqNum, wechatNum, idPicOnHand, idPicFont, idPicBack, brokerageFirm;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            appId = CommonUtil.getJsonParamInt(jsonObject, "a", 0, TagCodeEnum.APPID_MISSING, 1, Integer.MAX_VALUE);
+            realName = CommonUtil.getJsonParamString(jsonObject, "realName", null, TagCodeEnum.REALNAME_MISSING, 1, 20);
+            identityId = CommonUtil.getJsonParamString(jsonObject, "identityNumber", null, TagCodeEnum.IDENTITY_MISSING, 1, 50);
+            idPicOnHand =  CommonUtil.getJsonParamString(jsonObject, "identityPictureOnHand", null, TagCodeEnum.IDPICONHAND_MISSING, 1, 200);
+            
+            gender = CommonUtil.getJsonParamInt(jsonObject, "gender", -1, null, 0, Integer.MAX_VALUE);
+            if (gender < 0 && identityId.length() == 18) {
+                gender = StringUtil.parseFromStr(identityId.substring(16, 17), 0) % 2;
+            }
+            mobileNum = CommonUtil.getJsonParamString(jsonObject, "mobile", null, null, 5 , 20);
+            qqNum =  CommonUtil.getJsonParamString(jsonObject, "qqNumber", null, null, 1, 50);
+            wechatNum =  CommonUtil.getJsonParamString(jsonObject, "wechatNumber", null, null, 1, 50);
+            
+            // 添加 身份证正面照图片（Bang必传） 和 运营ID
+            idPicFont =  CommonUtil.getJsonParamString(jsonObject, "identityPictureFont", null, null, 1, 200);
+            idPicBack =  CommonUtil.getJsonParamString(jsonObject, "identityPictureBack", null, null, 1, 200);
+            operatorId = CommonUtil.getJsonParamInt(jsonObject, "operatorId", 0, null, 1, Integer.MAX_VALUE);
+            familyId = CommonUtil.getJsonParamInt(jsonObject, "familyId", 0, null, 1, Integer.MAX_VALUE);
+            brokerageFirm = CommonUtil.getJsonParamString(jsonObject, "brokerageFirm", null, "01200001", 1, 200);
+            isOk = CommonUtil.getJsonParamInt(jsonObject, "isOk", 0, TagCodeEnum.ISOK_MISSIING, 0, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        try {
+            //不同意相关协议无法申请
+            if (isOk != 1) {
+                result.addProperty("TagCode", "01200004");
+                return result;
+            }
+            
+            //运营不存在
+            if (operatorId != 0 && !com.melot.kkcx.service.UserService.isValidOperator(operatorId)) {
+                result.addProperty("TagCode", "01200005");
+                return result;
+            }
+            
+            //身份证黑名单不得申请
+            BlacklistService blacklistService = (BlacklistService) MelotBeanFactory.getBean("blacklistService");
+            boolean flag = blacklistService.isIdentityBlacklist(identityId);
+            if (flag) {
+                result.addProperty("TagCode", TagCodeEnum.IDENTITY_BLACK_LIST);
+                return result;
+            }
+            
+            // 用户无效不能申请
+            UserStaticInfo userInfo = UserService.getUserStaticInfoV2(userId);
+            if (userInfo == null) {
+                result.addProperty("TagCode", TagCodeEnum.USER_NOT_EXIST);
+                return result;
+            }
+            
+            // 用户昵称为空不能申请
+            if (StringUtil.strIsNull(userInfo.getProfile().getNickName())) {
+                result.addProperty("TagCode", TagCodeEnum.NICKNAME_EMPTY);
+                return result;
+            }
+            
+            // 游客不能申请
+            if(userInfo.getRegisterInfo().getOpenPlatform() == 0 || userInfo.getRegisterInfo().getOpenPlatform() == -5) {
+                result.addProperty("TagCode", TagCodeEnum.USER_IS_VISITOR);
+                return result;
+            }
+            
+            // 黑名单用户不能申请
+            if (com.melot.kkcx.service.UserService.blackListUser(userId)) {
+                result.addProperty("TagCode", TagCodeEnum.USER_IN_BLACK);
+                return result;
+            }
+
+            // 家族成员不能申请成为家族主播
+            if (FamilyService.isFamilyMember(userId)) {
+                result.addProperty("TagCode", TagCodeEnum.MEMBER_CANT_APPLY);
+                return result;
+            }
+            
+            // 未绑定手机的用户不能申请
+            try {
+                KkUserService userService = MelotBeanFactory.getBean("kkUserService", KkUserService.class);
+                UserProfile userProfile = userService.getUserProfile(userId);
+                if (userProfile == null || userProfile.getIdentifyPhone() == null) {
+                  result.addProperty("TagCode", "01200002");
+                  return result;
+                } else {
+                    mobileNum = userProfile.getIdentifyPhone();
+                }
+            } catch (Exception e) {
+                logger.error("Fail to get KkUserService.getUserProfile. userId: " + userId, e);
+            }
+            
+            ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
+            
+            //校验经济公司是否存在
+            if (!applyActorService.isExistbrokerageFirm(brokerageFirm)) {
+                result.addProperty("TagCode", "01200003");
+                return result;
+            }
+            
+            if (familyId > 0) {
+                FamilyInfo familyInfo = FamilyService.getFamilyInfoByFamilyId(familyId);
+                // 判断家族是否存在
+                if (familyInfo == null) {
+                    result.addProperty("TagCode", TagCodeEnum.FAMILY_ISNOT_EXIST);
+                    return result;
+                }
+            }
+            
+            List<ApplyActor> applies = applyActorService.getApplyActorsByParameter(identityId, mobileNum, qqNum);
+            if (applies != null && applies.size() > 0) {
+                for (ApplyActor apply : applies) {
+                    //巡管审核驳回 或 家族驳回
+                    if (apply.getStatus() < 0 || apply.getStatus() == 6) {
+                        continue;
+                    }
+                    
+                    if (apply.getActorId().equals(userId)) {
+                        if (apply.getAppId().equals(appId)) {
+                            result.addProperty("TagCode", TagCodeEnum.HAS_APPLY_PLAY);
+                            return result;
+                        } else {
+                            result.addProperty("TagCode", TagCodeEnum.HAS_APPLY_OTHER_APP);
+                            return result;
+                        }
+                    } else if (apply.getAppId().equals(appId)) {
+                        // 身份证已经存在
+                        if (apply.getIdentityNumber() != null && apply.getIdentityNumber().equals(identityId)) {
+                            result.addProperty("TagCode", TagCodeEnum.APPLY_IDNUM_EXISTS);
+                            return result;
+                        }
+                        // 手机号已经存在
+                        if (apply.getMobile() != null && mobileNum != null && apply.getMobile().equals(mobileNum)) {
+                            result.addProperty("TagCode", TagCodeEnum.APPLY_MOBILE_EXISTS);
+                            return result;
+                        }
+                        // qq号已经存在
+                        if (apply.getQqNumber() != null && qqNum != null && apply.getQqNumber().equals(qqNum)) {
+                            result.addProperty("TagCode", TagCodeEnum.APPLY_QQNUM_EXISTS);
+                            return result;
+                        }
+                    }
+                }
+            }
+            
+            // 查看同一身份证是否有绑定的家族ID
+            Integer bindfamilyId = applyActorService.getFamilyIdByIdentityNumber(identityId);
+            if (bindfamilyId != null) {
+                FamilyInfo otherFamilyInfo = FamilyService.getFamilyInfoByFamilyId(bindfamilyId);
+                if (otherFamilyInfo != null) {
+                    result.addProperty("TagCode", TagCodeEnum.IDENTITY_HAS_FAMILY);
+                    result.addProperty("familyId", bindfamilyId);
+                    result.addProperty("familyName", otherFamilyInfo.getFamilyName());
+                    return result;
+                }
+            }
+            
+            ApplyActor applyActor = new ApplyActor();
+            applyActor.setActorId(userId);
+            applyActor.setAppId(appId);
+            applyActor.setRealName(realName);
+            applyActor.setIdentityNumber(identityId);
+            applyActor.setIdentityPictureOnHand(idPicOnHand);
+            applyActor.setBrokerageFirm(brokerageFirm);
+            
+            if (familyId > 0) {
+                applyActor.setApplyFamilyId(familyId);
+            } else {
+                //自由主播
+                applyActor.setApplyFamilyId(11222);
+            }
+            
+            if (idPicFont != null) {
+                applyActor.setIdentityPictureFont(idPicFont);
+            }
+            if (idPicBack != null) {
+                applyActor.setIdentityPictureBack(idPicBack);
+            }
+            if (operatorId > 0) {
+                applyActor.setOperatorId(operatorId);
+            }
+            if (gender >= 0) {
+                applyActor.setGender(gender);
+            }
+            if (mobileNum != null) {
+                applyActor.setMobile(mobileNum);
+            }
+            if (qqNum != null) {
+                applyActor.setQqNumber(qqNum);
+            }
+            if (wechatNum != null) {
+                applyActor.setWechatNumber(wechatNum);
+            }
+            applyActor.setStatus(Constants.APPLY_INIT_STATUS);
+            
+            ApplyActor oldApplyActor = applyActorService.getApplyActorByActorId(userId);
+            if (oldApplyActor != null && oldApplyActor.getStatus() != null && oldApplyActor.getStatus() >= 0 && oldApplyActor.getStatus() != 6) {
+                if (oldApplyActor.getAppId().equals(appId)) {
+                    result.addProperty("TagCode", TagCodeEnum.HAS_APPLY_PLAY);
+                } else {
+                    result.addProperty("TagCode", TagCodeEnum.HAS_APPLY_OTHER_APP);
+                }
+                return result;
+            }
+            if (applyActorService.saveApplyActor(applyActor)) {
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                return result;
+            } else {
+                result.addProperty("TagCode", TagCodeEnum.FAIL_SAVE_APPLY);
+                return result;
+            }
+        } catch (Exception e) {
+            logger.error("Fail to call applyActorService.getApplyActorByActorId", e);
+            result.addProperty("TagCode", TagCodeEnum.FAIL_SAVE_APPLY);
+        }
+        
+        return result;
+    }
+    
+    /**
+     * 50001022-取消主播申请
+     * @param jsonObject
+     * @param checkTag
+     * @return
+     */
+    public JsonObject cancelApplyForActor(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+        
+        Integer userId = null;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        try {
+            ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
+            Integer status = applyActorService.getActorApplyStatus(userId);
+            if (status != null) {
+                if (status < Constants.APPLY_ACTOR_OFFICIAL_CHECK_SUCCESS) {
+                    if (applyActorService.deleteApplyActorByActorId(userId)) {
+                        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                        return result;
+                    } else {
+                        result.addProperty("TagCode", TagCodeEnum.FAIL_TO_DELETE);
+                        return result;
+                    }
+                } else {
+                    result.addProperty("TagCode", TagCodeEnum.HAS_CHECKING_PASS);
+                    return result;
+                }
+            } else {
+                result.addProperty("TagCode", "01220001");
+                return result;
+            }
+        } catch (Exception e) {
+            logger.error("Fail to call applyActorService.getActorApplyStatus", e);
+            result.addProperty("TagCode", TagCodeEnum.FAIL_TO_CALL_API_CONTENT_MODULE);
+            return result;
+        }
+        
+    }
+    
+    /**
+     * 50001024-确认成为主播
+     * @param jsonObject
+     * @param checkTag
+     * @return
+     */
+    public JsonObject confirmBecomeActor(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+        
+        Integer userId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        if (FamilyService.isFamilyMember(userId)) {
+            result.addProperty("TagCode", TagCodeEnum.MEMBER_CANT_APPLY);
+            return result;
+        }
+        
+        try {
+            ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
+            ApplyActor oldApplyActor = applyActorService.getApplyActorByActorId(userId);
+            if (oldApplyActor == null || !oldApplyActor.getAppId().equals(AppIdEnum.AMUSEMENT)) {
+                result.addProperty("TagCode", TagCodeEnum.HASNOT_APPLY);
+                return result;
+            }
+            Integer status = oldApplyActor.getStatus();
+            if (status == Constants.APPLY_TEST_ACTOR_PASSED) {
+                ApplyActor applyActor = new ApplyActor();
+                applyActor.setActorId(userId);
+                applyActor.setStatus(Constants.APPLY_ACTOR_INFO_CHECK_SUCCESS);
+                if (applyActorService.updateApplyActorByActorId(applyActor)) {
+                    //更新12成功之后自动变为终审通过
+                    if (FamilyService.checkBecomeFamilyMember(userId, Constants.APPLY_ACTOR_OFFICIAL_CHECK_SUCCESS, oldApplyActor.getAppId() == null ? 1 : oldApplyActor.getAppId())){
+                       result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                    } else {
+                        result.addProperty("TagCode", TagCodeEnum.FAIL_TO_UPDATE);
+                    }
+                    return result;
+                } else {
+                    result.addProperty("TagCode", TagCodeEnum.FAIL_TO_UPDATE);
+                    return result;
+                }
+            } else if (status > Constants.APPLY_TEST_ACTOR_PASSED) {
+                result.addProperty("TagCode", TagCodeEnum.HAS_AGREE_SIGNED);
+                return result;
+            } else {
+                result.addProperty("TagCode", TagCodeEnum.HASNOT_PASS_PLAYINGTEST);
+                return result;
+            }
+        } catch (Exception e) {
+            logger.error("Fail to call module", e);
+            result.addProperty("TagCode", TagCodeEnum.FAIL_TO_CALL_API_CONTENT_MODULE);
+            return result;
+        }
+    }
+    
+    /**
+     * 校验运营是否合法（50001025）
+     * @param jsonObject
+     * @param checkTag
+     * @return
+     */
+    public JsonObject checkOperator(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        int operatorId;
+        try {
+            operatorId = CommonUtil.getJsonParamInt(jsonObject, "operatorId", 0, "01250001", 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        result.addProperty("isValid", com.melot.kkcx.service.UserService.isValidOperator(operatorId) ? 1: 0);
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+    
+    /**
+     * 获取经济公司信息（50001026）
+     * 
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getBrokerageFirmInfoList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        try {
+            ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
+            List<BrokerageFirmInfo> brokerageFirmInfoList = applyActorService.getBrokerageFirmInfoList();
+            if (brokerageFirmInfoList != null && brokerageFirmInfoList.size() != 0) {
+                JsonArray brokerageFirmArray = new JsonArray();
+                for (BrokerageFirmInfo brokerageFirm : brokerageFirmInfoList) {
+                    JsonObject jsonObj = new JsonObject();
+                    jsonObj.addProperty("firmId", brokerageFirm.getFirmId());
+                    jsonObj.addProperty("firmName", brokerageFirm.getFirmName());
+                    brokerageFirmArray.add(jsonObj);
+                }
+                result.add("brokerageFirmInfoList", brokerageFirmArray);
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            } else {
+                result.addProperty("TagCode", "01260001");
+            }
+        } catch(Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.FAIL_TO_CALL_API_CONTENT_MODULE);
+        }
+        
+        return result;
+    }
+    
+    
     
     /* ----------------------- 申请家族主播流程相关接口 ----------------------- */
     
