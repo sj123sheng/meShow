@@ -170,10 +170,10 @@ public class ConfigFunctions {
         JsonObject result = new JsonObject();
         
         // 获取版本号参数
-        long version = 0L;
+        int version = 0;
         
         try {
-            version = CommonUtil.getJsonParamLong(jsonObject, "version", 0L, null, 1, Long.MAX_VALUE);
+            version = CommonUtil.getJsonParamInt(jsonObject, "version", 0, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -188,7 +188,7 @@ public class ConfigFunctions {
         try {
             // 获取版本号
             GiftListService giftListService = MelotBeanFactory.getBean("giftListService", GiftListService.class);
-            ReturnResult<Long> giftVersionResult = giftListService.getGiftListVersion();
+            ReturnResult<Integer> giftVersionResult = giftListService.getGiftListVersion();
             
             if (giftVersionResult == null) {
                 result.addProperty("TagCode", TagCodeEnum.GIFT_MODULE_NULL);
@@ -200,14 +200,14 @@ public class ConfigFunctions {
                 return result;
             }
             
-            Long giftVersion = giftVersionResult.getData();
+            Integer giftVersion = giftVersionResult.getData();
             
             if (giftVersion == null) {
                 result.addProperty("TagCode", TagCodeEnum.GIFT_VERSION_IS_NULL);
                 return result;
             }
             
-            if (version > 0 && version == giftVersion.longValue()) {
+            if (version > 0 && version == giftVersion.intValue()) {
                 result.addProperty("TagCode", TagCodeEnum.SUCCESS);
                 return result;
             }
@@ -243,7 +243,14 @@ public class ConfigFunctions {
         try {
             // 获取礼物列表
             GiftListService giftListService = MelotBeanFactory.getBean("giftListService", GiftListService.class);
-            ReturnResult<List<GiftInfo>> allGiftsResult = giftListService.listAllGift();
+            ReturnResult<List<GiftInfo>> allGiftsResult;
+            
+            if (version > 0) {
+                allGiftsResult = giftListService.listGiftWithVersion(version);
+            }else {
+                allGiftsResult = giftListService.listAllGift();
+            }
+            
             if (allGiftsResult == null) {
                 result.addProperty("TagCode", TagCodeEnum.GIFT_MODULE_NULL);
                 return result;

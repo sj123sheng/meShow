@@ -21,7 +21,7 @@ public class ConfigGiftInfo {
     /**
      * 配置信息总的版本号
      */
-    Long giftVersion;
+    Integer giftVersion;
     
     /**
      * 资源信息配置信息
@@ -38,11 +38,11 @@ public class ConfigGiftInfo {
      */
     List<GiftIconUrl> iconUrl;
 
-    public Long getGiftVersion() {
+    public Integer getGiftVersion() {
         return giftVersion;
     }
 
-    public void setGiftVersion(Long giftVersion) {
+    public void setGiftVersion(Integer giftVersion) {
         this.giftVersion = giftVersion;
     }
 
