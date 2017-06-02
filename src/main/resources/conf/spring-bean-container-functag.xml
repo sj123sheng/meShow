@@ -14,9 +14,9 @@
 		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
 	</bean>
 	 -->
-	 
+	
 	<!-- 通用过期接口 -->
-	<bean id="10006005" name="10001040,10004010,10004011,40000013" class="com.melot.sdk.core.function.GenericFunction" >
+	<bean id="10006005" name="10001040,10004010,10004011,40000013,20010308" class="com.melot.sdk.core.function.GenericFunction" >
 		<constructor-arg name="t" ref="otherFunction" />
 		<constructor-arg name="methodName" value="lowVersionExcute" />
 	</bean>
@@ -886,6 +886,11 @@
 		<constructor-arg name="t" ref="familyFunction" />
 		<constructor-arg name="methodName" value="getApplyForFamilyInfo" />
 	</bean>
+	<!-- 根据家族id模糊查询 -->
+	<bean id="50001023" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="familyFunction" />
+		<constructor-arg name="methodName" value="getFamilyInfoList" />
+	</bean>
 	
 	<!-- 个人财产(道具汽车靓号)相关接口 -->
 	<!-- 获取用户所拥有的财产列表(VIP 车 门票) -->
@@ -1337,6 +1342,31 @@
 	<bean id="50001019" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="otherFunction"/>
 		<constructor-arg name="methodName" value="getActorBroadcastState"/>
+	</bean>
+	<!-- 申请主播 -->
+	<bean id="50001020" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="otherFunction"/>
+		<constructor-arg name="methodName" value="applyForActor"/>
+	</bean>
+	<!-- 取消主播申请 -->
+	<bean id="50001022" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="otherFunction"/>
+		<constructor-arg name="methodName" value="cancelApplyForActor"/>
+	</bean>
+	<!-- 确认成为主播 -->
+	<bean id="50001024" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="otherFunction"/>
+		<constructor-arg name="methodName" value="confirmBecomeActor"/>
+	</bean>
+	<!-- 校验运营是否合法-->
+	<bean id="50001025" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="otherFunction"/>
+		<constructor-arg name="methodName" value="checkOperator"/>
+	</bean>
+	<!-- 获取经济公司信息 -->
+	<bean id="50001026" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="otherFunction"/>
+		<constructor-arg name="methodName" value="getBrokerageFirmInfoList"/>
 	</bean>
 	
 	<!-- 用户档案安全接口类 -->
@@ -1945,12 +1975,6 @@
 	    <constructor-arg name="methodName" value="getRoomRedEvelopeRecords"/>
 	</bean>
     
-    <!-- 移动端精选频道 -->
-    <bean id="20010308" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="gameHallAction" />
-		<constructor-arg name="methodName" value="getMobileHandpick" />
-		<constructor-arg name="cacheType" value="30" />
-	</bean>
 	<!-- 移动端精选频道 -->
     <bean id="20010309" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="gameHallAction" />
