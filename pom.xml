@@ -10,7 +10,7 @@
 	
 	<artifactId>melot-meshow</artifactId>
 	<packaging>jar</packaging>
-	<version>2.2.11.41</version>
+	<version>2.2.11.42</version>
 	
 	<name>meShow</name>
 	<url>http://maven.apache.org</url>
@@ -174,7 +174,7 @@
 		<dependency>
 			<groupId>com.melot</groupId>
 			<artifactId>melot-api-common</artifactId>
-			<version>0.0.33</version><!--$NO-MVN-MAN-VER$-->
+			<version>0.0.34-SNAPSHOT</version><!--$NO-MVN-MAN-VER$-->
 		</dependency>
 		<dependency>
 			<groupId>com.melot.module.api</groupId>
@@ -221,7 +221,7 @@
 		<dependency>
   			<groupId>com.melot</groupId>
   			<artifactId>melot-site-content-config</artifactId>
-  			<version>1.1.12</version><!--$NO-MVN-MAN-VER$-->
+  			<version>1.1.14-SNAPSHOT</version><!--$NO-MVN-MAN-VER$-->
 		</dependency>
 		<dependency>
 			<groupId>com.sun.jersey</groupId>
@@ -247,7 +247,7 @@
 		<dependency>
 			<groupId>com.melot.module.driver.msgbuilder</groupId>
 			<artifactId>family-module-msgbuilder</artifactId>
-			<version>1.0.3</version><!--$NO-MVN-MAN-VER$-->
+			<version>1.0.7-SNAPSHOT</version><!--$NO-MVN-MAN-VER$-->
 		</dependency>
 		<dependency>
 		  	<groupId>com.melot.module.driver.msgbuilder</groupId>
