@@ -735,9 +735,9 @@ public class NodeFunctions {
                             }
                         }
 						
-//						if (roomInfo.getRoomTheme() != null) {
-//							result.addProperty("roomTheme", roomInfo.getRoomTheme());
-//						}
+						if (roomInfo.getRoomTheme() != null) {
+							result.addProperty("roomTheme", roomInfo.getRoomTheme());
+						}
 						if (roomInfo.getRoomMode() != null) {
 							// 房间模式 0:普通房 1:演艺房 2:游戏房 3:唱响家族房
 							result.addProperty("roomMode", roomInfo.getRoomMode());
@@ -1108,18 +1108,18 @@ public class NodeFunctions {
                     }
                 }
                 
-//				if (roomInfo.getRoomTheme() != null) {
-//		        	t = Cat.getProducer().newTransaction("MCall", "GeneralService.replaceSensitiveWords");
-//					try {
-//						result.addProperty("roomTheme", GeneralService.replaceSensitiveWords(roomInfo.getActorId(), roomInfo.getRoomTheme()));
-//						t.setStatus(Transaction.SUCCESS);
-//					} catch (Exception e) {
-//						Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
-//						t.setStatus(e);
-//					} finally {
-//						t.complete();
-//					}
-//				}
+				if (roomInfo.getRoomTheme() != null) {
+		        	t = Cat.getProducer().newTransaction("MCall", "GeneralService.replaceSensitiveWords");
+					try {
+						result.addProperty("roomTheme", GeneralService.replaceSensitiveWords(roomInfo.getActorId(), roomInfo.getRoomTheme()));
+						t.setStatus(Transaction.SUCCESS);
+					} catch (Exception e) {
+						Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
+						t.setStatus(e);
+					} finally {
+						t.complete();
+					}
+				}
 				
 				if (roomInfo.getRoomMode() != null) {
 					// 房间模式 0:普通房 1:演艺房 2:游戏房

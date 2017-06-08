@@ -2506,8 +2506,22 @@ public class ProfileFunctions {
         RoomInfo roomInfo = new RoomInfo();
     	roomInfo.setActorId(userId);
 		roomInfo.setRoomTheme(roomTheme);
-		if (com.melot.kktv.service.RoomService.updateRoomInfo(roomInfo)) {
-			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+		
+		JsonObject msgJson = new JsonObject();
+        if (com.melot.kktv.service.RoomService.updateRoomInfo(roomInfo)) {
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+
+            // 向房间发通知
+            try {
+                msgJson.addProperty("MsgTag", 10010823);
+                msgJson.addProperty("roomTheme", roomTheme);
+                
+                GeneralService.sendMsgToRoom(2, userId, 0, 0, msgJson);
+            } catch (Exception e) {
+                String errorMsg = String.format("发送房间通知失败：GeneralService.sendMsgToRoom(2, %s, 0, 0, %s)", userId, msgJson.toString());
+                logger.error(errorMsg, e);
+            }
+            
 		} else {
     		result.addProperty("TagCode", "05550002");
     	}
