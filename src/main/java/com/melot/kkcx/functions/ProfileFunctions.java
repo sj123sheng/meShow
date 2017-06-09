@@ -2507,11 +2507,26 @@ public class ProfileFunctions {
     	roomInfo.setActorId(userId);
 		roomInfo.setRoomTheme(roomTheme);
 		
-		JsonObject msgJson = new JsonObject();
-        if (com.melot.kktv.service.RoomService.updateRoomInfo(roomInfo)) {
+		if (com.melot.kktv.service.RoomService.updateRoomInfo(roomInfo)) {
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-
+            
+            // 通知Node房间刷新缓存
+            JsonObject nodeMsgJson = new JsonObject();
+            try {
+                JsonObject roomInfoJson = new JsonObject();
+                roomInfoJson.addProperty("roomTheme", roomTheme);
+                
+                nodeMsgJson.addProperty("MsgTag", 10000010);
+                nodeMsgJson.add("roomInfo", roomInfoJson);
+                
+                GeneralService.sendMsgToRoom(4, userId, 0, 0, nodeMsgJson);
+            } catch (Exception e) {
+                String errorMsg = String.format("发送房间通知失败：GeneralService.sendMsgToRoom(4, %s, 0, 0, %s)", userId, nodeMsgJson.toString());
+                logger.error(errorMsg, e);
+            }
+            
             // 向房间发通知
+            JsonObject msgJson = new JsonObject();
             try {
                 msgJson.addProperty("MsgTag", 10010823);
                 msgJson.addProperty("roomTheme", roomTheme);
@@ -2522,9 +2537,9 @@ public class ProfileFunctions {
                 logger.error(errorMsg, e);
             }
             
-		} else {
-    		result.addProperty("TagCode", "05550002");
-    	}
+        } else {
+            result.addProperty("TagCode", "05550002");
+        }
         
         return result;
     }
