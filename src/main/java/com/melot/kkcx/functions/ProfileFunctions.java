@@ -1502,13 +1502,16 @@ public class ProfileFunctions {
 		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
 			// 取出列表
 			@SuppressWarnings("unchecked")
-			List<Object> recordList = (ArrayList<Object>) map.get("recordList");
-
+			List<GiftRecord> recordList = (ArrayList<GiftRecord>) map.get("recordList");
+			recordList = UserService.addUserExtra(recordList);
+			
 			result.addProperty("TagCode", TagCode);
 			result.addProperty("pageTotal", (Integer) map.get("pageTotal"));
 			JsonArray jRecordList = new JsonArray();
-			for (Object object : recordList) {
-				jRecordList.add(((GiftRecord) object).toSendJsonObject());
+			if (recordList != null) {
+				for (Object object : recordList) {
+					jRecordList.add(((GiftRecord) object).toSendJsonObject());
+				}
 			}
 			result.add("recordList", jRecordList);
 
@@ -2508,9 +2511,9 @@ public class ProfileFunctions {
 		roomInfo.setRoomTheme(roomTheme);
 		
 		if (com.melot.kktv.service.RoomService.updateRoomInfo(roomInfo)) {
-            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-            
-            // 通知Node房间刷新缓存
+			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+			
+			// 通知Node房间刷新缓存
             JsonObject nodeMsgJson = new JsonObject();
             try {
                 JsonObject roomInfoJson = new JsonObject();
@@ -2526,20 +2529,20 @@ public class ProfileFunctions {
             }
             
             // 向房间发通知
-            JsonObject msgJson = new JsonObject();
-            try {
-                msgJson.addProperty("MsgTag", 10010823);
-                msgJson.addProperty("roomTheme", roomTheme);
-                
-                GeneralService.sendMsgToRoom(2, userId, 0, 0, msgJson);
+			JsonObject msgJson = new JsonObject();
+			try {
+	            msgJson.addProperty("MsgTag", 10010823);
+	            msgJson.addProperty("roomTheme", roomTheme);
+	            
+	            GeneralService.sendMsgToRoom(2, userId, 0, 0, msgJson);
             } catch (Exception e) {
                 String errorMsg = String.format("发送房间通知失败：GeneralService.sendMsgToRoom(2, %s, 0, 0, %s)", userId, msgJson.toString());
                 logger.error(errorMsg, e);
             }
-            
-        } else {
-            result.addProperty("TagCode", "05550002");
-        }
+			
+		} else {
+    		result.addProperty("TagCode", "05550002");
+    	}
         
         return result;
     }

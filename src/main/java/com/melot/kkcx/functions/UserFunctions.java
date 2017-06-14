@@ -612,7 +612,7 @@ public class UserFunctions {
 			roomFrom = CommonUtil.getJsonParamInt(jsonObject, "roomFrom", 0, null, 0, Integer.MAX_VALUE);
 			refRoomId = CommonUtil.getJsonParamInt(jsonObject, "refRoomId", 0, null, 0, Integer.MAX_VALUE);
 			gpsCityId = CommonUtil.getJsonParamInt(jsonObject, "city", 0, null, 0, Integer.MAX_VALUE);
-			if (nickname != null) {
+			if (!StringUtil.strIsNull(nickname)) {
 				nickname = nickname.trim();
 				// matchXSSTag
 				if (CommonUtil.matchXSSTag(nickname)) {
@@ -959,6 +959,12 @@ public class UserFunctions {
 		// 调用存储过程得到结果
 		Map<Object, Object> map = new HashMap<Object, Object>();
 		map.put("userId", userId);
+		UserRegistry userRegistry = com.melot.kkcx.service.UserService.getUserRegistryInfo(userId);
+		if (userRegistry == null) {
+			result.addProperty("TagCode", "01120102");
+			return result;
+		}
+		map.put("openPlatform", userRegistry.getOpenPlatform());
 		try {
 			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("User.getUserFromByUserId", map);
 		} catch (SQLException e) {
@@ -970,15 +976,10 @@ public class UserFunctions {
 		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
 			// 定义结果并组装结果字符串
 			result.addProperty("TagCode", TagCode);
-			result.addProperty("openPlatform", (Integer) map.get("openPlatform"));
+			result.addProperty("openPlatform", userRegistry.getOpenPlatform());
 			if ((String) map.get("uuid") != null) {
 				result.addProperty("uuid", (String) map.get("uuid"));
 			}
-			// 返回结果
-			return result;
-		} else if (TagCode.equals("02")) {
-			// user not exist
-			result.addProperty("TagCode", "011201" + TagCode);
 			// 返回结果
 			return result;
 		} else if (TagCode.equals("03")) {

@@ -12,6 +12,7 @@ import com.melot.kktv.util.PlatformEnum;
 public class KkAssistor {
 	
 	private Integer id;
+	private Integer userId;
 	private String nickname;
 	private Integer gender;
 	private String portrait_path_original;
@@ -30,24 +31,14 @@ public class KkAssistor {
 	 */
 	public JsonObject toJsonObject(long lastReadTime,int platform) {
 		JsonObject jObject = new JsonObject();
-		jObject.addProperty("userId", this.getId());
+		jObject.addProperty("userId", this.getUserId());
 		jObject.addProperty("nickname", this.getNickname());
 		jObject.addProperty("gender", this.getGender());
 		if (this.getPortrait_path_original() != null) {
-			if(platform == PlatformEnum.WEB) {
-				jObject.addProperty("portrait_path_256", this.getPortrait_path_256());
-			} else if(platform == PlatformEnum.ANDROID) {
-				jObject.addProperty("portrait_path_48", this.getPortrait_path_48());
-			} else if(platform == PlatformEnum.IPHONE) {
-				jObject.addProperty("portrait_path_128", this.getPortrait_path_128());
-			} else if(platform == PlatformEnum.IPAD) {
-				jObject.addProperty("portrait_path_128", this.getPortrait_path_128());
-			} else {
-				jObject.addProperty("portrait_path_1280", this.getPortrait_path_1280());
-				jObject.addProperty("portrait_path_256", this.getPortrait_path_256());
-				jObject.addProperty("portrait_path_128", this.getPortrait_path_128());
-				jObject.addProperty("portrait_path_48",  this.getPortrait_path_48());
-			}			
+			jObject.addProperty("portrait_path_1280", this.getPortrait_path_original() + "!1280");
+			jObject.addProperty("portrait_path_256", this.getPortrait_path_original() + "!256");
+			jObject.addProperty("portrait_path_128", this.getPortrait_path_original() + "!128");
+			jObject.addProperty("portrait_path_48",  this.getPortrait_path_original() + "!48");		
 		}
 		jObject.addProperty("message", this.getMessage());
 		jObject.addProperty("msgtime", this.getMsgtime().getTime());
@@ -143,6 +134,14 @@ public class KkAssistor {
 
 	public void setPortrait_path_48(String portrait_path_original) {
 		this.portrait_path_48 = portrait_path_original + "!48";
+	}
+
+	public Integer getUserId() {
+		return userId;
+	}
+
+	public void setUserId(Integer userId) {
+		this.userId = userId;
 	}
 
 }

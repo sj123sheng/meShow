@@ -10,6 +10,7 @@ import com.google.gson.JsonObject;
  */
 public class KkSystemNotice {
 	
+	private Integer userId;
 	private Integer id;
 	private String title;
 	private String describe;
@@ -36,6 +37,14 @@ public class KkSystemNotice {
 		else 
 			jObject.addProperty("isnew", 0);
 		return jObject;
+	}
+
+	public Integer getUserId() {
+		return userId;
+	}
+
+	public void setUserId(Integer userId) {
+		this.userId = userId;
 	}
 
 	public String getNickname() {

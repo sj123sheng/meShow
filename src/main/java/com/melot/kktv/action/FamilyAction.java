@@ -2001,6 +2001,11 @@ public class FamilyAction {
 						@SuppressWarnings("unchecked")
 						List<FamilyMatchChampion> rankList = (ArrayList<FamilyMatchChampion>) map.get("rankList");
 						FamilyMatchChampion fmChampion = rankList.get(0);
+						UserProfile userProfile = UserService.getUserInfoNew(fmChampion.getUserId());
+						if (userProfile != null) {
+							fmChampion.setPortrait_path_original(userProfile.getPortrait());
+							fmChampion.setNickname(userProfile.getNickName());
+						}
 						championObj = fmChampion.toJsonObject(platform);
 						
 						// 获取用户有效靓号

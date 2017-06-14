@@ -3,6 +3,7 @@ package com.melot.kktv.model;
 import java.util.Date;
 
 import com.google.gson.JsonObject;
+import com.melot.kkcx.service.UserService;
 
 /**
  * 赠送礼物记录
@@ -20,6 +21,8 @@ public class GiftRecord {
 	private Integer rsvPrice;
 	private Integer count;
 	private Date sendTime;
+	private String xmanNick;
+	private Integer xmanId;
 
 	/**
 	 * 转成用户接受礼物的JsonObject
@@ -28,8 +31,16 @@ public class GiftRecord {
 	 */
 	public JsonObject toRsvJsonObject() {
 		JsonObject jObject = new JsonObject();
-		jObject.addProperty("senderId", this.getUserId());
-		jObject.addProperty("senderNick", this.getUserNick());
+		if (this.getXmanNick() != null) {
+			jObject.addProperty("senderNick", this.getXmanNick());
+		} else {
+			jObject.addProperty("senderNick", UserService.getUserInfoNew(this.getUserId()).getNickName());
+		}
+		if (this.getXmanId() != null) {
+			jObject.addProperty("senderId", this.getXmanId());
+		} else {
+			jObject.addProperty("senderId", this.getUserId());
+		}
 		jObject.addProperty("giftId", this.getGiftId());
 		jObject.addProperty("giftName", this.getGiftName());
 		jObject.addProperty("unit", this.getUnit());
@@ -48,8 +59,16 @@ public class GiftRecord {
 	 */
 	public JsonObject toSendJsonObject() {
 		JsonObject jObject = new JsonObject();
-		jObject.addProperty("receiverId", this.getUserId());
-		jObject.addProperty("receiverNick", this.getUserNick());
+		if (this.getXmanNick() != null) {
+			jObject.addProperty("receiverNick", this.getXmanNick());
+		} else {
+			jObject.addProperty("receiverNick", UserService.getUserInfoNew(this.getUserId()).getNickName());
+		}
+		if (this.getXmanId() != null) {
+			jObject.addProperty("receiverId", this.getXmanId());
+		} else {
+			jObject.addProperty("receiverId", this.getUserId());
+		}
 		jObject.addProperty("giftId", this.getGiftId());
 		jObject.addProperty("giftName", this.getGiftName());
 		jObject.addProperty("unit", this.getUnit());
@@ -131,5 +150,21 @@ public class GiftRecord {
 
 	public void setSendTime(Date sendTime) {
 		this.sendTime = sendTime;
+	}
+
+	public String getXmanNick() {
+		return xmanNick;
+	}
+
+	public void setXmanNick(String xmanNick) {
+		this.xmanNick = xmanNick;
+	}
+
+	public Integer getXmanId() {
+		return xmanId;
+	}
+
+	public void setXmanId(Integer xmanId) {
+		this.xmanId = xmanId;
 	}
 }

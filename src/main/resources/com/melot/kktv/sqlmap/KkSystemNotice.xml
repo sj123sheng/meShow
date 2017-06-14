@@ -10,7 +10,6 @@
 	    <result column="id" property="id" javaType="java.lang.Integer" jdbcType="INTEGER" />
 	    <result column="describe" property="describe" javaType="java.lang.String" jdbcType="VARCHAR" />
 		<result column="time" property="msgtime"  javaType="java.util.Date" jdbcType="TIMESTAMP" />
-		<result column="nickname" property="nickname" javaType="java.lang.String" jdbcType="VARCHAR" />
 		<result column="type" property="type" javaType="java.lang.Integer" jdbcType="INTEGER" />
 	</resultMap>
 
@@ -35,7 +34,7 @@
 	</parameterMap>
 	<procedure id="getKkSystemNoticeList" parameterMap="KkSystemNoticeMap"
 		resultClass="java.util.Map">
-		{call p_getKkSystemNoticeList(?,?,?,?,?,?,?,?)}
+		{call p_getKkSystemNoticeList_V2(?,?,?,?,?,?,?,?)}
 	</procedure>
 	
 </sqlMap>

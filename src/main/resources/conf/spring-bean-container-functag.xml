@@ -14,9 +14,9 @@
 		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
 	</bean>
 	 -->
-	
+ 
 	<!-- 通用过期接口 -->
-	<bean id="10006005" name="10001040,10004010,10004011,40000013,20010308" class="com.melot.sdk.core.function.GenericFunction" >
+	<bean id="10006005" name="10001040,10004010,10004011,40000013,20010308,20010502,20010503,20010504,20010506,20010507,20010508,50001015,10002039,10002040,20010403,20010402" class="com.melot.sdk.core.function.GenericFunction" >
 		<constructor-arg name="t" ref="otherFunction" />
 		<constructor-arg name="methodName" value="lowVersionExcute" />
 	</bean>
@@ -222,16 +222,6 @@
 	<bean id="10002037" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="indexFunction" />
 		<constructor-arg name="methodName" value="getProvinceRoomList" />
-	</bean>
-	<!-- 获取被捧场主播排行 -->
-	<bean id="10002039" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="indexFunction" />
-		<constructor-arg name="methodName" value="getRewardedActorsRankingList" />
-	</bean>
-	<!--获取捧场用户排行  -->
-	<bean id="10002040" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="indexFunction" />
-		<constructor-arg name="methodName" value="getHaveRewardedUsersRankingList" />
 	</bean>
 	<!-- 获取用户一定时间内收到礼物个数 -->
 	<bean id="10002041" class="com.melot.sdk.core.function.GenericFunction">
@@ -890,6 +880,8 @@
 	<bean id="50001023" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="familyFunction" />
 		<constructor-arg name="methodName" value="getFamilyInfoList" />
+		<constructor-arg name="cacheType" value="180" />
+		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
 	</bean>
 	
 	<!-- 个人财产(道具汽车靓号)相关接口 -->
@@ -1164,11 +1156,6 @@
 		<constructor-arg name="methodName" value="getUserNewsListNew" />
 	</bean>
 	 -->
-	<!-- 获取推荐动态（用户关注）列表 -->
-	<bean id="20010403" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="newsFunction" />
-		<constructor-arg name="methodName" value="getRecNewsList" />
-	</bean>
 	
 	<!-- 用户动态接口类 -->
 	<!-- 删除动态 -->
@@ -1237,11 +1224,6 @@
 		<constructor-arg name="methodName" value="getNewsRewardList" />
 	</bean>
 	<!-- 获取热门视频动态列表 -->
-	<bean id="20010402" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="newsFunction" />
-		<constructor-arg name="methodName" value="getHotMediaNewsListNew" />
-	</bean>
-	<!-- 获取热门视频动态列表 -->
 	<bean id="10006017" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="newsFunction" />
 		<constructor-arg name="methodName" value="getHotMediaNewsList" />
@@ -1288,46 +1270,12 @@
 		<constructor-arg name="t" ref="otherFunction" />
 		<constructor-arg name="methodName" value="getApplyForActorInfo" />
 	</bean>
-	<!-- 申请实名认证 -->
-	<bean id="20010502" name="10006059" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="otherFunction" />
-		<constructor-arg name="methodName" value="applyForRealName" />
-	</bean>
-	<!-- 重新申请实名认证 -->
-	<bean id="20010503" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="otherFunction" />
-		<constructor-arg name="methodName" value="reApplyForRealName" />
-	</bean>
-	<!-- 取消申请实名认证 -->
-	<bean id="20010504" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="otherFunction" />
-		<constructor-arg name="methodName" value="cancelApplyForRealName" />
-	</bean>
 	<!-- 获取推荐申请家族列表 -->
 	<bean id="20010505" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="otherFunction" />
 		<constructor-arg name="methodName" value="getRecommendApplyFamilyList" />
 	</bean>
-	<!-- 申请家族试播 -->
-	<bean id="20010506" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="otherFunction" />
-		<constructor-arg name="methodName" value="applyForFamily" />
-	</bean>
-	<!-- 取消申请家族试播 -->
-	<bean id="20010507" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="otherFunction" />
-		<constructor-arg name="methodName" value="cancelApplyForFamily" />
-	</bean>
-	<!-- 是否签订家族合作协议 -->
-	<bean id="20010508" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="otherFunction" />
-		<constructor-arg name="methodName" value="isSignFamilyCooperationAgreement" />
-	</bean>
-	<!-- 标记用户申请家族主播 -->
-	<bean id="50001015" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="otherFunction" />
-		<constructor-arg name="methodName" value="markApplyFamily" />
-	</bean>
+
 	<!-- 获取动态表情贴图列表 -->
 	<bean id="50001016" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="otherFunction" />

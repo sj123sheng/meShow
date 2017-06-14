@@ -37,6 +37,7 @@ import com.melot.game.config.sdk.sign.service.UserSignInfoService;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.service.UserAssetServices;
+import com.melot.kkcx.service.UserService;
 import com.melot.kkcx.transform.RoomTF;
 import com.melot.kkgame.logger.HadoopLogger;
 import com.melot.kkgame.redis.SignInTaskSource;
@@ -486,6 +487,7 @@ public class GameTaskAction extends BaseAction{
         if (TagCodeEnum.SUCCESS.equals(map.get("TagCode"))) {
             List<Room> roomList = (ArrayList<Room>) map.get("roomList");
             if (roomList != null && roomList.size() > 0) {
+            	roomList = UserService.addUserExtra(roomList);
                 List<Integer> actorIds = new ArrayList<Integer>();
                 StringBuffer actorIds2 = new StringBuffer();
                 for (Room room : roomList) {

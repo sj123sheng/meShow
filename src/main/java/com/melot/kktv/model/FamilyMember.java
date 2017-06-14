@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.Map;
 
 import com.google.gson.JsonObject;
+import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcx.service.UserService;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.FamilyMemberEnum;
@@ -30,45 +31,41 @@ public class FamilyMember {
 	private Integer actorLevel;
 	private Integer richLevel;
 	
-	public void initJavaBean(DBObject dbObj, int platform) {
-		try {
-			this.familyId = (Integer) dbObj.get("familyId");
-			this.memberId = (Integer) dbObj.get("memberId");
-			this.userId = (Integer) dbObj.get("userId");
-			this.nickname = (String) dbObj.get("nickname");
-			this.actorTag = (Integer) dbObj.get("actorTag");
-			this.memberGrade = (Integer) dbObj.get("memberGrade");
-			if (this.memberGrade == null) {
-				this.memberGrade = FamilyMemberEnum.GRADE_COMMON;
-			}
-			this.joinTime = (Long) dbObj.get("joinTime");
-			this.portrait_path_original = (String) dbObj.get("portrait_path_original");
-			if (this.portrait_path_original != null) {
-				switch (platform) {
-				case PlatformEnum.WEB:
-					this.portrait_path_256 = this.portrait_path_original + "!256";
-					break;
-				case PlatformEnum.ANDROID :
-				case PlatformEnum.IPHONE:
-				case PlatformEnum.IPAD:
-					this.portrait_path_128 = this.portrait_path_original + "!128";
-					break;
-				default:
-					break;
-				}
-			}
-			Map<String, Integer> userLevel = UserService.getUserLevelAll(this.userId);
-			if (userLevel != null) {
-				this.actorLevel = userLevel.get("actorLevel");
-				this.richLevel = userLevel.get("richLevel");
-			} else {
-				this.actorLevel = 0;
-				this.richLevel = 0;
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+    public void initJavaBean(com.melot.family.driver.domain.FamilyMember familyMember, int platform) {
+        try {
+            this.familyId = familyMember.getFamilyId();
+            this.memberId = familyMember.getMemberId();
+            this.userId = familyMember.getUserId();
+            this.memberGrade = familyMember.getMemberGrade();
+            if (familyMember.getJoinTime() != null) {
+                this.joinTime = familyMember.getJoinTime().getTime();
+            }
+            UserProfile userProfile = UserService.getUserInfoNew(this.userId);
+            if (userProfile != null) {
+                this.nickname = userProfile.getNickName();
+                this.actorTag = userProfile.getIsActor();
+                this.portrait_path_original = userProfile.getPortrait();
+                if (this.portrait_path_original != null) {
+                    switch (platform) {
+                    case PlatformEnum.WEB:
+                        this.portrait_path_256 = this.portrait_path_original + "!256";
+                        break;
+                    case PlatformEnum.ANDROID :
+                    case PlatformEnum.IPHONE:
+                    case PlatformEnum.IPAD:
+                        this.portrait_path_128 = this.portrait_path_original + "!128";
+                        break;
+                    default:
+                        break;
+                    }
+                }
+                this.actorLevel = userProfile.getActorLevel();
+                this.richLevel = userProfile.getUserLevel();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 	
 	/**
 	 * Convert Java Object to JsonObject

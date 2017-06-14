@@ -1407,7 +1407,7 @@ public class NewsV2Functions {
         }*/
         
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        result.add("hotWords", null);
+//        result.add("hotWords", null);
         
         return result;
     }

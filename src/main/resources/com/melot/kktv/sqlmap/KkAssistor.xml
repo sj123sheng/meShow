@@ -8,15 +8,8 @@
 	<!-- kk小秘书提醒关注 -->
 	<resultMap id="KkNotice" class="com.melot.kktv.model.KkAssistor">
 		<result column="dtime" property="msgtime"  javaType="java.util.Date" jdbcType="TIMESTAMP" />
-		<result column="userid" property="id" />
+		<result column="userid" property="userId" />
 		<result column="message" property="message" />
-		<result column="portrait_path_original"  property="portrait_path_original"/>
-		<result column="portrait_path_1280" property="portrait_path_1280"/>
-		<result column="portrait_path_256"  property="portrait_path_256"/>
-		<result column="portrait_path_128"  property="portrait_path_128"/>
-		<result column="portrait_path_48"   property="portrait_path_48"/>
-		<result column="nickname" property="nickname" />		
-		<result column="gender"  property="gender"/>
 	</resultMap>
 	<!-- kk 小秘书提醒消息 -->
 	<parameterMap id="KkAssistorNoticeMap" class="java.util.Map">
@@ -39,6 +32,6 @@
 	</parameterMap>
 	<procedure id="getKkAssistorNoticeList" parameterMap="KkAssistorNoticeMap"
 		resultClass="java.util.Map">
-		{call p_getKkAssistorNoticeList(?,?,?,?,?,?,?,?)}
+		{call p_getKkAssistorNoticeList_V2(?,?,?,?,?,?,?,?)}
 	</procedure>
 </sqlMap>

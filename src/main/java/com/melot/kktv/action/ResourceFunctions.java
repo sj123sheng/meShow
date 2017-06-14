@@ -20,6 +20,7 @@ import com.google.gson.reflect.TypeToken;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcx.service.AssetService;
 import com.melot.kkcx.service.FamilyService;
+import com.melot.kkcx.service.UserService;
 import com.melot.kktv.domain.CarInfo;
 import com.melot.kktv.model.Car;
 import com.melot.kktv.model.Family;
@@ -550,8 +551,10 @@ public class ResourceFunctions {
             String currentYear = DateUtil.formatDate(new Date(), "yyyy");
             for (Map<String, Object> map : list) {
                 jsonObject = new JsonObject();
-                jsonObject.addProperty("nickname", (String) map.get("nickname"));
-                
+                Integer userId = (Integer) map.get("userid");
+                if (userId != null) {
+                    jsonObject.addProperty("nickname", UserService.getUserInfoNew(userId).getNickName());
+                }
                 showMoney = (Integer) map.get("showmoney");
                 if (showMoney != null && showMoney > 0) {
                     jsonObject.addProperty("prize", showMoney + "秀币");

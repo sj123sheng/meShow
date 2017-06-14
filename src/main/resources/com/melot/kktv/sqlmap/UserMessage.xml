@@ -10,11 +10,6 @@
 		<result property="userId" column="userId" />
 		<result property="userIdBelong" column="belonguserid" />
 		<result property="userIdTarget" column="targetuserid" />
-		<result property="nickname" column="nickname" />
-		<result property="gender" column="gender"/>
-		<result property="portrait_path_original" column="portrait_path_original" />
-		<result property="portrait_path_48" column="portrait_path_48" />
-		<result property="portrait_path_128" column="portrait_path_128" />
 		<result property="commentId" column="commentId" />
 		<result property="newsId" column="newsId" />
 		<result property="content" column="content" />
@@ -34,7 +29,7 @@
 	</parameterMap>
 	<procedure id="getUserNewsCommentMsg" parameterMap="getUserNewsCommentMsgMap"
 		resultClass="java.util.Map">
-		{call p_getUserNewsComentListMessage(?,?,?,?,?,?,?,?)}
+		{call p_getUserNewsComentLM_V2(?,?,?,?,?,?,?,?)}
 	</procedure>
 	
 	<parameterMap id="addSystemMessageMap" class="java.util.Map">

@@ -9,11 +9,6 @@
 	<!-- 获取用户关注列表 -->
 	<resultMap id="room" class="com.melot.kktv.model.Room">
 		<result property="userId" column="userId" />
-		<result property="nickname" column="nickname" />
-		<result property="signature" column="signature" />
-		<result property="gender" column="gender" />
-		<result property="portrait_path_original" column="portrait_path_original" />
-		<result property="iconTag" column="iconTag" />
 		<result property="maxCount" column="maxCount" />
 		<result property="livestarttime" column="livestarttime"
 			javaType="java.util.Date" jdbcType="TIMESTAMP" />
@@ -21,10 +16,7 @@
 			jdbcType="TIMESTAMP" />
 		<result property="nextstarttime" column="nextstarttime"
 			javaType="java.util.Date" jdbcType="TIMESTAMP" />
-		<result property="fansCount" column="fansCount" />
 		<result property="enterConditionType" column="enterConditionType" />
-		<result property="actorTag" column="actorTag" />
-
 	</resultMap>
 	
 	<parameterMap id="getUserFollowedListMap" class="java.util.Map">
@@ -44,7 +36,7 @@
 
 	<procedure id="getUserFollowedList" parameterMap="getUserFollowedListMap">
 		{call
-		p_getUserFollowedList(?,?,?,?,?,?)}
+		P_GETUSERFOLLOWEDLIST_V2(?,?,?,?,?,?)}
 	</procedure>
 
 	<!-- 获取用户粉丝列表 -->
@@ -64,7 +56,7 @@
 
 	<procedure id="getUserFansList" parameterMap="getUserFansListMap">
 		{call
-		p_getUserFansList(?,?,?,?,?)}
+		p_getUserFansList_V2(?,?,?,?,?)}
 	</procedure>
 
 	<!-- 授权管理 -->
@@ -114,7 +106,7 @@
 
 	<procedure id="getRoomManagerList" parameterMap="roomManagerListMap">
 		{call
-		p_getRoomManagerList(?,?,?,?,?,?)}
+		p_getRoomManagerList_V2(?,?,?,?,?,?)}
 	</procedure>
 
 	<!-- 获取用户管理的房间列表 -->
@@ -136,7 +128,7 @@
 
 	<procedure id="getUserManagedRoomList" parameterMap="getUserManagedRoomListMap">
 		{call
-		p_getUserManagedRoomList(?,?,?,?,?,?)}
+		p_getUserManagedRoomList_V2(?,?,?,?,?,?)}
 	</procedure>
 
 	<!-- 举报用户 -->

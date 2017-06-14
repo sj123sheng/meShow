@@ -110,7 +110,6 @@
 	<!-- 获取用户送出的礼物列表 -->
 	<resultMap id="giftRecord" class="com.melot.kktv.model.GiftRecord">
 		<result property="userId" column="receiverId" />
-		<result property="userNick" column="receiverNick" />
 		<result property="giftId" column="giftId" />
 		<result property="giftName" column="giftName" />
 		<result property="unit" column="unit" />
@@ -119,6 +118,8 @@
 		<result property="count" column="count" />
 		<result property="sendTime" column="sendTime" javaType="java.util.Date"
 			jdbcType="TIMESTAMP" />
+		<result property="xmanNick" column="xmanNick"/>
+		<result property="xmanId" column="xmanId"/>
 	</resultMap>
 
 	<parameterMap id="getUserSendGiftListMap" class="java.util.Map">
@@ -141,7 +142,7 @@
 
 	<procedure id="getUserSendGiftList" parameterMap="getUserSendGiftListMap">
 		{call
-		p_getUserSendGiftList(?,?,?,?,?,?,?)}
+		P_GETUSERSENDGIFTLIST_V2(?,?,?,?,?,?,?)}
 	</procedure>
 
 	<!-- 获取商城车市中的车辆列表 -->

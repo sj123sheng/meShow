@@ -90,23 +90,9 @@
 	    select iflimit,iflimit-hassold as remain from car_info where carid = #id#
 	</select>
 	
-	<resultMap class="java.util.HashMap" id="getUserListByChannelResultMap">
-		<result property="userId" column="userid" javaType="java.lang.Integer" jdbcType="NUMBER"/>
-		<result property="nickname" column="nickname" javaType="java.lang.String" jdbcType="VARCHAR"/>
-	</resultMap>
-	<select id="getUserListByChannel" parameterClass="java.util.Map" resultMap="getUserListByChannelResultMap">
-		select t.userid,t.nickname from user_info t where t.qudaoid=#channelId# and t.registertime>=to_date(#startTime#, 'yyyy-mm-dd hh24:mi:ss')
-	</select>
-	<select id="getUserListByRoom" parameterClass="java.util.Map" resultMap="getUserListByChannelResultMap">
-		select t.userid,b.nickname from gift_history t,user_info b where t.dtime>=to_date(#startTime#, 'yyyy-mm-dd hh24:mi:ss')
-		and t.roomid=#roomId#
-		and t.userid = b.userid
-		group by t.userid,b.nickname
-	</select>
-	
 	<!-- 获取用户送阳光中奖详细明细信息 -->
 	<resultMap class="java.util.HashMap" id="getSendSunshineInfoResultMap">
-		<result property="nickname" column="nickname" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result property="userid" column="userid" javaType="java.lang.Integer" jdbcType="NUMBER"/>
 		<result property="showmoney" column="showmoney" javaType="java.lang.Integer" jdbcType="NUMBER"/>
 		<result property="giftname" column="giftname" javaType="java.lang.String" jdbcType="VARCHAR"/>
 		<result property="unit" column="unit" javaType="java.lang.String" jdbcType="VARCHAR"/>
@@ -115,8 +101,8 @@
 	</resultMap>
 	<select id="getSendSunshineInfo" parameterClass="java.lang.Integer" resultMap="getSendSunshineInfoResultMap">
 		<![CDATA[
-			SELECT b.nickname,
-			       a.showmoney,
+			SELECT a.userid,
+				   a.showmoney,
 			       c.giftname,
 			       c.unit,
 			       a.gcnt,
@@ -128,10 +114,8 @@
 			                   AND t.dtime >= TRUNC(SYSDATE)
 			                 ORDER BY t.dtime DESC)
 			         WHERE ROWNUM <= #count#) a,
-			       user_info b,
 			       gift_info c
-			 WHERE a.userid = b.userid
-			   AND a.giftid = c.giftid(+)
+			 WHERE a.giftid = c.giftid(+)
 		]]>
 	</select>
 	

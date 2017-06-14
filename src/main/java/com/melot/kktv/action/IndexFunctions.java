@@ -896,8 +896,12 @@ public class IndexFunctions {
 		}
 		fuzzyString = fuzzyString.trim();
 		
+	    // 判断是否为纯数字
+        boolean isId = Pattern.compile(Constant.regx_user_id).matcher(fuzzyString).find();
+
+		
 		// 敏感字验证
-		if (GeneralService.hasSensitiveWords(0, fuzzyString)) {
+		if (!isId && GeneralService.hasSensitiveWords(0, fuzzyString)) {
             result.addProperty("TagCode", TagCodeEnum.SENSITIVE_WORD_ERROR);
             return result;
         }
@@ -905,7 +909,7 @@ public class IndexFunctions {
 		// 如果缓存中没数据，先从oracle查询出全部数据，并添加至缓存
 		if (!SearchWordsSource.isExistSearchResultKey(fuzzyString)) {
 		    Map<Object, Object> map = new HashMap<Object, Object>();
-		    if (Pattern.compile(Constant.regx_user_id).matcher(fuzzyString).find()) {
+		    if (isId) {
 		        String idString = fuzzyString;
 		        Integer tmpId = UserAssetServices.luckyIdToUserId(StringUtil.parseFromStr(idString, 0));
 		        if (tmpId != null && tmpId > 0) {
@@ -1013,10 +1017,10 @@ public class IndexFunctions {
                 }
             }
         } 
-		
+        
         // 返回结果
         return result;
-	}
+    }
 	
 	/**
 	 * 获取公告详细(10002012)
@@ -3070,6 +3074,7 @@ public class IndexFunctions {
 				@SuppressWarnings("unchecked")
 				List<NewsRewardRank> newsRewardRankList = SqlMapClientHelper.getInstance(DB.MASTER)
 						.queryForList("Index.getNewsRewardActorRankList", map);
+				newsRewardRankList = UserService.addUserExtra(newsRewardRankList);
 				if (newsRewardRankList != null && newsRewardRankList.size() > 0) {
 					JsonArray jsonArr = new JsonArray();
 					for (NewsRewardRank rank : newsRewardRankList) {

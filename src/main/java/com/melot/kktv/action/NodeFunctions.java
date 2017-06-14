@@ -254,7 +254,7 @@ public class NodeFunctions {
 		} finally {
 			t.complete();
 		}
-		if (userInfoDetail == null) {
+		if (userInfoDetail == null || userInfoDetail.getRegisterInfo() == null) {
 			JsonObject reResult = new JsonObject();
 			reResult.addProperty("TagCode", TagCodeEnum.USER_NOT_EXIST);
 			return reResult;

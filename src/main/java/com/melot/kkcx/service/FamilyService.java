@@ -25,6 +25,7 @@ import com.melot.family.driver.domain.RespMsg;
 import com.melot.family.driver.service.FamilyAdminService;
 import com.melot.family.driver.service.FamilyInfoService;
 import com.melot.family.driver.service.FamilyOperatorService;
+import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcx.transform.RoomTF;
 import com.melot.kktv.domain.Honour;
 import com.melot.kktv.model.Family;
@@ -41,7 +42,6 @@ import com.melot.kktv.redis.RedisServiceKey;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CollectionEnum;
 import com.melot.kktv.util.CommonUtil;
-import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.Constant;
 import com.melot.kktv.util.FamilyMemberEnum;
 import com.melot.kktv.util.FamilyRankingEnum;
@@ -53,8 +53,6 @@ import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.kktv.util.mongodb.CommonDB;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
 
 public class FamilyService {
 	
@@ -142,68 +140,23 @@ public class FamilyService {
 	}
 	
 	/**
-	 * 刷新mongodb中家族族长及副族长信息
-	 * @param familyId
-	 * @return
-	 */
-	private static void refreshFamilyManager(int familyId) {
-		// 根据家族成员刷新时间,判断是否需要刷新家族成员
-		long currentTime = System.currentTimeMillis();
-		BasicDBObject resultObj = (BasicDBObject) CommonDB.getInstance(CommonDB.CACHEDB).getCollection(CollectionEnum.FAMILYMEMBERREFRESHRECORD)
-				.findOne(new BasicDBObject("familyId", familyId));
-		long refreshTime = 0;
-		if (resultObj != null) refreshTime = resultObj.getLong("refreshTime");
-		if (!(refreshTime > 0 && (currentTime-refreshTime) < ConfigHelper.getPeriodFamilyMemberUpdateTime())) {
-			try {
-				Map<Object, Object> map = new HashMap<Object, Object>();
-				map.put("familyId", familyId);
-				SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Family.getFamilyManagerList", map);
-				String TagCode = (String) map.get("TagCode");
-				if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-					@SuppressWarnings("unchecked")
-					List<FamilyMember> memberList = (List<FamilyMember>) map.get("memberList");
-					for (FamilyMember familyMember : memberList) {
-						DBObject queryObj = new BasicDBObject();
-						queryObj.put("familyId", familyId);
-						queryObj.put("userId", familyMember.getUserId());
-						DBObject updateObj = familyMember.toDBObject();
-						CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.FAMILYMEMBER).update(queryObj, 
-								new BasicDBObject("$set", updateObj), true, false);
-					}
-					// 更新家族成员刷新时间
-					CommonDB.getInstance(CommonDB.CACHEDB).getCollection(CollectionEnum.FAMILYMEMBERREFRESHRECORD)
-						.update(new BasicDBObject("familyId", familyId), 
-								new BasicDBObject("$set", new BasicDBObject("refreshTime", currentTime)),
-								true, false);
-				} else {
-					logger.error("调用存储过程(Family.getFamilyManagerList)未的到正常结果, TagCode:" + TagCode + ",familyId:" + familyId);
-				}
-			} catch (SQLException e) {
-				logger.error("未能正常调用存储过程", e);
-			}
-		}
-	}
-	
-	/**
 	 * 获取家族族长信息
 	 * @param familyId
 	 * @return
 	 */
 	public static FamilyMember getFamilyLeader(int familyId, int platform) {
-		refreshFamilyManager(familyId);
-		
-		// 获取家族族长
-		DBObject queryLeaderObj = new BasicDBObject();
-		queryLeaderObj.put("familyId", familyId);
-		queryLeaderObj.put("memberGrade", FamilyMemberEnum.GRADE_LEADER);
-		DBObject leaderObj = (BasicDBObject) CommonDB.getInstance(CommonDB.COMMONDB)
-				.getCollection(CollectionEnum.FAMILYMEMBER).findOne(queryLeaderObj);
-		if (leaderObj != null) {
-			FamilyMember fMember = new FamilyMember();
-			fMember.initJavaBean(leaderObj, platform);
-			return fMember;
-		}
-		return null;
+	    try {
+            FamilyAdminService familyAdminService = (FamilyAdminService) MelotBeanFactory.getBean("familyAdminService");
+            List<com.melot.family.driver.domain.FamilyMember> fMemberList = familyAdminService.getFamilyMemberByMembergrade(familyId, FamilyMemberEnum.GRADE_LEADER);
+            if (fMemberList != null && fMemberList.get(0) != null) {
+                FamilyMember familyMember = new FamilyMember();
+                familyMember.initJavaBean(fMemberList.get(0), platform);
+                return familyMember;
+            }
+        } catch (Exception e) {
+            logger.error("FamilyAdminService.getFamilyMemberByMembergrade exception familyId:" + familyId + "membergrade:" + FamilyMemberEnum.GRADE_LEADER, e);
+        }
+        return null;
 	}
 	
 	/**
@@ -212,21 +165,22 @@ public class FamilyService {
 	 * @return
 	 */
 	public static List<FamilyMember> getFamilyDeputy(int familyId, int platform) {
-		refreshFamilyManager(familyId);
-		
-		List<FamilyMember> familyDeputy = new ArrayList<FamilyMember>();
-		// 获取家族副族长
-		DBObject queryDeputyObj = new BasicDBObject();
-		queryDeputyObj.put("familyId", familyId);
-		queryDeputyObj.put("memberGrade", FamilyMemberEnum.GRADE_DEPUTY);
-		DBCursor deputyCur = (DBCursor) CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.FAMILYMEMBER)
-				.find(queryDeputyObj).limit(Constant.return_deputy_count);
-		for (DBObject deputyObj : deputyCur) {
-			FamilyMember fMember = new FamilyMember();
-			fMember.initJavaBean(deputyObj, platform);
-			familyDeputy.add(fMember);
-		}
-		return familyDeputy;
+	    List<FamilyMember> familyDeputy = new ArrayList<FamilyMember>();
+	    try {
+            FamilyAdminService familyAdminService = (FamilyAdminService) MelotBeanFactory.getBean("familyAdminService");
+            List<com.melot.family.driver.domain.FamilyMember> fMemberList = familyAdminService.getFamilyMemberByMembergrade(familyId, FamilyMemberEnum.GRADE_DEPUTY);
+            if (fMemberList != null) {
+                for (com.melot.family.driver.domain.FamilyMember familyMember : fMemberList) {
+                    FamilyMember fMember = new FamilyMember();
+                    fMember.initJavaBean(familyMember, platform);
+                    familyDeputy.add(fMember);
+                }
+                return familyDeputy;
+            }
+        } catch (Exception e) {
+            logger.error("FamilyAdminService.getFamilyMemberByMembergrade exception familyId:" + familyId + "membergrade:" + FamilyMemberEnum.GRADE_DEPUTY, e);
+        }
+        return familyDeputy;
 	}
 	
 	/**
@@ -569,20 +523,18 @@ public class FamilyService {
 	 * @return
 	 */
 	public static FamilyMember getFamilyMemberInfo(int userId, int familyId, int platform) {
-		
-		refreshFamilyManager(familyId);
-		
-		DBObject queryObj = new BasicDBObject();
-		queryObj.put("familyId", familyId);
-		queryObj.put("userId", userId);
-		DBObject memberDBObj = CommonDB.getInstance(CommonDB.COMMONDB)
-				.getCollection(CollectionEnum.FAMILYMEMBER).findOne(queryObj);
-		if (memberDBObj != null) {
-			FamilyMember fMember = new FamilyMember();
-			fMember.initJavaBean(memberDBObj, platform);
-			return fMember;
-		}
-		return null;
+	    try {
+	        FamilyAdminService familyAdminService = (FamilyAdminService) MelotBeanFactory.getBean("familyAdminService");
+	        com.melot.family.driver.domain.FamilyMember fMember = familyAdminService.getFamilyMemberInfo(familyId, userId);
+	        if (fMember != null) {
+	            FamilyMember familyMember = new FamilyMember();
+	            familyMember.initJavaBean(fMember, platform);
+	            return familyMember;
+	        }
+	    } catch (Exception e) {
+            logger.error("FamilyAdminService.getFamilyMemberInfo exception familyId:" + familyId + "userId:" + userId, e);
+        }
+	    return null;
 	}
 	
 	/**
@@ -591,7 +543,7 @@ public class FamilyService {
 	 * @param memberCount
 	 * @param actorCount
 	 */
-	private static void updateFamilyMemberCount(int familyId, int memberCount) {
+	private static void updateFamilyMemberCount(int familyId, int memberCount) {		
 	    FamilyAdminService familyAdminService = (FamilyAdminService) MelotBeanFactory.getBean("familyAdminService");
 	    if (familyAdminService != null) {
 	        FamilyInfo familyInfo = new FamilyInfo();
@@ -599,18 +551,6 @@ public class FamilyService {
 	        familyInfo.setMemberCount(memberCount);
 	        familyAdminService.updateFamilyInfo(familyInfo);
 	    }
-	}
-	
-	/**
-	 * 删除家族中成员
-	 * @param familyId
-	 * @param userId
-	 */
-	private static void deleteFamilyMember(int familyId, int userId) {
-		DBObject queryObj = new BasicDBObject();
-		queryObj.put("familyId", familyId);
-		queryObj.put("userId", userId);
-		CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.FAMILYMEMBER).remove(queryObj);
 	}
 	
 	/**
@@ -652,8 +592,6 @@ public class FamilyService {
 				}
 				// 更新mongodb的userList中familyId字段
 				updateUserFamilyId(userId, null);
-				// 删除MONGODB副族长
-				deleteFamilyMember(familyId, userId);
 				// 删除REDIS用户家族
 				FamilySource.delFamilyMember(String.valueOf(userId));
 				// 家族勋章失效
@@ -691,13 +629,6 @@ public class FamilyService {
 			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Family.setFamilyNotice", map);
 			String TagCode = (String) map.get("TagCode");
 			resMap.put("TagCode", TagCode);
-			if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-				// 设置MONGODB中家族公告
-				CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.FAMILYLIST)
-						.update(new BasicDBObject("familyId", familyId),
-								new BasicDBObject("$set",new BasicDBObject("familyNotice", notice)),
-								false, false);
-			}
 		} catch (SQLException e) {
 			logger.error("fail to execute procedure Family.setFamilyNotice", e);
 		}
@@ -725,13 +656,6 @@ public class FamilyService {
 			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Family.setFamilyPoster", map);
 			String TagCode = (String) map.get("TagCode");
 			resMap.put("TagCode", TagCode);
-			if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-				// 更新MONGODB中的家族海报
-				CommonDB.getInstance(CommonDB.COMMONDB)
-						.getCollection(CollectionEnum.FAMILYLIST)
-						.update(new BasicDBObject("familyId", familyId),
-								new BasicDBObject("$set", new BasicDBObject("familyPoster", posterJsonString)), false, false);
-			}
 		} catch (SQLException e) {
 			logger.error("fail to execute procedure Family.setFamilyPoster", e);
 		}
@@ -793,6 +717,26 @@ public class FamilyService {
 					resMap.put("pageTotal", CommonUtil.getPageTotal(total.intValue(), countPerPage));
 					@SuppressWarnings("unchecked")
 					List<FamilyMember> memberList = (List<FamilyMember>) map.get("memberList");
+					if (memberList != null && memberList.size() > 0) {
+						List<Integer> userIds = new ArrayList<Integer>();
+						Map<Integer, UserProfile> profileMap = new HashMap<Integer, UserProfile>();
+						for (FamilyMember familyMember : memberList) {
+							userIds.add(familyMember.getUserId());
+						}
+						List<UserProfile> profileList = UserService.getUserProfileAll(userIds);
+						if (profileList != null && profileList.size() > 0) {
+							for (UserProfile userProfile : profileList) {
+								profileMap.put(userProfile.getUserId(), userProfile);
+							}
+							for (FamilyMember familyMember : memberList) {
+								if (profileMap.containsKey(familyMember.getUserId()) && profileMap.get(familyMember.getUserId()) != null) {
+									familyMember.setNickname(profileMap.get(familyMember.getUserId()).getNickName());
+									familyMember.setActorTag(profileMap.get(familyMember.getUserId()).getIsActor());
+								}
+							}
+						}
+					}
+					
 					resMap.put("memberList", memberList);
 				} else {
 					resMap.put("pageTotal", 0l);
@@ -829,8 +773,6 @@ public class FamilyService {
 			resMap.put("TagCode", TagCode);
 			if (TagCode.equals(TagCodeEnum.SUCCESS)) {
 				
-				FamilyMember familyMember = getFamilyMemberInfo(userId, family.getFamilyId().intValue(), 0);
-				
 				// 更新家族成员个数和家族主播个数
 				Integer memberCount = (Integer) map.get("memberCount");
 				if (memberCount != null) {
@@ -853,22 +795,8 @@ public class FamilyService {
 					if (!String.valueOf(userId).equals(uid) && !notPassUseridsList.contains(uid)) {
 						// 更新mongodb的userList
 						updateUserFamilyId(i_userId, null);
-						// 获取被删成员职位
-						DBObject qObj = new BasicDBObject();
-						qObj.put("familyId", family.getFamilyId());
-						qObj.put("userId", i_userId);
-						int count = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.FAMILYMEMBER).find(qObj).count();
-						if (count > 0) {
-							// 删除MONGODB副族长
-							if (familyMember.getMemberGrade().intValue() == FamilyMemberEnum.GRADE_LEADER) { 
-								deleteFamilyMember(family.getFamilyId().intValue(), i_userId.intValue());
-								// 删除REDIS用户家族
-								FamilySource.delFamilyMember(uid);
-							}
-						} else {
-							// 删除REDIS用户家族
-							FamilySource.delFamilyMember(uid);
-						}
+						// 删除REDIS用户家族
+                        FamilySource.delFamilyMember(uid);
 						// 家族勋章失效
 						try {
 							if (family.getFamilyMedal() != null) {
@@ -918,29 +846,6 @@ public class FamilyService {
 			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Family.updateMemberGrade", map);
 			String TagCode = (String) map.get("TagCode");
 			resMap.put("TagCode", TagCode);
-			if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-				@SuppressWarnings("unchecked")
-				List<FamilyMember> memberList = (ArrayList<FamilyMember>) map.get("memberList");
-				for (FamilyMember familyMember : memberList) {
-					if (memberGrade == FamilyMemberEnum.GRADE_COMMON) {
-						// 撤销族长权限 删除mongodb的familyMember集合记录
-						DBObject qObj = new BasicDBObject();
-						qObj.put("familyId", familyMember.getFamilyId());
-						qObj.put("memberId", familyMember.getMemberId());
-						CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.FAMILYMEMBER).remove(qObj);
-					}
-					if (memberGrade == FamilyMemberEnum.GRADE_DEPUTY ||
-							memberGrade == FamilyMemberEnum.GRADE_LEADER) {
-						// 更新MONGODB成员级别
-						DBObject qObj = new BasicDBObject();
-						qObj.put("familyId", familyMember.getFamilyId());
-						qObj.put("memberId", familyMember.getMemberId());
-						CommonDB.getInstance(CommonDB.COMMONDB)
-								.getCollection(CollectionEnum.FAMILYMEMBER)
-								.update(qObj, new BasicDBObject("$set", familyMember.toDBObject()), true, false);
-					}
-				}
-			}
 		} catch (SQLException e) {
 			logger.error("fail to call updateMemberGrade!", e);
 		}
@@ -1005,6 +910,7 @@ public class FamilyService {
 					resMap.put("pageTotal", CommonUtil.getPageTotal(total.intValue(), countPerPage));
 					@SuppressWarnings("unchecked")
 					List<FamilyApplicant> applicantList = (List<FamilyApplicant>) map.get("applicantList");
+					applicantList = UserService.addUserExtra(applicantList);
 					resMap.put("applicantList", applicantList);
 				} else {
 					resMap.put("pageTotal", 0l);

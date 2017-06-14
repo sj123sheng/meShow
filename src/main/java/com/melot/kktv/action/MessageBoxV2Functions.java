@@ -20,6 +20,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcx.service.MessageBoxServices;
+import com.melot.kkcx.service.UserService;
 import com.melot.kktv.model.EffectiveActivity;
 import com.melot.kktv.model.KkSystemNotice;
 import com.melot.kktv.model.NewsComment;
@@ -1201,6 +1202,7 @@ public class MessageBoxV2Functions {
         if (TagCode.equals(TagCodeEnum.SUCCESS)) {
             List<KkSystemNotice> kSysNotice = (List<KkSystemNotice>) map.get("kkSysNotices");
             if (kSysNotice != null && kSysNotice.size() > 0) {
+            	kSysNotice = UserService.addUserExtra(kSysNotice);
                 for (KkSystemNotice k : kSysNotice) {
                     jsonArr.add(new JsonParser().parse(new Gson().toJson(k.toJsonObject(lastReadTime,platform))));
                 }

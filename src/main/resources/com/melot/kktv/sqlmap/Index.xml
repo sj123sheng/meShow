@@ -9,7 +9,6 @@
 	<!-- 获取用户收到的礼物列表 -->
 	<resultMap id="giftRecord" class="com.melot.kktv.model.GiftRecord">
 		<result property="userId" column="senderId" />
-		<result property="userNick" column="senderNick" />
 		<result property="giftId" column="giftId" />
 		<result property="giftName" column="giftName" />
 		<result property="unit" column="unit" />
@@ -18,6 +17,8 @@
 		<result property="count" column="count" />
 		<result property="sendTime" column="sendTime" javaType="java.util.Date"
 			jdbcType="TIMESTAMP" />
+		<result property="xmanNick" column="xmanNick"/>
+		<result property="xmanId" column="xmanId"/>
 	</resultMap>
 
 	<parameterMap id="userRsvGiftListMap" class="java.util.Map">
@@ -40,7 +41,7 @@
 
 	<procedure id="getUserRsvGiftList" parameterMap="userRsvGiftListMap">
 		{call
-		p_getUserRsvGiftList(?,?,?,?,?,?,?)}
+		p_getUserRsvGiftList_V2(?,?,?,?,?,?,?)}
 	</procedure>
 
 	<!-- 获取活动列表 -->
@@ -240,13 +241,11 @@
 	<!-- 获取收到捧场主播排行 -->
 	<resultMap id="NewsRewardRankList" class="com.melot.kktv.model.NewsRewardRank">
 		<result property="userId" column="userid" />
-		<result property="nickname" column="nickname" />
-		<result property="portrait_path_original" column="path_original" />
 		<result property="rcount" column="rcount" />
 		<result property="roomSource" column="roomSource" />
 	</resultMap>
 	<select id="getNewsRewardActorRankList" resultMap="NewsRewardRankList" parameterClass="java.util.Map">
-		SELECT t.userid, t.rcount, ui.nickname, up.path_original, t.type as roomSource FROM (
+		SELECT t.userid, t.rcount, t.type as roomSource FROM (
 			SELECT t1.userid, SUM(t3.rewardnum) AS rcount, t2.type FROM user_news t1
       		JOIN actor_info t2 ON t1.userid = t2.actorid
       		JOIN user_news_comments t3 ON t1.newsid = t3.newsid AND t3.rewardnum IS NOT NULL
@@ -261,14 +260,12 @@
 	      		</isNotNull>
      		</dynamic>
      		GROUP BY t1.userid, t2.type ORDER BY SUM(t3.rewardnum) DESC
-		) t JOIN user_info ui ON t.userid = ui.userid
-		LEFT JOIN user_portrait up ON ui.portraitid = up.portraitid AND up.useable = 1
-		WHERE <![CDATA[rownum <= #count#]]>
+		) t WHERE <![CDATA[rownum <= #count#]]>
 	</select>
 	
 	<!-- 获取送出捧场用户排行 -->
 	<select id="getNewsRewardUserRankList" resultMap="NewsRewardRankList" parameterClass="java.util.Map">
-		SELECT t.userid, t.rcount, ui.nickname, up.path_original, t.type as roomSource FROM (
+		SELECT t.userid, t.rcount, t.type as roomSource FROM (
 			SELECT t3.userid, SUM(t3.rewardnum) AS rcount, t4.type FROM user_news t1
 	      		JOIN actor_info t2 ON t1.userid = t2.actorid
 	      		JOIN user_news_comments t3 ON t1.newsid = t3.newsid AND t3.rewardnum IS NOT NULL
@@ -284,9 +281,7 @@
 			      		</isNotNull>
 		      		</dynamic>
 	     		GROUP BY t3.userid, t4.type ORDER BY SUM(t3.rewardnum) DESC
-			) t JOIN user_info ui ON t.userid = ui.userid
-			LEFT JOIN user_portrait up ON ui.portraitid = up.portraitid AND up.useable = 1
-		WHERE <![CDATA[rownum <= #count#]]>
+			) t WHERE <![CDATA[rownum <= #count#]]>
 	</select>
 	
 	<!-- 获取用户一定时间内收到礼物个数 -->

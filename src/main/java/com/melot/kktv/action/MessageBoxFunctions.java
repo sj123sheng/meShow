@@ -23,6 +23,7 @@ import com.google.gson.JsonParser;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.service.MessageBoxServices;
+import com.melot.kkcx.service.UserService;
 import com.melot.kktv.model.KkAssistor;
 import com.melot.kktv.model.NewsComment;
 import com.melot.kktv.model.EffectiveActivity;
@@ -646,32 +647,36 @@ public class MessageBoxFunctions {
 			result.addProperty("TagCode", TagCode);
 			JsonArray jCommentList = new JsonArray();
 			@SuppressWarnings("unchecked")
-			List<Object> commentList = (ArrayList<Object>) map.get("commentList");
-			for (Object object : commentList) {
-				JsonObject jsonObj=new JsonObject();
-				NewsComment obj=(NewsComment)object;
-				jsonObj.addProperty("userId",obj.getUserId());
-				jsonObj.addProperty("nickname",obj.getNickname());
-				jsonObj.addProperty("gender", obj.getGender());
-				try{
-					MessageBoxFunctions.getPortraitByPlatform(platform,obj,jsonObj);
-				}catch (Exception e) {
-					logger.error("get the portrait failed"+e);
+			List<NewsComment> commentList = (ArrayList<NewsComment>) map.get("commentList");
+			commentList = UserService.addUserExtra(commentList);
+			
+			if (commentList != null) {
+				for (Object object : commentList) {
+					JsonObject jsonObj=new JsonObject();
+					NewsComment obj=(NewsComment)object;
+					jsonObj.addProperty("userId",obj.getUserId());
+					jsonObj.addProperty("nickname",obj.getNickname());
+					jsonObj.addProperty("gender", obj.getGender());
+					try{
+						MessageBoxFunctions.getPortraitByPlatform(platform,obj,jsonObj);
+					}catch (Exception e) {
+						logger.error("get the portrait failed"+e);
+					}
+					jsonObj.addProperty("message",obj.getContent());
+					if(lastReadTime<=obj.getCommentTime().getTime()){
+						jsonObj.addProperty("isnew", Integer.valueOf(1));
+					}else{
+						jsonObj.addProperty("isnew", Integer.valueOf(0));
+					}
+					if(obj.getUserIdTarget() != null && obj.getUserIdTarget() != 0){
+						jsonObj.addProperty("target", obj.getUserIdTarget());
+					}
+					
+					jsonObj.addProperty("msgtime",obj.getCommentTime().getTime());
+					jsonObj.addProperty("id", obj.getCommentId());
+					jsonObj.addProperty("newsid", obj.getNewsId());
+					jCommentList.add(jsonObj);
 				}
-				jsonObj.addProperty("message",obj.getContent());
-				if(lastReadTime<=obj.getCommentTime().getTime()){
-					jsonObj.addProperty("isnew", Integer.valueOf(1));
-				}else{
-					jsonObj.addProperty("isnew", Integer.valueOf(0));
-				}
-				if(obj.getUserIdTarget() != null && obj.getUserIdTarget() != 0){
-					jsonObj.addProperty("target", obj.getUserIdTarget());
-				}
-				
-				jsonObj.addProperty("msgtime",obj.getCommentTime().getTime());
-				jsonObj.addProperty("id", obj.getCommentId());
-				jsonObj.addProperty("newsid", obj.getNewsId());
-				jCommentList.add(jsonObj);
 			}
 			result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
 			result.add("messageList", jCommentList);
@@ -1133,6 +1138,7 @@ public class MessageBoxFunctions {
 		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
 			JsonObject result = new JsonObject();
 			List<KkAssistor> kNotice = (List<KkAssistor>) map.get("kkNotices");
+			kNotice = UserService.addUserExtra(kNotice);
 			if (kNotice != null && kNotice.size() > 0) {
 				for (KkAssistor k : kNotice) {
 					jsonArr.add(new JsonParser().parse(new Gson().toJson(k
@@ -1201,6 +1207,7 @@ public class MessageBoxFunctions {
 			JsonObject result = new JsonObject();
 			List<KkSystemNotice> kSysNotice = (List<KkSystemNotice>) map.get("kkSysNotices");
 			if (kSysNotice != null && kSysNotice.size() > 0) {
+				kSysNotice = UserService.addUserExtra(kSysNotice);
 				for (KkSystemNotice k : kSysNotice) {
 					jsonArr.add(new JsonParser().parse(new Gson().toJson(k
 							.toJsonObject(lastReadTime,platform))));

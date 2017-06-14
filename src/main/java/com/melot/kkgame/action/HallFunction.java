@@ -39,6 +39,7 @@ import com.melot.api.menu.sdk.utils.RandomUtils;
 import com.melot.blacklist.service.BlacklistService;
 import com.melot.content.config.game.service.GameTagService;
 import com.melot.kkcx.service.GeneralService;
+import com.melot.kkcx.service.UserService;
 import com.melot.kkcx.transform.RoomTF;
 import com.melot.kkgame.redis.HallPartSource;
 import com.melot.kkgame.redis.support.RedisException;
@@ -661,6 +662,7 @@ public class HallFunction extends BaseAction{
         if (TagCodeEnum.SUCCESS.equals(map.get("TagCode"))) {
             List<Room> roomList = (ArrayList<Room>) map.get("roomList");
             if (roomList != null && roomList.size() > 0) {
+            	roomList = UserService.addUserExtra(roomList);
                 StringBuffer actorRoomIds = new StringBuffer();
                 for (Room room : roomList) {
                     if (room.getActorTag() != null && room.getActorTag().intValue() == 1) {

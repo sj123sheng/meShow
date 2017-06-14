@@ -23,8 +23,10 @@ import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.content.config.domain.ApplyContractInfo;
 import com.melot.family.driver.domain.FamilyInfo;
 import com.melot.kkcore.user.api.ShowMoneyHistory;
+import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcx.service.FamilyService;
 import com.melot.kkcx.service.RoomService;
+import com.melot.kkcx.service.UserService;
 import com.melot.kkcx.transform.NewsCommentTF;
 import com.melot.kkcx.transform.NewsTF;
 import com.melot.kktv.model.News;
@@ -281,23 +283,28 @@ public class NewsFunctions {
 		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
 			// 取出列表
 			@SuppressWarnings("unchecked")
-			List<Object> newsList = (ArrayList<Object>) map.get("newsList");
+			List<News> newsList = (ArrayList<News>) map.get("newsList");
+			newsList = UserService.addUserExtra(newsList);
 			result.addProperty("TagCode", TagCode);
 			result.addProperty("pageTotal", (Integer) map.get("pageTotal"));
 			JsonArray jNewsList = new JsonArray();
-
-			for (Object object : newsList) {
-				if (checkIds != null && checkIds.size() > 0) {
-					if (checkIds.contains(((News) object).getNewsId())) {
-						checkIds.remove(((News) object).getNewsId());
+			
+			if (newsList != null) {
+				for (Object object : newsList) {
+					if (checkIds != null && checkIds.size() > 0) {
+						if (checkIds.contains(((News) object).getNewsId())) {
+							checkIds.remove(((News) object).getNewsId());
+						}
 					}
+					break;
 				}
-				break;
 			}
 			int flag = checkIds.size();
-			for (Object object : newsList) {
-				if (flag ++ < newsList.size()) {
-					jNewsList.add(NewsTF.toJsonObject((News) object, platform, inRoom));
+			if (newsList != null) {
+				for (Object object : newsList) {
+					if (flag ++ < newsList.size()) {
+						jNewsList.add(NewsTF.toJsonObject((News) object, platform, inRoom));
+					}
 				}
 			}
 			
@@ -686,9 +693,12 @@ public class NewsFunctions {
 				result.addProperty("TagCode", TagCode);
 				JsonArray jCommentList = new JsonArray();
 				@SuppressWarnings("unchecked")
-				List<Object> commentList = (ArrayList<Object>) map.get("commentList");
-				for (Object object : commentList) {
-					jCommentList.add(NewsCommentTF.toJsonObject((NewsComment) object, platform));
+				List<NewsComment> commentList = (ArrayList<NewsComment>) map.get("commentList");
+				commentList = UserService.addUserExtra(commentList);
+				if (commentList != null) {
+					for (Object object : commentList) {
+						jCommentList.add(NewsCommentTF.toJsonObject((NewsComment) object, platform));
+					}
 				}
 				result.add("commentList", jCommentList);
 				result.addProperty("commentTotal", (Integer) map.get("commentTotal"));
@@ -851,14 +861,17 @@ public class NewsFunctions {
 		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
 			// 取出列表
 			@SuppressWarnings("unchecked")
-			List<Object> commentList = (ArrayList<Object>) map.get("commentList");
-
+			List<NewsComment> commentList = (ArrayList<NewsComment>) map.get("commentList");
+			commentList = UserService.addUserExtra(commentList);
+			
 			JsonObject result = new JsonObject();
 			result.addProperty("TagCode", TagCode);
 			result.addProperty("pageTotal", (Integer) map.get("pageTotal"));
 			JsonArray jNewsList = new JsonArray();
-			for (Object object : commentList) {
-				jNewsList.add(NewsCommentTF.toJsonObject((NewsComment) object, platform));
+			if (commentList != null) {
+				for (Object object : commentList) {
+					jNewsList.add(NewsCommentTF.toJsonObject((NewsComment) object, platform));
+				}
 			}
 			result.add("commentList", jNewsList);
 			result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
@@ -1096,9 +1109,23 @@ public class NewsFunctions {
 			if (TagCode.equals(TagCodeEnum.SUCCESS)) {
 				// 取出列表
 				try {
-					List<Object> newsInfoList = (ArrayList<Object>)map.get("newsInfo");
-					List<Object> rewardsInfoList = (ArrayList<Object>) map.get("rewardInfo");
+					List<News> newsInfoList = (ArrayList<News>)map.get("newsInfo");
+					List<News> rewardsInfoList = (ArrayList<News>) map.get("rewardInfo");
 					News newsInfo = (News) newsInfoList.get(0);
+					if (newsInfo != null && newsInfo.getUserId() != null) {
+						UserProfile userProfile = UserService.getUserInfoNew(newsInfo.getUserId());
+						if (userProfile != null) {
+							if (userProfile.getNickName() != null) {
+								newsInfo.setNickname(userProfile.getNickName());
+							}
+						}
+						if (userProfile.getPortrait() != null) {
+							newsInfo.setPortrait_path_original(userProfile.getPortrait());
+						}
+						newsInfo.setGender(userProfile.getGender());
+					}
+					
+					rewardsInfoList = UserService.addUserExtra(rewardsInfoList);
 					
 					JsonObject result = NewsTF.toJsonObject(newsInfo, platform, 0);
 					int totalRewarders = (Integer)map.get("totalRewarders");
@@ -1258,12 +1285,15 @@ public class NewsFunctions {
 				result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 				// 取出列表
 				@SuppressWarnings("unchecked")
-				List<Object> rewardUserList = (ArrayList<Object>) map.get("topRewardUsers");
+				List<News> rewardUserList = (ArrayList<News>) map.get("topRewardUsers");
+				rewardUserList = UserService.addUserExtra(rewardUserList);
 				
 				result.addProperty("TagCode", TagCode);
 				JsonArray jRecordList = new JsonArray();
-				for (Object object : rewardUserList) {
-					jRecordList.add(NewsTF.toJsonObjectForTopUsers((News) object, platform));
+				if (rewardUserList != null) {
+					for (Object object : rewardUserList) {
+						jRecordList.add(NewsTF.toJsonObjectForTopUsers((News) object, platform));
+					}
 				}
 				result.addProperty("pathPrefix", ConfigHelper.getHttpdir()); // 图片前缀
 				result.add("topUserList", jRecordList);
@@ -1615,18 +1645,21 @@ public class NewsFunctions {
 		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
 			// 取出列表
 			@SuppressWarnings("unchecked")
-			List<Object> newsList = (ArrayList<Object>) map.get("newsList");
+			List<News> newsList = (ArrayList<News>) map.get("newsList");
+			newsList = UserService.addUserExtra(newsList);
 			result.addProperty("TagCode", TagCode);
 			result.addProperty("pageTotal", (Integer) map.get("pageTotal"));
 			JsonArray jNewsList = new JsonArray();
 			
-			for (Object object : newsList) {
-				if (checkIds != null && checkIds.size() > 0) {
-					if (checkIds.contains(((News) object).getNewsId())) {
-						checkIds.remove(((News) object).getNewsId());
+			if (newsList != null) {
+				for (Object object : newsList) {
+					if (checkIds != null && checkIds.size() > 0) {
+						if (checkIds.contains(((News) object).getNewsId())) {
+							checkIds.remove(((News) object).getNewsId());
+						}
 					}
+					break;
 				}
-				break;
 			}
 			int flag = checkIds.size();
 			for (Object object : newsList) {
