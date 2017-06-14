@@ -2495,7 +2495,7 @@ public class ProfileFunctions {
         
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-            roomTheme = CommonUtil.getJsonParamString(jsonObject, "roomTheme", null, "05550001", 1, 40);
+            roomTheme = CommonUtil.getJsonParamString(jsonObject, "roomTheme", "", null, 1, 40);
             if (GeneralService.hasSensitiveWords(userId, roomTheme)) {
                 result.addProperty("TagCode", "05550003");
                 return result;
