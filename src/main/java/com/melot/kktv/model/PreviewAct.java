@@ -2,9 +2,11 @@ package com.melot.kktv.model;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Map;
 
+import com.alibaba.fastjson.JSON;
 import com.google.gson.JsonObject;
-import com.mongodb.BasicDBObject;
+import com.melot.kkactivity.driver.domain.ActInfo;
 
 /*
  * actid		节目编号
@@ -64,106 +66,108 @@ public class PreviewAct {
 	 */
 	private String actDesc;
 	
-	/**
-	 * 转成JsonObject
-	 * 
-	 * @return JsonObject
-	 */
-	public static JsonObject toJsonObject(BasicDBObject dbObj, int ishall, int platform, long nowtime) {
-		long stime = 0L;
-		long etime = 0L;
-		long nowWeek;
-		long diff = 0;
-		int dayWeek = 0;
-		if (dbObj == null)
-			return null;
-		if (nowtime == 0l)
-			return null;
-		Calendar c = Calendar.getInstance();
-		c.setTime(new Date(nowtime));
-		if (c.get(Calendar.DAY_OF_WEEK) == 1) {  
-			dayWeek = 7;  
-			dayWeek = 7;
-		} else {  
-			dayWeek = c.get(Calendar.DAY_OF_WEEK) - 1;  
-		}
-		JsonObject jObject = new JsonObject();
-		if (dbObj.containsField("startTime")) {
-			stime = Long.parseLong(dbObj.getString("startTime"));
-		} else if (dbObj.containsField("SDTime") && dbObj.containsField("dayOfWeek")) {
-			nowWeek = dbObj.getInt("dayOfWeek");
-			if (nowWeek >= dayWeek) {
-				diff = nowWeek - dayWeek;
-			} else {
-				diff = 7 + nowWeek - dayWeek;
-			}
-			stime = nowtime + diff*24*3600*1000 +Long.parseLong(dbObj.getString("SDTime"));
-		}
-		if (dbObj.containsField("endTime")) {
-			etime = Long.parseLong(dbObj.getString("endTime"));
-		} else if(dbObj.containsField("EDTime")) {
-			nowWeek = dbObj.getInt("dayOfWeek");
-			if (nowWeek >= dayWeek) {
-				diff = nowWeek-dayWeek;
-			} else {
-				diff = 7+nowWeek-dayWeek;
-			}
-			etime = nowtime + diff*24*3600*1000 +Long.parseLong(dbObj.getString("EDTime"));
-		}
-		if (dbObj.getString("actRoom") == null || dbObj.getString("actRoom").trim().isEmpty()) {
-			return null;
-		} else {
-			jObject.addProperty("actRoom", dbObj.getString("actRoom").trim());
-		}
-		if (dbObj.getInt("actId") <= 0) {
-			return null;
-		} else {
-			jObject.addProperty("actId", dbObj.getInt("actId"));
-		}
-		if (dbObj.getString("actTitle") == null || dbObj.getString("actTitle").trim().isEmpty()) {
-			return null;
-		} else {
-			jObject.addProperty("actTitle", dbObj.getString("actTitle"));
-		}
-		if (dbObj.getString("actUrl") == null
-				|| dbObj.getString("actUrl").trim().isEmpty()) {
-		} else {
-			jObject.addProperty("actUrl", dbObj.getString("actUrl"));
-		}
-		if (dbObj.getString("actDesc") != null) {
-			jObject.addProperty("actDesc", dbObj.getString("actDesc"));
-		}
-		jObject.addProperty("startTime", stime);
-		if (System.currentTimeMillis() >= stime && System.currentTimeMillis() <=etime) { // 直播中
-			jObject.addProperty("actStatus", 1);
-		} else { // 未开始
-			jObject.addProperty("actStatus", 0);
-		}
-		if (ishall != 1) { // 预告
-			if (dbObj.get("actBanner") != null) {
-				// 分平台返回actBanner 
-				BasicDBObject obj  = (BasicDBObject) dbObj.get("actBanner");
-				switch (platform) {
-				  case 1:
-					  jObject.addProperty("actBanner", obj.getString("w"));
-					break;
-				  case 2:
-					  jObject.addProperty("actBanner", obj.getString("a"));
-					break;
-				  case 3:
-					  jObject.addProperty("actBanner", obj.getString("i"));
-					break;
-				  case 4:
-					  jObject.addProperty("actBanner", obj.getString("i"));
-					break;
-				  default: break;
-				}		
-			}
-			jObject.addProperty("endTime", etime);
-			
-		}
-		return jObject;
-	}
+    /**
+     * 转成JsonObject
+     *
+     * @return
+     */
+    public static JsonObject toJsonObject(ActInfo actInfo, int ishall, int platform, long nowtime, long startTime, long endTime) {
+        long stime = 0L;
+        long etime = 0L;
+        long nowWeek;
+        long diff = 0;
+        int dayWeek = 0;
+        if (actInfo == null) {
+            return null;
+        }
+        if (nowtime == 0l){
+            return null;
+        }
+        Calendar c = Calendar.getInstance();
+        c.setTime(new Date(nowtime));
+        if (c.get(Calendar.DAY_OF_WEEK) == 1) {
+            dayWeek = 7;
+            dayWeek = 7;
+        } else {
+            dayWeek = c.get(Calendar.DAY_OF_WEEK) - 1;
+        }
+        JsonObject jObject = new JsonObject();
+        if (actInfo.getStartTime() != null) {
+            stime = actInfo.getStartTime();
+        } else if (actInfo.getSDTime() != null && actInfo.getDayWeek() != null) {
+            nowWeek = actInfo.getDayWeek();
+            if (nowWeek >= dayWeek) {
+                diff = nowWeek - dayWeek;
+            } else {
+                diff = 7 + nowWeek - dayWeek;
+            }
+            stime = nowtime + diff*24*3600*1000 + actInfo.getSDTime();
+            if (stime < startTime || stime > endTime) {
+                return null;
+            }
+        }
+        if (actInfo.getActEndTime() != null) {
+            etime = actInfo.getActEndTime().getTime();
+        } else if(actInfo.getEDTime() != null) {
+            nowWeek = actInfo.getDayWeek();
+            if (nowWeek >= dayWeek) {
+                diff = nowWeek-dayWeek;
+            } else {
+                diff = 7+nowWeek-dayWeek;
+            }
+            etime = nowtime + diff*24*3600*1000 + actInfo.getEDTime();
+        }
+        if (actInfo.getActRoom() == null || actInfo.getActRoom().trim().isEmpty()) {
+            return null;
+        } else {
+            jObject.addProperty("actRoom", actInfo.getActRoom().trim());
+        }
+        if (actInfo.getActId() <= 0) {
+            return null;
+        } else {
+            jObject.addProperty("actId", actInfo.getActId());
+        }
+        if (actInfo.getActTitle() == null || actInfo.getActTitle().trim().isEmpty()) {
+            return null;
+        } else {
+            jObject.addProperty("actTitle", actInfo.getActTitle());
+        }
+        if (actInfo.getActUrl() != null && actInfo.getActUrl().trim().isEmpty()) {
+            jObject.addProperty("actUrl", actInfo.getActUrl());
+        }
+        if (actInfo.getActDesc() != null) {
+            jObject.addProperty("actDesc", actInfo.getActDesc());
+        }
+        jObject.addProperty("startTime", stime);
+        if (System.currentTimeMillis() >= stime && System.currentTimeMillis() <=etime) { // 直播中
+            jObject.addProperty("actStatus", 1);
+        } else { // 未开始
+            jObject.addProperty("actStatus", 0);
+        }
+        if (ishall != 1) { // 预告
+            if (actInfo.getActBanner() != null) {
+                Map map = (Map) JSON.parse(actInfo.getActBanner()); 
+                switch (platform) {
+                  case 1:
+                      jObject.addProperty("actBanner", (String) map.get("w"));
+                    break;
+                  case 2:
+                      jObject.addProperty("actBanner", (String) map.get("a"));
+                    break;
+                  case 3:
+                      jObject.addProperty("actBanner", (String) map.get("i"));
+                    break;
+                  case 4:
+                      jObject.addProperty("actBanner", (String) map.get("i"));
+                    break;
+                  default: break;
+                }       
+            }
+            jObject.addProperty("endTime", etime);
+            
+        }
+        return jObject;
+    }
 	
 	public Integer getActId() {
 		return actId;
