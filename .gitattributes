@@ -290,7 +290,6 @@ src/main/java/com/melot/kktv/service/ConsumeService.java -text
 src/main/java/com/melot/kktv/service/DataAcqService.java -text
 src/main/java/com/melot/kktv/service/LiveVideoService.java -text
 src/main/java/com/melot/kktv/service/NewsService.java -text
-src/main/java/com/melot/kktv/service/PreviewActService.java -text
 src/main/java/com/melot/kktv/service/ResourceService.java -text
 src/main/java/com/melot/kktv/service/StatisticsServices.java -text
 src/main/java/com/melot/kktv/service/TagService.java -text
