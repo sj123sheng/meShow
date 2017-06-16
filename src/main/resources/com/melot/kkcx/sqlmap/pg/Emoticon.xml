@@ -18,7 +18,7 @@
 	</resultMap>
 
 	<select id="getDynamicEmoticon" parameterClass="java.lang.Integer" resultMap="emoticonMap">
-		select t.eid, t.ename, t.emoticon_url, t.preview_url, t.platform, t.extra_value, t.desc, t.dtime from conf_emoticon_dynamic t order by t.idx
+		select t.eid, t.ename, t.emoticon_url, t.preview_url, t.platform, t.extra_value, t.desc, t.dtime from conf_emoticon_dynamic t where t.is_on = 1 order by t.idx
 	</select>
 	
 	<resultMap class="com.melot.kkcx.model.Sticker" id="stickerMap">
@@ -28,11 +28,12 @@
 		<result property="previewUrl" column= "preview_url"/>
 		<result property="sUrl" column= "s_url"/>
 		<result property="extraValue" column= "extra_value"/>
+		<result property="desc" column="desc" />
 		<result property="dtime" column= "dtime"/>
 	</resultMap>
 	
 	<select id="getStickerList" resultMap="stickerMap">
-		select t.s_id, t.platform, t.s_name, t.preview_url, t.s_url, t.extra_value, t.dtime from conf_emoticon_sticker t order by t.idx
+		select t.s_id, t.platform, t.s_name, t.preview_url, t.s_url, t.extra_value, t.dtime, t.desc from conf_emoticon_sticker t where t.is_on = 1 order by t.idx
 	</select>
 	
 	<resultMap class="com.melot.kkcx.model.ActivityEmoticon" id="activityEmoticonMap">
