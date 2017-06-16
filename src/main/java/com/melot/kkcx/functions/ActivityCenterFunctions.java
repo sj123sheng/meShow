@@ -547,7 +547,7 @@ public class ActivityCenterFunctions {
         
         try {
             KkActivityService kkActivityService = (KkActivityService) MelotBeanFactory.getBean("kkActivityService");
-            List<ActInfo> actInfoList = kkActivityService.getRoomPreviewAct(roomId);
+            List<ActInfo> actInfoList = kkActivityService.getRoomPreviewActList(2, null, null, null, String.valueOf(roomId));
             int isWeekly = 0;
             if (actInfoList != null && actInfoList.size() > 0) {
                 result.addProperty("actId", actInfoList.get(0).getActId());
