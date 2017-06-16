@@ -19,6 +19,7 @@ import com.melot.kkcore.user.api.UserInfoDetail;
 import com.melot.kkcore.user.api.UserLevel;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.api.UserRegistry;
+import com.melot.kkcore.user.api.UserStaticInfo;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.model.ActorLevel;
 import com.melot.kkcx.model.RichLevel;
@@ -556,6 +557,17 @@ public class UserService {
             logger.error("fail to get KkUserService.getUserProfile, userId: " + userId, e);
         }
 		return 0;
+	}
+	
+	public static UserStaticInfo getStaticInfo(int userId) {
+		try {
+            KkUserService userService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
+            UserStaticInfo userStatic = userService.getUserStaticInfo(userId);
+            return userStatic;
+        } catch (Exception e) {
+            logger.error("fail to get KkUserService.getUserProfile, userId: " + userId, e);
+        }
+		return null;
 	}
 	
 	public static Map<String, Integer> getUserLevelAll(int userId) {
