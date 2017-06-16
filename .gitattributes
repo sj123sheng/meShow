@@ -366,7 +366,6 @@ src/main/resources/com/melot/kktv/sqlmap/News.xml -text
 src/main/resources/com/melot/kktv/sqlmap/NewsTagConf.xml -text
 src/main/resources/com/melot/kktv/sqlmap/NewsTagRes.xml -text
 src/main/resources/com/melot/kktv/sqlmap/Other.xml -text
-src/main/resources/com/melot/kktv/sqlmap/PreviewActConf.xml -text
 src/main/resources/com/melot/kktv/sqlmap/Profile.xml -text
 src/main/resources/com/melot/kktv/sqlmap/RecommendedMessage.xml -text
 src/main/resources/com/melot/kktv/sqlmap/Resource.xml -text
