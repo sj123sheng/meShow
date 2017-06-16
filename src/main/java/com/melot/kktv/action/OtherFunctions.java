@@ -2462,6 +2462,9 @@ public class OtherFunctions {
             if (sticker.getsUrl() != null) {
                 jsonObj.addProperty("stickerUrl", sticker.getsUrl());
             }
+            if (sticker.getDesc() != null) {
+                jsonObj.addProperty("desc", sticker.getDesc());
+            }
             if (sticker.getDtime() != null) {
                 jsonObj.addProperty("dtime", sticker.getDtime().getTime());
             }
