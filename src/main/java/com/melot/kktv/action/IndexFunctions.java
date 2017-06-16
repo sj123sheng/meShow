@@ -34,12 +34,13 @@ import com.melot.content.config.domain.LiveVideo;
 import com.melot.content.config.live.service.LiveAlbumService;
 import com.melot.content.config.live.service.LiveVideoService;
 import com.melot.content.config.live.upload.impl.QiniuService;
+import com.melot.kkactivity.driver.domain.ActInfo;
+import com.melot.kkactivity.driver.domain.GetActInfoListResp;
 import com.melot.kkactivity.driver.domain.KkActivity;
 import com.melot.kkactivity.driver.service.KkActivityService;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.service.ActorGiftService;
-import com.melot.kkcx.service.FamilyService;
 import com.melot.kkcx.service.GeneralService;
 import com.melot.kkcx.service.UserAssetServices;
 import com.melot.kkcx.service.UserService;
@@ -48,7 +49,6 @@ import com.melot.kkcx.transform.NewsRewardRankTF;
 import com.melot.kkcx.transform.RoomTF;
 import com.melot.kktv.model.Activity;
 import com.melot.kktv.model.Catalog;
-import com.melot.kktv.model.Family;
 import com.melot.kktv.model.HotActivity;
 import com.melot.kktv.model.NewsRewardRank;
 import com.melot.kktv.model.Notice;
@@ -63,7 +63,6 @@ import com.melot.kktv.redis.SearchWordsSource;
 import com.melot.kktv.redis.SubscribeSource;
 import com.melot.kktv.redis.WeekGiftSource;
 import com.melot.kktv.service.NewsService;
-import com.melot.kktv.service.PreviewActService;
 import com.melot.kktv.service.RoomService;
 import com.melot.kktv.util.AppChannelEnum;
 import com.melot.kktv.util.AppIdEnum;
@@ -84,7 +83,6 @@ import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.kktv.util.mongodb.CommonDB;
 import com.melot.sdk.core.util.MelotBeanFactory;
-import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
@@ -2090,307 +2088,60 @@ public class IndexFunctions {
 	 * @param jsonObject
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
 	public JsonObject getPreviewActList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-		long curTime = System.currentTimeMillis();
-		// 获取参数
-		int platform = PlatformEnum.WEB; //暂未使用到 
-		long startTime = DateUtil.getDayBeginTime(curTime); //默认当天0点
-		long endTime = startTime + 604800000;//7*24*3600*1000; // 默认一周
-		int count = -1; // 默认返回所有节目
-		int isHall = 0; //是否大厅调用 默认0 大厅优选推荐节目
-		long sqdTime = 0;
-		int userId = 0;
-		JsonElement startTimeje = jsonObject.get("startTime");
-		JsonElement endTimeje = jsonObject.get("endTime");
 		JsonObject result = new JsonObject();
-		// 解析参数
-		if (startTimeje != null && !startTimeje.isJsonNull() && startTimeje.getAsLong() > 0) {
-			try {
-				startTime = startTimeje.getAsLong();
-			} catch (Exception e) {}
-		} else {
-			Calendar c = Calendar.getInstance();
-			// 获取startTime的时分秒
-			c.setTime(new Date(curTime));
-			sqdTime = (c.get(Calendar.HOUR_OF_DAY) * 3600 
-						+ c.get(Calendar.MINUTE) * 60
-						+ c.get(Calendar.SECOND)) * 1000; //周期性节目查询时间
-		}
-		if (endTimeje != null && !endTimeje.isJsonNull() && endTimeje.getAsLong() > 0) {
-			try {
-				endTime = endTimeje.getAsLong();
-			} catch (Exception e) {}
-		} else {
-			endTime = startTime + 604800000;
-		}
-		if (startTime > endTime) {
-			result.add("actList", new JsonArray());
-			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-			return result;
-		}
-		int appId;
-		int familyId = 0; // 家族Id
+		
+		int platform, count, isHall, userId, appId;
+		long startTime, endTime;
 		try {
 			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.WEB, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
 			count = CommonUtil.getJsonParamInt(jsonObject, "count", -1, null, -1, Integer.MAX_VALUE);
 			isHall = CommonUtil.getJsonParamInt(jsonObject, "isHall", 0, null, 0, 1);
 			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 0, Integer.MAX_VALUE);
-			familyId = CommonUtil.getJsonParamInt(jsonObject, "familyId", 0, null, 1, Integer.MAX_VALUE);
 			appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 0, Integer.MAX_VALUE);
-			CommonUtil.getJsonParamInt(jsonObject, "c", AppChannelEnum.KK, null, 0, Integer.MAX_VALUE);
+			startTime = CommonUtil.getJsonParamLong(jsonObject, "startTime", System.currentTimeMillis(), null, System.currentTimeMillis(), Long.MAX_VALUE);
+			endTime = CommonUtil.getJsonParamLong(jsonObject, "endTime", startTime + 604800000, null, 0l, Long.MAX_VALUE);
 		} catch (ErrorGetParameterException e) {
 			result.add("actList", new JsonArray());
 			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 			return result;
 		}
 
-		if (appId == AppIdEnum.AMUSEMENT) {
-		    long parseTime = 0l; // 开始时间当天0点的时间戳  yyyy-mm-dd 00:00:00 （固定节目为当天时间+SDTime） 
-		    if (familyId == 0) {
-		        // 根据startTime 判断星期、时分秒的时间戳
-	            int sdweek = 0; // 开始时间 星期
-	            int edweek = 0; // 结束时间 星期
-	            int sweek = 0;
-	            Calendar c = Calendar.getInstance();
-	            // 获取startTime的时分秒
-	            c.setTime(new Date(startTime));
-	            // 周期性节目开始查询时间
-	            if (sqdTime == 0) {
-	                sqdTime = (c.get(Calendar.HOUR_OF_DAY) * 3600 + c.get(Calendar.MINUTE) * 60 + c.get(Calendar.SECOND)) * 1000;
-	            }
-	            // 获取startTime当日0点时间戳
-	            Long dayBeginTime =  DateUtil.getDayBeginTime(startTime);
-	            if (dayBeginTime != null) {
-	                parseTime = dayBeginTime.longValue();
-	            }
-	            // 获取startTime所在星期
-	            if (c.get(Calendar.DAY_OF_WEEK) == 1) {  
-	                sdweek = 7;  
-	                sweek = 7;
-	            } else {  
-	                sdweek = c.get(Calendar.DAY_OF_WEEK) - 1;  
-	                sweek = sdweek;
-	            }
-	            // 获取endTime所在星期,从而获取在该时间段的 星期 
-	            c.setTime(new Date(endTime));
-	            if (c.get(Calendar.DAY_OF_WEEK) == 1) {
-	                edweek = 7;  
-	            } else {  
-	                edweek = c.get(Calendar.DAY_OF_WEEK) - 1;  
-	            }
-	            // 周期性节目查询结束时间
-	            long eqdTime = (c.get(Calendar.HOUR_OF_DAY) * 3600 + c.get(Calendar.MINUTE)*60 + c.get(Calendar.SECOND)) * 1000; 
-	            // 从MONGODB的actConfig中获取预告节目列表
-	            DBObject queryObj = new BasicDBObject();
-	            if (isHall == 1) { //1为大厅
-	                queryObj.put("isHall", isHall);
-	            }
-	            queryObj.put("useable", new BasicDBObject("$ne", 0));
-	            queryObj.put("belong", new BasicDBObject("$ne", 1));
-	            // 具日期时间戳查询条件
-	            DBObject dateTimestamp = new BasicDBObject();
-	            // 查询条件
-	            BasicDBList values = new BasicDBList();
-	            // 开始时间和结束时间 日期
-	            BasicDBList weekse = new BasicDBList();
-	            
-	            dateTimestamp.put("$gte", startTime);
-	            dateTimestamp.put("$lte", endTime);
-	            
-	            BasicDBList dateValue = new BasicDBList();
-	            // 排除已结束节目
-	            dateValue.add(new BasicDBObject("startTime", dateTimestamp));
-	            dateValue.add(new BasicDBObject("endTime", new BasicDBObject("$gte", curTime)));
-	            values.add(new BasicDBObject("$and", dateValue));
-	            
-	            // 开始时间 和 结束时间所在日期要判断节目具体开始时间
-	            BasicDBList dayValue1 = new BasicDBList();
-	            dayValue1.add(new BasicDBObject("EDTime", new BasicDBObject("$gte", sqdTime))); 
-	            dayValue1.add(new BasicDBObject("dayOfWeek", sweek)); // 查询当天
-	            values.add(new BasicDBObject("$and", dayValue1));
-	            if (sweek != edweek) {
-	                BasicDBList dayValue2 = new BasicDBList();
-	                dayValue2.add(new BasicDBObject("SDTime", new BasicDBObject("$lte", eqdTime)));
-	                dayValue2.add(new BasicDBObject("dayOfWeek", edweek)); // 查询结束天
-	                values.add(new BasicDBObject("$and", dayValue2));
-	            }
-	            
-	            // 小于一个星期
-	            int diff = (sdweek > edweek) ? (7 + edweek - sdweek):(edweek - sdweek);
-	            long diffDay = (endTime - startTime) / (86400000);
-	            if (diffDay >= 7) {
-	                // 如果查询大于一周则只返回当前一周的数据 + 期间一直直播的数据
-	                BasicDBList value4 = new BasicDBList();
-	                BasicDBList notinweeks = new BasicDBList();
-	                notinweeks.add(sdweek);
-	                notinweeks.add(null);
-	                value4.add(new BasicDBObject("dayOfWeek", new BasicDBObject("$nin", notinweeks)));
-	                values.add(new BasicDBObject("$and", value4));
-	            } else {
-	                if (diff != 0) {
-	                    for (int i = 0; i < diff - 1; i++){
-	                        sdweek++;
-	                        if (sdweek > 7) sdweek = 1;
-	                        weekse.add(sdweek);
-	                    }
-	                    BasicDBList value3 = new BasicDBList();
-	                    value3.add(new BasicDBObject("dayOfWeek", new BasicDBObject("$in", weekse)));
-	                    values.add(new BasicDBObject("$and", value3));
-	                }
-	            }
-	            
-	            queryObj.put("$or",values);
-	            DBCursor hallListCur = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.ACTCONFIG).find(queryObj);
-	            List<PreviewAct> list= new ArrayList<PreviewAct>();
-	            List<Integer> repeatAIds = new ArrayList<Integer>();
-
-	            // 分页查询判断   
-	            if (startTime > curTime) {
-	                DBObject queryObj2 = new BasicDBObject();
-	                // 当天星期、结束天星期
-	                c.setTime(new Date(curTime)); // 开始时间
-	                sqdTime = (c.get(Calendar.HOUR_OF_DAY) * 3600 + c.get(Calendar.MINUTE) *60 + c.get(Calendar.SECOND)) * 1000; 
-	                if (c.get(Calendar.DAY_OF_WEEK) == 1) {  
-	                    sdweek = 7;  
-	                    sweek = 7;
-	                } else {  
-	                    sdweek = c.get(Calendar.DAY_OF_WEEK) - 1;  
-	                    sweek = sdweek;
-	                }
-	                c.setTime(new Date(startTime)); // 结束时间  
-	                if (c.get(Calendar.DAY_OF_WEEK) == 1) {
-	                    edweek = 7;  
-	                } else{  
-	                    edweek = c.get(Calendar.DAY_OF_WEEK) - 1;  
-	                }
-	                eqdTime = (c.get(Calendar.HOUR_OF_DAY) * 3600 + c.get(Calendar.MINUTE) * 60 + c.get(Calendar.SECOND)) * 1000; 
-	                BasicDBList queryList = new BasicDBList();
-	                boolean checked = false;
-	                if (sweek == edweek) {
-	                    // 如果第一次查询和第二次查询在同一天则过滤掉curtime到startTime时间戳内的所有周期性节目
-	                    checked = true;
-	                }
-	                // 开始时间和结束时间所在日期要判断节目具体开始时间
-	                BasicDBList value3_1 = new BasicDBList();
-	                value3_1.add(new BasicDBObject("EDTime", new BasicDBObject("$gte", sqdTime)));  
-	                if (checked) {
-	                    value3_1.add(new BasicDBObject("SDTime", new BasicDBObject("$lte", eqdTime)));   
-	                }
-	                value3_1.add(new BasicDBObject("dayOfWeek", sweek)); //查询当天  
-	                queryList.add(new BasicDBObject("$and", value3_1));
-
-	                if (sweek != edweek) {
-	                    BasicDBList value3_2 = new BasicDBList();
-	                    value3_2.add(new BasicDBObject("SDTime", new BasicDBObject("$lte", eqdTime)));
-	                    value3_2.add(new BasicDBObject("dayOfWeek", edweek)); //查询结束天
-	                    queryList.add(new BasicDBObject("$and", value3_2));
-	                }
-	                
-	                diff = (sdweek > edweek)?(7 + edweek - sdweek):(edweek - sdweek);
-	                diffDay = (startTime - curTime)/(86400000);
-	                if (diffDay > 7) {
-	                    BasicDBList value4 = new BasicDBList();
-	                    int[] a= {1, 2, 3, 4, 5, 6, 7};
-	                    value4.add(new BasicDBObject("dayOfWeek", new BasicDBObject("$nin", a)));
-	                    queryList.add(new BasicDBObject("$and", value4));
-	                } else {
-	                    if (diff != 0) {
-	                        BasicDBList weekse1 = new BasicDBList();
-	                        for (int i = 0; i < diff - 1; i++) {
-	                            sdweek++;
-	                            if(sdweek > 7) sdweek = 1;
-	                            weekse1.add(sdweek);
-	                        }
-	                        BasicDBList value3 = new BasicDBList();
-	                        if (weekse1.size() > 0) {
-	                            value3.add(new BasicDBObject("dayOfWeek", new BasicDBObject("$in", weekse1)));
-	                            queryList.add(new BasicDBObject("$and", value3));
-	                        }
-	                    } 
-	                }
-	                // 排除已结束节目
-	                queryObj2.put("$or",queryList);
-	                repeatAIds = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.ACTCONFIG).distinct("actId", queryObj2);
-	            }
-	            if (hallListCur != null) {
-	                getPreviewActList(platform, isHall, userId, parseTime,
-                            hallListCur, list, repeatAIds);
-	            }
-	            
-	            Collections.sort(list,new Comparator<PreviewAct>() {
-	                 @Override
-	                 public int compare(PreviewAct pva1, PreviewAct pva2) {
-	                     return (int) (pva1.getStartTime() - pva2.getStartTime());
-	                 }
-	            });
-	            
-	            List<PreviewAct> newPList = new ArrayList<PreviewAct>();
-	            Map<Integer,Integer> map = new HashMap<Integer,Integer>();
-	            Map<String,Integer> map2 = new HashMap<String,Integer>();
-	            
-	            for(int i = 0; i < list.size(); i++){
-	                int aid = ((PreviewAct)(list.get(i))).getActId();
-	                long stime = ((PreviewAct)(list.get(i))).getStartTime();
-	                //同一Id最多重复两次
-	                //过滤当前分页的重复选项（同一活动的ID选项最多只能重复2次）
-	                if(map2.containsKey(aid+"_"+stime))continue;
-	                if(!map.containsKey(aid)){
-	                    map.put(aid, 1);
-	                    map2.put(aid+"_"+stime,1);
-	                    newPList.add(list.get(i));
-	                }else if(map.get(aid) == 1){
-	                    continue;
-	                }else{
-	                    map.put(aid, 1);
-	                    newPList.add(list.get(i));
-	                }
-	            }
-	            
-	            count = Math.min(count, newPList.size());
-	            
-	            result.add("actList", new JsonParser().parse(new Gson().toJson((count>0)?newPList.subList(0, count):newPList)));
-            } else {
-                Family familyInfo = FamilyService.getFamilyInfo(familyId, appId);
-                if (familyInfo != null && familyInfo.getFamilyRoomId() != null) {
-                    DBObject queryObj = new BasicDBObject();
-                    queryObj.put("actRoom", familyInfo.getFamilyRoomId().toString());
-                    // 开始时间和结束时间 日期
-                    BasicDBList dateValue = new BasicDBList();
-                    // 排除已结束节目
-                    DBObject dateTimestamp = new BasicDBObject();
-                    // 查询条件
-                    long curTimeStamp = System.currentTimeMillis();
-                    if (startTime < curTimeStamp) {
-                        startTime = curTimeStamp;
-                    }
-                    if (startTime > curTimeStamp) {
-                        dateValue.add(new BasicDBObject("startTime", new BasicDBObject("$gte", startTime)));
-                    }
-                    dateValue.add(new BasicDBObject("endTime", new BasicDBObject("$gt", System.currentTimeMillis())));
-                    if (endTimeje != null && !endTimeje.isJsonNull() && endTimeje.getAsLong() > 0) {
-                        dateTimestamp.put("$lte", endTime);
-                        dateValue.add(new BasicDBObject("endTime", dateTimestamp));
-                    }
-                    queryObj.put("$and", dateValue);
-                    DBCursor hallListCur = CommonDB.getInstance(CommonDB.COMMONDB)
-                            .getCollection(CollectionEnum.ACTCONFIG).find(queryObj).sort(new BasicDBObject("startTime", 1));
-                    List<PreviewAct> list= new ArrayList<PreviewAct>();
-                    if (hallListCur != null) {
-                        getPreviewActList(platform, isHall, userId, 1,
-                                hallListCur, list, null);
-                    }
-                    count = Math.min(count, list.size());
-                    
-                    result.add("actList", new JsonParser().parse(new Gson().toJson((count>0)?list.subList(0, count):list)));
+        if (startTime > endTime) {
+            result.add("actList", new JsonArray());
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        }
+        
+        try {
+            KkActivityService kkActivityService = (KkActivityService) MelotBeanFactory.getBean("kkActivityService");
+            List<PreviewAct> list= new ArrayList<PreviewAct>();
+            List<ActInfo> actInfoList;
+            if (appId == AppIdEnum.AMUSEMENT) {
+                actInfoList = kkActivityService.getRoomPreviewActList(0, isHall, new Date(startTime), new Date(endTime), null);
+                if (actInfoList != null && actInfoList.size() > 0) {
+                    getPreviewActList(platform, isHall, userId, DateUtil.getDayBeginTime(System.currentTimeMillis()), actInfoList, list, null, startTime, endTime);
                 }
+                
+                Collections.sort(list,new Comparator<PreviewAct>() {
+                     @Override
+                     public int compare(PreviewAct pva1, PreviewAct pva2) {
+                         return (int) (pva1.getStartTime() - pva2.getStartTime());
+                     }
+                });
+                
+                count = Math.min(count, list.size());
+                result.add("actList", new JsonParser().parse(new Gson().toJson(count > 0 ? list.subList(0, count) : list)));
+            } else {
+                result.add("actList", new JsonArray());
             }
-		} else {
-			result.add("actList", new JsonArray());
-		}
-		
-		result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
-		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        } catch(Exception e) {
+            logger.error("KkActivityService.getRoomPreviewActList return exception.", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+        }
 		// 返回结果
 		return result;
 	}
@@ -2400,56 +2151,55 @@ public class IndexFunctions {
      * @param isHall
      * @param userId
      * @param parseTime
-     * @param hallListCur
+     * @param actInfoList
      * @param list
      * @param repeatAIds
      */
-    private static void getPreviewActList(int platform, int isHall, int userId,
-            long parseTime, DBCursor hallListCur, List<PreviewAct> list,
-            List<Integer> repeatAIds) {
-        while (hallListCur.hasNext()) {
-            JsonObject actcofig = PreviewAct.toJsonObject((BasicDBObject) (hallListCur.next()), isHall, platform, parseTime);
-            if (actcofig == null) continue; 
-            Integer aid = Integer.parseInt(actcofig.get("actId") + "");
-            
-            // 从pg读取房间信息
-            int actRoom = Integer.parseInt(actcofig.get("actRoom").getAsString());
-            RoomInfo roomInfo = RoomService.getRoomInfo(actRoom);
-            if (roomInfo != null) {
-                if (roomInfo.getRoomMode() != null) {
-                    actcofig.addProperty("roomMode", roomInfo.getRoomMode());
-                }
-                if (roomInfo.getRoomSource() != null) {
-                    actcofig.addProperty("roomSource", roomInfo.getRoomSource());
+    private void getPreviewActList(int platform, int isHall, int userId, long parseTime, List<ActInfo> actInfoList, List<PreviewAct> list, List<Integer> repeatAIds, long startTime, long endTime) {
+        for (ActInfo actInfo : actInfoList) {
+            JsonObject actcofig = PreviewAct.toJsonObject(actInfo, isHall, platform, parseTime, startTime, endTime);
+            if (actcofig != null) {
+                Integer aid = actInfo.getActId();
+                
+                // 从pg读取房间信息
+                int actRoom = Integer.parseInt(actInfo.getActRoom());
+                RoomInfo roomInfo = RoomService.getRoomInfo(actRoom);
+                if (roomInfo != null) {
+                    if (roomInfo.getRoomMode() != null) {
+                        actcofig.addProperty("roomMode", roomInfo.getRoomMode());
+                    }
+                    if (roomInfo.getRoomSource() != null) {
+                        actcofig.addProperty("roomSource", roomInfo.getRoomSource());
+                    } else {
+                        actcofig.addProperty("roomSource", AppIdEnum.AMUSEMENT);
+                    }
+                    if (roomInfo.getType() != null) {
+                        actcofig.addProperty("roomType", roomInfo.getType());
+                    } else {
+                        actcofig.addProperty("roomType", AppIdEnum.AMUSEMENT);
+                    }
                 } else {
-                    actcofig.addProperty("roomSource", AppIdEnum.AMUSEMENT);
+                    continue;
                 }
-                if (roomInfo.getType() != null) {
-                    actcofig.addProperty("roomType", roomInfo.getType());
-                } else {
-                    actcofig.addProperty("roomType", AppIdEnum.AMUSEMENT);
+                
+                //过滤后面分页的重复选项
+                if(repeatAIds != null && repeatAIds.size() > 0 && repeatAIds.contains(aid)){
+                    continue;
                 }
-            } else {
-                continue;
-            }
-            
-            //过滤后面分页的重复选项
-            if(repeatAIds != null && repeatAIds.size() > 0 && repeatAIds.contains(aid)){
-                continue;
-            }
-            if (userId != 0) {
-                // redis判断是否已经订阅
-                boolean isSub = SubscribeSource.checkActSub(String.valueOf(userId), actcofig.get("actId").toString());
-                actcofig.addProperty("isSub", isSub);
-            }
-            PreviewAct t = null;
-            try {
-                Gson gson = new Gson();
-                t = gson.fromJson(actcofig, PreviewAct.class);
-                list.add(t);
-            } catch (Exception e) {
-                logger.error("fail to parse json object to java bean, json -> " + actcofig.toString());
-            }
+                if (userId != 0) {
+                    // redis判断是否已经订阅
+                    boolean isSub = SubscribeSource.checkActSub(String.valueOf(userId), actcofig.get("actId").toString());
+                    actcofig.addProperty("isSub", isSub);
+                }
+                PreviewAct t = null;
+                try {
+                    Gson gson = new Gson();
+                    t = gson.fromJson(actcofig, PreviewAct.class);
+                    list.add(t);
+                } catch (Exception e) {
+                    logger.error("fail to parse json object to java bean, json -> " + actcofig.toString());
+                }
+              }
             }
     }
 	
@@ -2683,83 +2433,71 @@ public class IndexFunctions {
 	 * @return
 	 */
 	public JsonObject subscribeActStart(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-		long curTime = System.currentTimeMillis();
+	    JsonObject result = new JsonObject();
+	    
 		// 该接口需要验证token,未验证的返回错误码
 		if (!checkTag) {
-			JsonObject result = new JsonObject();
 			result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
 			return result;
 		}
-		Integer userId = null;
-		Integer actId = null;
-		JsonElement userIdje = jsonObject.get("userId");
-		JsonElement actIdje = jsonObject.get("actId");
-		if (userIdje != null && !userIdje.isJsonNull() && userIdje.getAsInt()>0) {
-			try {
-				userId = Integer.valueOf(userIdje.getAsInt());
-			} catch (Exception e) {
-				JsonObject result = new JsonObject();
-				result.addProperty("TagCode", "02340002");
-				return result;
-			}
-		} else {
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", "02340001");
-			return result;
-		}
-		if (actIdje != null && !actIdje.isJsonNull() && actIdje.getAsInt()>0) {
-			try {
-				actId = Integer.valueOf(actIdje.getAsInt());
-			} catch (Exception e) {
-				JsonObject result = new JsonObject();
-				result.addProperty("TagCode", "02340004");
-				return result;
-			}
-		} else {
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", "02340003");
-			return result;
-		}
 		
-		JsonObject result = new JsonObject();
-		// mongodb读取节目信息
-		DBObject actDBObj = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.ACTCONFIG).findOne(new BasicDBObject("actId", actId));
-		if (actDBObj == null) {
-			// 节目不存在 02340103
-			result.addProperty("TagCode", "02340103");
-			return result;
-		} 
-		if (actDBObj.get("endTime")!=null && ((Long) actDBObj.get("endTime")).longValue()<curTime) {
-			// 节目已过期
-			result.addProperty("TagCode", "02340006");
-			return result;
-		}
-		Long endTime = null;
-		if (actDBObj.containsField("startTime") && actDBObj.containsField("endTime")) {
-			endTime = ((Long) actDBObj.get("endTime")).longValue();
-		}
-		// 是否周期性活动
-		boolean ifWeekly = false;
-		if (actDBObj.containsField("dayOfWeek") && actDBObj.containsField("SDTime") && actDBObj.containsField("EDTime")) {
-			ifWeekly = true;
-		}
-		String actRoom = (String) actDBObj.get("actRoom");
-		// redis判断是否已经订阅
-		boolean isSub  = SubscribeSource.checkActSub(userId.toString(), actId.toString());
-		if (isSub) {
-			result.addProperty("TagCode", "02340005");// 用户已订阅该节目开播通知  02340005
-		} else {
-			
-			// redis保存订阅记录
-			// 判断是否周期性节目
-			SubscribeSource.subPreviewAct(userId.toString(), actId.toString(), actRoom, endTime, ifWeekly);
-			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-			
-			// new thread insert into oracle
-			new UserSubAct(userId, actId, 1).start();
-			
-		}
-		// 返回结果
+        int userId, actId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            actId = CommonUtil.getJsonParamInt(jsonObject, "actId", 0, "02340004", 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+		
+        try {
+            long curTime = System.currentTimeMillis();
+            KkActivityService kkActivityService = (KkActivityService) MelotBeanFactory.getBean("kkActivityService");
+            GetActInfoListResp actInfoListResp = kkActivityService.getRoomActList(actId, null, null, null, null, null, null, null, null, 1, 20);
+            if (actInfoListResp == null || actInfoListResp.getTotalCount() == 0) {
+             // 节目不存在 02340103
+                result.addProperty("TagCode", "02340103");
+                return result;
+            }
+            ActInfo actInfo = actInfoListResp.getActRoomList().get(0);
+            Long endTime = null;
+            if (actInfo.getActEndTime() != null) {
+                if (actInfo.getActEndTime().getTime() < curTime) {
+                    // 节目已过期
+                    result.addProperty("TagCode", "02340006");
+                    return result;
+                } else {
+                    endTime = actInfo.getActEndTime().getTime();
+                }
+            }
+            // 是否周期性活动
+            boolean ifWeekly = false;
+            if (actInfo.getDayWeekStr() != null) {
+                ifWeekly = true;
+            }
+            String actRoom = actInfo.getActRoom();
+            // redis判断是否已经订阅
+            boolean isSub  = SubscribeSource.checkActSub(String.valueOf(userId), String.valueOf(actId));
+            if (isSub) {
+                result.addProperty("TagCode", "02340005");// 用户已订阅该节目开播通知  02340005
+            } else {
+                // redis保存订阅记录
+                // 判断是否周期性节目
+                SubscribeSource.subPreviewAct(String.valueOf(userId), String.valueOf(actId), actRoom, endTime, ifWeekly);
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                
+                // new thread insert into oracle
+                new UserSubAct(userId, actId, 1).start();
+                
+            }
+        } catch(Exception e) {
+            logger.error("KkActivityService.getRoomActList(" + actId + ") return exception.", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+        }
+        
 		return result;
 	}
 	
@@ -2770,72 +2508,62 @@ public class IndexFunctions {
 	 * @return
 	 */
 	public JsonObject unsubscribeActStart(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-		long curTime = System.currentTimeMillis();
+	    JsonObject result = new JsonObject();
 		// 该接口需要验证token,未验证的返回错误码
 		if (!checkTag) {
-			JsonObject result = new JsonObject();
 			result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
 			return result;
 		}
-		Integer userId = null;
-		Integer actId = null;
-		JsonElement userIdje = jsonObject.get("userId");
-		JsonElement actIdje = jsonObject.get("actId");
-		if (userIdje != null && !userIdje.isJsonNull() && userIdje.getAsInt()>0) {
-			try {
-				userId = Integer.valueOf(userIdje.getAsInt());
-			} catch (Exception e) {
-				JsonObject result = new JsonObject();
-				result.addProperty("TagCode", "02350002");
-				return result;
-			}
-		} else {
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", "02350001");
-			return result;
-		}
-		if (actIdje != null && !actIdje.isJsonNull() && actIdje.getAsInt()>0) {
-			try {
-				actId = Integer.valueOf(actIdje.getAsInt());
-			} catch (Exception e) {
-				JsonObject result = new JsonObject();
-				result.addProperty("TagCode", "02350004");
-				return result;
-			}
-		} else {
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", "02350003");
-			return result;
-		}
 		
-		JsonObject result = new JsonObject();
-		// mongodb读取节目信息
-		DBObject actDBObj = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.ACTCONFIG).findOne(new BasicDBObject("actId", actId));
-		if (actDBObj == null) {
-			// 节目不存在 02350103
-			result.addProperty("TagCode", "02350103");
-			return result;
-		}
-		if (actDBObj.get("endTime")!=null && ((Long) actDBObj.get("endTime")).longValue()<curTime) {
-			// 节目已过期
-			result.addProperty("TagCode", "02350006");
-			return result;
-		}
-		// redis判断是否已经订阅
-		boolean isSub  = SubscribeSource.checkActSub(userId.toString(), actId.toString());
-		if (isSub) {
-			
-			// redis删除订阅记录
-			SubscribeSource.unsubPreviewAct(userId.toString(), actId.toString());
-			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-			
-			// new thread insert into oracle
-			new UserSubAct(userId, actId, 0).start();
+        int userId, actId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            actId = CommonUtil.getJsonParamInt(jsonObject, "actId", 0, "02350004", 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        try {
+            KkActivityService kkActivityService = (KkActivityService) MelotBeanFactory.getBean("kkActivityService");
+            GetActInfoListResp actInfoListResp = kkActivityService.getRoomActList(actId, null, null, null, null, null, null, null, null, 1, 20);
+            if (actInfoListResp == null || actInfoListResp.getTotalCount() == 0) {
+             // 节目不存在 02350103
+                result.addProperty("TagCode", "02350103");
+                return result;
+            }
+            ActInfo actInfo = actInfoListResp.getActRoomList().get(0);
+            long curTime = System.currentTimeMillis();
+            if (actInfo.getActEndTime() != null) {
+                if (actInfo.getActEndTime().getTime() < curTime) {
+                    // 节目已过期
+                    result.addProperty("TagCode", "02350006");
+                    return result;
+                }
+            }
+
+            // redis判断是否已经订阅
+            boolean isSub  = SubscribeSource.checkActSub(String.valueOf(userId), String.valueOf(actId));
+            if (isSub) {
+                // redis删除订阅记录
+                SubscribeSource.unsubPreviewAct(String.valueOf(userId), String.valueOf(actId));
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                
+                // new thread insert into oracle
+                new UserSubAct(userId, actId, 0).start();
+            
+            } else {
+                //用户未订阅该节目开播通知  02350005
+                result.addProperty("TagCode", "02350005");
+            }
+        } catch(Exception e) {
+            logger.error("KkActivityService.getRoomActList(" + actId + ") return exception.", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+        }
 		
-		} else {
-			//用户未订阅该节目开播通知  02350005
-			result.addProperty("TagCode", "02350005");
-		}
 		// 返回结果
 		return result;
 	}
@@ -3908,266 +3636,6 @@ public class IndexFunctions {
 		
 		return result;
 	}
-	
-	/**
-	 * 保存节目预告
-	 * @param paramJsonObject
-	 * @param checkTag
-	 * @return
-	 */
-	public JsonObject saveFamilyConfPreviewAct(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-	    
-	    JsonObject result = new JsonObject();
-        if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_INCORRECT);
-            return result;
-        }
-        
-        // 定义所需参数
-        String actTitle = null;
-        long startTime = 0l, endTime = 0l;
-        @SuppressWarnings("unused")
-        int isHall = 0, userId = 0, //actRoom = 0, 
-            platform = PlatformEnum.WEB, appId = AppIdEnum.AMUSEMENT;
-        
-        // 验证参数
-        try {
-            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-            actTitle = CommonUtil.getJsonParamString(jsonObject, "actTitle", null, TagCodeEnum.PARAMETER_MISSING, 0, 200);
-            //actRoom = CommonUtil.getJsonParamInt(jsonObject, "actRoom", 0, TagCodeEnum.PARAMETER_MISSING, 1, Integer.MAX_VALUE);
-            startTime = CommonUtil.getJsonParamLong(jsonObject, "startTime", 0, TagCodeEnum.PARAMETER_MISSING, 1, Long.MAX_VALUE);
-            endTime = CommonUtil.getJsonParamLong(jsonObject, "endTime", 0, TagCodeEnum.PARAMETER_MISSING, System.currentTimeMillis(), Long.MAX_VALUE);
-            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.WEB, null, PlatformEnum.WEB, PlatformEnum.IPAD);
-            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, AppIdEnum.AMUSEMENT, AppIdEnum.KKWORLD);
-        } catch(CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
-            return result;
-        } catch(Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-            return result;
-        }   
-        
-        // 判断用户是否合法
-        RoomInfo roomInfo = com.melot.kkcx.service.RoomService.getRoomInfo(userId);
-        if (roomInfo == null) {
-            result.addProperty("TagCode", TagCodeEnum.USER_NOT_EXIST);
-            return result;
-        }
-        Integer familyId = roomInfo.getFamilyId();
-        Integer roomMode = roomInfo.getRoomMode();
-        
-        if (familyId == null || roomMode == null || roomMode.intValue() != 3) {
-            result.addProperty("TagCode", TagCodeEnum.GET_RELATED_INFO_FAIL);
-            return result;
-        }
-        
-        // 家族房预告时间段必须在48小时之内
-        if (roomMode.intValue() == 3 && endTime - startTime > 172800000) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_ILLEAGLE);
-            return result;
-        }
-       
-        // 获取家族组长
-        Family familyInfo = FamilyService.getFamilyInfo(familyId, appId);
-        if (familyInfo == null) {
-            result.addProperty("TagCode", TagCodeEnum.FAMILY_ISNOT_EXIST);
-            return result;
-        }
-        
-        if (familyInfo.getFamilyRoomId() == null) {
-            result.addProperty("TagCode", TagCodeEnum.GET_RELATED_INFO_FAIL);
-            return result;
-        }
-        
-        Integer familyLeader = familyInfo.getFamilyLeader();
-        if (familyLeader == null) {
-            result.addProperty("TagCode", TagCodeEnum.PERMISSION_DENIED);
-            return result;
-        }
-       
-        if (startTime >= endTime) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-            return result;
-        }
-        
-        String actRoom = String.valueOf(familyInfo.getFamilyRoomId());
-        
-        if (getActiveCount(actRoom) > 10) {
-            result.addProperty("TagCode", TagCodeEnum.OVER_LIMIT_COUNT);
-            return result;
-        }
-        
-        if (!isForcastEnable(actRoom, startTime, endTime)) {
-            result.addProperty("TagCode", TagCodeEnum.OBJECT_OVERLAP);
-            return result;
-        }
-        
-        PreviewAct previewAct = new PreviewAct();
-        previewAct.setActTitle(actTitle);
-        previewAct.setActRoom(actRoom);
-        previewAct.setStime(new Date(startTime));
-        previewAct.setEtime(new Date(endTime));
-        previewAct.setIsHall(isHall);
-        previewAct.setUseable(1);
-        previewAct.setAppId(appId);
-        previewAct.setBelong(1);
-        previewAct.setAid(userId);
-        
-        // 保存oracle
-        if (PreviewActService.addPreviewAct(previewAct)) {
-            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        } else {
-            result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
-        }
-        
-        return result;
-    }
-	
-	/**
-     * @return
-     */
-    private static int getActiveCount(String actRoom) {
-        DBObject queryObj = new BasicDBObject();
-        queryObj.put("endTime", new BasicDBObject("$gte", System.currentTimeMillis()));
-        queryObj.put("actRoom", actRoom);
-        DBCursor hallListCur = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.ACTCONFIG).find(queryObj);
-        
-        if (hallListCur != null && hallListCur.hasNext()) {
-            return hallListCur.count();
-        }
-        
-        return 0;
-    }
-
-    /**
-	 * 判断节目预告是否合法
-     * @param startTime
-     * @param endTime
-     * @return
-     */
-    private static boolean isForcastEnable(String actRoom, long startTime, long endTime) {
-        // 查询条件
-        DBObject dateTimestamp = new BasicDBObject();
-        dateTimestamp.put("$gt", startTime);
-        dateTimestamp.put("$lt", endTime);
-        // 查询时间重复的节目
-        BasicDBList dateValue = new BasicDBList();
-        dateValue.add(new BasicDBObject("startTime", dateTimestamp));
-        dateValue.add(new BasicDBObject("endTime", dateTimestamp));
-        
-        BasicDBList values = new BasicDBList();
-        values.add(new BasicDBObject("$or", dateValue));
-        
-        // 时间段整体覆盖未结束的节目
-        BasicDBList dateValue2 = new BasicDBList();
-        dateValue2.add(new BasicDBObject("startTime", new BasicDBObject("$gte", startTime)));
-        dateValue2.add(new BasicDBObject("endTime", new BasicDBObject("$lte", endTime)));
-        
-        // 时间段整体被覆盖未结束的节目
-        BasicDBList dateValue3 = new BasicDBList();
-        dateValue3.add(new BasicDBObject("startTime", new BasicDBObject("$lte", startTime)));
-        dateValue3.add(new BasicDBObject("endTime", new BasicDBObject("$gte", endTime)));
-        
-        values.add(new BasicDBObject("$and", dateValue2));
-        values.add(new BasicDBObject("$and", dateValue3));
-        
-        DBObject queryObj = new BasicDBObject();
-        queryObj.put("actRoom", actRoom); 
-        queryObj.put("$or",values);
-        
-        DBCursor hallListCur = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.ACTCONFIG).find(queryObj);
-        
-        if (hallListCur != null && hallListCur.hasNext()) {
-            return false;
-        }
-        
-        return true;
-    }
-
-    /**
-     * 更新节目预告状态
-     * @param paramJsonObject
-     * @param checkTag
-     * @return
-     */
-    public JsonObject updateFamilyConfPreviewAct(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-        
-        JsonObject result = new JsonObject();
-        if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_INCORRECT);
-            return result;
-        }
-        
-        @SuppressWarnings("unused")
-        int actId = 0, userId = 0, useable = 0,
-            platform = PlatformEnum.WEB, appId = AppIdEnum.AMUSEMENT;
-        // 验证参数
-        try {
-            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 0, Integer.MAX_VALUE);
-            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.WEB, null, PlatformEnum.WEB, PlatformEnum.IPAD);
-            actId = CommonUtil.getJsonParamInt(jsonObject, "actId", 0, null, 0, Integer.MAX_VALUE);
-            useable = CommonUtil.getJsonParamInt(jsonObject, "useable", 0, TagCodeEnum.PARAMETER_MISSING, 0,  1);
-            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, AppIdEnum.AMUSEMENT, AppIdEnum.KKWORLD);
-        } catch(CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
-            return result;
-        } catch(Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-            return result;
-        }  
-        
-       RoomInfo roomInfo = RoomService.getRoomInfo(userId);
-       
-       if (roomInfo == null) {
-           result.addProperty("TagCode", TagCodeEnum.USER_NOT_EXIST);
-           return result;
-       }
-       
-       if (roomInfo.getFamilyId() == null) {
-           result.addProperty("TagCode", TagCodeEnum.GET_RELATED_INFO_FAIL);
-           return result;
-       }
-       
-       Family familyInfo = FamilyService.getFamilyInfo(roomInfo.getFamilyId(), appId);
-       if (familyInfo == null) {
-           result.addProperty("TagCode", TagCodeEnum.FAMILY_ISNOT_EXIST);
-           return result;
-       }
-       
-       Integer familyRoomId = familyInfo.getFamilyRoomId();
-       if (familyRoomId == null || familyRoomId.intValue() <= 0) {
-           result.addProperty("TagCode", TagCodeEnum.GET_RELATED_INFO_FAIL);
-           return result; 
-       }
-       
-       Integer familyLeader = familyInfo.getFamilyLeader();
-       if (familyLeader == null) {
-           result.addProperty("TagCode", TagCodeEnum.GET_RELATED_INFO_FAIL);
-           return result;
-       }
-       
-       roomInfo = RoomService.getRoomInfo(familyRoomId);
-       if (roomInfo == null || roomInfo.getRoomMode() == null || roomInfo.getRoomMode().intValue() != 3) {
-           result.addProperty("TagCode", TagCodeEnum.GET_RELATED_INFO_FAIL);
-           return result;
-       }
-       
-       PreviewAct previewAct = new PreviewAct();
-       previewAct.setActId(actId);
-       previewAct.setUseable(useable);
-       previewAct.setAppId(appId);
-       previewAct.setAid(userId);
-       previewAct.setActRoom(familyInfo.getFamilyRoomId().toString());
-       if (PreviewActService.updatePreviewAct(previewAct)) {
-           logger.warn("IndexFunctions.updateConfPreviewAct success, userId : " + userId
-                   + " ,actId : " + actId);
-           result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-       } else {
-           result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
-       }
-        return result;
-    }
-    
 }
 
 /** 用户订阅/取消订阅节目  */
