@@ -29,6 +29,8 @@ public class DynamicEmoticon {
     private String desc;
     
     private Date dtime;
+    
+    private int isOn;
 
     public int geteId() {
         return eId;
@@ -92,6 +94,14 @@ public class DynamicEmoticon {
 
     public void seteName(String eName) {
         this.eName = eName;
+    }
+
+    public int getIsOn() {
+        return isOn;
+    }
+
+    public void setIsOn(int isOn) {
+        this.isOn = isOn;
     }
 
 }

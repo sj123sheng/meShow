@@ -27,6 +27,8 @@ public class Sticker {
     private String extraValue;
     
     private Date dtime;
+    
+    private String desc;
 
     public int getsId() {
         return sId;
@@ -83,5 +85,12 @@ public class Sticker {
     public void setDtime(Date dtime) {
         this.dtime = dtime;
     }
-    
+
+    public String getDesc() {
+        return desc;
+    }
+
+    public void setDesc(String desc) {
+        this.desc = desc;
+    }
 }
