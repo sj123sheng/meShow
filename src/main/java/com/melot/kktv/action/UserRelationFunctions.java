@@ -24,8 +24,6 @@ import com.google.gson.JsonParser;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.api.menu.sdk.handler.FirstPageHandler;
 import com.melot.api.menu.sdk.service.RoomInfoService;
-import com.melot.blacklist.driver.domain.ReturnResult;
-import com.melot.blacklist.driver.service.RoomAdminService;
 import com.melot.kkcore.relation.api.ActorRelation;
 import com.melot.kkcore.relation.api.RelationType;
 import com.melot.kkcore.relation.service.ActorRelationService;
@@ -687,6 +685,7 @@ public class UserRelationFunctions {
 	 * @param checkTag 是否验证token标记
 	 * @return 结果字符串
 	 */
+	@Deprecated
 	public JsonObject grant(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
 	    JsonObject result = new JsonObject();
 		
@@ -741,6 +740,7 @@ public class UserRelationFunctions {
 	 * @param checkTag 是否验证token标记
 	 * @return 结果字符串
 	 */
+	@Deprecated
 	public JsonObject revoke(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
 	    JsonObject result = new JsonObject();
 		
@@ -819,39 +819,19 @@ public class UserRelationFunctions {
             return result;
         }
         
-        RoomAdminService roomAdminService;
-        ReturnResult returnResult = null;
         try {
-			roomAdminService = (RoomAdminService) ModuleService.getService("RoomAdminService");
-			if (roomAdminService != null) {
-				returnResult = roomAdminService.removeRoomAdmin(userId, roomId);
-			}
-			if (returnResult != null) {
-				switch (returnResult.getTagCode()) {
-				case 102:
-					//非房间管理员
-					result.addProperty("TagCode", "30010201");
-					break;
-					
-				case 0:
-					result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
-					break;
-					
-				case 1:
-					result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-					break;
-					
-				default:
-					break;
-				}
-			} else {
-				result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+			ActorRelationService actorRelationService = MelotBeanFactory.getBean("kkActorRelationService", ActorRelationService.class);
+			if (actorRelationService.delRelation(roomId, userId, RelationType.ADMIN.typeId()) != 0) {
+				result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
+				return result;
 			}
 		} catch (Exception e) {
 			result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
-			logger.error("fail to get RoomAdminService.removeRoomadmin(userId : " + userId + ", roomId : " + roomId + ")", e);
+			logger.error("fail to get ActorRelationService.delRelation(userId : " + userId + ", roomId : " + roomId + ")", e);
+			return result;
 		}
         
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
 	}
 	
@@ -906,39 +886,47 @@ public class UserRelationFunctions {
 		
 		JsonArray jRoomList = new JsonArray();
 		List<RoomInfo> roomInfoList = null;
-		if (roomList != null && roomList.size() > 0) {
-			roomList = UserService.addUserExtra(roomList);
-            List<Integer> actorIds = new ArrayList<Integer>();
-            StringBuffer actorIds2 = new StringBuffer();
-            for (Room room : roomList) {
-                if (room.getActorTag() != null && room.getActorTag().intValue() == 1) {
-                    actorIds.add(room.getUserId());
-                    actorIds2.append(room.getUserId());
-                    actorIds2.append(",");
-                }
-            }
-            if (actorIds2.length() > 0) {
-                roomInfoList = com.melot.kktv.service.RoomService.getRoomListByRoomIds(actorIds2.substring(0, actorIds2.length() - 1));
-            }
-            for (Room room : roomList) {
-            	int roomId = room.getUserId();
-            	if (room.getActorTag() != null && room.getActorTag().intValue() == 1
-            			&& roomInfoList != null && roomInfoList.size() > 0) {
-            		boolean flag = false;
-            		for (RoomInfo rinfo : roomInfoList) {
-            			if (rinfo.getActorId() != null && rinfo.getActorId().intValue() == roomId) {
-            				jRoomList.add(RoomTF.roomInfoToJson(rinfo, platform, true));
-            				flag = true;
-            			}
-            		}
-            		if (!flag) {
-            			jRoomList.add(room.toJsonObject(platform, null));
-            		}
-            	} else {
-            		jRoomList.add(room.toJsonObject(platform, null));
-            	}
-            }
-        }
+		try {
+			if (roomList != null && roomList.size() > 0) {
+				roomList = UserService.addUserExtra(roomList);
+			    List<Integer> actorIds = new ArrayList<Integer>();
+			    StringBuffer actorIds2 = new StringBuffer();
+			    for (Room room : roomList) {
+			        if (room.getActorTag() != null && room.getActorTag().intValue() == 1) {
+			            actorIds.add(room.getUserId());
+			            actorIds2.append(room.getUserId());
+			            actorIds2.append(",");
+			        }
+			    }
+			    if (actorIds2.length() > 0) {
+			        roomInfoList = com.melot.kktv.service.RoomService.getRoomListByRoomIds(actorIds2.substring(0, actorIds2.length() - 1));
+			    }
+			    for (Room room : roomList) {
+			    	int roomId = room.getUserId();
+			    	if (room.getActorTag() != null && room.getActorTag().intValue() == 1
+			    			&& roomInfoList != null && roomInfoList.size() > 0) {
+			    		boolean flag = false;
+			    		for (RoomInfo rinfo : roomInfoList) {
+			    			if (rinfo.getActorId() != null && rinfo.getActorId().intValue() == roomId) {
+			    				jRoomList.add(RoomTF.roomInfoToJson(rinfo, platform, true));
+			    				flag = true;
+			    			}
+			    		}
+			    		if (!flag) {
+			    			jRoomList.add(room.toJsonObject(platform, null));
+			    		}
+			    	} else {
+			    		jRoomList.add(room.toJsonObject(platform, null));
+			    	}
+			    }
+			}
+		} catch (Exception e) {
+			logger.error("realtion transform room object catched exception: ", e);
+			result.addProperty("TagCode", TagCodeEnum.UNCATCHED_EXCEPTION);
+			return result;
+		}
+		
+		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 		result.add("roomList", jRoomList);
 		result.addProperty("pageTotal", pageTotal);
 		// 返回结果
@@ -1040,50 +1028,57 @@ public class UserRelationFunctions {
 						
 		JsonArray jRoomList = new JsonArray();
 		List<RoomInfo> roomInfoList = null;
-		if (roomList != null && roomList.size() > 0) {
-			roomList = UserService.addUserExtra(roomList);
-            List<Integer> actorIds = new ArrayList<Integer>();
-            StringBuffer actorIds2 = new StringBuffer();
-            for (Room room : roomList) {
-                if (room.getActorTag() != null && room.getActorTag().intValue() == 1) {
-                    actorIds.add(room.getUserId());
-                    actorIds2.append(room.getUserId());
-                    actorIds2.append(",");
-                }
-            }
-            if (actorIds2.length() > 0) {
-                roomInfoList = com.melot.kktv.service.RoomService.getRoomListByRoomIds(actorIds2.substring(0, actorIds2.length() - 1));
-            }
-            
-            if (roomList.size() > 1) {
-                Collections.sort(roomList, new Comparator<Room>() {
-                    public int compare(Room r1, Room r2) {
-                        Integer live1 = r1.getLiveendtime() == null ? 1 : 0;
-                        Integer live2 = r2.getLiveendtime() == null ? 1 : 0;
-                        return live2.compareTo(live1);
-                    }
-                });
-            }
-            for (Room room : roomList) {
-            	int roomId = room.getUserId();
-            	if (room.getActorTag() != null && room.getActorTag().intValue() == 1
-            			&& roomInfoList != null && roomInfoList.size() > 0) {
-            		boolean flag = false;
-            		for (RoomInfo rinfo : roomInfoList) {
-            			if (rinfo.getActorId() != null && rinfo.getActorId().intValue() == roomId) {
-            				jRoomList.add(RoomTF.roomInfoToJson(rinfo, platform, true));
-            				flag = true;
-            			}
-            		}
-            		if (!flag) {
-            			jRoomList.add(room.toJsonObject(platform, null));
-            		}
-            	} else {
-            		jRoomList.add(room.toJsonObject(platform, null));
-            	}
-            }
-        }
-
+		try {
+			if (roomList != null && roomList.size() > 0) {
+				roomList = UserService.addUserExtra(roomList);
+			    List<Integer> actorIds = new ArrayList<Integer>();
+			    StringBuffer actorIds2 = new StringBuffer();
+			    for (Room room : roomList) {
+			        if (room.getActorTag() != null && room.getActorTag().intValue() == 1) {
+			            actorIds.add(room.getUserId());
+			            actorIds2.append(room.getUserId());
+			            actorIds2.append(",");
+			        }
+			    }
+			    if (actorIds2.length() > 0) {
+			        roomInfoList = com.melot.kktv.service.RoomService.getRoomListByRoomIds(actorIds2.substring(0, actorIds2.length() - 1));
+			    }
+			    
+			    if (roomList.size() > 1) {
+			        Collections.sort(roomList, new Comparator<Room>() {
+			            public int compare(Room r1, Room r2) {
+			                Integer live1 = r1.getLiveendtime() == null ? 1 : 0;
+			                Integer live2 = r2.getLiveendtime() == null ? 1 : 0;
+			                return live2.compareTo(live1);
+			            }
+			        });
+			    }
+			    for (Room room : roomList) {
+			    	int roomId = room.getUserId();
+			    	if (room.getActorTag() != null && room.getActorTag().intValue() == 1
+			    			&& roomInfoList != null && roomInfoList.size() > 0) {
+			    		boolean flag = false;
+			    		for (RoomInfo rinfo : roomInfoList) {
+			    			if (rinfo.getActorId() != null && rinfo.getActorId().intValue() == roomId) {
+			    				jRoomList.add(RoomTF.roomInfoToJson(rinfo, platform, true));
+			    				flag = true;
+			    			}
+			    		}
+			    		if (!flag) {
+			    			jRoomList.add(room.toJsonObject(platform, null));
+			    		}
+			    	} else {
+			    		jRoomList.add(room.toJsonObject(platform, null));
+			    	}
+			    }
+			}
+		} catch (Exception e) {
+			logger.error("realtion transform room object catched exception: ", e);
+			result.addProperty("TagCode", TagCodeEnum.UNCATCHED_EXCEPTION);
+			return result;
+		}
+		
+		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 		result.add("roomList", jRoomList);
 		result.addProperty("pageTotal", pageTotal);
 		result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
