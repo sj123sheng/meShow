@@ -35,7 +35,6 @@
 	<sqlMap resource="com/melot/kktv/sqlmap/Exchange.xml" />
 	<sqlMap resource="com/melot/kktv/sqlmap/NewsTagConf.xml" />
 	<sqlMap resource="com/melot/kktv/sqlmap/NewsTagRes.xml" />
-	<sqlMap resource="com/melot/kktv/sqlmap/PreviewActConf.xml" />
 	<sqlMap resource="com/melot/kktv/sqlmap/Temp.xml" />
 	
 	<!-- api-menu-sdk jar -->

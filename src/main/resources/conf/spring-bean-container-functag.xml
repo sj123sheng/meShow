@@ -273,16 +273,6 @@
 		<constructor-arg name="t" ref="indexFunction" />
 		<constructor-arg name="methodName" value="getHallLiveAlbum" />
 	</bean>
-	<!-- 保存节目预告 -->
-	<bean id="10002070" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="indexFunction" />
-		<constructor-arg name="methodName" value="saveFamilyConfPreviewAct" />
-	</bean>
-	<!-- 更新节目预告状态 -->
-	<bean id="10002071" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="indexFunction" />
-		<constructor-arg name="methodName" value="updateFamilyConfPreviewAct" />
-	</bean>
 	<!-- 周星战报 -->
 	<bean id="10002072" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="indexFunction" />
