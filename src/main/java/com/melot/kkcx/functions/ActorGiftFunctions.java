@@ -334,9 +334,9 @@ public class ActorGiftFunctions {
             itemJson.addProperty("animationPackName", String.valueOf(giftId));
             itemJson.addProperty("animationPackVersion", 1);
             if (platform == PlatformEnum.ANDROID) {
-                itemJson.addProperty("animationPackUrl", "http://rescdn.kktv8.com/kktv/icon/android/gift/bundle/" + giftId + ".bundle");
+                itemJson.addProperty("animationPackUrl", "http://rescdn.kktv8.com/kktv/icon/android/gift/zip/" + giftId + ".zip");
             } else {
-                itemJson.addProperty("animationPackUrl", "http://rescdn.kktv8.com/kktv/icon/iphone/gift/bundle/" + giftId + ".bundle");
+                itemJson.addProperty("animationPackUrl", "http://rescdn.kktv8.com/kktv/icon/iphone/gift/zip/" + giftId + ".zip");
             }
             animations.add(itemJson);
         }
