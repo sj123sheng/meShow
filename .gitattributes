@@ -282,7 +282,6 @@ src/main/java/com/melot/kktv/redis/PrivateLetterSource.java -text
 src/main/java/com/melot/kktv/redis/QQVipSource.java -text
 src/main/java/com/melot/kktv/redis/RedisServiceKey.java -text
 src/main/java/com/melot/kktv/redis/SearchWordsSource.java -text
-src/main/java/com/melot/kktv/redis/SubscribeSource.java -text
 src/main/java/com/melot/kktv/redis/UserRechargeSource.java -text
 src/main/java/com/melot/kktv/redis/VideoSource.java -text
 src/main/java/com/melot/kktv/redis/WeekGiftSource.java -text

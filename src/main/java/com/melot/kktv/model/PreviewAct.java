@@ -92,8 +92,8 @@ public class PreviewAct {
             dayWeek = c.get(Calendar.DAY_OF_WEEK) - 1;
         }
         JsonObject jObject = new JsonObject();
-        if (actInfo.getStartTime() != null) {
-            stime = actInfo.getStartTime();
+        if (actInfo.getActStartTime() != null) {
+            stime = actInfo.getActStartTime().getTime();
         } else if (actInfo.getSDTime() != null && actInfo.getDayWeek() != null) {
             nowWeek = actInfo.getDayWeek();
             if (nowWeek >= dayWeek) {

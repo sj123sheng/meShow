@@ -624,36 +624,6 @@
 		<maxWait>3000</maxWait>
 	</redisSource>
 
-	<!-- 192.168.100.19 6386 -->
-	<redisSource name="Subscribe">
-		<!-- Redis Server Host -->
-		<connectionHost>redis1.kktv2.com</connectionHost>
-		<!-- Redis Server Port -->
-		<connectionPort>6379</connectionPort>
-		<!-- Redis Server Password -->
-		<connectionPassword>youknowthat</connectionPassword>
-		<!-- Redis Server TimeOut -->
-		<connectionTimeOut>5000</connectionTimeOut>
-		<!-- Maximum active connections to Redis instance -->
-		<maxActive>10</maxActive>
-		<!-- Number of connections to Redis that just sit there and do nothing -->
-		<maxIdle>5</maxIdle>
-		<!-- Minimum number of idle connections to Redis - these can be seen as 
-			always open and ready to serve -->
-		<minIdle>1</minIdle>
-		<!-- Tests whether connection is dead when connection retrieval method 
-			is called -->
-		<testOnBorrow>true</testOnBorrow>
-		<!-- Tests whether connection is dead when returning a connection to the 
-			pool -->
-		<testOnReturn>true</testOnReturn>
-		<!-- Tests whether connections are dead during idle periods -->
-		<testWhileIdle>true</testWhileIdle>
-		<!-- Maximum time, in milliseconds, to wait for a resource when exausted 
-			action is set to WHEN_EXAUSTED_BLOCK -->
-		<maxWait>3000</maxWait>
-	</redisSource>
-
 	<redisSource name="Activity">
 		<!-- Redis Server Host -->
 		<connectionHost>redis1.kktv2.com</connectionHost>

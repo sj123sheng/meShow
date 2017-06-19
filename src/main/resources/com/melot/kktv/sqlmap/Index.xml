@@ -220,24 +220,6 @@
 		{call p_getCatalogInfo(?,?)}
 	</procedure>
 	
-	<!-- 订阅/取消订阅 预告节目开播通知 -->
-	<parameterMap id="subscribeActStartMap" class="java.util.Map">
-		<!-- <parameter property="matchId" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" /> -->
-		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="actId" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="state" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
-			jdbcType="VARCHAR" />
-	</parameterMap>
-	
-	<procedure id="subscribeActStart" parameterMap="subscribeActStartMap">
-		{call p_user_sub_act(?,?,?,?)}
-	</procedure>
-    
 	<!-- 获取收到捧场主播排行 -->
 	<resultMap id="NewsRewardRankList" class="com.melot.kktv.model.NewsRewardRank">
 		<result property="userId" column="userid" />

@@ -203,16 +203,6 @@
 		<constructor-arg name="cacheType" value="60" />
 		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
 	</bean>
-	<!-- 订阅预告节目开播通知 -->
-	<bean id="10002034" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="indexFunction" />
-		<constructor-arg name="methodName" value="subscribeActStart" />
-	</bean>
-	<!-- 取消订阅预告节目开播通知 -->
-	<bean id="10002035" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="indexFunction" />
-		<constructor-arg name="methodName" value="unsubscribeActStart" />
-	</bean>
 	<!-- 获取各省份本月新增主播数 -->
 	<bean id="10002036" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="indexFunction" />

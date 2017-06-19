@@ -35,7 +35,6 @@ import com.melot.content.config.live.service.LiveAlbumService;
 import com.melot.content.config.live.service.LiveVideoService;
 import com.melot.content.config.live.upload.impl.QiniuService;
 import com.melot.kkactivity.driver.domain.ActInfo;
-import com.melot.kkactivity.driver.domain.GetActInfoListResp;
 import com.melot.kkactivity.driver.domain.KkActivity;
 import com.melot.kkactivity.driver.service.KkActivityService;
 import com.melot.kkcore.user.api.UserProfile;
@@ -60,7 +59,6 @@ import com.melot.kktv.redis.GiftRecordSource;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.NewsSource;
 import com.melot.kktv.redis.SearchWordsSource;
-import com.melot.kktv.redis.SubscribeSource;
 import com.melot.kktv.redis.WeekGiftSource;
 import com.melot.kktv.service.NewsService;
 import com.melot.kktv.service.RoomService;
@@ -2186,11 +2184,6 @@ public class IndexFunctions {
                 if(repeatAIds != null && repeatAIds.size() > 0 && repeatAIds.contains(aid)){
                     continue;
                 }
-                if (userId != 0) {
-                    // redis判断是否已经订阅
-                    boolean isSub = SubscribeSource.checkActSub(String.valueOf(userId), actcofig.get("actId").toString());
-                    actcofig.addProperty("isSub", isSub);
-                }
                 PreviewAct t = null;
                 try {
                     Gson gson = new Gson();
@@ -2423,148 +2416,6 @@ public class IndexFunctions {
 		result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
 		result.add("roomList", jRoomList);
 		
-		return result;
-	}
-	
-	/**
-	 * 订阅预告节目开播通知(10002034)
-	 * @param jsonObject
-	 * @param checkTag
-	 * @return
-	 */
-	public JsonObject subscribeActStart(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-	    JsonObject result = new JsonObject();
-	    
-		// 该接口需要验证token,未验证的返回错误码
-		if (!checkTag) {
-			result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-			return result;
-		}
-		
-        int userId, actId;
-        try {
-            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-            actId = CommonUtil.getJsonParamInt(jsonObject, "actId", 0, "02340004", 1, Integer.MAX_VALUE);
-        } catch (CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
-            return result;
-        } catch (Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-            return result;
-        }
-		
-        try {
-            long curTime = System.currentTimeMillis();
-            KkActivityService kkActivityService = (KkActivityService) MelotBeanFactory.getBean("kkActivityService");
-            GetActInfoListResp actInfoListResp = kkActivityService.getRoomActList(actId, null, null, null, null, null, null, null, null, 1, 20);
-            if (actInfoListResp == null || actInfoListResp.getTotalCount() == 0) {
-             // 节目不存在 02340103
-                result.addProperty("TagCode", "02340103");
-                return result;
-            }
-            ActInfo actInfo = actInfoListResp.getActRoomList().get(0);
-            Long endTime = null;
-            if (actInfo.getActEndTime() != null) {
-                if (actInfo.getActEndTime().getTime() < curTime) {
-                    // 节目已过期
-                    result.addProperty("TagCode", "02340006");
-                    return result;
-                } else {
-                    endTime = actInfo.getActEndTime().getTime();
-                }
-            }
-            // 是否周期性活动
-            boolean ifWeekly = false;
-            if (actInfo.getDayWeekStr() != null) {
-                ifWeekly = true;
-            }
-            String actRoom = actInfo.getActRoom();
-            // redis判断是否已经订阅
-            boolean isSub  = SubscribeSource.checkActSub(String.valueOf(userId), String.valueOf(actId));
-            if (isSub) {
-                result.addProperty("TagCode", "02340005");// 用户已订阅该节目开播通知  02340005
-            } else {
-                // redis保存订阅记录
-                // 判断是否周期性节目
-                SubscribeSource.subPreviewAct(String.valueOf(userId), String.valueOf(actId), actRoom, endTime, ifWeekly);
-                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-                
-                // new thread insert into oracle
-                new UserSubAct(userId, actId, 1).start();
-                
-            }
-        } catch(Exception e) {
-            logger.error("KkActivityService.getRoomActList(" + actId + ") return exception.", e);
-            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
-        }
-        
-		return result;
-	}
-	
-	/**
-	 * 取消订阅预告节目开播通知(10002035)
-	 * @param jsonObject
-	 * @param checkTag
-	 * @return
-	 */
-	public JsonObject unsubscribeActStart(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-	    JsonObject result = new JsonObject();
-		// 该接口需要验证token,未验证的返回错误码
-		if (!checkTag) {
-			result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-			return result;
-		}
-		
-        int userId, actId;
-        try {
-            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-            actId = CommonUtil.getJsonParamInt(jsonObject, "actId", 0, "02350004", 1, Integer.MAX_VALUE);
-        } catch (CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
-            return result;
-        } catch (Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-            return result;
-        }
-        
-        try {
-            KkActivityService kkActivityService = (KkActivityService) MelotBeanFactory.getBean("kkActivityService");
-            GetActInfoListResp actInfoListResp = kkActivityService.getRoomActList(actId, null, null, null, null, null, null, null, null, 1, 20);
-            if (actInfoListResp == null || actInfoListResp.getTotalCount() == 0) {
-             // 节目不存在 02350103
-                result.addProperty("TagCode", "02350103");
-                return result;
-            }
-            ActInfo actInfo = actInfoListResp.getActRoomList().get(0);
-            long curTime = System.currentTimeMillis();
-            if (actInfo.getActEndTime() != null) {
-                if (actInfo.getActEndTime().getTime() < curTime) {
-                    // 节目已过期
-                    result.addProperty("TagCode", "02350006");
-                    return result;
-                }
-            }
-
-            // redis判断是否已经订阅
-            boolean isSub  = SubscribeSource.checkActSub(String.valueOf(userId), String.valueOf(actId));
-            if (isSub) {
-                // redis删除订阅记录
-                SubscribeSource.unsubPreviewAct(String.valueOf(userId), String.valueOf(actId));
-                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-                
-                // new thread insert into oracle
-                new UserSubAct(userId, actId, 0).start();
-            
-            } else {
-                //用户未订阅该节目开播通知  02350005
-                result.addProperty("TagCode", "02350005");
-            }
-        } catch(Exception e) {
-            logger.error("KkActivityService.getRoomActList(" + actId + ") return exception.", e);
-            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
-        }
-		
-		// 返回结果
 		return result;
 	}
 	
@@ -3636,40 +3487,4 @@ public class IndexFunctions {
 		
 		return result;
 	}
-}
-
-/** 用户订阅/取消订阅节目  */
-class UserSubAct extends Thread {
-
-	/** 日志记录对象 */
-	private static Logger logger = Logger.getLogger(UserSubAct.class);
-	
-	private Integer userId;
-	private Integer actId;
-	private Integer state;
-	
-	UserSubAct(Integer userId, Integer actId, Integer state) {
-    	this.userId = userId;
-    	this.actId = actId;
-    	this.state = state;
-    }
-    
-    @Override
-    public synchronized void start() {
-    	try {
-			Map<Object, Object> map = new HashMap<Object, Object>();
-			map.put("userId", this.userId);
-			map.put("actId", this.actId);
-			map.put("state", this.state);
-			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Index.subscribeActStart", map);
-			String TagCode = (String) map.get("TagCode");
-			if (!TagCode.equals(TagCodeEnum.SUCCESS)) {
-				logger.error("[UserSubAct]:调用存储过程未的到正常结果,"
-						+ "TagCode:" + TagCode + ",userId:" + this.userId+ ",actId:" + this.actId+ ",state:" + this.state);
-			}
-		} catch (SQLException e) {
-			logger.error("[UserSubAct]:", e);
-		}
-	}
-    
 }
