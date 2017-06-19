@@ -29,6 +29,7 @@ import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.api.UserRegistry;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.model.ActorLevel;
+import com.melot.kkcx.model.CommonDevice;
 import com.melot.kkcx.model.LotteryPrize;
 import com.melot.kkcx.model.LotteryPrizeList;
 import com.melot.kkcx.model.RichLevel;
@@ -3007,5 +3008,79 @@ public class ProfileFunctions {
         result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
     	return result;
 	}
+    
+    /**
+     * 删除常用设备(50001028)
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject delCommonDevice(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+        
+        int userId;
+        String deviceUId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            deviceUId = CommonUtil.getJsonParamString(jsonObject, "deviceUId", "", "01280001", 1, 40);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        ProfileServices.delUserCommonDevice(userId, deviceUId);
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+    
+    /**
+     * 获取常用设备(50001029)
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getCommonDeviceList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+        
+        int userId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        List<CommonDevice> commonDeviceList = ProfileServices.getUserCommonDevice(userId);
+        if (commonDeviceList != null && commonDeviceList.size() > 0) {
+            JsonArray jsonArray = new JsonArray();
+            for (CommonDevice commonDevice : commonDeviceList) {
+                JsonObject jsonObj = new JsonObject();
+                jsonObj.addProperty("deviceUId", commonDevice.getDeviceUId());
+                jsonObj.addProperty("deviceName", commonDevice.getDeviceName());
+                jsonObj.addProperty("deviceModel", commonDevice.getDeviceModel());
+                jsonArray.add(jsonObj);
+            }
+            result.add("deviceList", jsonArray);
+        }
+        
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
 	
 }

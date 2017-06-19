@@ -22,6 +22,7 @@ public class DynamicEmoticon {
     
     private String previewUrl;
     
+    //1:全部 2：PC 3：app
     private int platform;
     
     private String extarValue;

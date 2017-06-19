@@ -25,6 +25,7 @@ src/main/java/com/melot/kkcx/functions/UserFunctions.java -text
 src/main/java/com/melot/kkcx/model/ActivityEmoticon.java -text
 src/main/java/com/melot/kkcx/model/ActorLevel.java -text
 src/main/java/com/melot/kkcx/model/ActorNotice.java -text
+src/main/java/com/melot/kkcx/model/CommonDevice.java -text
 src/main/java/com/melot/kkcx/model/DynamicEmoticon.java -text
 src/main/java/com/melot/kkcx/model/HistoryRankInfo.java -text
 src/main/java/com/melot/kkcx/model/ImAdmin.java -text

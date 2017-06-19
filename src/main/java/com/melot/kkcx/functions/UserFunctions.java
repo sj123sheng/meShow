@@ -1976,7 +1976,7 @@ public class UserFunctions {
 	public JsonObject loginViaPasswordNew(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
 		JsonObject result = new JsonObject();
 		
-		String deviceUId = null, clientIp = null, username = null, psword = null, phoneNum = null, token = null, isSafe;
+		String deviceUId = null, clientIp = null, username = null, psword = null, phoneNum = null, token = null, isSafe, deviceName, deviceModel;
 		int userId = 0, platform, appId, channel, inviterId, fromVerifyLogin, loginType = 0, roomFrom;
 		int gpsCityId = 0;// 前端通过GPS获取的地址信息【参数里面是city】
 		try {
@@ -2021,6 +2021,8 @@ public class UserFunctions {
             	phoneNum = CommonUtil.getJsonParamString(jsonObject, "phoneNum", null, "01130011", 0, 256);
             }
 			psword = CommonUtil.getJsonParamString(jsonObject, "psword", null, "01130004", 0, 512);
+            deviceName = CommonUtil.getJsonParamString(jsonObject, "deviceName", "", null, 1, 512);
+            deviceModel = CommonUtil.getJsonParamString(jsonObject, "deviceModel", "", null, 1, 512);
 		} catch(CommonUtil.ErrorGetParameterException e) {
 			result.addProperty("TagCode", e.getErrCode());
 			return result;
@@ -2061,7 +2063,8 @@ public class UserFunctions {
 			return result;
 		}
 		userId = resLogin.getUserId();
-		if (fromVerifyLogin == 0 && com.melot.kkcx.service.UserService.getUserSmsSwitchState(userId)) {
+		if (fromVerifyLogin == 0 && com.melot.kkcx.service.UserService.getUserSmsSwitchState(userId)
+		        && !ProfileServices.checkUserCommonDevice(userId, deviceUId)) {
 			//异常登录判断
 			KkUserService kkUserService = MelotBeanFactory.getBean("kkUserService", KkUserService.class);
 			UserProfile userProfile = kkUserService.getUserProfile(userId);
@@ -2119,6 +2122,11 @@ public class UserFunctions {
         // 返回是否已修改初始密码
         if (loginType == LoginTypeEnum.PHONE && resLogin.getDefPwd() != null) {
             defPwd = resLogin.getDefPwd();
+        }
+        
+        //短信校验登录添加常用设备
+        if (deviceUId != null && fromVerifyLogin == 1) {
+            ProfileServices.setUserCommonDevice(userId, deviceUId, deviceName, deviceModel);
         }
         
         // 登录完成每日签到任务

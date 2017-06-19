@@ -502,6 +502,16 @@
 		<constructor-arg name="t" ref="profileFunction" />
 		<constructor-arg name="methodName" value="userSmsSwitch" />
 	</bean>
+	<!-- 删除常用设备 -->
+	<bean id="50001028" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="profileFunction" />
+		<constructor-arg name="methodName" value="delCommonDevice" />
+	</bean>
+	<!-- 获取常用设备 -->
+	<bean id="50001029" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="profileFunction" />
+		<constructor-arg name="methodName" value="getCommonDeviceList" />
+	</bean>
 	
 	<!-- 充值接口类 -->
 	<!-- 获取充值的说明信息 -->

@@ -1,5 +1,8 @@
 package com.melot.kkcx.service;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -7,7 +10,10 @@ import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
+import com.melot.kkcx.model.CommonDevice;
 import com.melot.kktv.domain.UserInfo;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.MedalSource;
@@ -28,6 +34,8 @@ public class ProfileServices {
     private static final String USER_ROOMTYPE_KEY = "%s_roomType";
     
     private static final String ROOMSOURCE_ACTOR_KEY = "%s_roomSourceActor";
+    
+    private static final String USER_COMMONDEVICE_KEY = "%s_commonDevice";
 	
 	/**
 	 * 更新私有redis
@@ -245,6 +253,142 @@ public class ProfileServices {
             logger.error("ProfileServices.getRoomSourceActor(" + roomSource + ") return exception.", e);
         }
         return roomSourceActors;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public static boolean setUserCommonDevice(int userId, String deviceUId, String deviceName, String deviceModel) {
+        try {
+            long curTime = System.currentTimeMillis();
+            long endTime = curTime + 7*24*3600*1000;
+            boolean existFlag = false;
+            List<CommonDevice> commonDevices = new ArrayList<CommonDevice>();
+            List<CommonDevice> commonDeviceList = new ArrayList<CommonDevice>();
+            String commonDeviceKey = String.format(USER_COMMONDEVICE_KEY, userId);
+            String commonDeviceValue = HotDataSource.getTempDataString(commonDeviceKey);
+            Gson gson = new Gson();
+            if (!StringUtil.strIsNull(commonDeviceValue)) {
+                commonDevices = (List<CommonDevice>) (gson.fromJson(commonDeviceValue, new TypeToken<List<CommonDevice>>(){}.getType()));
+                if (commonDevices != null && commonDevices.size() > 0) {
+                    for (CommonDevice commonDevice : commonDevices) {
+                        if (commonDevice.getDeviceUId().equals(deviceUId)) {
+                            commonDevice.setEndTime(curTime);
+                            commonDeviceList.add(commonDevice);
+                            existFlag = true;
+                        } else if (commonDevice.getEndTime() > curTime) {
+                            commonDeviceList.add(commonDevice);
+                        }
+                    }
+                }
+            }
+            
+            if (!existFlag) {
+                CommonDevice commonDevice = new CommonDevice();
+                commonDevice.setDeviceUId(deviceUId);
+                commonDevice.setDeviceName(deviceName);
+                commonDevice.setDeviceModel(deviceModel);
+                commonDevice.setEndTime(endTime);
+                commonDeviceList.add(commonDevice);
+            }
+            
+            //常用设备最多十个
+            if (commonDeviceList.size() > 10) {
+                Collections.sort(commonDeviceList,new Comparator<CommonDevice>() {
+                    @Override
+                    public int compare(CommonDevice cdevice1, CommonDevice cdevice2) {
+                        return (int) (cdevice2.getEndTime() - cdevice1.getEndTime());
+                    }
+               });
+            }
+            
+            HotDataSource.setTempDataString(commonDeviceKey, gson.toJson(commonDeviceList.size() > 10 ? commonDeviceList.subList(0, 10) : commonDeviceList), 7*24*3600);
+        } catch(Exception e) {
+            logger.error("ProfileServices.setUserCommonDevice(" + userId + "," + deviceUId + ") return exception.", e);
+            return false;
+        }
+        return true;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public static boolean delUserCommonDevice(int userId, String deviceUId) {
+        try {
+            long curTime = System.currentTimeMillis();
+            long endTime = 0l;
+            List<CommonDevice> commonDevices = new ArrayList<CommonDevice>();
+            List<CommonDevice> commonDeviceNewList = new ArrayList<CommonDevice>();
+            String commonDeviceKey = String.format(USER_COMMONDEVICE_KEY, userId);
+            String commonDeviceValue = HotDataSource.getTempDataString(commonDeviceKey);
+            Gson gson = new Gson();
+            if (!StringUtil.strIsNull(commonDeviceValue)) {
+                commonDevices = (List<CommonDevice>) (gson.fromJson(commonDeviceValue, new TypeToken<List<CommonDevice>>(){}.getType()));
+                if (commonDevices != null && commonDevices.size() > 0) {
+                    for (CommonDevice commonDevice : commonDevices) {
+                        if (!commonDevice.getDeviceUId().equals(deviceUId) &&  commonDevice.getEndTime() > curTime) {
+                            commonDeviceNewList.add(commonDevice);
+                            if (commonDevice.getEndTime() > endTime) {
+                                endTime = commonDevice.getEndTime();
+                            }
+                        }
+                    }
+                    
+                    if (commonDeviceNewList.size() > 0) {
+                        HotDataSource.setTempDataString(commonDeviceKey, gson.toJson(commonDeviceNewList), (int) (endTime - curTime)/1000);
+                    } else {
+                        HotDataSource.delTempData(commonDeviceKey);
+                    }
+                }
+            }
+        } catch(Exception e) {
+            logger.error("ProfileServices.delUserCommonDevice(" + userId + "," + deviceUId + ") return exception.", e);
+            return false;
+        }
+        return true;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public static List<CommonDevice> getUserCommonDevice(int userId) {
+        try {
+            long curTime = System.currentTimeMillis();
+            String commonDeviceKey = String.format(USER_COMMONDEVICE_KEY, userId);
+            String commonDeviceValue = HotDataSource.getTempDataString(commonDeviceKey);
+            List<CommonDevice> commonDevices = new ArrayList<CommonDevice>();
+            List<CommonDevice> result = new ArrayList<CommonDevice>();
+            if (!StringUtil.strIsNull(commonDeviceValue)) {
+                commonDevices = (List<CommonDevice>) (new Gson().fromJson(commonDeviceValue, new TypeToken<List<CommonDevice>>(){}.getType()));
+                for (CommonDevice commonDevice : commonDevices) {
+                    if (commonDevice.getEndTime() > curTime) {
+                        result.add(commonDevice);
+                    }
+                }
+            }
+            return result;
+        } catch(Exception e) {
+            logger.error("ProfileServices.getUserCommonDevice(" + userId + ") return exception.", e);
+        }
+        return null;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public static boolean checkUserCommonDevice(int userId, String deviceUId) {
+        try {
+            if (!StringUtil.strIsNull(deviceUId)) {
+                String commonDeviceKey = String.format(USER_COMMONDEVICE_KEY, userId);
+                String commonDeviceValue = HotDataSource.getTempDataString(commonDeviceKey);
+                List<CommonDevice> commonDevices = new ArrayList<CommonDevice>();
+                if (!StringUtil.strIsNull(commonDeviceValue)) {
+                    commonDevices =  (List<CommonDevice>) (new Gson().fromJson(commonDeviceValue, new TypeToken<List<CommonDevice>>(){}.getType()));
+                    if (commonDevices != null && commonDevices.size() > 0) {
+                        for (CommonDevice commonDevice : commonDevices) {
+                            if (commonDevice.getDeviceUId().equals(deviceUId) && commonDevice.getEndTime() > System.currentTimeMillis()) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        } catch(Exception e) {
+            logger.error("ProfileServices.getUserCommonDevice(" + userId + ") return exception.", e);
+        }
+        return false;
     }
 	
 	public static int getPasswordSafetyRank(String ps) {
