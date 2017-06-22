@@ -1500,7 +1500,7 @@ public class NewsFunctions {
 				}
 				// 获取用户关注动态
 				List<News> listNews = NewsService.getUserFocusNews(userId, includeQiniu, start, end);
-				int size = listNews.size();
+				int size = listNews == null ? 0 : listNews.size();
 				newsList = new ArrayList<News>();
 				if (listNews != null && listNews.size() > 0) {
 					// 推荐动态中删除推荐动态和用户关注动态的交集
