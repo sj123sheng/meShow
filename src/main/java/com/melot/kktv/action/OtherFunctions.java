@@ -1683,8 +1683,8 @@ public class OtherFunctions {
 			        || status == Constants.APPLY_TEST_ACTOR) {
 				ApplyActor newApplyActor = new ApplyActor();
 				newApplyActor.setApplyFamilyId(familyId);
-				// 更新状态为申请家族试播中
-				newApplyActor.setStatus(Constants.APPLY_TEST_ACTOR_IN_FAMILY_CHECK);
+				// 更新状态为申请家族试播中  (版本过渡，直接改为试播通过 status=5)
+				newApplyActor.setStatus(Constants.APPLY_TEST_ACTOR_IN_FAMILY_PLAYING);
 				newApplyActor.setActorId(userId);
 				
 				if (applyActorService.updateApplyActorByActorId(newApplyActor)) {
@@ -2370,7 +2370,7 @@ public class OtherFunctions {
         int platform;
         
         try {
-            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 1, null, 1, Integer.MAX_VALUE);
+            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 2, null, -1, 2);
         } catch(CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -2382,7 +2382,9 @@ public class OtherFunctions {
         List<DynamicEmoticon> emoticonList;
         JsonArray jEmoticonList = new JsonArray();
         try {
-            emoticonList = (List<DynamicEmoticon>) SqlMapClientHelper.getInstance(DBEnum.KKCX_PG).queryForList("Emoticon.getDynamicEmoticon", platform);
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("platform", platform);
+            emoticonList = (List<DynamicEmoticon>) SqlMapClientHelper.getInstance(DBEnum.KKCX_PG).queryForList("Emoticon.getDynamicEmoticon", map);
         } catch (SQLException e) {
             logger.error("获取动态表情贴图列表(platform:" + platform, e);
             result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
@@ -2392,7 +2394,6 @@ public class OtherFunctions {
         for (DynamicEmoticon dynamicEmoticon : emoticonList) {
             JsonObject jsonObj = new JsonObject();
             jsonObj.addProperty("emoticonId", dynamicEmoticon.geteId());
-            jsonObj.addProperty("platform", dynamicEmoticon.getPlatform());
             if (dynamicEmoticon.geteName() != null) {
                 jsonObj.addProperty("emoticonName", dynamicEmoticon.geteName());
             }
@@ -2430,7 +2431,7 @@ public class OtherFunctions {
         int platform;
         
         try {
-            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 1, null, 1, Integer.MAX_VALUE);
+            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 2, null, -1, 2);
         } catch(CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -2442,7 +2443,9 @@ public class OtherFunctions {
         List<Sticker> stickerList;
         JsonArray jEmoticonList = new JsonArray();
         try {
-            stickerList = (List<Sticker>) SqlMapClientHelper.getInstance(DBEnum.KKCX_PG).queryForList("Emoticon.getStickerList", platform);
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("platform", platform);
+            stickerList = (List<Sticker>) SqlMapClientHelper.getInstance(DBEnum.KKCX_PG).queryForList("Emoticon.getStickerList", map);
         } catch (SQLException e) {
             logger.error("获取静态贴纸列表(platform:" + platform, e);
             result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
@@ -2452,7 +2455,6 @@ public class OtherFunctions {
         for (Sticker sticker : stickerList) {
             JsonObject jsonObj = new JsonObject();
             jsonObj.addProperty("stickerId", sticker.getsId());
-            jsonObj.addProperty("platform", sticker.getPlatform());
             if (sticker.getsName() != null) {
                 jsonObj.addProperty("stickerName", sticker.getsName());
             }
