@@ -185,7 +185,7 @@ public class TimFunctions {
                     
                     Integer adminType = ProfileServices.getUserAdminType(userInfoDetail.getProfile().getUserId());
                     if (adminType != null && adminType != -1) {
-                        jsonObj.addProperty("siteAdmin", adminType);
+                    	jsonObj.addProperty("siteAdmin", adminType);
                     }
                     
                     TimService.registerTim(userInfoDetail.getProfile().getUserId() + "", GeneralService.replaceSensitiveWords(userInfoDetail.getProfile().getUserId(), userInfoDetail.getProfile().getNickName()));
