@@ -87,50 +87,6 @@
 		{call p_revoke(?,?,?)}
 	</procedure>
 
-	<!-- 获取用户房间的管理员列表 -->
-	<parameterMap id="roomManagerListMap" class="java.util.Map">
-		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="pageIndex" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="countPerPage" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-
-		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
-			jdbcType="VARCHAR" />
-		<parameter property="pageTotal" mode="OUT" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="roomList" mode="OUT" jdbcType="ORACLECURSOR"
-			javaType="java.sql.ResultSet" resultMap="room" />
-	</parameterMap>
-
-	<procedure id="getRoomManagerList" parameterMap="roomManagerListMap">
-		{call
-		p_getRoomManagerList_V2(?,?,?,?,?,?)}
-	</procedure>
-
-	<!-- 获取用户管理的房间列表 -->
-	<parameterMap id="getUserManagedRoomListMap" class="java.util.Map">
-		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="pageIndex" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="countPerPage" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-
-		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
-			jdbcType="VARCHAR" />
-		<parameter property="pageTotal" mode="OUT" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="roomList" mode="OUT" jdbcType="ORACLECURSOR"
-			javaType="java.sql.ResultSet" resultMap="room" />
-	</parameterMap>
-
-	<procedure id="getUserManagedRoomList" parameterMap="getUserManagedRoomListMap">
-		{call
-		p_getUserManagedRoomList_V2(?,?,?,?,?,?)}
-	</procedure>
-
 	<!-- 举报用户 -->
 	<parameterMap id="reportUserMap" class="java.util.Map">
 		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
