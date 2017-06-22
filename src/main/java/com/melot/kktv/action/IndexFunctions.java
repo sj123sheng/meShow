@@ -892,9 +892,8 @@ public class IndexFunctions {
 		}
 		fuzzyString = fuzzyString.trim();
 		
-	    // 判断是否为纯数字
-        boolean isId = Pattern.compile(Constant.regx_user_id).matcher(fuzzyString).find();
-
+		// 判断是否为纯数字
+		boolean isId = Pattern.compile(Constant.regx_user_id).matcher(fuzzyString).find();
 		
 		// 敏感字验证
 		if (!isId && GeneralService.hasSensitiveWords(0, fuzzyString)) {
@@ -1013,10 +1012,10 @@ public class IndexFunctions {
                 }
             }
         } 
-        
+		
         // 返回结果
         return result;
-    }
+	}
 	
 	/**
 	 * 获取公告详细(10002012)
@@ -2098,7 +2097,7 @@ public class IndexFunctions {
 			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 0, Integer.MAX_VALUE);
 			appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 0, Integer.MAX_VALUE);
 			startTime = CommonUtil.getJsonParamLong(jsonObject, "startTime", System.currentTimeMillis(), null, System.currentTimeMillis(), Long.MAX_VALUE);
-			endTime = CommonUtil.getJsonParamLong(jsonObject, "endTime", startTime + 604800000, null, 0l, Long.MAX_VALUE);
+			endTime = CommonUtil.getJsonParamLong(jsonObject, "endTime", startTime + 604800000, null, 0l, startTime + 604800000);
 		} catch (ErrorGetParameterException e) {
 			result.add("actList", new JsonArray());
 			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
@@ -2128,8 +2127,30 @@ public class IndexFunctions {
                      }
                 });
                 
-                count = Math.min(count, list.size());
-                result.add("actList", new JsonParser().parse(new Gson().toJson(count > 0 ? list.subList(0, count) : list)));
+                List<PreviewAct> newPList = new ArrayList<PreviewAct>();
+	            Map<Integer,Integer> map = new HashMap<Integer,Integer>();
+	            Map<String,Integer> map2 = new HashMap<String,Integer>();
+	            
+	            for(int i = 0; i < list.size(); i++){
+	                int aid = ((PreviewAct)(list.get(i))).getActId();
+	                long stime = ((PreviewAct)(list.get(i))).getStartTime();
+	                //同一Id最多重复两次
+	                //过滤当前分页的重复选项（同一活动的ID选项最多只能重复2次）
+	                if(map2.containsKey(aid+"_"+stime))continue;
+	                if(!map.containsKey(aid)){
+	                    map.put(aid, 1);
+	                    map2.put(aid+"_"+stime,1);
+	                    newPList.add(list.get(i));
+	                }else if(map.get(aid) == 1){
+	                    continue;
+	                }else{
+	                    map.put(aid, 1);
+	                    newPList.add(list.get(i));
+	                }
+	            }
+                
+                count = Math.min(count, newPList.size());
+                result.add("actList", new JsonParser().parse(new Gson().toJson(count > 0 ? newPList.subList(0, count) : newPList)));
             } else {
                 result.add("actList", new JsonArray());
             }
