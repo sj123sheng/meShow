@@ -132,7 +132,7 @@ public class PreviewAct {
         } else {
             jObject.addProperty("actTitle", actInfo.getActTitle());
         }
-        if (actInfo.getActUrl() != null && actInfo.getActUrl().trim().isEmpty()) {
+        if (actInfo.getActUrl() != null && !actInfo.getActUrl().trim().isEmpty()) {
             jObject.addProperty("actUrl", actInfo.getActUrl());
         }
         if (actInfo.getActDesc() != null) {
