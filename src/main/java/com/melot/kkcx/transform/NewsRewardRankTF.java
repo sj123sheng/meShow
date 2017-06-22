@@ -14,7 +14,9 @@ public class NewsRewardRankTF {
 		result.addProperty("rcount", newsRewardRank.getRcount());
 		UserProfile userProfile = UserService.getUserInfoNew(newsRewardRank.getUserId());
 		if (userProfile != null) {
-			result.addProperty("nickname", userProfile.getNickName());
+		    if (userProfile.getNickName() != null) {
+		        result.addProperty("nickname", userProfile.getNickName());
+		    }
 			if (userProfile.getPortrait() != null) {
 				result.addProperty("portrait_path_original", userProfile.getPortrait());
 			}
