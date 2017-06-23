@@ -31,10 +31,8 @@ import com.melot.api.menu.sdk.dao.domain.HomePage;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.api.menu.sdk.dao.domain.SysMenu;
 import com.melot.api.menu.sdk.handler.FirstPageHandler;
-import com.melot.api.menu.sdk.service.PartService;
 import com.melot.api.menu.sdk.service.RoomInfoService;
 import com.melot.api.menu.sdk.service.RoomSubCatalogService;
-import com.melot.api.menu.sdk.service.impl.DefaultPartServiceImpl;
 import com.melot.api.menu.sdk.utils.RandomUtils;
 import com.melot.blacklist.service.BlacklistService;
 import com.melot.content.config.game.service.GameTagService;
@@ -252,69 +250,6 @@ public class HallFunction extends BaseAction{
             result.addProperty("TagCode", TagCodeEnum.FAIL_TO_CALL_API_MENU_MODULE);
         }
         
-        return result;
-    }
-    
-    /**
-     * 移动端精选频道 (20010308)
-     * 移动端原本与PC端一致,统一调用的getSubCataRoomList[cataId = 46]接口
-     * 现移动端规则又变,配合移动端版本发行,编写新接口getMobileHandpick为API改造留下变动空间
-     * @param jsonObject
-     * @return
-     */
-    public JsonObject getMobileHandpick(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-        
-        JsonObject result = new JsonObject();
-        final int followActorSize = 2;
-        final int size = 6; 
-        int platform = 0;
-        Integer userId;
-        try {
-            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.WEB, null, 1, Integer.MAX_VALUE);
-            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
-        } catch (CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
-            return result;
-        }
-        
-        try {
-            RoomSubCatalogDao roomSubCatalogDao = MelotBeanFactory.getBean("roomSubCatalogDao", RoomSubCatalogDao.class);
-            List<RoomInfo> hotActors = RoomService.getTopActors(roomSubCatalogDao);
-            List<RoomInfo>goalRoomlist = null ;
-            JsonArray roomArray = new JsonArray();
-            if(checkTag){ //登录用户
-                goalRoomlist = getUserFollowRooms(userId, 1, followActorSize);
-            }else{ //游客
-                goalRoomlist = getSuggestActorsForVisitor(hotActors, size);
-            }
-            for(RoomInfo roomInfo : goalRoomlist) {
-                if(roomInfo.getLiveEndtime() != null){//离线主播不作为推荐
-                    continue;
-                }
-                JsonObject json = RoomTF.roomInfoToJson(roomInfo, platform);
-                roomArray.add(json);
-            }
-            if(roomArray.size() < size){  //应为推荐了未开播等原因, 需要补足
-                for (RoomInfo roomInfo  : hotActors) {
-                    if(!goalRoomlist.contains(roomInfo)){
-                        JsonObject json = RoomTF.roomInfoToJson(roomInfo, platform);
-                        roomArray.add(json);
-                    }
-                    if(roomArray.size() == size){
-                        break;
-                    }
-                }
-            }
-            PartService  partService  = MelotBeanFactory.getBean("partService", DefaultPartServiceImpl.class);
-            result.addProperty("liveTotal", partService.getPartLiveCount(ConstantEnum.KKGAME_ALL_ACTORS_CATAID, null, null));
-            result.addProperty("roomTotal", partService.getPartRoomCount(ConstantEnum.KKGAME_ALL_ACTORS_CATAID,null,null));
-            result.add("roomList", roomArray);
-        } catch(Exception e) {
-            logger.error("Fail to call getMobileHandpick ", e);
-        }
-        
-        result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
-        result.addProperty("TagCode", TagCodeEnum.SUCCESS);    
         return result;
     }
     
