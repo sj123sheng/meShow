@@ -201,9 +201,7 @@ public class SearchWordsSource {
         try {
             jedis = getInstance();
             String key = String.format(HOT_SEARCHRESULT_PAGE, searchWord);
-            if (jedis.exists(key)) {
-                set = jedis.zrange(key, start, end);
-            }
+            set = jedis.zrange(key, start, end);
         } catch (Exception e) {
             logger.error("SearchWordsSource.getSearchResult(" + searchWord + ") execute exception", e);
         } finally {
@@ -220,8 +218,9 @@ public class SearchWordsSource {
         try {
             jedis = getInstance();
             String key = String.format(HOT_SEARCHRESULT_PAGE, searchWord);
-            if (jedis.exists(key)) {
-                count = jedis.zcard(key);
+            Long tempCount = jedis.zcard(key);
+            if (tempCount != null) {
+                count = tempCount;
             }
         } catch (Exception e) {
             logger.error("SearchWordsSource.getSearchResult(" + searchWord + ") execute exception", e);

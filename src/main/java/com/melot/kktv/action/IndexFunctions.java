@@ -928,12 +928,10 @@ public class IndexFunctions {
 		        @SuppressWarnings("unchecked")
 		        List<Room> roomList = (ArrayList<Room>) map.get("roomList");
 		        List<RoomInfo> roomInfoList = null;
-		        if (roomList != null && roomList.size() > 0) {
-		            List<Integer> actorIds = new ArrayList<Integer>();
+		        if (roomList != null && !roomList.isEmpty()) {
 		            StringBuffer actorIds2 = new StringBuffer();
 		            for (Room room : roomList) {
-		                if (room != null && room.getActorTag() != null && room.getActorTag().intValue() == 1) {
-		                    actorIds.add(room.getUserId());
+		                if (room != null && room.getActorTag() != null && room.getActorTag() == 1) {
 		                    actorIds2.append(room.getUserId());
 		                    actorIds2.append(",");
 		                }
@@ -941,14 +939,12 @@ public class IndexFunctions {
 		            if (actorIds2.length() > 0) {
 		                roomInfoList = RoomService.getRoomListByRoomIds(actorIds2.substring(0, actorIds2.length() - 1));
 		            }
-		        }
-		        
-		        if (roomList != null && roomList.size() > 0) {
+		            
 		            for (Room room : roomList) {
 		                if (room != null) {
 		                    int roomId = room.getUserId();
-		                    if (room.getActorTag() != null && room.getActorTag().intValue() == 1
-		                            && roomInfoList != null && roomInfoList.size() > 0) {
+		                    if (room.getActorTag() != null && room.getActorTag() == 1
+		                            && roomInfoList != null && !roomInfoList.isEmpty()) {
 		                        boolean include = false;
 		                        for (RoomInfo rinfo : roomInfoList) {
 		                            if (rinfo.getActorId() != null && rinfo.getActorId().intValue() == roomId) {
@@ -966,7 +962,7 @@ public class IndexFunctions {
 		            }
 		        }
 		        
-		        if (newList != null && newList.size() > 0) {
+		        if (!newList.isEmpty()) {
 		            if(!SearchWordsSource.setSearchResultPage(fuzzyString, newList)){
 		                logger.error("SearchWordsSource.setSearchResult Fail to add" + fuzzyString + "searchResult to redis");
 		            }
@@ -978,40 +974,44 @@ public class IndexFunctions {
                 }
 		    } else {
 		        // 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
-		        logger.error("调用存储过程(Index.findRoomList)未的到正常结果,TagCode:" + TagCode + ",jsonObject:"
-		                + jsonObject.toString());
+		        logger.error("调用存储过程(Index.findRoomList)未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
 		        result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
+                return result;
 		    }
         }
         
         long start, end;
         long recordCount = SearchWordsSource.getSearchResultPageCount(fuzzyString);
-        // pageNum和pageCount未传入，查询全部
-        if (pageNum == 0 || pageCount == 0) {
-            start = 0;
-            end = recordCount - 1;
-        } else {
-            start = (pageNum - 1) * pageCount;
-            end = pageNum * pageCount - 1;
+        if (recordCount > 0) {
+            // pageNum和pageCount未传入，查询全部
+            if (pageNum == 0 || pageCount == 0) {
+                start = 0;
+                end = recordCount - 1;
+            } else {
+                start = (pageNum - 1) * pageCount;
+                end = pageNum * pageCount - 1;
+            }
+            Set<String> tempSet = SearchWordsSource.getSearchResultPage(fuzzyString, start, end);
+            if (tempSet != null && !tempSet.isEmpty()) {
+                for (String tempStr : tempSet) {
+                    JsonObject jObject = new JsonParser().parse(tempStr).getAsJsonObject();
+                    if (jObject != null) {
+                        jRoomList.add(jObject);
+                    }
+                }
+                
+                // 搜索成功后更新关键字搜索次数
+                if (pageNum ==0 || pageNum == 1) {
+                    if (!SearchWordsSource.incScore(fuzzyString)) {
+                        logger.error("SearchWordsSource.incScore Fail to increase score " + fuzzyString);
+                    }
+                }
+            }
         }
-        Set<String> tempSet = null;
-        if ((tempSet = SearchWordsSource.getSearchResultPage(fuzzyString, start, end)) != null) {
-            for (String tempStr : tempSet) {
-                JsonObject jObject = new JsonParser().parse(tempStr).getAsJsonObject();
-                if (jObject != null) {
-                    jRoomList.add(jObject);
-                }
-            }
-            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-            result.addProperty("recordCount", recordCount);
-            result.add("roomList", jRoomList);
-            // 搜索成功后更新关键字搜索次数
-            if (pageNum ==0 || pageNum == 1) {
-                if (!SearchWordsSource.incScore(fuzzyString)) {
-                    logger.error("SearchWordsSource.incScore Fail to increase score " + fuzzyString);
-                }
-            }
-        } 
+        
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        result.addProperty("recordCount", recordCount);
+        result.add("roomList", jRoomList);
 		
         // 返回结果
         return result;
