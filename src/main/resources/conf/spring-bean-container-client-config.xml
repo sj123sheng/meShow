@@ -58,10 +58,10 @@
 	<kkrpc:reference id="vipService" interface="com.melot.module.packagegift.driver.service.VipService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="xmanService" interface="com.melot.module.packagegift.driver.service.XmanService" version="1.0.0"></kkrpc:reference>
 	<!-- 家族模块 -->
-	<kkrpc:reference id="newFamilyInfoService" interface="com.melot.family.driver.service.FamilyInfoService" version="1.0.3"></kkrpc:reference>
-	<kkrpc:reference id="familyAdminService" interface="com.melot.family.driver.service.FamilyAdminService" version="1.0.3"></kkrpc:reference>
-	<kkrpc:reference id="familyOperatorService" interface="com.melot.family.driver.service.FamilyOperatorService" version="1.0.3"></kkrpc:reference>
-	<kkrpc:reference id="familyAdminNewService" interface="com.melot.family.driver.service.FamilyAdminNewService" version="1.0.3"></kkrpc:reference>
+	<kkrpc:reference id="newFamilyInfoService" interface="com.melot.family.driver.service.FamilyInfoService" version="1.0.7"></kkrpc:reference>
+	<kkrpc:reference id="familyAdminService" interface="com.melot.family.driver.service.FamilyAdminService" version="1.0.7"></kkrpc:reference>
+	<kkrpc:reference id="familyOperatorService" interface="com.melot.family.driver.service.FamilyOperatorService" version="1.0.7"></kkrpc:reference>
+	<kkrpc:reference id="familyAdminNewService" interface="com.melot.family.driver.service.FamilyAdminNewService" version="1.0.7"></kkrpc:reference>
 	
 	<kkrpc:reference id="upIdfaService" interface="com.melot.ios.idfa.driver.UpIdfaService" version="1.0.0"></kkrpc:reference>
 
@@ -88,4 +88,8 @@
 	<!-- 礼物配置信息 -->
 	<kkrpc:reference id="giftListService" interface="com.melot.room.gift.service.GiftListService" version="1.0.0"></kkrpc:reference>
 	
+	<!-- 动态模块 -->
+	<kkrpc:reference id="newsCenter" interface="com.melot.news.service.NewsService" version="1.2.0"></kkrpc:reference>
+	<!-- 资源模块 -->
+	<kkrpc:reference id="resourceCenter" interface="com.melot.resource.service.ResourceService" version="1.0.0"/>
 </beans>

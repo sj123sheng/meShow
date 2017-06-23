@@ -50,7 +50,6 @@ import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
-import com.melot.module.ModuleService;
 import com.melot.module.packagegift.driver.domain.ResUserXman;
 import com.melot.module.packagegift.driver.domain.ResXman;
 import com.melot.module.packagegift.driver.service.XmanService;
@@ -336,6 +335,12 @@ public class UserRelationFunctions {
 	 */
     public JsonObject getUserFollowedList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
 	    JsonObject result = new JsonObject();
+	    
+	    //仅自己可查看关注列表
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        }
 
         @SuppressWarnings("unused")
         int userId, pageIndex, countPerPage, platform, appId;
@@ -407,14 +412,17 @@ public class UserRelationFunctions {
 	 * @return 结果字符串
 	 */
 	public JsonObject getUserFansList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
-		// 该接口toke可选
+	    JsonObject result = new JsonObject();
+	    
+	    // 该接口toke可选
 		int selfTag = 0;// 不带token,查看他人的粉丝列表
 		if (checkTag) {
 			selfTag = 1;// 带有token,查看自己的粉丝列表
+		} else {
+		    result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+		    return result;
 		}
 		
-		JsonObject result = new JsonObject();
-
         int userId = 0;
         int pageIndex = 1;
         int countPerPage = 20;
@@ -993,6 +1001,11 @@ public class UserRelationFunctions {
 	@SuppressWarnings("unchecked")
 	public JsonObject getUserManagedRoomList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
 	    JsonObject result = new JsonObject();
+	    
+	    if (!checkTag) { 
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        }
         
         int userId, pageIndex, countPerPage, platform;
         

@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -18,33 +20,32 @@ import com.google.gson.reflect.TypeToken;
 import com.ibatis.sqlmap.client.SqlMapSession;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.kkcore.user.api.UserProfile;
+import com.melot.kkcore.user.api.UserStaticInfo;
 import com.melot.kkcx.service.RoomService;
 import com.melot.kkcx.service.UserService;
 import com.melot.kktv.model.News;
 import com.melot.kktv.model.NewsTagConf;
 import com.melot.kktv.model.NewsTagRes;
 import com.melot.kktv.redis.NewsSource;
+import com.melot.kktv.util.CollectionEnum;
 import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.Constant;
 import com.melot.kktv.util.DateUtil;
 import com.melot.kktv.util.NewsMediaTypeEnum;
 import com.melot.kktv.util.PlatformEnum;
 import com.melot.kktv.util.StringUtil;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.kktv.util.mongodb.CommonDB;
-import com.melot.kktv.util.CollectionEnum;
-import com.melot.module.ModuleService;
 import com.melot.news.domain.NewsCommentHist;
 import com.melot.news.model.NewsInfo;
 import com.melot.news.model.WhiteUser;
 import com.melot.qiniu.common.QiniuService;
-import com.melot.resource.driver.domain.Resource;
+import com.melot.resource.domain.Resource;
+import com.melot.sdk.core.util.MelotBeanFactory;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import com.upyun.api.UpYun;
-
-import org.apache.log4j.Logger;
 
 import redis.clients.jedis.Tuple;
 
@@ -998,7 +999,7 @@ public class NewsService {
 	}
 	
 	public static int addNews(NewsInfo newsInfo, String topic) {
-		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) ModuleService.getService("NewsService");
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
 		if (newsService != null) {
 			return newsService.addNews(newsInfo, topic);
 		}
@@ -1010,7 +1011,7 @@ public class NewsService {
 	 * @return
 	 */
 	public static boolean deleteNews(int newsId, int userId) {
-		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) ModuleService.getService("NewsService");
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
 		if (newsService != null) {
 			return newsService.delNewsInfo(newsId, userId);
 		}
@@ -1023,7 +1024,7 @@ public class NewsService {
 	 * @return
 	 */
 	public static NewsInfo getNewsInfoById(int newsId, int userId) {
-		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) ModuleService.getService("NewsService");
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
 		if (newsService != null) {
 			return newsService.getNewsInfoByNewsId(newsId, userId);
 		}
@@ -1031,7 +1032,7 @@ public class NewsService {
 	}
 	
 	public static NewsInfo getNewsInfoByNewsIdForState(int newsId, int userId) {
-		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) ModuleService.getService("NewsService");
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
 		if (newsService != null) {
 			return newsService.getNewsInfoByNewsIdForState(newsId, userId);
 		}
@@ -1044,7 +1045,7 @@ public class NewsService {
 	 * @return
 	 */
 	public static int addCommentPg(NewsCommentHist newsCommentHist) {
-		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) ModuleService.getService("NewsService");
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
 		if (newsService == null) {
 			return 0;
 		}
@@ -1058,7 +1059,7 @@ public class NewsService {
 	 * @return
 	 */
 	public static NewsCommentHist getComment(int commentId) {
-		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) ModuleService.getService("NewsService");
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
 		if (newsService != null) {
 			return newsService.getComment(commentId);
 		}
@@ -1072,7 +1073,7 @@ public class NewsService {
 	 * @return
 	 */
 	public static int ifCommentExist(int newsId, String content) {
-		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) ModuleService.getService("NewsService");
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
 		if (newsService != null) {
 			return newsService.ifCommentExist(newsId, content);
 		}
@@ -1080,9 +1081,41 @@ public class NewsService {
 	}
 	
 	public static int addPraise(int userId, int commentId) {
-		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) ModuleService.getService("NewsService");
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
 		if (newsService != null) {
 			return newsService.addCommentPraise(userId, commentId);
+		}
+		return 0;
+	}
+	
+	public static int cancelPraise(int userId, int commentId) {
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
+		if (newsService != null) {
+			return newsService.cancelCommentPraise(userId, commentId);
+		}
+		return 0;
+	}
+	
+	public static List<NewsCommentHist> getRecommendComment(int topicId) {
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
+		if (newsService != null) {
+			return newsService.getRecommendComment(topicId);
+		}
+		return null;
+	}
+	
+	public static int addNewsPraise(int userId, int newsId) {
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
+		if (newsService != null) {
+			return newsService.addNewsPraise(userId, newsId);
+		}
+		return 0;
+	}
+	
+	public static int cancelNewsPraise(int userId, int newsId) {
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
+		if (newsService != null) {
+			return newsService.cancelNewsPraise(userId, newsId);
 		}
 		return 0;
 	}
@@ -1093,7 +1126,7 @@ public class NewsService {
 	 * @return
 	 */
 	public static boolean deleteComment(int commentId, int newsId) {
-		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) ModuleService.getService("NewsService");
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
 		if (newsService != null) {
 			return newsService.deleteComment(commentId, newsId);
 		}
@@ -1107,7 +1140,7 @@ public class NewsService {
 	 * @return
 	 */
 	public static int getNewsCountByUserId(int userId, int isSelf) {
-		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) ModuleService.getService("NewsService");
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
 		if (newsService != null) {
 			return newsService.getSelfNewsCount(userId, isSelf);
 		}
@@ -1123,7 +1156,7 @@ public class NewsService {
 	 * @return
 	 */
 	public static List<NewsInfo> getSelfNewsList(int userId, int start, int offset, int isSelf,int seeUserId) {
-		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) ModuleService.getService("NewsService");
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
 		if (newsService != null) {
 			return newsService.getSelfNewsList(userId, start, offset, isSelf, seeUserId);
 		}
@@ -1140,10 +1173,18 @@ public class NewsService {
 	public static JsonObject getNewResourceJson(NewsInfo newsInfo, int platform, boolean flag) {
 		JsonObject json = new JsonObject();
 		json.addProperty("userId", newsInfo.getUserId());
-		// 读取明星等级
-		json.addProperty("actorLevel", UserService.getActorLevel(newsInfo.getUserId()));
-		// 读取富豪等级
-		json.addProperty("richLevel", UserService.getRichLevel(newsInfo.getUserId()));
+		UserStaticInfo us = UserService.getStaticInfo(newsInfo.getUserId());
+		if (us != null) {
+			if (us.getProfile() != null) {
+				// 读取明星等级
+				json.addProperty("actorLevel", us.getProfile().getActorLevel());
+				// 读取富豪等级
+				json.addProperty("richLevel", us.getProfile().getUserLevel());
+			}
+			if (us.getRegisterInfo() != null) {
+				json.addProperty("city", us.getRegisterInfo().getCityId());
+			}
+		}
 		json.addProperty("newsId", newsInfo.getNewsId());
 		if (newsInfo.getContent() != null) {
 			json.addProperty("content", newsInfo.getContent());
@@ -1156,10 +1197,21 @@ public class NewsService {
 		if (newsInfo.getTopicId() != null) {
 			json.addProperty("topicId", newsInfo.getTopicId());
 		}
+
+		json.addProperty("commentCount", NewsService.getCommentCount(newsInfo.getNewsId()));
+
 		if (newsInfo.getCommentMsg() != null && !newsInfo.getCommentMsg().trim().isEmpty()) {
 			String commentMsg = newsInfo.getCommentMsg();
 			JsonArray commentList = new JsonParser().parse(commentMsg).getAsJsonArray();
 			json.add("commentList", commentList);
+		}
+		if (newsInfo.getCommentPraise() != null) {
+			json.addProperty("newsPraiseCount", newsInfo.getCommentPraise());
+		} else {
+			json.addProperty("newsPraiseCount", 0);
+		}
+		if (newsInfo.getIsPraise() != null) {
+			json.addProperty("isPraise", newsInfo.getIsPraise());
 		}
 		if (newsInfo.getRefVideo() != null) {
 			//{"mediaUrl":"/2014/3/25/1008198_36000.mp4","imageUrl":"/2014/3/25/1008198_36000.jpg","mediaSize":2048,"mediaDur":60000}
@@ -1212,12 +1264,21 @@ public class NewsService {
 					mediaSourceJson.remove("imageUrl");
 				}
 			}
-			if (resVideo != null && resVideo.getDuration() != null) {
-				mediaSourceJson.addProperty("mediaDur", resVideo.getDuration());
+			if (resVideo != null) {
+				if (resVideo.getDuration() != null) {
+					mediaSourceJson.addProperty("mediaDur", resVideo.getDuration());
+				}
+				if (resVideo.getSpecificUrl() != null) {
+					mediaSourceJson.addProperty("mediaUrl", resVideo.getSpecificUrl());
+				}
+				if (resVideo.getFileHeight() != null) {
+					mediaSourceJson.addProperty("mediaHeight", resVideo.getFileHeight());
+				}
+				if (resVideo.getFileWidth() != null) {
+					mediaSourceJson.addProperty("mediaWidth", resVideo.getFileWidth());
+				}
 			}
-			if (resVideo != null && resVideo.getSpecificUrl() != null) {
-				mediaSourceJson.addProperty("mediaUrl", resVideo.getSpecificUrl());
-			}
+			
 			json.add("mediaSource", mediaSourceJson);
 		} else if (newsInfo.getRefImage() != null) {
 			List<Resource> resImage = ResourceService.getResourceList(Pattern.compile("\\{|\\}").matcher(newsInfo.getRefImage()).replaceAll(""));
@@ -1337,7 +1398,7 @@ public class NewsService {
 	}
 	
 	public static List<NewsInfo> getNewsListByTopicId(int topicId, int sortType, int start, int offset, int seeUserId) {
-		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) ModuleService.getService("NewsService");
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
 		if (newsService != null) {
 			return newsService.getNewsListByTopicId(topicId, sortType, start, offset, seeUserId);
 		}
@@ -1345,7 +1406,7 @@ public class NewsService {
 	}
 	
 	public static int getTopicNewsCount(int topicId) {
-		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) ModuleService.getService("NewsService");
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
 		if (newsService != null) {
 			return newsService.getNewsListCountByTopicId(topicId);
 		}
@@ -1353,7 +1414,7 @@ public class NewsService {
 	}
 	
 	public static int getCommentNewsCount(String content) {
-		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) ModuleService.getService("NewsService");
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
 		if (newsService != null) {
 			return newsService.getNewsListCountByCommentContent(content);
 		}
@@ -1362,7 +1423,7 @@ public class NewsService {
 
 	
 	public static List<NewsInfo> getNewsListByComment(String content, int sortType, int start, int offset, int seeUserId) {
-		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) ModuleService.getService("NewsService");
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
 		if (newsService != null) {
 			return newsService.getNewsListByComment(content, sortType, start, offset, seeUserId);
 		}
@@ -1370,7 +1431,7 @@ public class NewsService {
 	}
 	
 	public static List<NewsInfo> getStateByNewsIds(String newsIds) {
-		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) ModuleService.getService("NewsService");
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
 		if (newsService != null) {
 			return newsService.getStateByNewsIds(newsIds);
 		}
@@ -1378,7 +1439,7 @@ public class NewsService {
 	}
 	
 	public static List<NewsInfo> getFollowNewsList(int userId, int start, int offset) {
-		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) ModuleService.getService("NewsService");
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
 		if (newsService != null) {
 			return newsService.getUserAndFollowedNewsList(userId, start, offset);
 		}
@@ -1386,15 +1447,23 @@ public class NewsService {
 	}
 
 	public static List<NewsCommentHist> getCommentList(int newsId, int start, int offset, int userId) {
-		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) ModuleService.getService("NewsService");
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
 		if (newsService != null) {
 			return newsService.getCommentList(newsId, start, offset, userId);
 		}
 		return null;
 	}
 	
+	public static int getCommentCount(int newsId) {
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
+		if (newsService != null) {
+			return newsService.getCommentcount(newsId);
+		}
+		return 0;
+	}
+	
 	public static List<NewsInfo> getPraiseAndTopicMsg(List<NewsInfo> newsList, int userId) {
-		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) ModuleService.getService("NewsService");
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
 		if (newsService != null) {
 			return newsService.getPraiseAndTopicMsg(newsList, userId);
 		}
@@ -1402,7 +1471,7 @@ public class NewsService {
 	}
 	
 	public static boolean isWhiteUser(int userId) { 
-		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) ModuleService.getService("NewsService");
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
 		if (newsService != null) {
 			List<WhiteUser> list = newsService.getWhiteUserList(0, 0);
 			for (WhiteUser whiteUser : list) {
@@ -1415,7 +1484,7 @@ public class NewsService {
 	}
 	
 	public static Set<String> getPopularTopic(int start, int offset) {
-		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) ModuleService.getService("NewsService");
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
 		if (newsService != null) {
 			return newsService.getPopularTopic(start, offset);
 		}

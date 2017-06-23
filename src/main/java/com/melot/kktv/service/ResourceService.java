@@ -3,14 +3,14 @@ package com.melot.kktv.service;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import com.melot.module.ModuleService;
 import com.melot.news.model.NewsInfo;
-import com.melot.resource.driver.domain.Resource;
+import com.melot.resource.domain.Resource;
+import com.melot.sdk.core.util.MelotBeanFactory;
 
 public class ResourceService {
 	
 	public static int addResource(Resource resource) {
-		com.melot.resource.driver.ResourceService resourceService = (com.melot.resource.driver.ResourceService) ModuleService.getService("ResourceService");
+		com.melot.resource.service.ResourceService resourceService = (com.melot.resource.service.ResourceService) MelotBeanFactory.getBean("resourceCenter");;
 		if (resourceService != null) {
 			return resourceService.saveResource(resource);
 		}
@@ -18,7 +18,7 @@ public class ResourceService {
 	}
 	
 	public static String addResources(List<Resource> resourceList) {
-		com.melot.resource.driver.ResourceService resourceService = (com.melot.resource.driver.ResourceService) ModuleService.getService("ResourceService");
+		com.melot.resource.service.ResourceService resourceService = (com.melot.resource.service.ResourceService) MelotBeanFactory.getBean("resourceCenter");;
 		if (resourceService != null) {
 			return resourceService.batchAddResource(resourceList);
 		}
@@ -26,7 +26,7 @@ public class ResourceService {
 	}
 	
 	public static Resource getResource(int resId, int type) {
-		com.melot.resource.driver.ResourceService resourceService = (com.melot.resource.driver.ResourceService) ModuleService.getService("ResourceService");
+		com.melot.resource.service.ResourceService resourceService = (com.melot.resource.service.ResourceService) MelotBeanFactory.getBean("resourceCenter");;
 		if (resourceService != null) {
 			return resourceService.getResource(resId, type);
 		}
@@ -34,7 +34,7 @@ public class ResourceService {
 	}
 	
 	public static boolean delResource(NewsInfo newsInfo) {
-		com.melot.resource.driver.ResourceService resourceService = (com.melot.resource.driver.ResourceService) ModuleService.getService("ResourceService");
+		com.melot.resource.service.ResourceService resourceService = (com.melot.resource.service.ResourceService) MelotBeanFactory.getBean("resourceCenter");;
 		if (resourceService == null) {
 			return false;
 		}
@@ -50,7 +50,7 @@ public class ResourceService {
 	}
 	
 	public static List<Resource> getResourceList(String imageUrls) {
-		com.melot.resource.driver.ResourceService resourceService = (com.melot.resource.driver.ResourceService) ModuleService.getService("ResourceService");
+		com.melot.resource.service.ResourceService resourceService = (com.melot.resource.service.ResourceService) MelotBeanFactory.getBean("resourceCenter");;
 		if (resourceService == null) {
 			return null;
 		}

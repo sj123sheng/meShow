@@ -1113,6 +1113,26 @@
 		<constructor-arg name="t" ref="newsV2Function" />
 		<constructor-arg name="methodName" value="getStateByNewId" />
 	</bean>
+	<!-- 动态点赞 -->
+	<bean id="20006026" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="newsV2Function" />
+		<constructor-arg name="methodName" value="addNewsPraise" />
+	</bean>
+	<!-- 取消动态点赞 -->
+	<bean id="20006027" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="newsV2Function" />
+		<constructor-arg name="methodName" value="cancelNewsPraise" />
+	</bean>
+	<!-- 取消评论点赞 -->
+	<bean id="20006028" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="newsV2Function" />
+		<constructor-arg name="methodName" value="cancelPraise" />
+	</bean>
+	<!-- 根据话题id获取推荐短评 -->
+	<bean id="20006029" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="newsV2Function" />
+		<constructor-arg name="methodName" value="getCommentListByTopic" />
+	</bean>
 	
 	<!-- 获取热门视频动态列表 -->
 	<bean id="20000402" class="com.melot.sdk.core.function.GenericFunction">

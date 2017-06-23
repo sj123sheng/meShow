@@ -23,6 +23,9 @@ import com.melot.api.menu.sdk.dao.domain.SysMenu;
 import com.melot.api.menu.sdk.handler.FirstPageHandler;
 import com.melot.api.menu.sdk.redis.KKHallSource;
 import com.melot.api.menu.sdk.service.RoomInfoService;
+import com.melot.kkcore.relation.api.ActorRelation;
+import com.melot.kkcore.relation.api.RelationType;
+import com.melot.kkcore.relation.service.ActorRelationService;
 import com.melot.kkcx.service.RoomService;
 import com.melot.kkcx.transform.RoomTF;
 import com.melot.kktv.service.UserRelationService;
@@ -84,6 +87,12 @@ public class KKHallFunctions {
 
         int roomCount = 0;
 
+        //不是自己不可查看相关列表
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        }
+        
         final String ROOM_CACHE_KEY = String.format(KK_USER_ROOM_CACHE_KEY, appId, userId);
         if (!KKHallSource.exists(ROOM_CACHE_KEY)) {
             List<String> roomJsonList = new ArrayList<String>();
@@ -122,10 +131,14 @@ public class KKHallFunctions {
                 }
 
                 // 取用户管理的主播
-                List<Integer> list = SqlMapClientHelper.getInstance(DB.BACKUP).queryForList("Index.getUserAdminRoomList", userId);
+                List<ActorRelation> list = null;
+                ActorRelationService actorRelationService = MelotBeanFactory.getBean("kkActorRelationService", ActorRelationService.class);
+                if (actorRelationService != null) {
+                    list = actorRelationService.getRelationByUserId(userId, RelationType.ADMIN.typeId());
+                }
                 if (list != null && list.size() > 0) {
-                    for (Iterator<Integer> iterator = list.iterator(); iterator.hasNext();) {
-                        Integer integer = iterator.next();
+                    for (Iterator<ActorRelation> iterator = list.iterator(); iterator.hasNext();) {
+                        Integer integer = iterator.next().getActorId();
                         if (roomIdList.contains(integer)) {
                             iterator.remove();
                         }
@@ -134,8 +147,8 @@ public class KKHallFunctions {
                     if (list.size() > 0) {
                         String[] roomIds = new String[list.size()];
                         int i = 0;
-                        for (Integer roomId : list) {
-                            roomIds[i++] = roomId.toString();
+                        for (ActorRelation actorRelation : list) {
+                            roomIds[i++] = String.valueOf(actorRelation.getActorId());
                         }
                         try {
                             FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);

@@ -1,14 +1,104 @@
-<?xml version="1.0"?>
+﻿<?xml version="1.0"?>
 <JedisPoolConf>
 
-	<!-- 视频回放观看人数 -->	<redisSource name="BangVideoSource">		<connectionHost>redis3.kktv2.com</connectionHost>		<connectionPort>6379</connectionPort>		<connectionPassword>youknowthat</connectionPassword>		<connectionDatabase>2</connectionDatabase>		<connectionTimeOut>5000</connectionTimeOut>		<maxActive>10</maxActive>		<maxIdle>5</maxIdle>		<minIdle>1</minIdle>		<testOnBorrow>true</testOnBorrow>		<testOnReturn>true</testOnReturn>		<testWhileIdle>true</testWhileIdle>		<maxWait>3000</maxWait>	</redisSource>
-	
-	<!-- 192.168.100.19 6383 tshowtask 10 -->	<redisSource name="BangLevel">		<!-- Redis Server Host -->		<connectionHost>redis1.kktv2.com</connectionHost>		<!-- Redis Server Port -->		<connectionPort>6379</connectionPort>		<!-- Redis Server Password -->		<connectionPassword>youknowthat</connectionPassword>		<!-- Redis Server Database -->		<connectionDatabase>0</connectionDatabase>		<!-- Redis Server TimeOut -->		<connectionTimeOut>5000</connectionTimeOut>		<!-- Maximum active connections to Redis instance -->		<maxActive>10</maxActive>		<!-- Number of connections to Redis that just sit there and do nothing -->		<maxIdle>5</maxIdle>		<!-- Minimum number of idle connections to Redis - these can be seen as 			always open and ready to serve -->		<minIdle>1</minIdle>		<!-- Tests whether connection is dead when connection retrieval method 			is called -->		<testOnBorrow>true</testOnBorrow>		<!-- Tests whether connection is dead when returning a connection to the 			pool -->		<testOnReturn>true</testOnReturn>		<!-- Tests whether connections are dead during idle periods -->		<testWhileIdle>true</testWhileIdle>		<!-- Maximum time, in milliseconds, to wait for a resource when exausted 			action is set to WHEN_EXAUSTED_BLOCK -->		<maxWait>3000</maxWait>	</redisSource>
-	
-	<redisSource name="RoomInvition">		<!-- Redis Server Host -->		<connectionHost>redis1.kktv2.com</connectionHost>		<!-- Redis Server Port -->		<connectionPort>6379</connectionPort>		<!-- Redis Server Password -->		<connectionPassword>youknowthat</connectionPassword>		<!-- Redis Server TimeOut -->		<connectionTimeOut>5000</connectionTimeOut>		<!-- Maximum active connections to Redis instance -->		<maxActive>10</maxActive>		<!-- Number of connections to Redis that just sit there and do nothing -->		<maxIdle>5</maxIdle>		<!-- Minimum number of idle connections to Redis - these can be seen as 			always open and ready to serve -->		<minIdle>1</minIdle>		<!-- Tests whether connection is dead when connection retrieval method 			is called -->		<testOnBorrow>true</testOnBorrow>		<!-- Tests whether connection is dead when returning a connection to the 			pool -->		<testOnReturn>true</testOnReturn>		<!-- Tests whether connections are dead during idle periods -->		<testWhileIdle>true</testWhileIdle>		<!-- Maximum time, in milliseconds, to wait for a resource when exausted 			action is set to WHEN_EXAUSTED_BLOCK -->		<maxWait>3000</maxWait>	</redisSource>	<redisSource name="SearchWords">		<!-- Redis Server Host -->
-		<connectionHost>redis1.kktv2.com</connectionHost>		<!-- Redis Server Port -->		<connectionPort>6379</connectionPort>		<!-- Redis Server Password -->		<connectionPassword>youknowthat</connectionPassword>		<!-- Redis Server TimeOut -->		<connectionTimeOut>5000</connectionTimeOut>		<!-- Maximum active connections to Redis instance -->		<maxActive>10</maxActive>		<!-- Number of connections to Redis that just sit there and do nothing -->		<maxIdle>5</maxIdle>		<!-- Minimum number of idle connections to Redis - these can be seen as 			always open and ready to serve -->		<minIdle>1</minIdle>
+	<!-- 视频回放观看人数 -->
+	<redisSource name="BangVideoSource">
+		<connectionHost>redis4.kktv2.com</connectionHost>
+		<connectionPort>6379</connectionPort>
+		<connectionPassword>youknowthat</connectionPassword>
+		<connectionDatabase>2</connectionDatabase>
+		<connectionTimeOut>5000</connectionTimeOut>
+		<maxActive>10</maxActive>
+		<maxIdle>5</maxIdle>
+		<minIdle>1</minIdle>
+		<testOnBorrow>true</testOnBorrow>
+		<testOnReturn>true</testOnReturn>
+		<testWhileIdle>true</testWhileIdle>
+		<maxWait>3000</maxWait>
+	</redisSource>
+
+	<!-- 192.168.100.19 6383 tshowtask 10 -->
+	<redisSource name="BangLevel">
+		<!-- Redis Server Host -->
+		<connectionHost>redis3.kktv2.com</connectionHost>
+		<!-- Redis Server Port -->
+		<connectionPort>6383</connectionPort>
+		<!-- Redis Server Password -->
+		<connectionPassword>youknowthat</connectionPassword>
+		<!-- Redis Server Database -->
+		<connectionDatabase>0</connectionDatabase>
+		<!-- Redis Server TimeOut -->
+		<connectionTimeOut>5000</connectionTimeOut>
+		<!-- Maximum active connections to Redis instance -->
+		<maxActive>10</maxActive>
+		<!-- Number of connections to Redis that just sit there and do nothing -->
+		<maxIdle>5</maxIdle>
+		<!-- Minimum number of idle connections to Redis - these can be seen as 
+			always open and ready to serve -->
+		<minIdle>1</minIdle>
 		<!-- Tests whether connection is dead when connection retrieval method 
-			is called -->		<testOnBorrow>true</testOnBorrow>		<!-- Tests whether connection is dead when returning a connection to the 			pool -->
+			is called -->
+		<testOnBorrow>true</testOnBorrow>
+		<!-- Tests whether connection is dead when returning a connection to the 
+			pool -->
+		<testOnReturn>true</testOnReturn>
+		<!-- Tests whether connections are dead during idle periods -->
+		<testWhileIdle>true</testWhileIdle>
+		<!-- Maximum time, in milliseconds, to wait for a resource when exausted 
+			action is set to WHEN_EXAUSTED_BLOCK -->
+		<maxWait>3000</maxWait>
+	</redisSource>
+
+	<redisSource name="RoomInvition">
+		<!-- Redis Server Host -->
+		<connectionHost>redis1.kktv2.com</connectionHost>
+		<!-- Redis Server Port -->
+		<connectionPort>6380</connectionPort>
+		<!-- Redis Server Password -->
+		<connectionPassword>youknowthat</connectionPassword>
+		<!-- Redis Server TimeOut -->
+		<connectionTimeOut>5000</connectionTimeOut>
+		<!-- Maximum active connections to Redis instance -->
+		<maxActive>10</maxActive>
+		<!-- Number of connections to Redis that just sit there and do nothing -->
+		<maxIdle>5</maxIdle>
+		<!-- Minimum number of idle connections to Redis - these can be seen as 
+			always open and ready to serve -->
+		<minIdle>1</minIdle>
+		<!-- Tests whether connection is dead when connection retrieval method 
+			is called -->
+		<testOnBorrow>true</testOnBorrow>
+		<!-- Tests whether connection is dead when returning a connection to the 
+			pool -->
+		<testOnReturn>true</testOnReturn>
+		<!-- Tests whether connections are dead during idle periods -->
+		<testWhileIdle>true</testWhileIdle>
+		<!-- Maximum time, in milliseconds, to wait for a resource when exausted 
+			action is set to WHEN_EXAUSTED_BLOCK -->
+		<maxWait>3000</maxWait>
+	</redisSource>
+
+	<redisSource name="SearchWords">
+		<!-- Redis Server Host -->
+		<connectionHost>redis4.kktv2.com</connectionHost>
+		<!-- Redis Server Port -->
+		<connectionPort>6385</connectionPort>
+		<!-- Redis Server Password -->
+		<connectionPassword>youknowthat</connectionPassword>
+		<!-- Redis Server TimeOut -->
+		<connectionTimeOut>5000</connectionTimeOut>
+		<!-- Maximum active connections to Redis instance -->
+		<maxActive>10</maxActive>
+		<!-- Number of connections to Redis that just sit there and do nothing -->
+		<maxIdle>5</maxIdle>
+		<!-- Minimum number of idle connections to Redis - these can be seen as 
+			always open and ready to serve -->
+		<minIdle>1</minIdle>
+		<!-- Tests whether connection is dead when connection retrieval method 
+			is called -->
+		<testOnBorrow>true</testOnBorrow>
+		<!-- Tests whether connection is dead when returning a connection to the 
+			pool -->
 		<testOnReturn>true</testOnReturn>
 		<!-- Tests whether connections are dead during idle periods -->
 		<testWhileIdle>true</testWhileIdle>
@@ -21,7 +111,7 @@
 		<!-- Redis Server Host -->
 		<connectionHost>redis1.kktv2.com</connectionHost>
 		<!-- Redis Server Port -->
-		<connectionPort>6379</connectionPort>
+		<connectionPort>6395</connectionPort>
 		<!-- Redis Server Password -->
 		<connectionPassword>youknowthat</connectionPassword>
 		<!-- Redis Server TimeOut -->
@@ -48,9 +138,9 @@
 
 	<redisSource name="News">
 		<!-- Redis Server Host -->
-		<connectionHost>redis1.kktv2.com</connectionHost>
+		<connectionHost>redis4.kktv2.com</connectionHost>
 		<!-- Redis Server Port -->
-		<connectionPort>6379</connectionPort>
+		<connectionPort>6385</connectionPort>
 		<!-- Redis Server Password -->
 		<connectionPassword>youknowthat</connectionPassword>
 		<!-- Redis Server TimeOut -->
@@ -81,7 +171,7 @@
 		<!-- Redis Server Host -->
 		<connectionHost>redis1.kktv2.com</connectionHost>
 		<!-- Redis Server Port -->
-		<connectionPort>6379</connectionPort>
+		<connectionPort>6380</connectionPort>
 		<!-- Redis Server Password -->
 		<connectionPassword>youknowthat</connectionPassword>
 		<!-- Redis Server TimeOut -->
@@ -110,9 +200,9 @@
 
 	<redisSource name="Guess">
 		<!-- Redis Server Host -->
-		<connectionHost>redis1.kktv2.com</connectionHost>
+		<connectionHost>redis3.kktv2.com</connectionHost>
 		<!-- Redis Server Port -->
-		<connectionPort>6379</connectionPort>
+		<connectionPort>6386</connectionPort>
 		<!-- Redis Server Password -->
 		<connectionPassword>youknowthat</connectionPassword>
 		<!-- Redis Server TimeOut -->
@@ -139,9 +229,9 @@
 
 	<redisSource name="FamilyHonorCache">
 		<!-- Redis Server Host -->
-		<connectionHost>redis1.kktv2.com</connectionHost>
+		<connectionHost>redis4.kktv2.com</connectionHost>
 		<!-- Redis Server Port -->
-		<connectionPort>6379</connectionPort>
+		<connectionPort>6385</connectionPort>
 		<!-- Redis Server Password -->
 		<connectionPassword>youknowthat</connectionPassword>
 		<!-- Redis Server TimeOut -->
@@ -168,9 +258,9 @@
 
 	<redisSource name="LotteryCache">
 		<!-- Redis Server Host -->
-		<connectionHost>redis1.kktv2.com</connectionHost>
+		<connectionHost>redis3.kktv2.com</connectionHost>
 		<!-- Redis Server Port -->
-		<connectionPort>6379</connectionPort>
+		<connectionPort>6386</connectionPort>
 		<!-- Redis Server Password -->
 		<connectionPassword>youknowthat</connectionPassword>
 		<!-- Redis Server Database -->
@@ -200,7 +290,7 @@
 	<!-- 192.168.100.10 6379 -->
 	<redisSource name="HotData">
 		<!-- Redis Server Host -->
-		<connectionHost>redis1.kktv2.com</connectionHost>
+		<connectionHost>redis2.kktv2.com</connectionHost>
 		<!-- Redis Server Port -->
 		<connectionPort>6379</connectionPort>
 		<!-- Redis Server Password -->
@@ -230,7 +320,7 @@
 	<!-- 192.168.100.10 6379 -->
 	<redisSource name="UserHot">
 		<!-- Redis Server Host -->
-		<connectionHost>redis1.kktv2.com</connectionHost>
+		<connectionHost>redis2.kktv2.com</connectionHost>
 		<!-- Redis Server Port -->
 		<connectionPort>6379</connectionPort>
 		<!-- Redis Server Password -->
@@ -260,9 +350,9 @@
 	<!-- 192.168.100.17 6382 -->
 	<redisSource name="UserRelation">
 		<!-- Redis Server Host -->
-		<connectionHost>redis1.kktv2.com</connectionHost>
+		<connectionHost>redis4.kktv2.com</connectionHost>
 		<!-- Redis Server Port -->
-		<connectionPort>6379</connectionPort>
+		<connectionPort>6382</connectionPort>
 		<!-- Redis Server Password -->
 		<connectionPassword>youknowthat</connectionPassword>
 		<!-- Redis Server TimeOut -->
@@ -292,7 +382,7 @@
 		<!-- Redis Server Host -->
 		<connectionHost>redis1.kktv2.com</connectionHost>
 		<!-- Redis Server Port -->
-		<connectionPort>6379</connectionPort>
+		<connectionPort>6385</connectionPort>
 		<!-- Redis Server Password -->
 		<connectionPassword>youknowthat</connectionPassword>
 		<!-- Redis Server TimeOut -->
@@ -320,9 +410,9 @@
 	<!-- 192.168.100.19 6383 -->
 	<redisSource name="AppStats">
 		<!-- Redis Server Host -->
-		<connectionHost>redis1.kktv2.com</connectionHost>
+		<connectionHost>redis3.kktv2.com</connectionHost>
 		<!-- Redis Server Port -->
-		<connectionPort>6379</connectionPort>
+		<connectionPort>6383</connectionPort>
 		<!-- Redis Server Password -->
 		<connectionPassword>youknowthat</connectionPassword>
 		<!-- Redis Server TimeOut -->
@@ -350,9 +440,9 @@
 	<!-- 192.168.100.17 6385 -->
 	<redisSource name="UserRecharge">
 		<!-- Redis Server Host -->
-		<connectionHost>redis1.kktv2.com</connectionHost>
+		<connectionHost>redis4.kktv2.com</connectionHost>
 		<!-- Redis Server Port -->
-		<connectionPort>6379</connectionPort>
+		<connectionPort>6385</connectionPort>
 		<!-- Redis Server Password -->
 		<connectionPassword>youknowthat</connectionPassword>
 		<!-- Redis Server TimeOut -->
@@ -382,7 +472,7 @@
 		<!-- Redis Server Host -->
 		<connectionHost>redis1.kktv2.com</connectionHost>
 		<!-- Redis Server Port -->
-		<connectionPort>6379</connectionPort>
+		<connectionPort>6385</connectionPort>
 		<!-- Redis Server Password -->
 		<connectionPassword>youknowthat</connectionPassword>
 		<!-- Redis Server TimeOut -->
@@ -410,9 +500,9 @@
 	<!-- 192.168.100.17 6385 -->
 	<redisSource name="Family">
 		<!-- Redis Server Host -->
-		<connectionHost>redis1.kktv2.com</connectionHost>
+		<connectionHost>redis4.kktv2.com</connectionHost>
 		<!-- Redis Server Port -->
-		<connectionPort>6379</connectionPort>
+		<connectionPort>6385</connectionPort>
 		<!-- Redis Server Password -->
 		<connectionPassword>youknowthat</connectionPassword>
 		<!-- Redis Server TimeOut -->
@@ -440,9 +530,9 @@
 	<!-- 192.168.100.17 6385 -->
 	<redisSource name="FamilyApply">
 		<!-- Redis Server Host -->
-		<connectionHost>redis1.kktv2.com</connectionHost>
+		<connectionHost>redis4.kktv2.com</connectionHost>
 		<!-- Redis Server Port -->
-		<connectionPort>6379</connectionPort>
+		<connectionPort>6385</connectionPort>
 		<!-- Redis Server Password -->
 		<connectionPassword>youknowthat</connectionPassword>
 		<!-- Redis Server TimeOut -->
@@ -470,9 +560,9 @@
 	<!-- 192.168.100.10 6381 -->
 	<redisSource name="GiftRecord">
 		<!-- Redis Server Host -->
-		<connectionHost>redis1.kktv2.com</connectionHost>
+		<connectionHost>redis2.kktv2.com</connectionHost>
 		<!-- Redis Server Port -->
-		<connectionPort>6379</connectionPort>
+		<connectionPort>6381</connectionPort>
 		<!-- Redis Server Password -->
 		<connectionPassword>youknowthat</connectionPassword>
 		<!-- Redis Server TimeOut -->
@@ -494,7 +584,7 @@
 		<!-- Redis Server Host -->
 		<connectionHost>redis1.kktv2.com</connectionHost>
 		<!-- Redis Server Port -->
-		<connectionPort>6379</connectionPort>
+		<connectionPort>6381</connectionPort>
 		<!-- Redis Server Password -->
 		<connectionPassword>youknowthat</connectionPassword>
 		<!-- Redis Server TimeOut -->
@@ -539,7 +629,7 @@
 		<!-- Redis Server Host -->
 		<connectionHost>redis1.kktv2.com</connectionHost>
 		<!-- Redis Server Port -->
-		<connectionPort>6379</connectionPort>
+		<connectionPort>6381</connectionPort>
 		<!-- Redis Server Password -->
 		<connectionPassword>youknowthat</connectionPassword>
 		<!-- Redis Server TimeOut -->
@@ -567,9 +657,9 @@
 	<!-- 192.168.100.19 6386 -->
 	<redisSource name="Sms">
 		<!-- Redis Server Host -->
-		<connectionHost>redis1.kktv2.com</connectionHost>
+		<connectionHost>redis3.kktv2.com</connectionHost>
 		<!-- Redis Server Port -->
-		<connectionPort>6379</connectionPort>
+		<connectionPort>6386</connectionPort>
 		<!-- Redis Server Password -->
 		<connectionPassword>youknowthat</connectionPassword>
 		<!-- Redis Server TimeOut -->
@@ -599,7 +689,7 @@
 		<!-- Redis Server Host -->
 		<connectionHost>redis1.kktv2.com</connectionHost>
 		<!-- Redis Server Port -->
-		<connectionPort>6379</connectionPort>
+		<connectionPort>6383</connectionPort>
 		<!-- Redis Server Password -->
 		<connectionPassword>youknowthat</connectionPassword>
 		<!-- Redis Server TimeOut -->
@@ -626,9 +716,9 @@
 
 	<redisSource name="Activity">
 		<!-- Redis Server Host -->
-		<connectionHost>redis1.kktv2.com</connectionHost>
+		<connectionHost>redis3.kktv2.com</connectionHost>
 		<!-- Redis Server Port -->
-		<connectionPort>6379</connectionPort>
+		<connectionPort>6392</connectionPort>
 		<!-- Redis Server Password -->
 		<connectionPassword>youknowthat</connectionPassword>
 		<!-- Redis Server Database -->
@@ -657,7 +747,7 @@
 
 	<redisSource name="DragonBoat">
 		<connectionHost>redis1.kktv2.com</connectionHost>
-		<connectionPort>6379</connectionPort>
+		<connectionPort>6395</connectionPort>
 		<connectionPassword>youknowthat</connectionPassword>
 		<connectionTimeOut>5000</connectionTimeOut>
 		<connectionDatabase>14</connectionDatabase>
@@ -672,8 +762,8 @@
 
 
 	<redisSource name="GameRankingList">
-		<connectionHost>redis1.kktv2.com</connectionHost>
-		<connectionPort>6379</connectionPort>
+		<connectionHost>redis3.kktv2.com</connectionHost>
+		<connectionPort>6386</connectionPort>
 		<connectionPassword>youknowthat</connectionPassword>
 		<connectionDatabase>15</connectionDatabase>
 		<connectionTimeOut>5000</connectionTimeOut>
@@ -688,9 +778,9 @@
 
 	<redisSource name="famlilyRoom">
 		<!-- Redis Server Host -->
-		<connectionHost>redis1.kktv2.com</connectionHost>
+		<connectionHost>redis4.kktv2.com</connectionHost>
 		<!-- Redis Server Port -->
-		<connectionPort>6379</connectionPort>
+		<connectionPort>6385</connectionPort>
 		<!-- Redis Server Password -->
 		<connectionPassword>youknowthat</connectionPassword>
 		<!-- Redis Server TimeOut -->
@@ -718,9 +808,9 @@
 	<!-- 192.168.100.10 6379 -->
 	<redisSource name="KKHallSource">
 		<!-- Redis Server Host -->
-		<connectionHost>redis1.kktv2.com</connectionHost>
+		<connectionHost>redis3.kktv2.com</connectionHost>
 		<!-- Redis Server Port -->
-		<connectionPort>6379</connectionPort>
+		<connectionPort>6392</connectionPort>
 		<!-- Redis Server Password -->
 		<connectionPassword>youknowthat</connectionPassword>
 		<!-- Redis Server DB -->
@@ -748,8 +838,8 @@
 	</redisSource>
 
 	<redisSource name="ActorInfoSource">
-		<connectionHost>redis1.kktv2.com</connectionHost>
-		<connectionPort>6379</connectionPort>
+		<connectionHost>redis3.kktv2.com</connectionHost>
+		<connectionPort>6386</connectionPort>
 		<connectionPassword>youknowthat</connectionPassword>
 		<connectionDatabase>15</connectionDatabase>
 		<connectionTimeOut>5000</connectionTimeOut>
@@ -763,8 +853,8 @@
 	</redisSource>
 
 	<redisSource name="GamblingSource">
-		<connectionHost>redis1.kktv2.com</connectionHost>
-		<connectionPort>6379</connectionPort>
+		<connectionHost>redis3.kktv2.com</connectionHost>
+		<connectionPort>6383</connectionPort>
 		<connectionPassword>youknowthat</connectionPassword>
 		<connectionDatabase>5</connectionDatabase>
 		<connectionTimeOut>5000</connectionTimeOut>
@@ -775,8 +865,8 @@
 	</redisSource>
 
 	<redisSource name="RankingList">
-		<connectionHost>redis1.kktv2.com</connectionHost>
-		<connectionPort>6379</connectionPort>
+		<connectionHost>redis3.kktv2.com</connectionHost>
+		<connectionPort>6386</connectionPort>
 		<connectionPassword>youknowthat</connectionPassword>
 		<connectionDatabase>15</connectionDatabase>
 		<connectionTimeOut>5000</connectionTimeOut>
@@ -790,8 +880,8 @@
 	</redisSource>
 
 	<redisSource name="GiftStarSource">
-		<connectionHost>redis1.kktv2.com</connectionHost>
-		<connectionPort>6379</connectionPort>
+		<connectionHost>redis3.kktv2.com</connectionHost>
+		<connectionPort>6383</connectionPort>
 		<connectionPassword>youknowthat</connectionPassword>
 		<connectionTimeOut>5000</connectionTimeOut>
 		<maxActive>5</maxActive>
@@ -804,8 +894,8 @@
 	</redisSource>
 
 	<redisSource name="SignInTask">
-		<connectionHost>redis1.kktv2.com</connectionHost>
-		<connectionPort>6379</connectionPort>
+		<connectionHost>redis3.kktv2.com</connectionHost>
+		<connectionPort>6383</connectionPort>
 		<connectionPassword>youknowthat</connectionPassword>
 		<connectionDatabase>15</connectionDatabase>
 		<connectionTimeOut>5000</connectionTimeOut>
@@ -821,7 +911,7 @@
 	<!-- 房间内消息通道 -->
 	<!-- "ip" : "192.168.100.37","port" : 6395,"password" : "channel" -->
 	<redisSource name="RoomMessageSource">
-		<connectionHost>redis1.kktv2.com</connectionHost>
+		<connectionHost>nodeapi.kktv2.com</connectionHost>
 		<connectionPort>6379</connectionPort>
 		<connectionPassword>youknowthat</connectionPassword>
 		<connectionTimeOut>5000</connectionTimeOut>
@@ -836,7 +926,7 @@
 
 	<redisSource name="RoomConfig">
 		<connectionHost>redis1.kktv2.com</connectionHost>
-		<connectionPort>6379</connectionPort>
+		<connectionPort>6398</connectionPort>
 		<connectionPassword>youknowthat</connectionPassword>
 		<connectionTimeOut>5000</connectionTimeOut>
 		<connectionDatabase>14</connectionDatabase>
@@ -851,8 +941,8 @@
 
 	<!-- 192.168.100.10 6379 -->
 	<redisSource name="GiftInfo">
-		<connectionHost>redis1.kktv2.com</connectionHost>
-		<connectionPort>6379</connectionPort>
+		<connectionHost>redis2.kktv2.com</connectionHost>
+		<connectionPort>6381</connectionPort>
 		<connectionPassword>youknowthat</connectionPassword>
 		<connectionDatabase>14</connectionDatabase>
 		<connectionTimeOut>5000</connectionTimeOut>
@@ -867,7 +957,7 @@
 
 	<redisSource name="Messaga">
 		<connectionHost>redis1.kktv2.com</connectionHost>
-		<connectionPort>6379</connectionPort>
+		<connectionPort>6398</connectionPort>
 		<connectionPassword>youknowthat</connectionPassword>
 		<connectionDatabase>14</connectionDatabase>
 		<connectionTimeOut>5000</connectionTimeOut>
@@ -878,5 +968,21 @@
 		<testOnReturn>true</testOnReturn>
 		<testWhileIdle>true</testWhileIdle>
 		<maxWait>3000</maxWait>
-	</redisSource>	<!-- 手机端消息推送 -->	<redisSource name="push_source_list">		<connectionHost>redis1.kktv2.com</connectionHost>		<connectionPort>6379</connectionPort>		<connectionPassword>youknowthat</connectionPassword>		<connectionTimeOut>5000</connectionTimeOut>		<connectionDatabase>12</connectionDatabase>		<maxActive>10</maxActive>		<maxIdle>5</maxIdle>		<minIdle>1</minIdle>		<testOnBorrow>true</testOnBorrow>		<testOnReturn>true</testOnReturn>		<testWhileIdle>true</testWhileIdle>		<maxWait>3000</maxWait>	</redisSource>
-</JedisPoolConf>
+	</redisSource>
+
+	<!-- 手机端消息推送 -->
+	<redisSource name="push_source_list">
+		<connectionHost>redis1.kktv2.com</connectionHost>
+		<connectionPort>6379</connectionPort>
+		<connectionPassword>youknowthat</connectionPassword>
+		<connectionTimeOut>5000</connectionTimeOut>
+		<connectionDatabase>12</connectionDatabase>
+		<maxActive>10</maxActive>
+		<maxIdle>5</maxIdle>
+		<minIdle>1</minIdle>
+		<testOnBorrow>true</testOnBorrow>
+		<testOnReturn>true</testOnReturn>
+		<testWhileIdle>true</testWhileIdle>
+		<maxWait>3000</maxWait>
+	</redisSource>
+</JedisPoolConf>

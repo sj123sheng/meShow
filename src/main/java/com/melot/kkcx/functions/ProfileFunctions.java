@@ -330,8 +330,6 @@ public class ProfileFunctions {
 		    if (area != null) {
 		        result.addProperty("area", area);
             }
-		    result.addProperty("fansCount", UserRelationService.getFansCount(userId));
-		    result.addProperty("followCount", UserRelationService.getFollowsCount(userId));
 		    if (userInfoDetail.getProfile().getNickName() != null) {
 	        	t = Cat.getProducer().newTransaction("MCall", "GeneralService.replaceSensitiveWords");
 				try {
@@ -473,6 +471,8 @@ public class ProfileFunctions {
             
 			// 调用时带有token 说明是本人调用,需要返回用户秀币
 			if (checkTag) {
+			    result.addProperty("fansCount", UserRelationService.getFansCount(userId));
+			    result.addProperty("followCount", UserRelationService.getFollowsCount(userId));
 			    if (userInfoDetail.getProfile().getPhoneNum() != null) {
 			        result.addProperty("phoneNum", userInfoDetail.getProfile().getPhoneNum());
 			    }

@@ -1651,7 +1651,7 @@ public class UserFunctions {
 		// 获取参数
 	    Integer userId;
 		int openPlatform, appId, channelId, referrerId, platform, inviterId, roomFrom, refRoomId;
-		String phoneNum, verifyCode, deviceUId, isSafe, clientIp = null;
+		String phoneNum, verifyCode, deviceUId, isSafe, clientIp = null, deviceName, deviceModel;
 		int gpsCityId = 0;//客户端定位拿到的城市ID
 		try {
 			openPlatform = CommonUtil.getJsonParamInt(jsonObject, "openPlatform", LoginTypeEnum.PHONE, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
@@ -1678,6 +1678,8 @@ public class UserFunctions {
 				result.addProperty("TagCode", "01310003");
 				return result;
 			}
+			deviceName = CommonUtil.getJsonParamString(jsonObject, "deviceName", "", null, 1, 512);
+            deviceModel = CommonUtil.getJsonParamString(jsonObject, "deviceModel", "", null, 1, 512);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -1734,6 +1736,9 @@ public class UserFunctions {
                             if (!StringUtil.strIsNull(loginTagCode) && !TagCodeEnum.SUCCESS.equals(loginTagCode)) {
                                 result.addProperty("TagCode", loginTagCode);
                                 return result;
+                            } else {
+                                //添加常用设备
+                                ProfileServices.setUserCommonDevice(userId, deviceUId, deviceName, deviceModel);
                             }
                         }
                     } catch (Exception e) {
@@ -1871,6 +1876,8 @@ public class UserFunctions {
 					HadoopLogger.registerLog(userId, new Date(), platform, LoginTypeEnum.PHONE,
 							referrerId, ipAddr, channelId, deviceUId, 0, appId, SecurityFunctions.decodeED(jsonObject));
 					
+					//添加常用设备
+					ProfileServices.setUserCommonDevice(userId, deviceUId, deviceName, deviceModel);
 					result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 
 				} else if (TagCode.equals("03") || TagCode.equals("02") || TagCode.equals("04") || TagCode.equals("05") || TagCode.equals("06")) {

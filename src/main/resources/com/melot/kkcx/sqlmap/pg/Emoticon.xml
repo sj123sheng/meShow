@@ -17,8 +17,19 @@
 		<result property="dtime" column="dtime" />
 	</resultMap>
 
-	<select id="getDynamicEmoticon" parameterClass="java.lang.Integer" resultMap="emoticonMap">
-		select t.eid, t.ename, t.emoticon_url, t.preview_url, t.platform, t.extra_value, t.desc, t.dtime from conf_emoticon_dynamic t where t.is_on = 1 and platform = #platform# order by t.idx
+	<select id="getDynamicEmoticon" parameterClass="java.util.Map" resultMap="emoticonMap">
+		select t.eid, t.ename, t.emoticon_url, t.preview_url, t.platform, t.extra_value, t.desc, t.dtime from conf_emoticon_dynamic t where t.is_on = 1
+	                 <isEqual property="platform" compareValue="-1">
+			             and platform = #platform# 
+			         </isEqual>
+			         <isEqual property="platform" compareValue="1">
+			             and platform in (-1,1) 
+			         </isEqual>
+			         <isEqual property="platform" compareValue="2">
+			             and platform in (-1,2)
+			         </isEqual>
+		order by t.idx
+		
 	</select>
 	
 	<resultMap class="com.melot.kkcx.model.Sticker" id="stickerMap">
@@ -32,8 +43,18 @@
 		<result property="dtime" column= "dtime"/>
 	</resultMap>
 	
-	<select id="getStickerList" resultMap="stickerMap">
-		select t.s_id, t.platform, t.s_name, t.preview_url, t.s_url, t.extra_value, t.dtime, t.desc from conf_emoticon_sticker t where t.is_on = 1 and platform = #platform# order by t.idx
+	<select id="getStickerList" parameterClass="java.util.Map" resultMap="stickerMap">
+		select t.s_id, t.platform, t.s_name, t.preview_url, t.s_url, t.extra_value, t.dtime, t.desc from conf_emoticon_sticker t where t.is_on = 1
+			   <isEqual property="platform" compareValue="-1">
+			             and platform = #platform# 
+			         </isEqual>
+			         <isEqual property="platform" compareValue="1">
+			             and platform in (-1,1) 
+			         </isEqual>
+			         <isEqual property="platform" compareValue="2">
+			             and platform in (-1,2)
+			         </isEqual>
+		order by t.idx
 	</select>
 	
 	<resultMap class="com.melot.kkcx.model.ActivityEmoticon" id="activityEmoticonMap">
