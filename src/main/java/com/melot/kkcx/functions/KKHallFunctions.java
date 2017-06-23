@@ -261,12 +261,11 @@ public class KKHallFunctions {
                 logger.error("Fail to call firstPageHandler.getRecommendRooms(null, null, " + appId + ", " + (2 * offset) + ")", e);
             }
         }
-
+        
         result.add("roomList", roomArray);
         result.addProperty("roomTotal", roomCount);
         result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-
         return result;
     }
 
