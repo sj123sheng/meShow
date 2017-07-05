@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Other">
+	
+	<!-- 发送全站消息  -->
+	<parameterMap id="loudSpeakerMap" class="java.util.Map">
+		<parameter property="roomId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="nickName" mode="IN" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="content" mode="IN" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="href" mode="IN" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="costMoney" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="ticketId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="state" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="type" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="appId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+	</parameterMap>
+	
+	<procedure id="loudSpeaker" parameterMap="loudSpeakerMap"
+		resultClass="java.util.Map">
+		{call P_LOUDSPEAKER_V2(?,?,?,?,?,?,?,?,?,?,?) }
+	</procedure>
+	
+	<!-- 获取联通SP订购关系 -->
+	<typeAlias alias="ResCuSpOrder" type="com.melot.kktv.model.ResCuSpOrder" />
+	<select id="selectResCuSpOrder" parameterClass="java.util.Map" resultClass="ResCuSporder">
+		select * from res_cusp_order where usermob = #usermob#
+	</select>
+	
+	<!-- 判断是否联通3G用户 -->
+	<select id="isCu3gUser" parameterClass="java.util.Map" resultClass="java.lang.Integer">
+		SELECT count(*) FROM conf_cu3g_ip WHERE isopen = 1
+		<isEqual property="platform" compareValue="2">
+			<isEqual property="openLimit" compareValue="1">
+			AND closed = 0
+			</isEqual>
+		</isEqual>
+		<isEqual property="platform" compareValue="3">
+			<isEqual property="openLimit" compareValue="1">
+			AND i_closed = 0
+			</isEqual>
+		</isEqual>
+	    AND <![CDATA[ipbegin < #reqIp#]]> AND <![CDATA[ipend > #reqIp#]]>
+	</select>
+	
+	<!-- 男人装临时接口 -->
+	<parameterMap id="getUserEncodeMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="encode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+	</parameterMap>
+	<procedure id="getUserEncode" parameterMap="getUserEncodeMap" resultClass="java.util.Map">
+		{call p_addUserEncode(?,?) }
+	</procedure>
+	
+	<select id="getUserHadEncode" parameterClass="java.lang.Integer" resultClass="java.lang.String">
+		<![CDATA[
+			SELECT ENCODE
+			  FROM res_temp_user_encode
+			 WHERE user_id = #userId#
+			   AND ROWNUM <= 1
+		]]>
+	</select>
+	
+	<!-- 根据userId和appId 获取用户首充信息 -->
+	<select id="getUserFirstRechargePackageInfo" parameterClass="java.util.Map" resultClass="java.util.HashMap">
+		select 
+  			h.packageid,
+			case
+			  when to_char(h.create_time,'yyyy-mm-dd HH24:MI:SS') <![CDATA[<]]> to_char(sysdate-7,'yyyy-mm-dd HH24:MI:SS') and h.status = 0 then
+			    2
+			  when to_char(h.create_time,'yyyy-mm-dd HH24:MI:SS') >= to_char(sysdate-7,'yyyy-mm-dd HH24:MI:SS') and h.status = 0 then
+			    0
+			else 1 end as status, ORDERID
+			from hist_recharge_package h where h.userid = #userId# and h.appid = #appId#
+			and rownum <![CDATA[<=]]> 1
+	</select>
+	
+	<resultMap class="com.melot.kktv.domain.RechargerPackage" id="packageRechargeMap">
+		<result property="packageId" column="packageid" javaType="java.lang.Integer" jdbcType="INTEGER" />
+		<result property="status" column="status" javaType="java.lang.Integer" jdbcType="INTEGER" />
+		<result property="orderId" column="orderid" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result property="isRecive" column="isrecive" javaType="java.lang.Integer" jdbcType="INTEGER" />
+	</resultMap>
+	<parameterMap class="java.util.Map" id="getUserRechargePackageListMap">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer" jdbcType="INTEGER" />
+		<parameter property="appId" mode="IN" javaType="java.lang.Integer" jdbcType="INTEGER" />
+		<parameter property="tagCode" mode="OUT" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<parameter property="list" mode="OUT" javaType="java.sql.ResultSet" jdbcType="ORACLECURSOR" resultMap="packageRechargeMap" />
+	</parameterMap>
+	<!-- 根据userId和appId 获取用户已获得礼包列表 -->
+	<procedure id="getUserRechargePackageList" parameterMap="getUserRechargePackageListMap">
+		{call p_getrechargerpackagelist(?,?,?,?)}
+	</procedure>
+	
+	<parameterMap class="java.util.Map" id="getUserRechargeTimesMap">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer" jdbcType="INTEGER" />
+		<parameter property="count" mode="OUT" javaType="java.lang.Integer" jdbcType="INTEGER" />
+	</parameterMap>
+	<!-- 获取用户充值次数 -->
+	<procedure id="getUserRechargeTimes" parameterMap="getUserRechargeTimesMap" resultClass="java.lang.Integer">
+		{call p_getuserrechargetimes(?,?)}
+	</procedure>
+	
+	<!-- 修改首充礼包领取状态 -->
+	<update id="updateFirstRechargePackageStatus" parameterClass="java.util.Map">
+		update hist_first_recharge set status = #status# where userid = #userId# and appid = #appId# and packageid = #packageId#
+	</update>
+	
+	<!-- 点歌扣券插点歌信息 -->
+	<parameterMap class="java.util.Map" id="selectSongMap">
+		<parameter property="roomId" mode="IN" javaType="java.lang.Integer" jdbcType="INTEGER"/>
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer" jdbcType="INTEGER"/>
+		<parameter property="songId" mode="IN" javaType="java.lang.Integer" jdbcType="INTEGER"/>
+		<parameter property="ticketId" mode="IN" javaType="java.lang.Integer" jdbcType="INTEGER"/>
+		<parameter property="xmanid" mode="IN" javaType="java.lang.Integer" jdbcType="INTEGER"/>
+		<parameter property="dtime" mode="IN" javaType="java.util.Date" jdbcType="TIMESTAMP"/>
+		
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String" jdbcType="VARCHAR"/>
+	</parameterMap>
+	<procedure id="selectSong" parameterMap="selectSongMap" resultClass="java.lang.String">
+		{ call pack_room_consume.p_songTicket(?,?,?,?,?,?,?) }
+	</procedure>
+	
+	<insert id="insertPlayUser" parameterClass="java.util.Map" >
+	    <selectKey resultClass="java.lang.Integer" keyProperty="apuId" >
+	      select SEQ_CONF_C_ACTIVITY_PLAY_USER.nextval from dual
+	    </selectKey>
+	    insert into CONF_C_ACTIVITY_PLAY_USER (APU_ID, PLAY_ID, USER_ID, CREATE_AID, CREATE_TIME)
+	    select #apuId#, #playId#, #userId#, #userId#, sysdate from dual t
+	    where not exists (select 1 from CONF_C_ACTIVITY_PLAY_USER b where b.PLAY_ID = #playId# and b.USER_ID = #userId#)
+  </insert>
+
+</sqlMap>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<bean id="appId" class="java.lang.String">
+		<constructor-arg type="java.lang.String" value="1" />
+	</bean>
+	
+	<bean id="channelId" class="java.lang.String">
+		<constructor-arg type="java.lang.String" value="100" />
+	</bean>
+	
+	<bean id="httpdir" class="java.lang.String">
+		<constructor-arg type="java.lang.String" value="http://ures.kktv8.com/kktv" />
+	</bean>
+	
+	<bean id="mcmURL" class="java.lang.String">
+		<constructor-arg type="java.lang.String" value="http://10.0.13.33:60000/mcm/" />
+	</bean>
+	
+	<bean id="mfsURL" class="java.lang.String">
+		<constructor-arg type="java.lang.String" value="http://10.0.13.33:60001/mfs/" />
+	</bean>
+	
+	<bean id="versionSavePath" class="java.lang.String">
+		<constructor-arg type="java.lang.String" value="/data/app/upload/apk" />
+	</bean>
+	
+	<bean id="crashSavePath" class="java.lang.String">
+		<constructor-arg type="java.lang.String" value="/data/app/upload/crash" />
+	</bean>
+	
+</beans>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="UserMessage">
+	<!-- 获取用户动态评论消息 -->
+	<resultMap id="NewsComment" class="com.melot.kktv.model.NewsComment">
+		<result property="userId" column="userId" />
+		<result property="userIdBelong" column="belonguserid" />
+		<result property="userIdTarget" column="targetuserid" />
+		<result property="commentId" column="commentId" />
+		<result property="newsId" column="newsId" />
+		<result property="content" column="content" />
+		<result property="commentTime" column="commentTime" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+	</resultMap>
+
+	<parameterMap id="getUserNewsCommentMsgMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer" jdbcType="INTEGER"/>
+		<parameter property="startTime" mode="IN" javaType="java.util.Date" jdbcType="TIMESTAMP"/>
+		<parameter property="lastReadTime" mode="IN" javaType="java.util.Date" jdbcType="TIMESTAMP"/>
+		<parameter property="start" mode="IN" javaType="java.lang.Integer" jdbcType="INTEGER"/>
+		<parameter property="offset" mode="IN" javaType="java.lang.Integer" jdbcType="INTEGER"/>
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<parameter property="commentList" mode="OUT" javaType="java.sql.ResultSet" jdbcType="ORACLECURSOR" resultMap="NewsComment"/>
+		<parameter property="commentTotal" mode="OUT" javaType="java.lang.Integer" jdbcType="INTEGER"/>
+	</parameterMap>
+	<procedure id="getUserNewsCommentMsg" parameterMap="getUserNewsCommentMsgMap"
+		resultClass="java.util.Map">
+		{call p_getUserNewsComentLM_V2(?,?,?,?,?,?,?,?)}
+	</procedure>
+	
+	<parameterMap id="addSystemMessageMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer" 
+			jdbcType="INTEGER"/>
+		<parameter property="desc" mode="IN" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="title" mode="IN" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+	</parameterMap>
+	<procedure id="addSystemMessage" parameterMap="addSystemMessageMap"
+		resultClass="java.util.Map">
+		{call p_addSystemMessage(?,?,?,?)}
+	</procedure>
+	
+	<insert id="insertSystemMessageMsg" parameterClass="java.util.Map">
+		insert into systemmessage (id, type, refid1, refid2, time,describe,title) 
+        values( SEQ_SYSTEMMESSAGE_ID.nextval, #type#, #refId#, #userId#, sysdate, #desc#, #title#)
+	</insert>
+
+</sqlMap>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+    
+<sqlMap namespace="RecommendedMessage">
+	<resultMap class="com.melot.kktv.model.RecommendedMsg" id="RecommendedMsgMap">
+		<result property="msgId" column="msgid"/>
+		<result property="title" column="title" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result property="startTime" column="starttime" javaType="java.util.Date" jdbcType="TIMESTAMP"/>
+		<result property="url" column="url" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result property="imgUrl" column="imgurl" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result property="imgUrlIOS" column="imgurlios" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result property="content" column="content" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result property="activityId" column="activityid"/>
+		<result property="message" column="message" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result property="genDate" column="gendate" javaType="java.util.Date" jdbcType="TIMESTAMP"/>
+		<result property="endDate" column="enddate" javaType="java.util.Date" jdbcType="TIMESTAMP"/>
+		<result property="activityMobileUrl" column="activitymobileurl" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result property="activityUrl" column="activityurl" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result property="topUrl" column="topurl" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result property="topMobileUrl" column="topmobileurl" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result property="topMobileUrlIOS" column="topmobileurlios" javaType="java.lang.String" jdbcType="VARCHAR"/>
+	</resultMap>
+
+	<parameterMap id="getRecMsgParamMap" class="java.util.Map">
+		<parameter property="startTime" mode="IN" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+		<parameter property="start" mode="IN" javaType="java.lang.Integer" jdbcType="INTEGER" />
+		<parameter property="offset" mode="IN" javaType="java.lang.Integer" jdbcType="INTEGER" />
+
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String" jdbcType="VARCHAR" />
+		<parameter property="rcmTotal" mode="OUT" javaType="java.lang.Integer" jdbcType="INTEGER" />
+		<parameter property="rcmList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="RecommendedMsgMap" />
+	</parameterMap>
+	
+	<procedure id="getRecommendedMsgs" parameterMap="getRecMsgParamMap">
+		{call p_getrecommendmessagelist(?,?,?,?,?,?)}
+	</procedure>
+
+	<resultMap class="com.melot.kktv.model.RecommendedMessage" id="RecommendedMessageMap">
+		<result property="msgId" column="msgid"/>
+		<result property="title" column="title" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result property="startTime" column="starttime" javaType="java.util.Date" jdbcType="TIMESTAMP"/>
+		<result property="url" column="url" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result property="imgUrl" column="imgurl" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result property="imgUrlIOS" column="imgurlios" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result property="content" column="content" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result property="rwn" column="rwn" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+	</resultMap>
+
+	<parameterMap id="getRecMessageParamMap" class="java.util.Map">
+		<parameter property="startTime" mode="IN" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+		<parameter property="start" mode="IN" javaType="java.lang.Integer" jdbcType="INTEGER" />
+		<parameter property="offset" mode="IN" javaType="java.lang.Integer" jdbcType="INTEGER" />
+
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String" jdbcType="VARCHAR" />
+		<parameter property="rcmTotal" mode="OUT" javaType="java.lang.Integer" jdbcType="INTEGER" />
+		<parameter property="rcmList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="RecommendedMessageMap" />
+	</parameterMap>
+	
+	<procedure id="getRecommendedMessages" parameterMap="getRecMessageParamMap">
+		{call p_getrecommendmsgslist(?,?,?,?,?,?)}
+	</procedure>
+	
+</sqlMap>

@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Profile">
+
+	<!-- 获取用户荣誉列表 -->
+	<resultMap id="honor" class="com.melot.kktv.model.Honor">
+		<result property="rankType" column="rankType" />
+		<result property="slotType" column="slotType" />
+		<result property="ranking" column="ranking" />
+		<result property="honorTime" column="honorTime" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+	</resultMap>
+
+	<parameterMap id="honorListMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="honorList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="honor" />
+	</parameterMap>
+
+	<procedure id="getHonorList" parameterMap="honorListMap">
+		{call
+		p_getHonorList(?,?,?)}
+	</procedure>
+
+	<!-- 获取用户充值记录列表列表 -->
+	<resultMap id="rechargeRecord" class="com.melot.kktv.model.RechargeRecord">
+		<result property="orderId" column="orderId" />
+		<result property="rechargeTime" column="rechargeTime" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+		<result property="amount" column="amount" javaType="java.lang.Float"
+			jdbcType="FLOAT"/>
+		<result property="miMoney" column="miMoney" javaType="java.lang.Long"
+			jdbcType="BIGINT" />
+		<result property="paymentMode" column="paymentMode" />
+		<result property="state" column="state" />
+		<result property="errCode" column="errcode" />
+		<result property="affirmTime" column="affirmTime" />
+		<result property="modeDesc" column="paymentname" />
+	</resultMap>
+
+	<parameterMap id="getUserChargeListMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="startTime" mode="IN" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+		<parameter property="endTime" mode="IN" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+		<parameter property="pageIndex" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="chargeTotal" mode="OUT" javaType="java.lang.Long"
+			jdbcType="INTEGER" />
+		<parameter property="pageTotal" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="recordList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="rechargeRecord" />
+	</parameterMap>
+
+	<procedure id="getUserChargeList" parameterMap="getUserChargeListMap">
+		{call
+		p_getUserChargeList_v2(?,?,?,?,?,?,?,?)}
+	</procedure>
+
+	<!-- 获取用户消费记录列表列表 -->
+	<resultMap id="consumerRecord" class="com.melot.kktv.model.ConsumerRecord">
+		<result property="consumerTime" column="dtime" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+		<result property="consumerType" column="ntype" />
+		<result property="amount" column="amount" />
+		<result property="typeDesc" column="typeDesc" />
+		<result property="product" column="product" />
+		<result property="count" column="count" />
+	</resultMap>
+
+	<parameterMap id="getUserConsumerListMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="startTime" mode="IN" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+		<parameter property="endTime" mode="IN" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+		<parameter property="pageIndex" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="consumerTotal" mode="OUT" javaType="java.lang.Long"
+			jdbcType="BIGINT" />
+		<parameter property="pageTotal" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="recordList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="consumerRecord" />
+	</parameterMap>
+
+	<procedure id="getUserConsumerList" parameterMap="getUserConsumerListMap">
+		{call
+		p_getUserConsumerList(?,?,?,?,?,?,?,?)}
+	</procedure>
+
+	<!-- 获取用户送出的礼物列表 -->
+	<resultMap id="giftRecord" class="com.melot.kktv.model.GiftRecord">
+		<result property="userId" column="receiverId" />
+		<result property="giftId" column="giftId" />
+		<result property="giftName" column="giftName" />
+		<result property="unit" column="unit" />
+		<result property="sendPrice" column="sendPrice" />
+		<result property="rsvPrice" column="rsvPrice" />
+		<result property="count" column="count" />
+		<result property="sendTime" column="sendTime" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+		<result property="xmanNick" column="xmanNick"/>
+		<result property="xmanId" column="xmanId"/>
+	</resultMap>
+
+	<parameterMap id="getUserSendGiftListMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="startTime" mode="IN" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+		<parameter property="endTime" mode="IN" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+		<parameter property="pageIndex" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="pageTotal" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="recordList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="giftRecord" />
+	</parameterMap>
+
+	<procedure id="getUserSendGiftList" parameterMap="getUserSendGiftListMap">
+		{call
+		P_GETUSERSENDGIFTLIST_V2(?,?,?,?,?,?,?)}
+	</procedure>
+
+	<!-- 获取商城车市中的车辆列表 -->
+	<resultMap class="com.melot.kktv.model.Car" id="carInfoMap">
+		<result property="carid" column="carid" />
+		<result property="name" column="name" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<result property="photo" column="photo" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<result property="icon" column="icon" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<result property="orignalPrice" column="originalprice" javaType="java.lang.Long"
+			jdbcType="BIGINT" />
+		<result property="nowPrice" column="nowprice" javaType="java.lang.Long"
+			jdbcType="BIGINT" />
+		<result property="ifLimit" column="iflimit" />
+	</resultMap>
+
+	<parameterMap class="java.util.Map" id="getCarListMap">
+		<parameter property="pageIndex" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="numPerPage" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="orderBy" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="sortMode" mode="IN" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="category" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="PageTotal" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="CarList" mode="OUT" javaType="java.sql.ResultSet"
+			jdbcType="ORACLECURSOR" resultMap="carInfoMap" />
+	</parameterMap>
+
+	<procedure id="getCarList" parameterMap="getCarListMap">
+		{call
+		p_getCarList(?,?,?,?,?,?,?,?)}
+	</procedure>
+
+	<!-- 获取车辆基本信息 -->
+	<parameterMap class="java.util.Map" id="getCarInfoMap">
+		<parameter property="carId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="name" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="photo" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="icon" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="origPrice" mode="OUT" javaType="java.lang.Long"
+			jdbcType="BIGINT" />
+		<parameter property="nowPrice" mode="OUT" javaType="java.lang.Long"
+			jdbcType="BIGINT" />
+		<parameter property="ifLimit" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="hasSold" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="category" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+	</parameterMap>
+
+	<procedure id="getCarInfo" parameterMap="getCarInfoMap">
+		{call
+		p_getcarinfo(?,?,?,?,?,?,?,?,?,?)}
+	</procedure>
+
+	<!-- 获取用户直播记录列表 -->
+	<resultMap id="liveRecord" class="com.melot.kktv.model.LiveRecord">
+		<result property="startTime" column="startTime" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+		<result property="endTime" column="endTime" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+	</resultMap>
+
+	<parameterMap id="getUserLiveListMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="startTime" mode="IN" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+		<parameter property="endTime" mode="IN" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+		<parameter property="pageIndex" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="pageTotal" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="recordList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="liveRecord" />
+	</parameterMap>
+
+	<procedure id="getUserLiveList" parameterMap="getUserLiveListMap">
+		{call
+		p_getUserLiveList(?,?,?,?,?,?,?)}
+	</procedure>
+
+	<!-- 获取用户中奖记录列表 -->
+	<resultMap id="winLotteryRecord" class="com.melot.kktv.model.WinLotteryRecord">
+		<result property="time" column="time" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+		<result property="giftId" column="giftId" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<result property="winType" column="winType" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<result property="times" column="times" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<result property="count" column="count" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+	</resultMap>
+
+	<parameterMap id="getUserWinLotteryListMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="startTime" mode="IN" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+		<parameter property="endTime" mode="IN" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+		<parameter property="pageIndex" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="countPerPage" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="pageTotal" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="recordList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="winLotteryRecord" />
+	</parameterMap>
+
+	<procedure id="getUserWinLotteryList" parameterMap="getUserWinLotteryListMap">
+		{call
+		p_getUserWinLotteryList(?,?,?,?,?,?,?,?)}
+	</procedure>
+	
+	<!-- 用户是否充值过秀币 -->
+	<parameterMap id="whetherRechargedMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+	</parameterMap>
+	<procedure id="whetherRecharged" parameterMap="whetherRechargedMap" resultClass="java.util.Map">
+		{call p_whetherRecharged(?,?)}
+	</procedure>
+	
+	<!-- 获取指定礼物指定时间内按一定比例获取到的消耗值 -->
+	<select id="getConsumGiftPool" parameterClass="java.util.Map" resultClass="java.lang.Long">
+		SELECT nvl(SUM(t.amount),0) sumVal FROM gift_history t 
+		WHERE t.dtime >= #startTime# 
+		<isNotNull prepend="and" property="endTime">
+			<![CDATA[ t.dtime <= #endTime# ]]>
+		</isNotNull>
+		<isGreaterThan prepend="and" property="giftId" compareValue="0">
+			t.giftid = #giftId#
+		</isGreaterThan>
+	</select>
+	
+	<resultMap class="com.melot.kktv.model.BuyProperties" id="buyPropertiesRecord">
+		<result property="typeDesc" column="describe"/>
+		<result property="type" column="type" />
+		<result property="paymentMode" column="paymentmode" />
+		<result property="paymentDesc" column="paymentname" />
+		<result property="amount" column="amount" />
+		<result property="consumeTime" column="rechargeTime" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+		<result property="showMoney" column="mimoney" />
+	</resultMap>
+	
+	<parameterMap class="java.util.Map" id="getUserBuyPropertiesListMap">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="startTime" mode="IN" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+		<parameter property="endTime" mode="IN" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+		<parameter property="pageIndex" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+			
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="pageTotal" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="recordList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="buyPropertiesRecord" />
+	</parameterMap>
+	<!-- 获取用户现金消费列表 -->
+	<procedure id="getUserBuyPropertiesList" parameterMap="getUserBuyPropertiesListMap">
+	{call
+		p_getUserBuyPropertiesList(?,?,?,?,?,?,?)}
+	</procedure>
+</sqlMap>

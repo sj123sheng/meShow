@@ -1,0 +1,522 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="News">
+	
+	<!-- 删除动态 -->
+	<parameterMap id="deleteNewsMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="newsId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="newsId" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="content" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="publishedTime" mode="OUT" javaType="java.util.Date"
+		    jdbcType="TIMESTAMP" />
+		<parameter property="newsType" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="resourceUrl" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="commentCount" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="rewardCount" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="mediaSource" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+	</parameterMap>
+
+	<procedure id="deleteNews" parameterMap="deleteNewsMap">
+		{call
+		p_deleteNews(?,?,?,?,?,?,?,?,?,?,?)}
+	</procedure>
+
+	<!-- 获取用户动态列表 -->
+	<resultMap id="news" class="com.melot.kktv.model.News">
+		<result property="userId" column="userId" />
+		<result property="newsId" column="newsId" />
+		<result property="content" column="content" />
+		<result property="publishedTime" column="publishedTime"
+			javaType="java.util.Date" jdbcType="TIMESTAMP" />
+		<result property="newsType" column="newsType" />
+		<result property="resourceId" column="resourceId" />
+		<result property="resourceUrl" column="resourceUrl" />
+		<result property="commentCount" column="commentCount" />
+		<result property="rewardCount" column="rewardCount" />
+		<result property="mediaSource" column="mediaSource" />
+	</resultMap>
+
+	<!-- 获取用户动态列表 -->
+	<resultMap id="newsNew" class="com.melot.kktv.model.News">
+		<result property="userId" column="userId" />
+		<result property="newsId" column="newsId" />
+		<result property="content" column="content" />
+		<result property="publishedTime" column="publishedTime"
+			javaType="java.util.Date" jdbcType="TIMESTAMP" />
+		<result property="newsType" column="newsType" />
+		<result property="resourceId" column="resourceId" />
+		<result property="resourceUrl" column="resourceUrl" />
+		<result property="commentCount" column="commentCount" />
+		<result property="rewardCount" column="rewardCount" />
+		<result property="mediaSource" column="mediaSource" />
+		<result property="mediaFrom" column="mediafrom" />
+	</resultMap>
+	
+	<parameterMap id="getUserNewsListMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="inRoom" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="pageIndex" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="countPerPage" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="version" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="platform" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+			
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="pageTotal" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="newsList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="news" />
+	</parameterMap>
+
+	<procedure id="getUserNewsList" parameterMap="getUserNewsListMap">
+		{call
+		p_getUserNewsList_V2(?,?,?,?,?,?,?,?,?)}
+	</procedure>
+	
+		<parameterMap id="getUserNewsListNewMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="inRoom" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="pageIndex" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="countPerPage" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="platform" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="isSelf" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+			
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="pageTotal" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="newsList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="newsNew" />
+	</parameterMap>
+
+	<procedure id="getUserNewsListNew" parameterMap="getUserNewsListNewMap">
+		{call
+		p_getUserNewsListNew_V2(?,?,?,?,?,?,?,?,?)}
+	</procedure>
+
+	<!-- 删除动态 的评论 -->
+	<parameterMap id="deleteNewsCommentMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="commentId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="newsId" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+	</parameterMap>
+
+	<procedure id="deleteNewsComment" parameterMap="deleteNewsCommentMap">
+		{call
+		p_deleteNewsComment(?,?,?,?)}
+	</procedure>
+
+	<!-- 获取动态评论列表 -->
+	<resultMap id="NewsComment" class="com.melot.kktv.model.NewsComment">
+		<result property="userId" column="userId" />
+		<result property="commentId" column="commentId" />
+		<result property="newsId" column="newsId" />
+		<result property="content" column="content" />
+		<result property="commentTime" column="commentTime" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+	</resultMap>
+
+	<parameterMap id="getUserNewsCommentListMap" class="java.util.Map">
+		<parameter property="newsId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="start" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="offset" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="commentList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="NewsComment" />
+		<parameter property="commentTotal" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+	</parameterMap>
+
+	<procedure id="getUserNewsCommentList" parameterMap="getUserNewsCommentListMap">
+		{call
+		p_getUserNewsCommentList_v2(?,?,?,?,?,?)}
+	</procedure>
+
+	<!-- 获取消息提醒简要信息 -->
+	<parameterMap id="getUserMessageMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="commentCount" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="newFansCount" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="sysMsgCount" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+	</parameterMap>
+
+	<procedure id="getUserMessage" parameterMap="getUserMessageMap">
+		{call
+		p_getUserMessage(?,?,?,?,?)}
+	</procedure>
+
+	<!-- 获取新评论的动态列表 -->
+	<parameterMap id="getUserBeenCommentedListMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="pageIndex" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="pageTotal" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="commentList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="NewsComment" />
+	</parameterMap>
+
+	<procedure id="getUserBeenCommentedList" parameterMap="getUserBeenCommentedListMap">
+		{call
+		p_getUserBeenCommentedList_V2(?,?,?,?,?)}
+	</procedure>
+
+	<!-- 获取用户系统消息列表 -->
+	<resultMap id="sysMsg" class="com.melot.kktv.model.SysMsg">
+		<result property="msgId" column="msgId" />
+		<result property="userId" column="userId" />
+		<result property="content" column="content" />
+		<result property="dTime" column="dTime" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+	</resultMap>
+
+	<parameterMap id="getUserSysMsgListMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="messageList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="sysMsg" />
+	</parameterMap>
+
+	<procedure id="getUserSysMsgList" parameterMap="getUserSysMsgListMap">
+		{call
+		p_getUserSysMsgList(?,?,?)}
+	</procedure>
+
+	<!-- 清除系统消息 -->
+	<parameterMap id="clearSysMsgMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="msgId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+	</parameterMap>
+
+	<procedure id="clearSysMsg" parameterMap="clearSysMsgMap">
+		{call
+		p_clearSysMsg(?,?,?)}
+	</procedure>
+	
+	<!-- 根据动态Id获取动态的详细信息 -->
+	<resultMap id="newsInfo" class="com.melot.kktv.model.News">
+		<result property="userId" column="userId" />
+		<result property="newsId" column="newsId" />
+		<result property="content" column="content" />
+		<result property="publishedTime" column="publishedTime"
+			javaType="java.util.Date" jdbcType="TIMESTAMP" />
+		<result property="newsType" column="newsType" />
+		<result property="resourceId" column="resourceId" />
+		<result property="resourceUrl" column="resourceUrl" />
+		<result property="commentCount" column="commentCount" />
+		<result property="rewardCount" column="rewardCount" />
+		<result property="mediaSource" column="mediaSource" />
+		<result property="mediaFrom" column="mediafrom" />
+	</resultMap>
+	
+	<resultMap id="rewardInfo" class="com.melot.kktv.model.News">
+		<result property="userId" column="userId" />
+		<result property="rewardCount" column="rewardCount" />
+	</resultMap>
+	<parameterMap id="getNewsInfoByNewsIdMap" class="java.util.Map">
+		<parameter property="newsId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="version" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="newsInfo" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="newsInfo" />
+		<parameter property="rewardInfo" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="rewardInfo" />
+		<parameter property="totalRewarders" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+	</parameterMap>
+	
+	<procedure id="getNewsInfoByNewsId" parameterMap="getNewsInfoByNewsIdMap">
+		{call
+		p_getNewsInfoByNewsId_V2(?,?,?,?,?,?)}
+	</procedure>
+	
+	<!-- 获取发现动态\kk推荐动态 -->
+	<resultMap id="MediaNewsInfo" class="com.melot.kktv.model.News">
+		<result property="userId" column="userid" />
+		<result property="newsId" column="newsid" />
+		<result property="newsType" column="newsType" />
+		<result property="content" column="content" />	
+		<result property="publishedTime" column="publishedtime"
+			javaType="java.util.Date" jdbcType="TIMESTAMP" />
+		<result property="commentCount" column="commentcount" />
+		<result property="mediaSource" column="mediasource"/>
+		<result property="resourceUrl" column="resourceurl"/>
+		<result property="resourceId" column="resourceid"/>
+		<result property="rewardCount" column="rewardcount" />
+		<result property="mediaTitle" column="media_title" />
+		<result property="viewTimes" column="viewtimes" />
+		<result property="mediaFrom" column="mediafrom" />
+	</resultMap>
+	
+	<!-- 打赏 -->
+	<parameterMap id="rewardNewsMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="newsId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="rewardCount" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="rewardCost" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="rewardText" mode="IN" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+			
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="rewardId" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="ownNewsUser" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="getMoney" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="rewardCount" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="commentCount" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+	</parameterMap>
+	
+	<procedure id="addRewardOnNews" parameterMap="rewardNewsMap">
+		{call
+		p_rewardNews(?,?,?,?,?,?,?,?,?,?,?)}
+	</procedure>
+	
+	<!-- Top20 -->
+	<resultMap id="UserInfoOnNews" class="com.melot.kktv.model.News">
+		<result property="userId" column="userid" />
+		<result property="rewardCount" column="rewardcount" />
+	</resultMap>
+	<parameterMap id="UserInfoOnNewsMap" class="java.util.Map">
+		<parameter property="newsId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />			
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="topRewardUsers" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="UserInfoOnNews" />
+	</parameterMap>
+	
+	<procedure id="getTopUsersOnRewardNews" parameterMap="UserInfoOnNewsMap">
+		{call
+		p_getTopOnRewardUserNewList_V2(?,?,?)}
+	</procedure>
+	
+	<resultMap class="com.melot.kktv.model.News" id="MediaNewsInfo2" extends="MediaNewsInfo">
+			<result property="customScore" column="customscore" />
+	</resultMap>
+	<!-- 发现动态(kk推荐) -->
+	<select id="getHotFactorNewsList" parameterClass="java.util.Map" resultMap="MediaNewsInfo2">
+		 SELECT un.userid, un.newsid, un.newstype, un.content, un.publishedtime, un.commentcount, un.mediasource,
+          un.resourceurl, un.resourceid, un.rewardcount, un.media_title, nvl(un.customscore, 0) as customscore,
+          un.viewtimes, un.mediafrom FROM user_news un where un.state = 1 and un.mediasource is not null 
+        		<isEqual prepend="and" property="includeQiniu" compareValue="0">
+        			un.mediafrom = 1
+        		</isEqual> 
+        			and un.newsid in
+				<iterate open="(" close=")" conjunction="," property="newsIdList">  
+            		#newsIdList[]#
+        		</iterate>
+	</select>
+	
+	<!-- 关注用户的动态 -->
+	<select id="getFocusUserNewsList" parameterClass="java.util.Map" resultMap="MediaNewsInfo">
+		SELECT b.*
+       		FROM (SELECT a.*, rownum rwn
+                FROM (SELECT m.userid, m.newsid, m.newstype, m.content, m.publishedtime, m.commentcount,
+                          m.mediasource, m.resourceurl, m.resourceid, m.rewardcount, m.media_title, m.viewtimes, m.mediafrom
+                        FROM (SELECT un.userid, un.newsid, un.content, un.publishedtime, un.commentcount, un.mediasource,
+                                 un.resourceurl, un.resourceid, un.rewardcount, un.newstype, un.media_title, un.viewtimes, un.mediafrom
+                                FROM user_news un
+                                 WHERE un.userid IN
+                                     (SELECT uf.followedid FROM user_follow uf  WHERE uf.userid = #userId#)
+                                      AND  un.state =1 and (un.mediasource is not null or un.resourceurl is not null)
+                                      <isEqual prepend="and" property="includeQiniu" compareValue="0">
+                                      		un.mediafrom = 1
+                                      </isEqual>
+                                union all
+                                 SELECT un.userid, un.newsid, un.content, un.publishedtime, un.commentcount,
+                                     un.mediasource, un.resourceurl, un.resourceid, un.rewardcount, un.newstype, un.media_title, un.viewtimes, un.mediafrom
+                                  FROM user_news un
+                                   WHERE un.userid  = #userId#  AND (un.state =1 or un.state =3)
+                                   AND (un.mediasource is not null or un.resourceurl is not null)
+                                     <isEqual prepend="and" property="includeQiniu" compareValue="0">
+                                      	 un.mediafrom = 1
+                                     </isEqual>
+                              ) m ORDER BY m.publishedtime DESC) a
+            <![CDATA[  
+			WHERE rownum <= #max#) b
+       WHERE b.rwn > #min# ]]>
+	</select>
+	
+	<!-- 获取关注用户动态总数 -->
+   <select id="getTotalFocusUserNews" parameterClass="java.util.Map" resultClass="java.lang.Integer">
+	 	SELECT sum(total) from (
+			SELECT nvl(COUNT(un.newsid),0) as total FROM user_news un, user_follow uf 
+   				 WHERE un.userid = uf.followedid AND uf.userid = #userId# 
+      				 AND (un.mediasource is not null or un.resourceurl is not null) AND un.state =1 
+      				 	<isEqual property="includeQiniu" prepend="and" compareValue="0">
+      				 		un.mediafrom = 1
+      				 	</isEqual>
+   		 UNION ALL       
+    		SELECT nvl(COUNT(un.newsid),0) as total from user_news un where un.userid = #userId# and (un.state = 1 or un.state = 3) 
+          		 AND (un.mediasource is not null or un.resourceurl is not null)
+	          		 <isEqual prepend="and" property="includeQiniu" compareValue="0">
+	                       un.mediafrom = 1
+	                 </isEqual>
+                 )
+	</select>
+	
+	<!-- 编辑动态视频标题 -->
+	<update id="updateVideoTitle" parameterClass="java.util.Map">
+		update user_news un set un.media_title = #newsTitle# where un.newsid = #newsId#
+	</update>
+	
+	<!-- 根据条件查询热拍信息 -->
+	<select id="getRePaiNewsInfoByParams" parameterClass="java.util.Map" resultMap="MediaNewsInfo2">
+	    SELECT d.* from (
+			SELECT c.*, rownum rwn from ( 
+				select newsid, userid, newstype, content, publishedtime, commentcount, mediasource, resourceurl, resourceid, rewardcount, 
+		         nickname, gender, media_title, nvl(customscore, 0) as customscore, viewtimes, mediafrom from
+		          (select un.newsid, un.isrepai, un.userid, un.newstype, un.content, un.publishedtime, un.commentcount, un.mediasource, 
+		                  un.resourceurl, un.resourceid, un.rewardcount, un.viewtimes, un.customscore,un.media_title, ai.actorid, un.mediafrom
+		             from user_news un 
+		               left join actor_info ai on un.userid = ai.actorid
+		               <isNotNull property="tagId">
+			                join (select rnt.newsid from conf_news_tag cnt, res_news_tag rnt 
+			                  	where cnt.tagid = rnt.tag_id and cnt.tagid = #tagId# ) a on a.newsid = un.newsid
+			           </isNotNull> where un.state = 1 and un.newstype in (0,1,8) and un.mediasource is not null
+		               <isNotNull prepend="and" property="userId">
+		               	    un.userid = #userId#
+		               </isNotNull>
+		               <isNotNull prepend="and" property="newsId">
+		               	    un.newsid = #newsId#
+		               </isNotNull>
+		               <isNotNull prepend="and" property="keywords">
+		               	    un.content like '%'||#keywords#||'%'
+		               </isNotNull>
+		               <isNotNull property="mediaType" prepend="and">
+		               		substr(mediasource,instr(un.mediasource,'"mediaType":',1,1)+12,1) = to_char(#mediaType#)
+			  		   </isNotNull>
+			  		   <isEqual prepend="and" property="includeQiniu" compareValue="0">
+			  		   		un.mediafrom = 1
+			  		   </isEqual>
+		            ) t where t.isrepai = 1
+		                 ORDER BY publishedtime DESC) c
+            WHERE <![CDATA[ rownum <= #max# ]]>) d
+        WHERE d.rwn > #min#
+	</select>
+
+	<!-- 获取热拍动态类型视频总数 --> 
+	<select id="getHotNewsCount" parameterClass="java.util.Map" resultClass="java.lang.Integer">
+		select nvl(count(newsid), 0) as newsCount from
+              (select un.newsid, un.userid, un.publishedtime, un.isrepai
+                 from user_news un 
+                   <isNotNull property="tagId">
+                      join (select rnt.newsid from conf_news_tag cnt, res_news_tag rnt 
+                          where cnt.tagid = rnt.tag_id and cnt.tagid = #tagId# ) a on a.newsid = un.newsid
+                   </isNotNull> where un.state = 1 and un.newstype in (0,1,8) and un.mediasource is not null
+                   <isNotNull property="mediaType" prepend="and">
+                        substr(mediasource,instr(un.mediasource,'"mediaType":',1,1)+12,1) = to_char(#mediaType#)
+                   </isNotNull> 
+                   <isNotNull property="newsId" prepend="and">
+						un.newsid = #newsId#
+			       </isNotNull>
+			       <isNotNull prepend="and" property="keywords">
+		               	un.content like '%'||#keywords#||'%'
+		           </isNotNull>
+		           <isNotNull prepend="and" property="userId">
+		               	un.userid = #userId#
+		           </isNotNull>
+                ) t where t.isrepai = 1
+	</select>
+	
+	<!-- 获得未读新动态数量 -->
+	<select id="getNewsNumbyLasttime" parameterClass="java.util.Map" resultClass="java.lang.Integer">
+		select count(*) from user_news un
+            where un.userid in (select uf.followedid from user_follow uf  where uf.userid = #userId#) 
+            and un.state = 1 and (un.mediasource is not null or un.resourceurl is not null) and un.publishedtime > to_date(#lastNewsTime#,'yyyymmddhh24miss')   
+            
+	</select>
+	
+	<resultMap id="newsInfoMap" class="com.melot.kktv.model.News">
+		<result property="newsId" column="newsid" />
+		<result property="userId" column="userid" />
+		<result property="content" column="content" />	
+		<result property="publishedTime" column="publishedtime"
+			javaType="java.util.Date" jdbcType="TIMESTAMP" />
+		<result property="newsType" column="newsType" />
+		<result property="mediaSource" column="mediasource"/>
+		<result property="commentCount" column="commentcount" />
+		<result property="rewardCount" column="rewardcount" />
+		<result property="mediaTitle" column="media_title" />
+		<result property="viewTimes" column="viewtimes" />
+		<result property="mediaFrom" column="mediafrom" />
+	</resultMap>
+	<!-- 获取动态信息 -->
+	<select id="getNewsInfo" parameterClass="java.lang.Integer" resultMap="newsInfoMap">
+		select newsid, userid, content, publishedtime, newstype, mediasource, 
+		 commentcount, rewardcount, media_title, viewtimes, mediafrom 
+			from user_news un where un.newsId = #newsId# and <![CDATA[ un.state <> 2 ]]>
+	</select>
+	
+</sqlMap>

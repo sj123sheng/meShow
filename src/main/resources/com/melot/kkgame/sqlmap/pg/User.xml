@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="User">
+	
+	<typeAlias alias="gameUserInfo" type="com.melot.kkgame.domain.GameUserInfo"/>
+	<typeAlias alias="giftInfo" type="com.melot.kkgame.domain.GiftInfo"/>
+	
+	<!-- 获得KK直播 主播用户信息 -->
+	<select id="getUserActorInfoByUserId" parameterClass="java.lang.Integer" resultClass="gameUserInfo">
+		select 
+			i_user_id as userId, 
+			o_kg_snd_value as sendValue, 
+		    o_kg_rsv_value as receiveValue, 
+			o_kg_rsv_cloud as receiveCloud, 
+			o_kg_snd_cloud as sendCloud, 
+			o_level as actorLevel
+		from 
+			kkgame.p_kg_user_info_getbyuserid(#userId#)
+	</select>
+	
+	<select id="getWeekStarGiftInfoByTime" parameterClass="java.util.Date" resultClass="giftInfo">
+		<![CDATA[
+			SELECT 
+				giftid  as giftId,
+				giftname    as giftName,
+				catalogid   as catalogId,
+				isexclusive as isExclusive,
+				unit as unit,
+				sendprice as sendPrice,
+				gifttype as giftType,
+				rsvprice as rsvPrice,
+				luxury as luxury,
+				valid as valid,
+				odds as odds,
+				add_rich as addRich,
+				add_actor as addActor,
+				rsv_type as rsvType
+			FROM
+				kkgame.p_kg_gift_info_getweekstargift(#date#)
+		]]>
+	</select>
+	
+</sqlMap>

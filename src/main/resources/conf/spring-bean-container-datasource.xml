@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<bean id="mongoClientAgent" class="com.melot.kktv.util.mongodb.MongoClientAgent" destroy-method="freeInstance" lazy-init="true" >
+	</bean>
+	<bean id="commonDB" class="com.melot.kktv.util.mongodb.MongoDBInstance" destroy-method="destroy" lazy-init="true">
+		<constructor-arg name="mongoClientAgent" ref="mongoClientAgent" />
+		<constructor-arg name="dbName" value="meshow" />
+		<constructor-arg name="commMongoIPPort" value="mons.kktv2.com:4001" />
+	</bean>
+	<bean id="cacheDB" class="com.melot.kktv.util.mongodb.MongoDBInstance" destroy-method="destroy" lazy-init="true">
+		<constructor-arg name="mongoClientAgent" ref="mongoClientAgent" />
+		<constructor-arg name="dbName" value="meshowcache" />
+		<constructor-arg name="commMongoIPPort" value="mons.kktv2.com:4001" />
+	</bean>
+
+	<!-- DBMS -->
+	<bean id="dataSource_master" class="org.springframework.jndi.JndiObjectFactoryBean" lazy-init="true">
+		<property name="jndiName" value="java:comp/env/jdbc/oracle_master" />
+	</bean>
+	
+	<bean id="dataSource_backup" class="org.springframework.jndi.JndiObjectFactoryBean" lazy-init="true">
+		<property name="jndiName" value="java:comp/env/jdbc/oracle_slave" />
+	</bean>
+	
+	<bean id="dataSource_pg_master" class="org.springframework.jndi.JndiObjectFactoryBean" lazy-init="true">
+		<property name="jndiName" value="java:comp/env/jdbc/pg_master" />
+	</bean>
+	
+	<bean id="dataSource_pg_slave" class="org.springframework.jndi.JndiObjectFactoryBean" lazy-init="true">
+		<property name="jndiName" value="java:comp/env/jdbc/pg_slave" />
+	</bean>
+	
+	<bean id="dataSource_pg_kkgame" class="org.springframework.jndi.JndiObjectFactoryBean" lazy-init="true">
+		<property name="jndiName" value="java:comp/env/jdbc/pg_kkgame" />
+	</bean>
+	
+	<bean id="dataSource_pg_kkcx" class="org.springframework.jndi.JndiObjectFactoryBean" lazy-init="true">
+		<property name="jndiName" value="java:comp/env/jdbc/pg_kkcx" />
+	</bean>
+	
+</beans>

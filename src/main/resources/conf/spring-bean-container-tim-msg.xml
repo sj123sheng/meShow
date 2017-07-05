@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd  
+                http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd  
+                http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
+
+	<bean id="timMsgList" class="com.melot.kkcx.model.TimMsgList">
+		<property name="list">
+			<map>
+				<entry key="register" value-ref="registerList" />
+			</map>
+		</property>
+	</bean>
+
+	<!-- 注册 -->
+	<bean id="registerList" class="com.melot.kkcx.model.TimMsg">
+		<property name="msgKey" value="register" />
+		<property name="admin" value="bang_0" />
+		<property name="msg">
+			<value><![CDATA[{"goto":{"type":0,"title":"","param":{},"url":""},"message":"KK君等你好久啦~如果在体验唱响直播的过程中有任何建议或意见，请尽情骚扰我！"}]]></value>
+		</property>
+		<property name="errorMsg">
+			<value><![CDATA[]]></value>
+		</property>
+	</bean>
+
+</beans>

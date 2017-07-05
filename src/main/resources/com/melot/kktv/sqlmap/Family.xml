@@ -1,0 +1,431 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Family">
+
+	<!-- 家族成员 -->
+	<resultMap id="Member" class="com.melot.kktv.model.FamilyMember">
+		<result property="familyId" column="familyId" />
+		<result property="memberId" column="memberId" />
+		<result property="userId" column="userId" />
+		<result property="portrait_path_original" column="portrait_path_original" />
+		<result property="portrait_path_1280" column="portrait_path_1280" />
+		<result property="portrait_path_256" column="portrait_path_256" />
+		<result property="portrait_path_128" column="portrait_path_128" />
+		<result property="portrait_path_48" column="portrait_path_48" />
+		<result property="memberGrade" column="memberGrade" />
+		<result property="joinDate" column="joinTime" />
+	</resultMap>
+	
+	<!-- 家族申请人 -->
+	<resultMap id="Applicant" class="com.melot.kktv.model.FamilyApplicant">
+		<result property="familyId" column="familyId" />
+		<result property="userId" column="userId" />
+		<result property="nickname" column="nickname" />
+		<result property="portrait_path_original" column="portrait_path_original" />
+		<result property="portrait_path_1280" column="portrait_path_1280" />
+		<result property="portrait_path_256" column="portrait_path_256" />
+		<result property="portrait_path_128" column="portrait_path_128" />
+		<result property="portrait_path_48" column="portrait_path_48" />
+		<result property="actorTag" column="actorTag" />
+		<result property="applyState" column="applyState" />
+		<result property="applyTime" column="applyTime" />
+		<result property="baseNumber" column="baseNumber" />
+		<result property="introductionWay" column="introductionWay" />
+	</resultMap>
+
+	<!-- 家族擂台赛主播排行榜 -->
+	<resultMap id="FamilyMatchActorRank" class="com.melot.kktv.model.FamilyMatchRank">
+		<result property="familyId" column="familyId" />
+		<result property="familyName" column="familyName" />
+		<result property="userId" column="userId" />
+		<result property="nickname" column="nickname" />
+		<result property="giftScore" column="giftScore" />
+		<result property="giftCount" column="giftCount" />
+		<result property="fansScore" column="fansScore" />
+		<result property="fansCount" column="fansCount" />
+		<result property="raterScore" column="raterScore" />
+		<result property="rank" column="rank" />
+		<result property="portrait_path_original" column="path_original" />
+		<result property="portrait_path_1280" column="path_1280" />
+		<result property="portrait_path_256" column="path_256" />
+		<result property="portrait_path_128" column="path_128" />
+		<result property="portrait_path_48" column="path_48" />
+		<result property="vipScore" column="vipscore" />
+		<result property="vipCount" column="vipcount" />
+	</resultMap>
+	
+	<!-- 家族擂台赛用户排行榜 -->
+	<resultMap id="FamilyMatchUserRank" class="com.melot.kktv.model.FamilyMatchRank">
+		<result property="userId" column="userId" />
+		<result property="nickname" column="nickname" />
+		<result property="rank" column="rank" />
+		<result property="giftCount" column="giftCount" />
+		<result property="portrait_path_original" column="path_original" />
+		<result property="portrait_path_1280" column="path_1280" />
+		<result property="portrait_path_256" column="path_256" />
+		<result property="portrait_path_128" column="path_128" />
+		<result property="portrait_path_48" column="path_48" />
+	</resultMap>
+	
+	<!-- 家族擂台赛家族冠军榜 -->
+	<resultMap id="FamilyMatchFamilyChampion" class="com.melot.kktv.model.FamilyMatchChampion">
+		<result property="familyId" column="familyId" />
+		<result property="familyName" column="familyName" />
+		<result property="familyPoster" column="familyPoster" />
+		<result property="tops" column="NB_ONE_TIMES" />
+	</resultMap>
+	
+	<!-- 家族擂台赛富豪冠军榜 -->
+	<resultMap id="FamilyMatchRichChampion" class="com.melot.kktv.model.FamilyMatchChampion">
+		<result property="userId" column="userId" />
+		<result property="nickname" column="nickname" />
+		<result property="tops" column="nb_one_times" />
+		<result property="portrait_path_original" column="path_original" />
+		<result property="portrait_path_1280" column="path_1280" />
+		<result property="portrait_path_256" column="path_256" />
+		<result property="portrait_path_128" column="path_128" />
+		<result property="portrait_path_48" column="path_48" />
+	</resultMap>
+	
+	<!-- 家族擂台赛蝉联冠军 -->
+	<resultMap id="FamilyMatchContinueChampion" class="com.melot.kktv.model.FamilyMatchChampion">
+		<result property="familyId" column="familyId" />
+		<result property="familyName" column="familyName" />
+		<result property="userId" column="userId" />
+		<result property="nickname" column="nickname" />
+		<result property="continues" column="continue_nb_one" />
+		<result property="portrait_path_original" column="path_original" />
+		<result property="portrait_path_1280" column="path_1280" />
+		<result property="portrait_path_256" column="path_256" />
+		<result property="portrait_path_128" column="path_128" />
+		<result property="portrait_path_48" column="path_48" />
+	</resultMap>
+	
+	<!-- 获取家族管理成员列表 -->
+	<parameterMap id="managerListMap" class="java.util.Map">
+		<parameter property="familyId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+			
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="memberList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="Member" />
+	</parameterMap>
+	
+	<procedure id="getFamilyManagerList" parameterMap="managerListMap">
+		{call p_getfamilymanagerlist_V2(?,?,?)}
+	</procedure>
+	
+	<!-- 获取家族成员列表 -->
+	<parameterMap id="memberListMap" class="java.util.Map">
+		<parameter property="familyId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="actorTag" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="idString" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="fuzzyString" mode="IN" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="pageIndex" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="countPerPage" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+			
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="total" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="memberList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="Member" />
+	</parameterMap>
+
+	<procedure id="getFamilyMemberList" parameterMap="memberListMap">
+		{call pack_family_v2.p_getFamilyMemberList(?,?,?,?,?,?,?,?,?)}
+	</procedure>
+	
+	<!-- 获取家族申请用户列表 -->
+	<parameterMap id="applicantListMap" class="java.util.Map">
+		<parameter property="familyId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="actorTag" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="applyState" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="idString" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="fuzzyString" mode="IN" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="pageIndex" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="countPerPage" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+			
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="total" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="applicantList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="Applicant" />
+	</parameterMap>
+
+	<procedure id="getFamilyApplicantList" parameterMap="applicantListMap">
+		{call pack_family_v2.p_getFamilyApplicantList(?,?,?,?,?,?,?,?,?,?)}
+	</procedure>
+	
+	<resultMap class="java.lang.Integer" id="applyIds">
+		<result property="userId" javaType="java.lang.Integer"/>
+	</resultMap>
+	
+	<!-- 获取申请加入家族的全部用户Id -->
+	<select id="getFamilyApplyerIdList" parameterClass="java.lang.Integer" resultMap="applyIds">
+		select fa.userid
+			from family_applicant fa join user_info ui on fa.userid = ui.userid
+			where fa.familyid = #familyId# and applystate = 1 and <![CDATA[ nvl(ui.actorTag, 0) <> 1 ]]>
+	</select>
+	
+	<!-- 申请加入家族 -->
+	<parameterMap id="applyJoinFamilyMap" class="java.util.Map">
+		<parameter property="familyId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+			
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+	</parameterMap>
+	<procedure id="applyJoinFamily" parameterMap="applyJoinFamilyMap" resultClass="java.util.Map">
+		{call pack_family_v2.p_applyJoinFamily(?,?,?)}
+	</procedure>
+	
+	<!-- 退出家族 -->
+	<parameterMap id="quitFamilyMap" class="java.util.Map">
+		<parameter property="familyId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="memberCount" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="actorCount" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+	</parameterMap>
+
+	<procedure id="quitFamily" parameterMap="quitFamilyMap">
+		{call pack_family_v2.p_quitFamily(?,?,?,?,?)}
+	</procedure>
+	
+	<!-- 设置家族公告 -->
+	<parameterMap id="setFamilyNoticeMap" class="java.util.Map">
+		<parameter property="familyId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="notice" mode="IN" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+			
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+	</parameterMap>
+
+	<procedure id="setFamilyNotice" parameterMap="setFamilyNoticeMap">
+		{call pack_family_v2.p_setFamilyNotice(?,?,?)}
+	</procedure>
+	
+	<!-- 设置家族海报 -->
+	<parameterMap id="setFamilyPosterMap" class="java.util.Map">
+		<parameter property="familyId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="posterJsonStr" mode="IN" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+			
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+	</parameterMap>
+
+	<procedure id="setFamilyPoster" parameterMap="setFamilyPosterMap">
+		{call pack_family_v2.p_setFamilyPoster(?,?,?)}
+	</procedure>
+	
+	<!-- 批量删除家族成员 -->
+	<parameterMap id="removeFamilyMemberMap" class="java.util.Map">
+		<parameter property="familyId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="userIds" mode="IN" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+			
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="memberCount" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="notPassUserids" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="actorCount" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+	</parameterMap>
+
+	<procedure id="removeFamilyMember" parameterMap="removeFamilyMemberMap">
+		{call pack_family_v2.p_removeFamilyMember(?,?,?,?,?,?,?)}
+	</procedure>
+	
+	<!-- 更新家族成员级别(设置副族长或撤销副族长) -->
+	<parameterMap id="updateMemberGradeMap" class="java.util.Map">
+		<parameter property="familyId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="memberId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="memberGrade" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+			
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="memberList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="Member" />
+	</parameterMap>
+
+	<procedure id="updateMemberGrade" parameterMap="updateMemberGradeMap">
+		{call pack_family_v2.p_updateMemberGrade(?,?,?,?,?,?)}
+	</procedure>
+	
+	<!-- 批量同意加入家族 -->
+	<parameterMap id="agreeJoinFamilyMap" class="java.util.Map">
+		<parameter property="familyId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="userIds" mode="IN" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+			
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="memberCount" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="notPassUserids" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="actorCount" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+	</parameterMap>
+
+	<procedure id="agreeJoinFamily" parameterMap="agreeJoinFamilyMap">
+		{call pack_family_v2.p_agreeJoinFamily(?,?,?,?,?,?)}
+	</procedure>
+	
+	<!-- 批量拒绝加入家族 -->
+	<parameterMap id="refuseJoinFamilyMap" class="java.util.Map">
+		<parameter property="familyId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="userIds" mode="IN" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+			
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="notPassUserids" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+	</parameterMap>
+
+	<procedure id="refuseJoinFamily" parameterMap="refuseJoinFamilyMap">
+		{call pack_family_v2.p_refuseJoinFamily(?,?,?,?)}
+	</procedure>
+	
+	<!-- 获取家族擂台赛主播结果 -->
+	<parameterMap id="getFamilyMatchActorRankMap" class="java.util.Map">
+		<parameter property="period" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="play" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+	
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="rankList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="FamilyMatchActorRank" />
+	</parameterMap>
+
+	<procedure id="getFamilyMatchActorRank" parameterMap="getFamilyMatchActorRankMap">
+		{call pack_family_v2.p_rank_familyactor_score(?,?,?,?)}
+	</procedure>
+	
+	<!-- 获取家族擂台赛用户结果 -->
+	<parameterMap id="getFamilyMatchUserRankMap" class="java.util.Map">
+		<parameter property="period" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="rankList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="FamilyMatchUserRank" />
+	</parameterMap>
+
+	<procedure id="getFamilyMatchUserRank" parameterMap="getFamilyMatchUserRankMap">
+		{call pack_family_v2.p_rank_familyuser_score(?,?,?)}
+	</procedure>
+	
+	<!-- 获取家族擂台赛家族冠军榜 -->
+	<parameterMap id="getFamilyMatchFamilyChampionMap" class="java.util.Map">
+		<parameter property="period" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+	
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="rankList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="FamilyMatchFamilyChampion" />
+	</parameterMap>
+
+	<procedure id="getFamilyMatchFamilyChampion" parameterMap="getFamilyMatchFamilyChampionMap">
+		{call pack_family_v2.p_rank_family_match(?,?,?)}
+	</procedure>
+	
+	<!-- 获取家族擂台赛富豪冠军榜 -->
+	<parameterMap id="getFamilyMatchRichChampionMap" class="java.util.Map">
+		<parameter property="period" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+	
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="rankList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="FamilyMatchRichChampion" />
+	</parameterMap>
+
+	<procedure id="getFamilyMatchRichChampion" parameterMap="getFamilyMatchRichChampionMap">
+		{call pack_family_v2.p_rank_familyuser_match(?,?,?)}
+	</procedure>
+	
+	<!-- 获取家族擂台赛蝉联冠军 -->
+	<parameterMap id="getFamiluMatchContinueChampionMap" class="java.util.Map">
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="rankList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="FamilyMatchContinueChampion" />
+	</parameterMap>
+
+	<procedure id="getFamiluMatchContinueChampion" parameterMap="getFamiluMatchContinueChampionMap">
+		{call pack_family_v2.p_continue_onetimes(?,?)}
+	</procedure>
+	
+	<!-- 获取家族擂台赛上期用户榜 -->
+	<parameterMap id="getFamiluMatchUserChampionMap" class="java.util.Map">
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="rankList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="FamilyMatchUserRank" />
+	</parameterMap>
+
+	<procedure id="getFamiluMatchUserChampion" parameterMap="getFamiluMatchUserChampionMap">
+		{call pack_family_v2.p_rank_first_family_user(?,?)}
+	</procedure>
+
+	<!-- 获取用户是否是已冻结家族的家族长 -->
+	<select id="getFrozenFamilyUserById" parameterClass="java.lang.Integer" resultClass="java.lang.Integer">
+		select a.familyid from family_user a where a.userid=#userId# and a.frozen=1
+	</select>
+
+	<!-- 根据家族长id获取家族信息 -->
+	<select id="getFamilyByFamilyLeader" parameterClass="java.lang.Integer" resultClass="java.lang.Integer">
+		select count(*) from family_info a where a.familyleader=#userId#
+	</select>
+	
+</sqlMap>

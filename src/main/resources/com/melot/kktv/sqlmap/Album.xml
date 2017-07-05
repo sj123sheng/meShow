@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Album">
+
+	<!-- 添加背景图片 -->
+	<parameterMap id="addBackgroundMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="fileId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="fileName" mode="IN" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="path_original" mode="IN" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="pictureId" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="oldPath" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+	</parameterMap>
+
+	<procedure id="addBackground" parameterMap="addBackgroundMap">
+		{call
+		p_addBackground(?,?,?,?,?,?,?)}
+	</procedure>
+
+	<!-- 添加资源图片 -->
+	<parameterMap id="addPictureMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="pictureType" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="fileId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="fileName" mode="IN" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="path_original" mode="IN" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="path_1280" mode="IN" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="path_272" mode="IN" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="path_128" mode="IN" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="pictureId" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="uploadTime" mode="OUT" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+		<parameter property="updatePoster" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="newsId" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+	</parameterMap>
+
+	<procedure id="addPicture" parameterMap="addPictureMap">
+		{call
+		p_addPicture_V2(?,?,?,?,?,?,?,?,?,?,?,?,?)}
+	</procedure>
+	
+	<!-- 删除照片 -->
+	<parameterMap id="deletePhotoMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="photoId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="poster_path_original" mode="OUT"
+			javaType="java.lang.String" jdbcType="VARCHAR" />
+		<parameter property="poster_path_1280" mode="OUT"
+			javaType="java.lang.String" jdbcType="VARCHAR" />
+		<parameter property="poster_path_272" mode="OUT"
+			javaType="java.lang.String" jdbcType="VARCHAR" />
+		<parameter property="poster_path_128" mode="OUT"
+			javaType="java.lang.String" jdbcType="VARCHAR" />
+		<parameter property="poster_id" mode="OUT"
+			javaType="java.lang.Integer" jdbcType="INTEGER" />
+		<parameter property="oldPath" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+	</parameterMap>
+
+	<procedure id="deletePhoto" parameterMap="deletePhotoMap">
+		{call
+		p_deletePhoto_t(?,?,?,?,?,?,?,?,?)}
+	</procedure>
+
+	<!-- 获取用户照片列表 -->
+	<resultMap id="photo" class="com.melot.kktv.model.Photo">
+		<result property="photoId" column="pictureId" />
+		<result property="photoName" column="filename" />
+		<result property="photo_path_original" column="path_original" />
+		<result property="photo_path_1280" column="path_1280" />
+		<result property="photo_path_272" column="path_272" />
+		<result property="photo_path_128" column="path_128" />
+		<result property="uploadTime" column="uploadTime" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+		<result property="clicks" column="clicks" />
+		<result property="comments" column="comments" />
+		<result property="picType" column="picType" />
+	</resultMap>
+
+	<parameterMap id="getUserPhotoListMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="pageIndex" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="pageTotal" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="photoList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="photo" />
+	</parameterMap>
+
+	<procedure id="getUserPhotoList" parameterMap="getUserPhotoListMap">
+		{call
+		p_getUserPhotoList(?,?,?,?,?)}
+	</procedure>
+
+	<!-- 评论照片 -->
+	<parameterMap id="commentPhotoMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="photoId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="content" mode="IN" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+	</parameterMap>
+
+	<procedure id="commentPhoto" parameterMap="commentPhotoMap">
+		{call
+		p_commentPhoto(?,?,?,?)}
+	</procedure>
+
+	<!-- 删除照片评论 -->
+	<parameterMap id="deletePhotoCommentMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="photoCommentId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="photoId" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+	</parameterMap>
+
+	<procedure id="deletePhotoComment" parameterMap="deletePhotoCommentMap">
+		{call
+		p_deletePhotoComment(?,?,?,?)}
+	</procedure>
+
+	<!-- 获取获取照片所有评论 -->
+	<resultMap id="comment" class="com.melot.kktv.model.PhotoComment">
+		<result property="commentId" column="commentId" />
+		<result property="content" column="content" />
+		<result property="commentTime" column="dtime" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+		<result property="userId" column="userId" />
+		<result property="nickname" column="nickname" />
+		<result property="portrait_path_original" column="portrait_path_original" />
+		<result property="portrait_path_1280" column="portrait_path_1280" />
+		<result property="portrait_path_256" column="portrait_path_256" />
+		<result property="portrait_path_128" column="portrait_path_128" />
+		<result property="portrait_path_48" column="portrait_path_48" />
+	</resultMap>
+
+	<parameterMap id="getPhotoCommentListMap" class="java.util.Map">
+		<parameter property="photoId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="commentList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="comment" />
+	</parameterMap>
+
+	<procedure id="getPhotoCommentList" parameterMap="getPhotoCommentListMap">
+		{call
+		p_getPhotoCommentList(?,?,?)}
+	</procedure>
+
+</sqlMap>

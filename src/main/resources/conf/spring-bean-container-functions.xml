@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd" >
+  	
+  	<!-- kktv接口 -->
+	<bean id="mobileFunction" class="com.melot.kkcx.functions.MobileFunctions" />
+	<bean id="albumFunction" class="com.melot.kkcx.functions.AlbumFunctions" />
+	
+	<bean id="userFunction" class="com.melot.kkcx.functions.UserFunctions" />
+	
+	<bean id="profileFunction" class="com.melot.kkcx.functions.ProfileFunctions">
+		<property name="liveTypeSource" ref="liveTypeSource" />
+	</bean>
+	
+	<bean id="hallFunction" class="com.melot.kktv.action.HallFunctions"/>	
+	<bean id="indexFunction" class="com.melot.kktv.action.IndexFunctions"/>	
+	<bean id="familyFunction" class="com.melot.kktv.action.FamilyAction"/>	
+	<bean id="messageBoxFunction" class="com.melot.kktv.action.MessageBoxFunctions" />
+	<bean id="messageBoxV2Function" class="com.melot.kktv.action.MessageBoxV2Functions" />
+	<bean id="userAssetFunction" class="com.melot.kktv.action.UserAssetAction" />
+	<bean id="assetFunction" class="com.melot.kktv.action.AssetFunctions" />
+	<bean id="backgroundFunction" class="com.melot.kktv.action.BackgroundAction" />
+	
+	<bean id="userRelationFunction" class="com.melot.kktv.action.UserRelationFunctions" />
+	
+	<bean id="activityFunction" class="com.melot.kktv.action.ActivityFunctions" />
+	<bean id="chargingFunction" class="com.melot.kktv.action.ChargingFunctions" />
+	<bean id="consumeFunction" class="com.melot.kktv.action.ConsumAction" />
+	<bean id="gameRankFunction" class="com.melot.kktv.action.GameRankAction" />
+	<bean id="newsFunction" class="com.melot.kktv.action.NewsFunctions" />
+	<bean id="newsV2Function" class="com.melot.kktv.action.NewsV2Functions" />
+	<bean id="nodeFunction" class="com.melot.kktv.action.NodeFunctions" />
+	
+	<bean id="otherFunction" class="com.melot.kktv.action.OtherFunctions">
+		<property name="actorInfoSource" ref="actorInfoSource" />
+	</bean>
+	
+	<bean id="profileSecurityFunction" class="com.melot.kktv.action.ProfileSecurityFunctions" />
+	<bean id="resourceFunction" class="com.melot.kktv.action.ResourceFunctions" />
+	<bean id="tagFunction" class="com.melot.kktv.action.TagFunctions" />
+	<bean id="tempFunction" class="com.melot.kktv.action.TempFunctions" />
+	<bean id="ticketFunction" class="com.melot.kktv.action.TicketAction" />
+	<bean id="userLotteryPrizeFunction" class="com.melot.kktv.action.UserLotteryPrizeFunctions" />
+	<bean id="videoFunction" class="com.melot.kktv.action.VideoFunctions">
+		<property name="bangVideoSource" ref="bangVideoSource" />
+	</bean>
+	<bean id="guardFunction" class="com.melot.kktv.action.GuardFunctions" />
+	<bean id="redEnvelopeFunction" class="com.melot.kktv.action.RedEnvelopeFunctions" />
+	<bean id="noticeFunction" class="com.melot.kktv.action.NoticeFunctions" />
+	
+	<!-- 大KK大厅接口================================================== -->
+	<bean id="kkHallFunction" class="com.melot.kkcx.functions.KKHallFunctions" />
+	
+    <!-- 活动中心接口 -->
+	<bean id="activityCenterFunctions" class="com.melot.kkcx.functions.ActivityCenterFunctions" />
+	
+    <!-- IM相关接口 -->
+	<bean id="timFunctions" class="com.melot.kkcx.functions.TimFunctions" />
+	
+    <!-- 主播个性礼物接口 -->
+	<bean id="actorGiftFunction" class="com.melot.kkcx.functions.ActorGiftFunctions" />
+	
+	<!-- 充值配置接口 -->
+	<bean id="paymentFunctions" class="com.melot.kktv.payment.functions.PaymentFunctions" />
+	
+	<!-- FuncTag冲突配置接口 -->
+	<bean id="conflictFunction" class="com.melot.kktv.action.ConflictFunctions" />
+	
+	<!-- kkGame接口 -->
+  	
+  	<!-- redis相关配置类 -->
+  	<bean id="redisTemplate" class="com.melot.kkgame.redis.support.RedisTemplate" abstract="true" />
+  	<bean id="actorInfoSource" class="com.melot.kkgame.redis.ActorInfoSource" parent="redisTemplate" />
+  	<bean id="gamblingSource" class="com.melot.kkgame.redis.GamblingSource" parent="redisTemplate" />
+  	<bean id="gameCenterSource" class="com.melot.kkgame.redis.GameCenterSource" parent="redisTemplate" />
+  	<bean id="giftStarSource" class="com.melot.kkgame.redis.GiftStarSource" parent="redisTemplate" />
+  	<bean id="hallPartSource" class="com.melot.kkgame.redis.HallPartSource" parent="redisTemplate" />
+  	<bean id="liveTypeSource" class="com.melot.kkgame.redis.LiveTypeSource" parent="redisTemplate" />
+  	<bean id="lotteryTaskSource" class="com.melot.kkgame.redis.LotteryTaskSource" parent="redisTemplate" />
+  	<bean id="msgSource" class="com.melot.kkgame.redis.external.MessageSource" parent="redisTemplate" />
+  	<bean id="rankingListSource" class="com.melot.kkgame.redis.RankingListSource" parent="redisTemplate" />
+   	<bean id="bangVideoSource" class="com.melot.kkgame.redis.BangVideoSource" parent="redisTemplate"/>
+   	
+   	<!-- notification in room talk area -->
+   	<bean id="roomMsgSource" class="com.melot.kkgame.redis.RoomMessageSource" parent="redisTemplate" />
+  	
+  	<bean id="signInTaskSource" class="com.melot.kkgame.redis.SignInTaskSource" parent="redisTemplate" />
+  	<bean id="smsSource" class="com.melot.kkgame.redis.SmsSource" parent="redisTemplate" />
+  	<bean id="userHotSource" class="com.melot.kkgame.redis.UserHotSource" parent="redisTemplate" />
+  	<bean id="userPropSource" class="com.melot.kkgame.redis.UserPropSource" parent="redisTemplate" />
+  	
+  	<bean id="configSource" class="com.melot.kkgame.redis.external.ConfigSource" parent="redisTemplate" />
+  	<bean id="giftSource" class="com.melot.kkgame.redis.external.GiftSource" parent="redisTemplate" />
+  	<bean id="levelSource" class="com.melot.kkgame.redis.external.LevelSource" parent="redisTemplate" />
+  	  	
+  	<bean id="hallPageService" class="com.melot.kkgame.service.HallPageService" lazy-init="true" />
+  	
+  	<bean id="userGambleService" class="com.melot.kkgame.service.UserGambleService"/>
+  	
+	<bean id="activityGameFunction" class="com.melot.kkgame.action.ActivityFunction">
+		<property name="rankingListSource" ref="rankingListSource" />
+	</bean>
+  	
+  	<bean id="gameApiAction" class="com.melot.kkgame.action.GameApiAction" />
+	<bean id="gameVideoAction" class="com.melot.kkgame.action.GameVideoAction" />
+	<bean id="gameActivityAction" class="com.melot.kkgame.action.GameActivityAction" />
+	
+	<bean id="gameHallAction" class="com.melot.kkgame.action.HallFunction">
+		<property name="hallPageService" ref="hallPageService"/>
+  		<property name="hallPartSource" ref="hallPartSource"/>
+  		<property name="roomSubCatalogService" ref="roomSubCatalogService"/>
+  	</bean>
+  	
+	<bean id="gameHallFunction" class="com.melot.kkgame.action.GameHallFunction" />
+	
+	<bean id="rankingListFunction" class="com.melot.kkgame.action.RankingListFunction">
+		<property name="rankingListSource" ref="rankingListSource" />
+	</bean>
+	
+	<bean id="gameApplyFunction" class="com.melot.kkgame.action.external.GameApplyFunction" /> 
+	<bean id="promotePartnerFunction" class="com.melot.kkgame.action.external.PromotePartnerFunction" />
+	
+	<bean id="gameTaskAction" class="com.melot.kkgame.action.GameTaskAction">
+		<property name="signInTaskSource" ref="signInTaskSource"/>
+  	</bean>
+  	
+	<bean id="gamblingFunction" class="com.melot.kkgame.action.GamblingFunction">
+		<property name="gamblingSource" ref="gamblingSource" />
+		<property name="userGambleService" ref="userGambleService" />
+		<property name="roomMessageSource" ref="roomMsgSource" />
+	</bean>
+	<bean id="eventFunction" class="com.melot.kkgame.action.sport.EventFunction" />
+	
+	<bean id="eventNewsFunction" class="com.melot.kkgame.action.sport.EventNewsFunction">
+		<property name="eventNewsService" ref="eventNewsService"/>
+	</bean>
+	
+	<bean id="weekStarFunction" class="com.melot.kkgame.action.WeekStarFunction">
+		<property name="giftStarSource" ref="giftStarSource"/>
+		<property name="giftStarRecordService" ref="giftStarRecordService"/>
+	</bean>
+	
+	<bean id="pictureAlbumFunction" class="com.melot.kkgame.action.external.PictureAlbumFunction" />
+	
+	<!-- 增值游戏中心 -->
+	<bean id="gameCenterFunction" class="com.melot.kkgame.action.GameCenterFunction" />
+	
+	<!-- 主播信息相关接口 -->
+	<bean id="actorFunction" class="com.melot.kkgame.action.ActorFunction">
+		<property name="actorInfoSource" ref="actorInfoSource" />
+		<property name="gamblingSource" ref="gamblingSource" />
+	</bean>
+	
+	<!-- KK彩票相关接口 -->
+  	<bean id="lotteryFunction" class="com.melot.kkgame.action.LotteryFunction">
+  		<property name="lotteryTaskSource" ref="lotteryTaskSource" />
+  	</bean>
+	
+	<!-- 活动相关接口 -->
+	<bean id="rankFunction" class="com.melot.kkgame.action.RankFunction">
+		<property name="rankingListSource" ref="rankingListSource" />
+	</bean>
+	
+	<!-- 用户私信配置相关接口 -->
+	<bean id="privateLetterFunction" class="com.melot.kktv.action.PrivateLetterFunctions" />
+	
+	<!-- 获取轮播房节目列表 -->
+	<bean id="roundRoomFunction" class="com.melot.kktv.action.RoundRoomFunction" />
+	
+	<!-- 配置信息相关接口 -->
+	<bean id="configFunctions" class="com.melot.kktv.action.ConfigFunctions" />
+	
+</beans>

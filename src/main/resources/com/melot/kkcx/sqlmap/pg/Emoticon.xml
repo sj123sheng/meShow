@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Emoticon">
+
+	<resultMap class="com.melot.kkcx.model.DynamicEmoticon" id="emoticonMap">
+		<result property="eId" column="eid"/>
+		<result property="eName" column="ename"/>
+		<result property="emoticonUrl" column="emoticon_url" />
+		<result property="previewUrl" column="preview_url"/>
+		<result property="platform" column="platform" />
+		<result property="extarValue" column="extra_value"/>
+		<result property="desc" column="desc" />
+		<result property="dtime" column="dtime" />
+	</resultMap>
+
+	<select id="getDynamicEmoticon" parameterClass="java.util.Map" resultMap="emoticonMap">
+		select t.eid, t.ename, t.emoticon_url, t.preview_url, t.platform, t.extra_value, t.desc, t.dtime from conf_emoticon_dynamic t where t.is_on = 1
+	                 <isEqual property="platform" compareValue="-1">
+			             and platform = #platform# 
+			         </isEqual>
+			         <isEqual property="platform" compareValue="1">
+			             and platform in (-1,1) 
+			         </isEqual>
+			         <isEqual property="platform" compareValue="2">
+			             and platform in (-1,2)
+			         </isEqual>
+		order by t.idx
+		
+	</select>
+	
+	<resultMap class="com.melot.kkcx.model.Sticker" id="stickerMap">
+		<result property="sId" column= "s_id"/>
+		<result property="platform" column= "platform"/>
+		<result property="sName" column= "s_name"/>
+		<result property="previewUrl" column= "preview_url"/>
+		<result property="sUrl" column= "s_url"/>
+		<result property="extraValue" column= "extra_value"/>
+		<result property="desc" column="desc" />
+		<result property="dtime" column= "dtime"/>
+	</resultMap>
+	
+	<select id="getStickerList" parameterClass="java.util.Map" resultMap="stickerMap">
+		select t.s_id, t.platform, t.s_name, t.preview_url, t.s_url, t.extra_value, t.dtime, t.desc from conf_emoticon_sticker t where t.is_on = 1
+			   <isEqual property="platform" compareValue="-1">
+			             and platform = #platform# 
+			         </isEqual>
+			         <isEqual property="platform" compareValue="1">
+			             and platform in (-1,1) 
+			         </isEqual>
+			         <isEqual property="platform" compareValue="2">
+			             and platform in (-1,2)
+			         </isEqual>
+		order by t.idx
+	</select>
+	
+	<resultMap class="com.melot.kkcx.model.ActivityEmoticon" id="activityEmoticonMap">
+		<result property="id" column= "id"/>
+		<result property="describe" column= "describe"/>
+		<result property="keywords" column= "keywords"/>
+		<result property="icons" column= "icons"/>
+		<result property="beginTime" column= "begin_time"/>
+		<result property="endTime" column= "end_time"/>
+	</resultMap>
+	
+	<select id="getactivityEmoticonList" resultMap="activityEmoticonMap">
+		select * from kkcx.conf_activity_emoticon where begin_time <![CDATA[<=]]> current_date and (end_time <![CDATA[>=]]> current_date or end_time is null)
+		order by end_time desc, id desc
+	</select>
+		
+</sqlMap>

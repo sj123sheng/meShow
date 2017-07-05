@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Index">
+
+	<!-- 获取用户收到的礼物列表 -->
+	<resultMap id="giftRecord" class="com.melot.kktv.model.GiftRecord">
+		<result property="userId" column="senderId" />
+		<result property="giftId" column="giftId" />
+		<result property="giftName" column="giftName" />
+		<result property="unit" column="unit" />
+		<result property="sendPrice" column="sendPrice" />
+		<result property="rsvPrice" column="rsvPrice" />
+		<result property="count" column="count" />
+		<result property="sendTime" column="sendTime" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+		<result property="xmanNick" column="xmanNick"/>
+		<result property="xmanId" column="xmanId"/>
+	</resultMap>
+
+	<parameterMap id="userRsvGiftListMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="startTime" mode="IN" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+		<parameter property="endTime" mode="IN" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+		<parameter property="pageIndex" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="pageTotal" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="recordList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="giftRecord" />
+	</parameterMap>
+
+	<procedure id="getUserRsvGiftList" parameterMap="userRsvGiftListMap">
+		{call
+		p_getUserRsvGiftList_V2(?,?,?,?,?,?,?)}
+	</procedure>
+
+	<!-- 获取活动列表 -->
+	<resultMap id="Activity" class="com.melot.kktv.model.Activity">
+		<result property="activityId" column="activityid" javaType="java.lang.Integer"
+			jdbcType="NUMBER"/>
+		<result property="activityTitle" column="acttitle" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<result property="imgURL" column="imgurl" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<result property="activityURL" column="activityurl" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<result property="topURL" column="topurl" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<result property="topMobileURL" column="topmobileurl" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<result property="topMobileURLIOS" column="topmobileurlios" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<result property="sharedText" column="sharedtext" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<result property="sharedImgURL" column="sharedimgurl" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<resultMap id="HotActivity" class="com.melot.kktv.model.HotActivity">
+		<result property="activityId" column="activityid" javaType="java.lang.Integer"
+			jdbcType="NUMBER"/>
+		<result property="imgURL" column="imgurl" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<result property="activityURL" column="activityurl" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<result property="isHot" column="ishot" javaType="java.lang.Integer"
+			jdbcType="VARCHAR" />
+		<result property="activityTitle" column="acttitle" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<result property="topURL" column="topurl" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<result property="topMobileURL" column="topmobileurl" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<result property="topMobileURLIOS" column="topmobileurlios" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<result property="sharedText" column="sharedtext" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<result property="sharedImgURL" column="sharedimgurl" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<result property="startDate" column="startdate" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+		<result property="endDate" column="enddate" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+		<result property="dtime" column="dtime" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<parameterMap id="activityListMap" class="java.util.Map">
+		<parameter property="isTop" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="platform" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="appId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="channel" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="activityList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="Activity" />
+		<parameter property="hotActivityList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="HotActivity" />
+	</parameterMap>
+
+	<procedure id="getActivityList" parameterMap="activityListMap">
+		{call
+		p_getActivityList_v3(?,?,?,?,?,?,?)}
+	</procedure>
+
+	<!-- 获取活动详细 -->
+	<parameterMap class="java.util.Map" id="activityDetail">
+		<parameter property="activityId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="imgURL" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="activityURL" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="dtime" mode="OUT" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+		<parameter property="content" mode="OUT" javaType="java.lang.String"
+			jdbcType="CLOB" />
+		<parameter property="topURL" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="topMobileURL" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="topMobileURLIOS" mode="OUT"
+			javaType="java.lang.String" jdbcType="VARCHAR" />
+		<parameter property="startDate" mode="OUT" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+		<parameter property="endDate" mode="OUT" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+	</parameterMap>
+	<procedure id="getActivityDetail" parameterMap="activityDetail">
+		{call
+		p_getActivityDetail(?,?,?,?,?,?,?,?,?,?,?)}
+	</procedure>
+
+	<!-- 获取公告列表 -->
+	<resultMap id="Notice" class="com.melot.kktv.model.Notice">
+		<result property="noticeId" column="noticeid" />
+		<result property="title" column="title" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<result property="noticeURL" column="noticeurl" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<result property="dtime" column="dtime" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+	</resultMap>
+
+	<parameterMap id="noticeListMap" class="java.util.Map">
+		<parameter property="appId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="channel" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="start" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="offset" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+			
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="noticeTotal" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="noticeList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet" resultMap="Notice" />
+	</parameterMap>
+
+	<procedure id="getNoticeList" parameterMap="noticeListMap">
+		{call
+		p_getKKgameNoticeList(?,?,?,?,?,?,?)}
+	</procedure>
+
+	<!-- 获取公告详细 -->
+	<parameterMap class="java.util.Map" id="noticeDetailMap">
+		<parameter property="noticeId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="title" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="noticeURL" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="dtime" mode="OUT" javaType="java.util.Date"
+			jdbcType="TIMESTAMP" />
+		<parameter property="content" mode="OUT" javaType="java.lang.String"
+			jdbcType="CLOB" />
+	</parameterMap>
+	<procedure id="getNoticeDetail" parameterMap="noticeDetailMap">
+		{call
+		p_getNoticeDetail(?,?,?,?,?,?)}
+	</procedure>
+	
+	<!-- 获取活动列表 -->
+	<resultMap id="Catalog" class="com.melot.kktv.model.Catalog">
+		<result property="catalogid" column="catalogid" javaType="java.lang.Integer" jdbcType="INTEGER" />
+		<result property="catalogname" column="catalogname" javaType="java.lang.String" jdbcType="VARCHAR" />
+		<result property="catalogtag" column="catalogtag" javaType="java.lang.String" jdbcType="VARCHAR" />
+		<result property="catalogsort" column="catalogsort" javaType="java.lang.Integer" jdbcType="INTEGER" />
+	</resultMap>
+
+	<parameterMap id="catalogListMap" class="java.util.Map">
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String" jdbcType="VARCHAR" />
+		<parameter property="catalogList" mode="OUT" jdbcType="ORACLECURSOR" javaType="java.sql.ResultSet" resultMap="Catalog" />
+	</parameterMap>
+
+	<procedure id="getCatalogInfo" parameterMap="catalogListMap">
+		{call p_getCatalogInfo(?,?)}
+	</procedure>
+	
+	<!-- 获取用户一定时间内收到礼物个数 -->
+	<select id="getPeriodUserGiftReceiveCount" resultClass="java.lang.Long" parameterClass="java.util.Map">
+		select sum(t.giftcount) from gift_history t where
+		t.giftid = #giftId#
+		<isGreaterThan property="userId" compareValue="0" prepend="and">
+			t.touserid = #userId#
+		</isGreaterThan>
+		and t.dtime >= #startTime#
+		and <![CDATA[t.dtime <= #endTime#]]>
+    </select>
+    
+    <!-- 获取一定时间内送出礼物总数和参与投票用户总数 -->
+	<resultMap class="java.util.HashMap" id="getPeriodGiftTotalResult">
+    	<result property="totalGift" column="totalGift" javaType="java.lang.Long" jdbcType="Number"/>
+    	<result property="totalAmount" column="totalAmount" javaType="java.lang.Long" jdbcType="Number"/>
+    	<result property="totalUser" column="totalUser" javaType="java.lang.Long" jdbcType="Number"/>
+    </resultMap>
+    <select id="getPeriodGiftTotal" resultMap="getPeriodGiftTotalResult" parameterClass="java.util.Map">
+    	select nvl(sum(t.giftcount), 0) as totalGift, nvl(sum(t.amount), 0) as totalAmount, nvl(count(distinct t.userid), 0) as totalUser
+    	from gift_history t where t.giftid in ($giftIds$)
+   	 	and t.dtime >= to_date(#startTime#, 'yyyy-mm-dd hh24:mi:ss')
+   	 	<isNotNull prepend="and" property="endTime">
+   	 		<![CDATA[t.dtime < to_date(#endTime#, 'yyyy-mm-dd hh24:mi:ss')]]>
+   	 	</isNotNull>
+    </select>
+    
+    <!-- 获取一定时间内礼物送出总数情况 -->
+	<resultMap class="java.util.HashMap" id="getTimeGiftTotalResultMap">
+    	<result property="giftId" column="giftid" javaType="java.lang.Long" jdbcType="Number"/>
+    	<result property="giftCount" column="giftcount" javaType="java.lang.Long" jdbcType="Number"/>
+    	<result property="giftOrder" column="giftorder" javaType="java.lang.Long" jdbcType="Number"/>
+    </resultMap>
+    <select id="getTimeGiftTotal" resultMap="getTimeGiftTotalResultMap" parameterClass="java.util.Map">
+    	SELECT a.giftid, a.giftcount, ROWNUM giftorder
+		  FROM (SELECT t.giftid, SUM(t.giftcount) giftcount
+		          FROM gift_history t
+		         WHERE t.giftid BETWEEN 40000471 AND 40000478
+		           AND t.dtime >= #startTime#
+		           <isNotNull prepend="and" property="endTime">
+		           	<![CDATA[t.dtime < #endTime#]]>
+		           </isNotNull>
+		         GROUP BY t.giftid
+		         ORDER BY 2 DESC) a
+    </select>
+    
+    <!-- 获取年度盛典主播荣耀榜 -->
+	<resultMap class="java.util.HashMap" id="getActorRankMap">
+    	<result property="userId" column="userId" javaType="java.lang.Integer" jdbcType="Number"/>
+    	<result property="totalScore" column="totalScore" javaType="java.lang.Long" jdbcType="Number"/>
+    	<result property="freeGfitScore" column="freeGfitScore" javaType="java.lang.Long" jdbcType="Number"/>
+    	<result property="payGfitScore" column="payGfitScore" javaType="java.lang.Long" jdbcType="Number"/>
+    </resultMap>
+    <select id="getActorRank" resultMap="getActorRankMap" parameterClass="java.util.Map">
+    	SELECT userId, totalScore, freeGfitScore, payGfitScore
+		  FROM (SELECT a.touserid userId,
+		               SUM(a.giftcount) totalScore,
+		               SUM(DECODE(a.giftid, #freeGift#, a.giftcount, 0)) freeGfitScore,
+		               SUM(DECODE(a.giftid, #payGift#, a.giftcount, 0)) payGfitScore
+		          FROM gift_history a, actor_info b
+		         WHERE a.touserid > 1000000
+		           AND a.touserid = b.actorid
+		           <![CDATA[AND b.levels <> 3]]>
+		           AND a.dtime >= #startTime#
+		           <![CDATA[AND a.dtime < #endTime#]]>
+		           AND a.giftid IN (#freeGift#, #payGift#)
+		         GROUP BY a.touserid
+		         ORDER BY 2 DESC)
+		 WHERE totalScore > 0
+		   AND <![CDATA[ROWNUM <= #rowCount#]]>
+    </select>
+    
+</sqlMap>

@@ -1,0 +1,74 @@
+package com.melot.kktv.third.service;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+import org.apache.log4j.Logger;
+
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.melot.kktv.third.BaseService;
+import com.melot.kktv.util.TagCodeEnum;
+
+public class WeixinService extends BaseService {
+	
+	private static Logger logger = Logger.getLogger(WeixinService.class);
+
+	private String serverUrl;
+	
+	public void setServerUrl(String serverUrl) {
+		this.serverUrl = serverUrl;
+	}
+
+	/**
+	 * @see https://open.weixin.qq.com/cgi-bin/frame?t=resource/res_main_tmpl&verify=1&lang=zh_CN
+	 * 
+	 * @param access_token 调用接口凭证
+	 * @param openid 普通用户标识，对该公众帐号唯一
+	 * @return true/false
+	 * 
+	 */
+	public String verifyUser(String openid, String access_token) {
+		boolean isValid = false;
+		HttpURLConnection url_con = null;
+        try {
+			String queryParams = "?access_token=" + access_token + "&openid=" + openid;
+        	logger.info("WeixinService verifyUser : " + serverUrl + queryParams);
+            URL url = new URL(serverUrl + queryParams);
+            url_con = (HttpURLConnection) url.openConnection();
+            url_con.setRequestMethod("GET");
+            url_con.setConnectTimeout(10000);
+            url_con.setReadTimeout(5000);
+            url_con.setDoInput(true);
+            
+            InputStream in = url_con.getInputStream();
+            BufferedReader rd = new BufferedReader(new InputStreamReader(in, "UTF-8"));
+            StringBuffer tempStr = new StringBuffer();
+            String tempLine = null;
+            while ((tempLine = rd.readLine()) != null) {
+                tempStr.append(tempLine);
+            }
+            JsonObject jsonObj = new JsonParser().parse(tempStr.toString()).getAsJsonObject();		
+			if(jsonObj.has("errcode")&&jsonObj.get("errcode").getAsInt()!=0)
+				logger.error("微信服务端验证用户失败, respose:" + jsonObj.toString());
+			else
+            	isValid = true;
+            rd.close();
+            in.close();
+        } catch (Exception e) {
+        	logger.error("微信服务端验证用户请求异常", e);
+        } finally {
+            if (url_con != null) url_con.disconnect();
+        }
+        if (isValid) {
+        	return TagCodeEnum.SUCCESS;
+        } else {
+        	return null;
+        }
+        
+	}
+	
+}

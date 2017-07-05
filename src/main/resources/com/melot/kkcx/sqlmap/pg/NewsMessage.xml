@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="NewsMessage">
+
+   	<resultMap class="com.melot.kktv.model.NewsComment" id="userNewsCommentMap">
+		<result property="commentId" column="o_comment_id"/>
+		<result property="newsId" column="o_news_id"/>
+		<result property="content" column="o_content" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result property="commentTime" column="o_comment_time" javaType="java.util.Date" jdbcType="TIMESTAMP"/>
+		<result property="userIdBelong" column="o_user_id_belong" />
+		<result property="userIdTarget" column="o_to_userid" />
+		<result property="userId" column="o_user_id" />
+	</resultMap>
+	
+	<resultMap class="com.melot.kktv.model.NewsPraise" id="userNewsPraiseMap">
+	    <result property="histId" column="o_hist_id"/>
+	    <result property="userId" column="o_user_id" />
+		<result property="commentId" column="o_comment_id"/>
+		<result property="praiseTime" column="o_praise_time" javaType="java.util.Date" jdbcType="TIMESTAMP"/>
+		<result property="userIdTarget" column="o_to_userid" />
+		<result property="userIdBelong" column="o_user_id_belong" />
+		<result property="newsId" column="o_news_id" />
+		<result property="commentContent" column="o_comment_content" />
+	</resultMap>
+
+	<!-- 获得用户动态回复 -->
+	<select id="getNewsComment" parameterClass="java.util.Map" resultMap="userNewsCommentMap">
+		select o_comment_id,o_news_id,o_content,o_comment_time,o_user_id_belong,o_to_userid,o_user_id
+ 		       from kkcx.p_res_news_comment_getlistmessage(#userId#, #startTime#, #start#, #offset#)
+	</select>
+	
+	<!--  动态回复计数-->
+	<select id="getNewsCommentCount" parameterClass="java.util.Map" resultClass="java.lang.Integer">
+		 select * from kkcx.p_res_news_comment_getlistcount(#userId#, #startTime#, #lastReadTime#)
+	</select> 
+	
+	<!-- 点赞计数-->
+	<select id="getNewsPraiseCount" parameterClass="java.util.Map" resultClass="java.lang.Integer">
+		 select * from kkcx.p_hist_comment_praise_getpraiseconut(#userId#, #startTime#, #lastReadTime#)
+	</select>
+	
+	<!-- 获得点赞消息 -->
+	<select id="getNewsPraise" parameterClass="java.util.Map" resultMap="userNewsPraiseMap">
+	     select o_hist_id,o_user_id,o_comment_id,o_praise_time,o_to_userid,o_user_id_belong,o_news_id,o_comment_content
+	            from kkcx.p_hist_comment_praise_getpraisemessage(#userId#, #startTime#, #start#, #offset#)
+	</select>
+		
+</sqlMap>

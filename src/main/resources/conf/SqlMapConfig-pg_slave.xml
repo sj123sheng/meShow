@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMapConfig PUBLIC "-//ibatis.apache.org//DTD SQL Map Config 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-config-2.dtd">
+<sqlMapConfig>
+
+	<settings 
+		cacheModelsEnabled="true" 
+		enhancementEnabled="true"
+		useStatementNamespaces="true" />
+
+	<sqlMap resource="com/melot/api/menu/sdk/sqlmap/sysMenuDao.xml" />
+	<sqlMap resource="com/melot/api/menu/sdk/sqlmap/roomTopDao.xml" />
+	<sqlMap resource="com/melot/api/menu/sdk/sqlmap/roomSubCatalogDao.xml" />
+	<sqlMap resource="com/melot/api/menu/sdk/sqlmap/roomInfoDao.xml" />
+	<sqlMap resource="com/melot/api/menu/sdk/sqlmap/recommendDao.xml"/>
+	<sqlMap resource="com/melot/api/menu/sdk/sqlmap/homeDao.xml" />
+	<sqlMap resource="com/melot/api/menu/sdk/sqlmap/versionDao.xml"/>
+	<sqlMap resource="com/melot/api/menu/sdk/sqlmap/searchDao.xml"/>
+	
+	<sqlMap resource="com/melot/pg/sqlmap/Other.xml" />
+	
+</sqlMapConfig>

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Other">
+
+	<!-- 根据ip地址获取所在城市及省份 -->
+	<resultMap class="java.util.HashMap" id="cityInfoMap">
+		<result property="city" column="city" javaType="java.lang.Integer"/>
+		<result property="area" column="area" javaType="java.lang.Integer"/>
+	</resultMap>
+	<select id="getIpCityId" parameterClass="java.lang.String" resultMap="cityInfoMap">
+		SELECT o_area_id as area, o_city_id as city FROM tshow.f_getipcityid(#ip#)
+	</select>
+	
+	<!-- 根据城市名称获取城市id -->
+	<select id="getCityIdByCityName" parameterClass="java.util.HashMap" resultMap="cityInfoMap">
+		select o_area_id as area, o_city_id as city from tshow.f_getcityidbycityname(#districtName#, #cityName#, #continentName#)
+	</select>
+	
+	<!-- 获取城市ID与名称的映射关系信息 -->
+	<resultMap class="java.util.HashMap" id="getCityInfoMap">
+		<result property="cityId" column="id" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+		<result property="cityName" column="name" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result property="parentId" column="parent_id" javaType="java.lang.Integer" jdbcType="NUMBER"/>
+	</resultMap>
+	<select id="getCityInfo" resultMap="getCityInfoMap">
+		SELECT t.id, t.parent_id, t.name FROM tshow.conf_admin_city t
+	</select>
+	
+	<!-- 查询用户守护的在线主播列表 -->
+	<resultMap class="com.melot.api.menu.sdk.dao.domain.RoomInfo" id="roomListMap">
+		<result property="actorId" column="actorid" />
+		<result property="nickname" column="nickname" />
+		<result property="liveType" column="livetype" />
+		<result property="peopleInRoom" column="people_inroom" />
+		<result property="maxCount" column="max_count" />
+		<result property="isGood" column="is_good" />
+		<result property="isDisplay" column="is_display" />
+		<result property="icon" column="icon" />
+		<result property="poster" column="poster" />
+		<result property="liveStarttime" column="live_starttime" />
+		<result property="liveEndtime" column="live_endtime" />
+		<result property="nextStarttime" column="next_starttime" />
+		<result property="actorLevel" column="actor_level" />
+		<result property="operatorId" column="operatorid" />
+		<result property="joinTime" column="jointime" />
+		<result property="signTime" column="signtime" />
+		<result property="levels" column="levels" />
+		<result property="note" column="note" />
+		<result property="leaveReason" column="leavereason" />
+		<result property="registerCity" column="register_city" />
+		<result property="vedioLevel" column="vedio_level" />
+		<result property="isRecommend" column="is_recommend" />
+		<result property="richLevel" column="rich_level" />
+		<result property="type" column="type" />
+		<result property="roomMode" column="room_mode" />
+		<result property="roomTheme" column="room_theme" />
+		<result property="portrait" column="portrait"/>
+		<result property="gender" column="gender"/>
+		<result property="roomTag" column="tag"/>
+		<result property="livePoster" column="live_poster"/>
+		<result property="familyId" column="family_id"/>
+		<result property="roomLock" column="room_lock"/>
+		<result property="roomId" column="room_id"/>
+		<result property="screenType" column="screen_type"/>
+	</resultMap>
+	<select id="getUserGuardActors" parameterClass="java.lang.Integer" resultMap="roomListMap">
+		select distinct b.* from tshow.res_user_guard a, tshow.res_room_info b
+		where a.actor_id = b.actorid
+		and a.expire_time > now()
+		and b.live_endtime is null
+		and a.user_id = #userId#
+	</select>
+	
+    <!-- 获取省市id-->
+	<select id="getProvinceId" parameterClass="java.util.Map" resultClass="java.lang.Integer">
+		 select * from tshow.p_conf_admin_city_getbyname(#provinceName#)
+	</select>
+	
+	<!-- 获取市区id -->
+	<resultMap class="java.util.HashMap" id="DistricMap">
+		<result property="districId" column="o_district_id" javaType="java.lang.Integer"/>
+		<result property="districName" column="o_district_name" javaType="java.lang.String"/>
+	</resultMap>
+	<select id="getDistricId" parameterClass="java.util.Map" resultMap="DistricMap">
+		 select * from tshow.p_conf_admin_city_getdistric(#districtName#,#cityName#,#parentId#)
+	</select>
+	
+	<!-- 获取海报 -->
+	<select id="getPosterUrl" parameterClass="java.util.Map" resultClass="java.lang.String">
+		<![CDATA[
+			select location || image_url
+			from tshow.hist_live_poster_check
+			where room_id = #actorId# 
+				and #startTime# < create_time
+				and create_time < #endTime#
+				order by random() limit 1
+		]]>
+	</select>
+	
+	<select id="getCityIdByCityNameNew" parameterClass="java.lang.String" resultClass="java.lang.Integer">
+		select id from conf_admin_city where name = #cityName# and parent_id = 0
+	</select>
+	
+	<select id="getCityIdByCityNameNewWithProvince" parameterClass="java.util.Map" resultClass="java.lang.Integer">
+		select id from conf_admin_city where name = #cityName# and parent_id = #provinceId#
+	</select>
+	
+	<insert id="insertCityInfo" parameterClass="java.util.Map">
+		<selectKey keyProperty="id" resultClass="java.lang.Integer">
+			select nextval('tshow.seq_conf_admin_city')
+		</selectKey>
+			insert into conf_admin_city(id, parent_id, name) values(#id#, #parentId#, #name#)
+	</insert>
+	
+	<!-- 获取roomType-->
+	<select id="getroomTypeById" parameterClass="java.util.Map" resultClass="java.lang.Integer">
+		 select type from res_room_info where actorid = #actorId#
+	</select>
+	
+	<!-- 获取roomSource白名单-->
+	<select id="getActorIdByRoomSource" parameterClass="java.util.Map" resultClass="java.lang.Integer">
+		 select roomid from conf_room_broadcast where room_source = #roomSource#
+	</select>
+	
+</sqlMap>

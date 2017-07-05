@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:kkrpc="http://www.kktv1.com/schema/kkrpc"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+	http://www.kktv1.com/schema/kkrpc http://www.kktv1.com/schema/kkrpc/kkrpc.xsd">
+
+	<!-- 配置应用名称、应用版本、负责人等服务治理信息 -->
+	<kkrpc:application id="userapp" appname="meshow-api"
+		author="kkapi" appversion="1.0.0"></kkrpc:application>
+
+	<!-- 配置服务注册中心信息 -->
+	<kkrpc:registry id="myregistry"
+		address="zk1.kktv2.com:2181,zk2.kktv2.com:2181,zk3.kktv2.com:2181"
+		connecttimeout="10000" sessiontimeout="30000"></kkrpc:registry>
+
+	<!-- <kkrpc:monitor name="mymonitor" interval="${monitor.interval}" timeout="${monitor.timeout}" 
+		loadbalance="roundrobin"></kkrpc:monitor> -->
+
+	<kkrpc:consumer timeout="8000" retries="3" loadbalance="roundrobin"
+		cluster="failover" heartbeat="60000" heartbeattimeout="180000"
+		connections="1" application="userapp" registry="myregistry" group="*"
+		connecttimeout="3000"></kkrpc:consumer>
+
+	<!-- 配置要发布的服务实现 -->
+	<kkrpc:reference id="redEnvelopersService" interface="com.melot.redenvelopers.driver.service.RedEnvelopersService" version="1.0.0"></kkrpc:reference>
+	<kkrpc:reference id="virtualIdService" interface="com.melot.asset.driver.service.VirtualIdService" version="1.0.1"></kkrpc:reference>
+	<kkrpc:reference id="assetService" interface="com.melot.asset.driver.service.AssetService" version="1.0.1"></kkrpc:reference>
+	<kkrpc:reference id="kkActivityService" interface="com.melot.kkactivity.driver.service.KkActivityService" version="1.0.3"></kkrpc:reference>
+	<kkrpc:reference id="taskInterfaceService" interface="com.melot.module.task.driver.service.TaskInterfaceService" version="1.0.1"></kkrpc:reference>
+	<kkrpc:reference id="activityMedalService" interface="com.melot.module.medal.driver.service.ActivityMedalService" version="1.0.1"></kkrpc:reference>
+	<kkrpc:reference id="userMedalService" interface="com.melot.module.medal.driver.service.UserMedalService" version="1.0.1"></kkrpc:reference>
+	<kkrpc:reference id="familyMedalService" interface="com.melot.module.medal.driver.service.FamilyMedalService" version="1.0.1"></kkrpc:reference>
+	<kkrpc:reference id="kkUserService" interface="com.melot.kkcore.user.service.KkUserService" version="1.1.7"></kkrpc:reference>
+	<kkrpc:reference id="kkAccountService" interface="com.melot.kkcore.account.service.AccountService" version="1.0.4"></kkrpc:reference>
+	<kkrpc:reference id="kkUserRelationService" interface="com.melot.kkcore.relation.service.UserRelationService" version="1.0.1"></kkrpc:reference>
+	<kkrpc:reference id="kkActorRelationService" interface="com.melot.kkcore.relation.service.ActorRelationService" version="1.0.1"></kkrpc:reference>
+	<kkrpc:reference id="showMoneyService" interface="com.melot.showmoney.driver.service.ShowMoneyService" version="1.0.2"></kkrpc:reference>
+	<kkrpc:reference id="guardService" interface="com.melot.module.guard.driver.service.GuardService" version="1.0.0"></kkrpc:reference>
+	<kkrpc:reference id="noticeService" interface="com.melot.notice.driver.service.NoticeService" version="1.0.2"></kkrpc:reference>
+	<kkrpc:reference id="securityService" interface="com.melot.security.driver.service.SecurityService" version="1.0.0"></kkrpc:reference>
+	<kkrpc:reference id="feedbackService" interface="com.melot.feedback.driver.service.FeedbackService" version="1.0.5"></kkrpc:reference>
+	<kkrpc:reference id="blacklistService" interface="com.melot.blacklist.service.BlacklistService" version="1.0.0"></kkrpc:reference>
+	<kkrpc:reference id="sunshineService" interface="com.melot.sunshine.service.SunshineService" version="1.0.1"></kkrpc:reference>
+	<kkrpc:reference id="missionService" interface="com.melot.kk.activity.driver.MissionService" version="1.0.0"></kkrpc:reference>
+	<kkrpc:reference id="familyDefineActivityService" interface="com.melot.kk.activity.service.FamilyDefineActivityService" version="1.0.18"></kkrpc:reference>
+	<kkrpc:reference id="giftHistoryBoardService" interface="com.melot.kk.activity.service.GiftHistoryBoardService" version="1.0.18"></kkrpc:reference>
+	<kkrpc:reference id="liveStreamConfigService" interface="com.melot.stream.driver.service.LiveStreamConfigService" version="1.0.0"></kkrpc:reference> 
+	<!-- 商城模块 -->
+	<kkrpc:reference id="carService" interface="com.melot.module.packagegift.driver.service.CarService" version="1.0.0"></kkrpc:reference>
+	<kkrpc:reference id="entranceTicketService" interface="com.melot.module.packagegift.driver.service.EntranceTicketService" version="1.0.0"></kkrpc:reference>
+	<kkrpc:reference id="giftPkgService" interface="com.melot.module.packagegift.driver.service.GiftPkgService" version="1.0.0"></kkrpc:reference>
+	<kkrpc:reference id="histPackageDealService" interface="com.melot.module.packagegift.driver.service.HistPackageDealService" version="1.0.0"></kkrpc:reference>
+	<kkrpc:reference id="packageDetailService" interface="com.melot.module.packagegift.driver.service.PackageDetailService" version="1.0.0"></kkrpc:reference>
+	<kkrpc:reference id="packageInfoService" interface="com.melot.module.packagegift.driver.service.PackageInfoService" version="1.0.0"></kkrpc:reference>
+	<kkrpc:reference id="rewardService" interface="com.melot.module.packagegift.driver.service.RewardService" version="1.0.0"></kkrpc:reference>
+	<kkrpc:reference id="ticketService" interface="com.melot.module.packagegift.driver.service.TicketService" version="1.0.0"></kkrpc:reference>
+	<kkrpc:reference id="vipService" interface="com.melot.module.packagegift.driver.service.VipService" version="1.0.0"></kkrpc:reference>
+	<kkrpc:reference id="xmanService" interface="com.melot.module.packagegift.driver.service.XmanService" version="1.0.0"></kkrpc:reference>
+	<!-- 家族模块 -->
+	<kkrpc:reference id="newFamilyInfoService" interface="com.melot.family.driver.service.FamilyInfoService" version="1.0.7"></kkrpc:reference>
+	<kkrpc:reference id="familyAdminService" interface="com.melot.family.driver.service.FamilyAdminService" version="1.0.7"></kkrpc:reference>
+	<kkrpc:reference id="familyOperatorService" interface="com.melot.family.driver.service.FamilyOperatorService" version="1.0.7"></kkrpc:reference>
+	<kkrpc:reference id="familyAdminNewService" interface="com.melot.family.driver.service.FamilyAdminNewService" version="1.0.7"></kkrpc:reference>
+	
+	<kkrpc:reference id="upIdfaService" interface="com.melot.ios.idfa.driver.UpIdfaService" version="1.0.0"></kkrpc:reference>
+
+	<!-- 用户私信设置模块 -->
+	<kkrpc:reference id="privateLetterService" interface="com.melot.letter.driver.service.PrivateLetterService" version="1.0.0"></kkrpc:reference>
+
+	<!-- 敏感词模块 -->
+	<kkrpc:reference id="chatAnalyzerService" interface="com.melot.chat.service.ChatAnalyzerService" version="1.0.0"></kkrpc:reference>
+	<kkrpc:reference id="privateChatAnalyzerService" interface="com.melot.chat.service.PrivateChatAnalyzerService" version="1.0.0"></kkrpc:reference>
+
+	<!-- 轮播房 -->	
+	<kkrpc:reference id="roundRoomService" interface="com.melot.round.driver.service.RoundRoomService"  version="1.0.0"></kkrpc:reference>
+	
+	<kkrpc:reference id="posterService" interface="com.melot.module.poster.driver.service.PosterService" version="1.0.0"></kkrpc:reference>
+	<kkrpc:reference id="ipRepositoryService" interface="com.melot.module.iprepository.driver.service.IpRepositoryService" version="1.0.0"></kkrpc:reference>
+	
+	<kkrpc:reference id="starService" interface="com.melot.common.driver.service.StarService" version="1.0.0"></kkrpc:reference>
+	<kkrpc:reference id="shareService" interface="com.melot.common.driver.service.ShareService" version="1.0.0"></kkrpc:reference>
+	
+	<!-- 配置信息 -->
+	<kkrpc:reference id="configInfoService" interface="com.melot.common.driver.service.ConfigInfoService" version="1.0.0"></kkrpc:reference>
+	<kkrpc:reference id="friendEmoticonService" interface="com.melot.common.driver.service.FriendEmoticonService" version="1.0.0"></kkrpc:reference>
+	
+	<!-- 礼物配置信息 -->
+	<kkrpc:reference id="giftListService" interface="com.melot.room.gift.service.GiftListService" version="1.0.0"></kkrpc:reference>
+	
+	<!-- 动态模块 -->
+	<kkrpc:reference id="newsCenter" interface="com.melot.news.service.NewsService" version="1.2.0"></kkrpc:reference>
+	<!-- 资源模块 -->
+	<kkrpc:reference id="resourceCenter" interface="com.melot.resource.service.ResourceService" version="1.0.0"/>
+</beans>
