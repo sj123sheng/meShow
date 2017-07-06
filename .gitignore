@@ -1,7 +1,7 @@
-.settings
+/*.settings
 ### Java template
 # Compiled class file
-target
+/target
 *.class
 
 # Log file
@@ -31,3 +31,7 @@ hs_err_pid*
 *.iml
 out
 gen
+/.project
+/.classpath
+/.settings/org.eclipse.wst.common.project.facet.core.xml
+/.settings/org.eclipse.jdt.core.prefs
