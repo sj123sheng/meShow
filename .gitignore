@@ -1,6 +1,7 @@
 /*.settings
 ### Java template
 # Compiled class file
+/target
 *.class
 
 # Log file
