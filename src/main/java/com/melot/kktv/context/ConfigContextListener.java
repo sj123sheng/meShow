@@ -1,11 +1,5 @@
 package com.melot.kktv.context;
 
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-
-import org.apache.log4j.Logger;
-import org.apache.log4j.xml.DOMConfigurator;
-
 import com.ibatis.sqlmap.client.SqlMapClient;
 import com.melot.common.melot_jedis.RedisDataSourceFactory;
 import com.melot.kktv.lottery.WeeklyCheckIn;
@@ -22,6 +16,11 @@ import com.melot.kktv.util.mongodb.CommonDB;
 import com.melot.kktv.util.mongodb.MongoDBInstance;
 import com.melot.kktv.util.redis.RedisConfigHelper;
 import com.melot.sdk.core.util.MelotBeanFactory;
+import org.apache.log4j.Logger;
+import org.apache.log4j.xml.DOMConfigurator;
+
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 
 public class ConfigContextListener implements ServletContextListener {
 	
@@ -77,7 +76,15 @@ public class ConfigContextListener implements ServletContextListener {
 			WordsFilter.init(event.getServletContext().getRealPath("/") + wordsDictLocation);
 		}
 		String tlsPemLocation = event.getServletContext().getInitParameter("tlsPemLocation");
-		String tlsSoLocation = event.getServletContext().getInitParameter("tlsSoLocation");
+		String tlsSoLocation = null;
+		String osName = System.getProperty("os.name");
+        if(osName.startsWith("Windows")) {
+            tlsSoLocation = event.getServletContext().getInitParameter("tlsSoLocationWindows");
+        }else if(osName.startsWith("Mac OS")){
+            tlsSoLocation = event.getServletContext().getInitParameter("tlsSoLocationMac");
+        }else {
+            tlsSoLocation = event.getServletContext().getInitParameter("tlsSoLocationLinux");
+        }
 		if (tlsPemLocation != null && tlsSoLocation != null) {
 			TlsSig.init(event.getServletContext().getRealPath("/") + tlsPemLocation, event.getServletContext().getRealPath("/") + tlsSoLocation);
 		}

@@ -16,8 +16,9 @@
 		<constructor-arg name="dbName" value="meshowcache" />
 		<constructor-arg name="commMongoIPPort" value="mons.kktv2.com:4001" />
 	</bean>
-
+	
 	<!-- DBMS -->
+	<!-- 
 	<bean id="dataSource_master" class="org.springframework.jndi.JndiObjectFactoryBean" lazy-init="true">
 		<property name="jndiName" value="java:comp/env/jdbc/oracle_master" />
 	</bean>
@@ -37,9 +38,130 @@
 	<bean id="dataSource_pg_kkgame" class="org.springframework.jndi.JndiObjectFactoryBean" lazy-init="true">
 		<property name="jndiName" value="java:comp/env/jdbc/pg_kkgame" />
 	</bean>
+	 -->
 	
-	<bean id="dataSource_pg_kkcx" class="org.springframework.jndi.JndiObjectFactoryBean" lazy-init="true">
-		<property name="jndiName" value="java:comp/env/jdbc/pg_kkcx" />
+	<!-- 测试用 -->
+	<bean id="dataSource_master" class="com.alibaba.druid.pool.DruidDataSource" destroy-method="close" lazy-init="true">
+		<property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"/> 
+		<property name="url" value="jdbc:oracle:thin:@oramst.kktv2.com:1521:tshow" />
+		<property name="username" value="tshowtest"/> 
+		<property name="password" value="tshowpwd"/> 
+		<property name="validationQuery" value="select 1 from dual" />
+		
+		<property name="poolPreparedStatements" value="false"/>
+		<property name="initialSize" value="8"/> 
+		<property name="maxActive" value="20"/> 
+		<property name="maxIdle" value="20"/>
+		<property name="maxWait" value="5000" />
+		<property name="minIdle" value="8"/>
+		<property name="numTestsPerEvictionRun" value="10" />
+		<property name="testWhileIdle" value="true" />
+		<property name="testOnBorrow" value="true" />
+		<property name="defaultAutoCommit" value="true" />
+		<property name="timeBetweenLogStatsMillis" value="180000"/>
+       	<property name="filters" value="stat,log4j" />
+	</bean>
+	
+	<bean id="dataSource_backup" class="com.alibaba.druid.pool.DruidDataSource" destroy-method="close" lazy-init="true">
+		<property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"/> 
+		<property name="url" value="jdbc:oracle:thin:@oraslv.kktv2.com:1521:tshow" />
+		<property name="username" value="tshowtest"/> 
+		<property name="password" value="tshowpwd"/> 
+		<property name="validationQuery" value="select 1 from dual" />
+		
+		<property name="poolPreparedStatements" value="false"/>
+		<property name="initialSize" value="8"/> 
+		<property name="maxActive" value="20"/> 
+		<property name="maxIdle" value="20"/>
+		<property name="maxWait" value="5000" />
+		<property name="minIdle" value="8"/>
+		<property name="numTestsPerEvictionRun" value="10" />
+		<property name="testWhileIdle" value="true" />
+		<property name="testOnBorrow" value="true" />
+		<property name="defaultAutoCommit" value="true" />
+		<property name="timeBetweenLogStatsMillis" value="180000"/>
+       	<property name="filters" value="stat,log4j" />
+	</bean>
+	
+	<!-- test db 10.0.0.81:5432/tshow tshow tshow@2014 -->
+	<bean id="dataSource_pg_master" class="com.alibaba.druid.pool.DruidDataSource" lazy-init="true">
+		<property name="driverClassName" value="org.postgresql.Driver" />
+		<property name="url" value="jdbc:postgresql://pg1.kktv2.com:6531/tshow?prepareThreshold=0" />
+		<property name="username" value="tshow" />
+		<property name="password" value="tshow2014" />
+		<property name="validationQuery" value="select version()" />
+
+		<property name="poolPreparedStatements" value="false" />
+		<property name="initialSize" value="1" />
+		<property name="maxActive" value="8" />
+		<property name="maxIdle" value="8" />
+		<property name="maxWait" value="5000" />
+		<property name="testOnBorrow" value="true" />
+		<property name="testOnReturn" value="true" />
+		<property name="testWhileIdle" value="true" />
+		<property name="defaultAutoCommit" value="true" />
+		<property name="timeBetweenLogStatsMillis" value="180000"/>
+       	<property name="filters" value="stat,log4j" />
+	</bean>
+	
+	<bean id="dataSource_pg_slave" class="com.alibaba.druid.pool.DruidDataSource" lazy-init="true">
+		<property name="driverClassName" value="org.postgresql.Driver" />
+		<property name="url" value="jdbc:postgresql://pg2.kktv2.com:6532/tshow?prepareThreshold=0" />
+		<property name="username" value="tshow" />
+		<property name="password" value="tshow2014" />
+		<property name="validationQuery" value="select version()" />
+
+		<property name="poolPreparedStatements" value="false" />
+		<property name="initialSize" value="1" />
+		<property name="maxActive" value="8" />
+		<property name="maxIdle" value="8" />
+		<property name="maxWait" value="5000" />
+		<property name="testOnBorrow" value="true" />
+		<property name="testOnReturn" value="true" />
+		<property name="testWhileIdle" value="true" />
+		<property name="defaultAutoCommit" value="true" />
+		<property name="timeBetweenLogStatsMillis" value="180000"/>
+       	<property name="filters" value="stat,log4j" />
+	</bean>
+	
+	<bean id="dataSource_pg_kkgame" class="com.alibaba.druid.pool.DruidDataSource" lazy-init="true">
+		<property name="driverClassName" value="org.postgresql.Driver" />
+		<property name="url" value="jdbc:postgresql://pg1.kktv2.com:6531/kkgame?prepareThreshold=0" />
+		<property name="username" value="kkgame" />
+		<property name="password" value="kkgame2015" />
+		<property name="validationQuery" value="select version()" />
+
+		<property name="poolPreparedStatements" value="false" />
+		<property name="initialSize" value="1" />
+		<property name="maxActive" value="8" />
+		<property name="maxIdle" value="8" />
+		<property name="maxWait" value="5000" />
+		<property name="testOnBorrow" value="true" />
+		<property name="testOnReturn" value="true" />
+		<property name="testWhileIdle" value="true" />
+		<property name="defaultAutoCommit" value="true" />
+		<property name="timeBetweenLogStatsMillis" value="180000"/>
+       	<property name="filters" value="stat,log4j" />
+	</bean>
+	
+	<bean id="dataSource_pg_kkcx" class="com.alibaba.druid.pool.DruidDataSource" lazy-init="true">
+		<property name="driverClassName" value="org.postgresql.Driver" />
+		<property name="url" value="jdbc:postgresql://pg1.kktv2.com:6531/kkcx?prepareThreshold=0" />
+		<property name="username" value="kkcx" />
+		<property name="password" value="kkcx2015" />
+		<property name="validationQuery" value="select version()" />
+
+		<property name="poolPreparedStatements" value="false" />
+		<property name="initialSize" value="1" />
+		<property name="maxActive" value="8" />
+		<property name="maxIdle" value="8" />
+		<property name="maxWait" value="5000" />
+		<property name="testOnBorrow" value="true" />
+		<property name="testOnReturn" value="true" />
+		<property name="testWhileIdle" value="true" />
+		<property name="defaultAutoCommit" value="true" />
+		<property name="timeBetweenLogStatsMillis" value="180000"/>
+       	<property name="filters" value="stat,log4j" />
 	</bean>
 	
 </beans>
