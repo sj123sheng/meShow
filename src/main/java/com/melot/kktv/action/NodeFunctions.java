@@ -22,6 +22,7 @@ import com.google.gson.JsonParser;
 import com.melot.api.menu.sdk.dao.domain.RoomExtraInfo;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.api.menu.sdk.service.RoomInfoService;
+import com.melot.common.driver.service.ShareService;
 import com.melot.content.config.apply.service.ApplyActorService;
 import com.melot.content.config.domain.ApplyActor;
 import com.melot.content.config.domain.ApplyContractInfo;
@@ -1494,4 +1495,38 @@ public class NodeFunctions {
 		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 		return result;
 	}
+	
+	/**
+     * 获取房间扩展配置信息(50001030)
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getRoomExtendConfInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        int roomId;
+        try {
+            roomId = CommonUtil.getJsonParamInt(jsonObject, "roomId", 0, TagCodeEnum.ROOMID_MISSING, 1, Integer.MAX_VALUE);
+        } catch(CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch(Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        try {
+            ShareService shareService = MelotBeanFactory.getBean("shareService", ShareService.class);
+            result.addProperty("isFanFeedBack", "1".equals(shareService.getFanFeedBackInfo(roomId).get("isOpen")) ? 1 : 0);
+        } catch (Exception e) {
+            logger.error("call ShareService getFanFeedBackInfo catched exception, roomId : " + roomId, e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+        
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
 }

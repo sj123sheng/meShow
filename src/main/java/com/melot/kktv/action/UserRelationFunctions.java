@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -28,6 +29,7 @@ import com.melot.kkcore.relation.api.ActorRelation;
 import com.melot.kkcore.relation.api.RelationType;
 import com.melot.kkcore.relation.service.ActorRelationService;
 import com.melot.kkcore.user.api.UserProfile;
+import com.melot.kkcx.redis.UserRelationSource;
 import com.melot.kkcx.service.GeneralService;
 import com.melot.kkcx.service.RoomService;
 import com.melot.kkcx.service.UserAssetServices;
@@ -418,9 +420,6 @@ public class UserRelationFunctions {
 		int selfTag = 0;// 不带token,查看他人的粉丝列表
 		if (checkTag) {
 			selfTag = 1;// 带有token,查看自己的粉丝列表
-		} else {
-		    result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-		    return result;
 		}
 		
         int userId = 0;
@@ -458,6 +457,12 @@ public class UserRelationFunctions {
 			}
 		}
 		result.addProperty("fansCount", totalCount);
+		
+		//不是自己查看仅返回粉丝数
+		if (!checkTag) {
+		    result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+		    return result;
+		}
 		
 		JsonArray jRoomList = new JsonArray();
 		
@@ -991,6 +996,119 @@ public class UserRelationFunctions {
 		return null;
 	}
 	
+    private static Map<String, Object> interceptAndSortListBylive(int userId, int platform, List<ActorRelation> list, int type, int pageIndex, int countPerPage) {
+        if (list != null && list.size() > 0) {
+            Map<String, Object> map = new HashMap<String, Object>();
+            int page = list.size() / countPerPage + (list.size() % countPerPage == 0 ? 0 : 1);
+            map.put("page", page);
+
+            if (UserRelationSource.isKeyExist("manage_list_" + userId)) {
+                String json = UserRelationSource.getHotFieldValue("manage_list_" + userId, String.format("%s_%s_%s", platform, pageIndex, countPerPage));
+                if (json != null) {
+                    map.put("list", new Gson().fromJson(json, new com.google.gson.reflect.TypeToken<List<Room>>() {}.getType()));
+                    return map;
+                }
+            }
+
+            if (type == 2) {
+                Collections.sort(list, new Comparator<ActorRelation>() {
+                    @Override
+                    public int compare(ActorRelation o1, ActorRelation o2) {
+                        if (o1.getCreateTime() == null || o2.getCreateTime() == null) {
+                            return -1;
+                        }
+                        return o2.getCreateTime().compareTo(o1.getCreateTime());
+                    }
+                });
+            }
+
+            Map<Integer, Integer> mapActorScore = new HashMap<Integer, Integer>();
+            int idInt, idOrder = 1;
+            StringBuffer actorIds = new StringBuffer();
+            List<Integer> idIntList = new ArrayList<Integer>();
+            for (ActorRelation actor : list) {
+                idInt = actor.getActorId();
+                idIntList.add(idInt);
+                mapActorScore.put(idInt, idOrder++);
+                actorIds.append(idInt);
+                actorIds.append(",");
+            }
+
+            TreeMap<Integer, Room> outputMap = new TreeMap<Integer, Room>();
+
+            // 获取在线主播
+            FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
+            List<RoomInfo> liveRoomInfos = firstPageHandler.getLiveRooms(actorIds.toString().split(","));
+            List<Integer> liveIds;
+            Room room = null;
+            if (liveRoomInfos != null && liveRoomInfos.size() > 0) {
+                Collections.sort(liveRoomInfos, new Comparator<RoomInfo>() {
+                    @Override
+                    public int compare(RoomInfo rm1, RoomInfo rm2) {
+                        if (rm1.getPeopleInRoom() == null || rm2.getPeopleInRoom() == null) {
+                            return -1;
+                        }
+                        return rm1.getPeopleInRoom().compareTo(rm2.getPeopleInRoom());
+                    }
+                });
+                
+                liveIds = new ArrayList<Integer>();
+                int liveOrder = 0;
+                for (RoomInfo roomInfo : liveRoomInfos) {
+                    liveOrder--;
+                    room = new Room();
+                    room.setUserId(roomInfo.getActorId());
+                    outputMap.put(liveOrder, room);
+                    liveIds.add(roomInfo.getActorId());
+                }
+
+                idIntList.removeAll(liveIds);
+            }
+
+            for (ActorRelation actor : list) {
+                if (idIntList.contains(actor.getActorId())) {
+                    room = new Room();
+                    room.setUserId(actor.getActorId());
+                    outputMap.put(mapActorScore.get(actor.getActorId()), room);
+                }
+            }
+
+            if (outputMap.size() > 0) {
+                List<Room> output = null;
+                List<Room> roomList = new ArrayList<Room>(outputMap.values());
+
+                // 分页缓存
+                if (page > 0) {
+                    Map<String, String> pageMap = new HashMap<String, String>();
+                    int flagPage = 0;
+                    int size = outputMap.size();
+                    while (flagPage < page) {
+                        List<Room> jRoomList = new ArrayList<Room>();
+                        int i = 0;
+                        while (i < countPerPage) {
+                            if (flagPage * countPerPage + i >= size) {
+                                break;
+                            }
+                            int index = flagPage * countPerPage + i;
+                            Room roomInfo = roomList.get(index);
+                            jRoomList.add(roomInfo);
+                            i++;
+                        }
+                        flagPage++;
+                        if (flagPage == pageIndex) {
+                            output = jRoomList;
+                            map.put("list", output);
+                        }
+                        pageMap.put(String.format("%s_%s_%s", platform, flagPage, countPerPage), new Gson().toJson(jRoomList));
+                    }
+                    UserRelationSource.setHotData("manage_list_" + userId, pageMap, 300);
+                }
+            }
+            return map;
+        }
+        return null;
+    }
+	
 	/**
 	 * 获取用户管理的房间的列表(10003012)
 	 * 
@@ -1028,7 +1146,13 @@ public class UserRelationFunctions {
 		try {
 			ActorRelationService actorRelationService = MelotBeanFactory.getBean("kkActorRelationService", ActorRelationService.class);
 			List<ActorRelation> relationList = actorRelationService.getRelationByUserId(userId, RelationType.ADMIN.typeId());
-			Map<String, Object> localMap = interceptAndSortList(relationList, 2, pageIndex, countPerPage);
+			Map<String, Object> localMap;
+			if (relationList != null && relationList.size() > 1500) {
+			    localMap = interceptAndSortList(relationList, 2, pageIndex, countPerPage);
+			} else {
+			    localMap = interceptAndSortListBylive(userId, platform, relationList, 2, pageIndex, countPerPage);
+			}
+			
 			if (localMap != null) {
 				pageTotal = (int) localMap.get("page");
 				roomList = (List<Room>) localMap.get("list");
@@ -1044,11 +1168,9 @@ public class UserRelationFunctions {
 		try {
 			if (roomList != null && roomList.size() > 0) {
 				roomList = UserService.addUserExtra(roomList);
-			    List<Integer> actorIds = new ArrayList<Integer>();
 			    StringBuffer actorIds2 = new StringBuffer();
 			    for (Room room : roomList) {
 			        if (room.getActorTag() != null && room.getActorTag().intValue() == 1) {
-			            actorIds.add(room.getUserId());
 			            actorIds2.append(room.getUserId());
 			            actorIds2.append(",");
 			        }
@@ -1057,15 +1179,6 @@ public class UserRelationFunctions {
 			        roomInfoList = com.melot.kktv.service.RoomService.getRoomListByRoomIds(actorIds2.substring(0, actorIds2.length() - 1));
 			    }
 			    
-			    if (roomList.size() > 1) {
-			        Collections.sort(roomList, new Comparator<Room>() {
-			            public int compare(Room r1, Room r2) {
-			                Integer live1 = r1.getLiveendtime() == null ? 1 : 0;
-			                Integer live2 = r2.getLiveendtime() == null ? 1 : 0;
-			                return live2.compareTo(live1);
-			            }
-			        });
-			    }
 			    for (Room room : roomList) {
 			    	int roomId = room.getUserId();
 			    	if (room.getActorTag() != null && room.getActorTag().intValue() == 1

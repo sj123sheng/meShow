@@ -29,16 +29,35 @@ public class RoomTF {
 	    return roomInfoToJson(roomInfo, platform, false);
 	}
 
+	
+	/**
+	 * @param roomInfo
+	 * @param platform
+	 * @param ifHttpPack       是否拼接前缀，false-不 true-拼接
+	 * @return
+	 */
+	public static JsonObject roomInfoToJson(RoomInfo roomInfo, int platform, boolean ifHttpPack) {
+	    return roomInfoToJson(roomInfo, platform, ifHttpPack, false);
+	}
+	
+    
     /**
-     * Transform RoomInfo Object to JsonObject 
      * @param roomInfo
      * @param platform
+     * @param ifHttpPack
+     * @param onlyCore    false 有拓展字段
+     *                    true 仅仅核心字段
      * @return
      */
-    public static JsonObject roomInfoToJson(RoomInfo roomInfo, int platform, boolean ifHttpPack) {
+    public static JsonObject roomInfoToJson(RoomInfo roomInfo, int platform, boolean ifHttpPack, boolean onlyCore) {
         JsonObject roomObject = new JsonObject();
+        
         if (roomInfo.getActorId() != null) {
-            extractCommonRoomInfo(roomInfo, roomObject);
+            if (onlyCore) {
+                extractCommonRoomInfoCore(roomInfo, roomObject);
+            }else {
+                extractCommonRoomInfo(roomInfo, roomObject);
+            }
             
             String basePictureDir = ifHttpPack ? ConfigHelper.getHttpdir() : "";
             
@@ -119,9 +138,11 @@ public class RoomTF {
      * @param roomObject
      */
 	private static void extractCommonRoomInfo(RoomInfo roomInfo, JsonObject roomObject) {
-		// 轮播房添加roomId，非轮播房正在直播的主播等于actorId
+		
+	    extractCommonRoomInfoCore(roomInfo, roomObject);
+		
+	    // 轮播房添加roomId，非轮播房正在直播的主播等于actorId
 	    roomObject.addProperty("roomId", roomInfo.getRoomId() != null ? roomInfo.getRoomId() : roomInfo.getActorId());
-        roomObject.addProperty("userId", roomInfo.getActorId());
         
         if (roomInfo.getScreenType() != null) {
             roomObject.addProperty("screenType", roomInfo.getScreenType());
@@ -129,9 +150,6 @@ public class RoomTF {
             roomObject.addProperty("screenType", 1);
         }
         
-        if (!StringUtil.strIsNull(roomInfo.getNickname())) {
-            roomObject.addProperty("nickname", GeneralService.replaceSensitiveWords(roomInfo.getActorId(), roomInfo.getNickname()));
-        }
         if (roomInfo.getPeopleInRoom() != null) {
             roomObject.addProperty("onlineCount", roomInfo.getPeopleInRoom());
         } else {
@@ -165,16 +183,6 @@ public class RoomTF {
             roomInfo.setLivePoster(ConstantEnum.ILLEGAL_ROOM_POSTER);
         }
         
-        if (roomInfo.getActorLevel() != null) {
-            roomObject.addProperty("actorLevel", roomInfo.getActorLevel());
-        } else {
-            roomObject.addProperty("actorLevel", 0);
-        }
-        if (roomInfo.getRichLevel() != null) {
-            roomObject.addProperty("richLevel", roomInfo.getRichLevel());
-        } else {
-            roomObject.addProperty("richLevel", 0);
-        }
         if (roomInfo.getIcon() != null) {
             roomObject.addProperty("icon", roomInfo.getIcon());
             if (roomInfo.getIcon().intValue() == 3) {
@@ -192,9 +200,6 @@ public class RoomTF {
         }
         if (roomInfo.getGender() != null) {
             roomObject.addProperty("roomGender", roomInfo.getGender());
-            roomObject.addProperty("gender", roomInfo.getGender());
-        } else {
-        	roomObject.addProperty("gender", 0);
         }
         if (roomInfo.getRoomTag() != null) {
             roomObject.addProperty("roomTag", roomInfo.getRoomTag());
@@ -269,6 +274,36 @@ public class RoomTF {
  			}
  			roomObject.add("validId", validVirtualId);
  		}
+	}
+	
+	private static void extractCommonRoomInfoCore(RoomInfo roomInfo, JsonObject roomObject) {
+	    roomObject.addProperty("userId", roomInfo.getActorId());
+	    
+	    if (!StringUtil.strIsNull(roomInfo.getNickname())) {
+            roomObject.addProperty("nickname", GeneralService.replaceSensitiveWords(roomInfo.getActorId(), roomInfo.getNickname()));
+        }
+	    
+	    if (roomInfo.getActorLevel() != null) {
+            roomObject.addProperty("actorLevel", roomInfo.getActorLevel());
+        } else {
+            roomObject.addProperty("actorLevel", 0);
+        }
+	    
+        if (roomInfo.getRichLevel() != null) {
+            roomObject.addProperty("richLevel", roomInfo.getRichLevel());
+        } else {
+            roomObject.addProperty("richLevel", 0);
+        }
+        
+        if (roomInfo.getGender() != null) {
+            roomObject.addProperty("gender", roomInfo.getGender());
+        } else {
+            roomObject.addProperty("gender", 0);
+        }
+        
+        if (roomInfo.getRegisterCity() != null) {
+            roomObject.addProperty("cityId", Math.abs(roomInfo.getRegisterCity()));
+        }
 	}
 	
 	/**

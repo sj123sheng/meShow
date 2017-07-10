@@ -16,7 +16,6 @@ public class Sticker {
 
     private int sId;
     
-    //1:全部 2：PC 3：app
     private int platform;
     
     private String sName;

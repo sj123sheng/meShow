@@ -11,6 +11,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.melot.common.driver.base.Result;
+import com.melot.common.driver.base.ResultCode;
+import com.melot.common.driver.domain.AgoraInfo;
 import com.melot.common.driver.domain.ConfigInfo;
 import com.melot.common.driver.domain.FriendEmoticon;
 import com.melot.common.driver.service.ConfigInfoService;
@@ -42,6 +45,8 @@ import com.melot.sdk.core.util.MelotBeanFactory;
 public class ConfigFunctions {
 
     private static Logger logger = Logger.getLogger(ConfigFunctions.class);
+    
+    private static final String KEY = "YdsSH&@#Uyh";
 
     /**
      * 50001101
@@ -363,6 +368,59 @@ public class ConfigFunctions {
         return result;
     }
     
+    /**
+     * 获取声网相关信息【50001109】
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getAgoraInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        int roomId;
+        int roomSource;
+        String sign;
+        try {
+            roomId = CommonUtil.getJsonParamInt(jsonObject, "roomId", 0, TagCodeEnum.PARAMETER_PARSE_ERROR, 1, Integer.MAX_VALUE);
+            roomSource = CommonUtil.getJsonParamInt(jsonObject, "roomSource", 0, TagCodeEnum.PARAMETER_PARSE_ERROR, 1, Integer.MAX_VALUE);
+            sign = CommonUtil.getJsonParamString(jsonObject, "sign", null, TagCodeEnum.PARAMETER_PARSE_ERROR, 0, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        // 校验参数
+        if (!checkSign(roomId, roomSource, sign)) {
+            result.addProperty("TagCode", "5110901");
+            return result;
+        }
+        try {
+            ConfigInfoService configInfoService = MelotBeanFactory.getBean("configInfoService", ConfigInfoService.class);
+            Result<AgoraInfo> agoraInfoResult = configInfoService.getAgoraInfo(roomId, roomSource);
+            if (agoraInfoResult == null || agoraInfoResult.getCode() == null) {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            if (ResultCode.SUCCESS.equals(agoraInfoResult.getCode())) {
+                AgoraInfo info = agoraInfoResult.getData();
+                result.addProperty("appId", info.getAppId());
+                result.addProperty("channelId", info.getChannelId());
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                return result;                
+            }else {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+        } catch (Exception e) {
+            logger.error("Module Error ConfigInfoService.getAgoraInfo()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            return result;
+        }        
+    }
+    
     private String returnCodeToTagCode (String returnCode){
         if (returnCode.equals(ReturnResultCode.ERROR_PARMETER)) {
             return TagCodeEnum.GIFT_MODULE_ERROR_PARMETER;
@@ -374,5 +432,26 @@ public class ConfigFunctions {
             return TagCodeEnum.GIFT_MODULE_ERROR_REQUEST_TIMEOUT;
         }
         return TagCodeEnum.GIFT_MODULE_ERROR_UNDEFINED;
+    }
+    
+    /**
+     * 校验参数
+     * @return
+     */
+    private boolean checkSign(int roomId, int roomSource, String sign) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(KEY);
+        builder.append("roomId=");
+        builder.append(roomId);
+        builder.append("&roomSource=");
+        builder.append(roomSource);
+        builder.append(KEY);
+        
+        String param = builder.toString();
+        String signTemp = CommonUtil.md5(param);
+        if (signTemp.equals(sign)) {
+            return true;
+        }
+        return false;
     }
 }

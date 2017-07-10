@@ -330,6 +330,7 @@ public class ProfileFunctions {
 		    if (area != null) {
 		        result.addProperty("area", area);
             }
+		    result.addProperty("fansCount", UserRelationService.getFansCount(userId));
 		    if (userInfoDetail.getProfile().getNickName() != null) {
 	        	t = Cat.getProducer().newTransaction("MCall", "GeneralService.replaceSensitiveWords");
 				try {
@@ -471,7 +472,6 @@ public class ProfileFunctions {
             
 			// 调用时带有token 说明是本人调用,需要返回用户秀币
 			if (checkTag) {
-			    result.addProperty("fansCount", UserRelationService.getFansCount(userId));
 			    result.addProperty("followCount", UserRelationService.getFollowsCount(userId));
 			    if (userInfoDetail.getProfile().getPhoneNum() != null) {
 			        result.addProperty("phoneNum", userInfoDetail.getProfile().getPhoneNum());
@@ -2503,8 +2503,10 @@ public class ProfileFunctions {
             }
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
+            return result;
         } catch (Exception e) {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
         }
         
         RoomInfo roomInfo = new RoomInfo();
@@ -3008,6 +3010,36 @@ public class ProfileFunctions {
         result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
     	return result;
 	}
+	
+	/**
+     * 设置常用设备(50001027)
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject setCommonDevice(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        int userId;
+        String deviceUId, deviceName, deviceModel;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            deviceUId = CommonUtil.getJsonParamString(jsonObject, "deviceUId", "", null, 1, 40);
+            deviceName = CommonUtil.getJsonParamString(jsonObject, "deviceName", "", null, 1, 40);
+            deviceModel = CommonUtil.getJsonParamString(jsonObject, "deviceModel", "", null, 1, 40);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        ProfileServices.setUserCommonDevice(userId, deviceUId, deviceName, deviceModel);
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
     
     /**
      * 删除常用设备(50001028)

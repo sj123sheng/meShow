@@ -24,10 +24,7 @@
 				<value>com.melot.opus.service.VideoService</value>
 				<value>com.melot.opus.service.BasicService</value>
 				<value>com.melot.news.service.NewsService</value>
-				<value>com.melot.resource.driver.ResourceService</value>
 				<value>com.melot.storehouse.service.StorehouseService</value>
-				<value>com.melot.blacklist.driver.service.RoomAdminService</value>
-				<value>com.melot.blacklist.driver.service.BlacklistService</value>
 				<value>com.melot.client.api.TimSystemService</value>
 				<value>com.melot.video.driver.service.VideoInfoService</value>
 				<!-- kkGame使用 -->

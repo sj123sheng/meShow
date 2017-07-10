@@ -596,6 +596,7 @@ public class UserService {
         return null;
 	}
 	
+	
 	/**
 	 * 从内存数据库中读出用户actorLevel
 	 * @param userId
