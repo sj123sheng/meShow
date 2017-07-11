@@ -12,15 +12,15 @@
 	</bean>
 	
 	<bean id="httpdir" class="java.lang.String">
-		<constructor-arg type="java.lang.String" value="http://ures.kktv8.com/kktv" />
+		<constructor-arg type="java.lang.String" value="${httpdir}" />
 	</bean>
 	
 	<bean id="mcmURL" class="java.lang.String">
-		<constructor-arg type="java.lang.String" value="http://10.0.13.33:60000/mcm/" />
+		<constructor-arg type="java.lang.String" value="${mcmURL}" />
 	</bean>
 	
 	<bean id="mfsURL" class="java.lang.String">
-		<constructor-arg type="java.lang.String" value="http://10.0.13.33:60001/mfs/" />
+		<constructor-arg type="java.lang.String" value="${mfsURL}" />
 	</bean>
 	
 	<bean id="versionSavePath" class="java.lang.String">

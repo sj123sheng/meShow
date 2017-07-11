@@ -8,160 +8,138 @@
 	</bean>
 	<bean id="commonDB" class="com.melot.kktv.util.mongodb.MongoDBInstance" destroy-method="destroy" lazy-init="true">
 		<constructor-arg name="mongoClientAgent" ref="mongoClientAgent" />
-		<constructor-arg name="dbName" value="meshow" />
-		<constructor-arg name="commMongoIPPort" value="mons.kktv2.com:4001" />
+		<constructor-arg name="dbName" value="${spring.ds.mongodh.commonDB.dbName}" />
+		<constructor-arg name="commMongoIPPort" value="${spring.ds.mongodh.commonDB.commMongoIPPort}" />
 	</bean>
 	<bean id="cacheDB" class="com.melot.kktv.util.mongodb.MongoDBInstance" destroy-method="destroy" lazy-init="true">
 		<constructor-arg name="mongoClientAgent" ref="mongoClientAgent" />
-		<constructor-arg name="dbName" value="meshowcache" />
-		<constructor-arg name="commMongoIPPort" value="mons.kktv2.com:4001" />
+		<constructor-arg name="dbName" value="${spring.ds.mongodh.cacheDB.dbName}" />
+		<constructor-arg name="commMongoIPPort" value="${spring.ds.mongodh.cacheDB.commMongoIPPort}" />
 	</bean>
-	
+
 	<!-- DBMS -->
-	<!-- 
-	<bean id="dataSource_master" class="org.springframework.jndi.JndiObjectFactoryBean" lazy-init="true">
-		<property name="jndiName" value="java:comp/env/jdbc/oracle_master" />
-	</bean>
-	
-	<bean id="dataSource_backup" class="org.springframework.jndi.JndiObjectFactoryBean" lazy-init="true">
-		<property name="jndiName" value="java:comp/env/jdbc/oracle_slave" />
-	</bean>
-	
-	<bean id="dataSource_pg_master" class="org.springframework.jndi.JndiObjectFactoryBean" lazy-init="true">
-		<property name="jndiName" value="java:comp/env/jdbc/pg_master" />
-	</bean>
-	
-	<bean id="dataSource_pg_slave" class="org.springframework.jndi.JndiObjectFactoryBean" lazy-init="true">
-		<property name="jndiName" value="java:comp/env/jdbc/pg_slave" />
-	</bean>
-	
-	<bean id="dataSource_pg_kkgame" class="org.springframework.jndi.JndiObjectFactoryBean" lazy-init="true">
-		<property name="jndiName" value="java:comp/env/jdbc/pg_kkgame" />
-	</bean>
-	 -->
-	
-	<!-- 测试用 -->
 	<bean id="dataSource_master" class="com.alibaba.druid.pool.DruidDataSource" destroy-method="close" lazy-init="true">
-		<property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"/> 
-		<property name="url" value="jdbc:oracle:thin:@oramst.kktv2.com:1521:tshow" />
-		<property name="username" value="tshowtest"/> 
-		<property name="password" value="tshowpwd"/> 
-		<property name="validationQuery" value="select 1 from dual" />
-		
-		<property name="poolPreparedStatements" value="false"/>
-		<property name="initialSize" value="8"/> 
-		<property name="maxActive" value="20"/> 
-		<property name="maxIdle" value="20"/>
-		<property name="maxWait" value="5000" />
-		<property name="minIdle" value="8"/>
-		<property name="numTestsPerEvictionRun" value="10" />
-		<property name="testWhileIdle" value="true" />
-		<property name="testOnBorrow" value="true" />
-		<property name="defaultAutoCommit" value="true" />
-		<property name="timeBetweenLogStatsMillis" value="180000"/>
-       	<property name="filters" value="stat,log4j" />
+		<property name="driverClassName" value="${spring.ds.oracle.driverClassName}"/>
+		<property name="url" value="${spring.ds.oracle.url}" />
+		<property name="username" value="${spring.ds.oracle.username}"/>
+		<property name="password" value="${spring.ds.oracle.password}"/>
+		<property name="validationQuery" value="${spring.ds.oracle.validationQuery}" />
+
+		<property name="poolPreparedStatements" value="${spring.ds.oracle.poolPreparedStatements}"/>
+		<property name="initialSize" value="${spring.ds.oracle.initialSize}"/>
+		<property name="maxActive" value="${spring.ds.oracle.maxActive}"/>
+		<property name="maxIdle" value="${spring.ds.oracle.maxIdle}"/>
+		<property name="maxWait" value="${spring.ds.oracle.maxWait}" />
+		<property name="minIdle" value="${spring.ds.oracle.minIdle}"/>
+		<property name="numTestsPerEvictionRun" value="${spring.ds.oracle.numTestsPerEvictionRun}" />
+		<property name="testWhileIdle" value="${spring.ds.oracle.testWhileIdle}" />
+		<property name="testOnBorrow" value="${spring.ds.oracle.testOnBorrow}" />
+		<property name="defaultAutoCommit" value="${spring.ds.oracle.defaultAutoCommit}" />
+		<property name="timeBetweenLogStatsMillis" value="${spring.ds.oracle.timeBetweenLogStatsMillis}"/>
+		<property name="filters" value="${spring.ds.oracle.filters}" />
 	</bean>
-	
+
 	<bean id="dataSource_backup" class="com.alibaba.druid.pool.DruidDataSource" destroy-method="close" lazy-init="true">
-		<property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"/> 
-		<property name="url" value="jdbc:oracle:thin:@oraslv.kktv2.com:1521:tshow" />
-		<property name="username" value="tshowtest"/> 
-		<property name="password" value="tshowpwd"/> 
-		<property name="validationQuery" value="select 1 from dual" />
-		
-		<property name="poolPreparedStatements" value="false"/>
-		<property name="initialSize" value="8"/> 
-		<property name="maxActive" value="20"/> 
-		<property name="maxIdle" value="20"/>
-		<property name="maxWait" value="5000" />
-		<property name="minIdle" value="8"/>
-		<property name="numTestsPerEvictionRun" value="10" />
-		<property name="testWhileIdle" value="true" />
-		<property name="testOnBorrow" value="true" />
-		<property name="defaultAutoCommit" value="true" />
-		<property name="timeBetweenLogStatsMillis" value="180000"/>
-       	<property name="filters" value="stat,log4j" />
+		<property name="driverClassName" value="${spring.ds.oracle.slave.driverClassName}"/>
+		<property name="url" value="${spring.ds.oracle.slave.url}" />
+		<property name="username" value="${spring.ds.oracle.slave.username}"/>
+		<property name="password" value="${spring.ds.oracle.slave.password}"/>
+		<property name="validationQuery" value="${spring.ds.oracle.slave.validationQuery}" />
+
+		<property name="poolPreparedStatements" value="${spring.ds.oracle.slave.poolPreparedStatements}"/>
+		<property name="initialSize" value="${spring.ds.oracle.slave.initialSize}"/>
+		<property name="maxActive" value="${spring.ds.oracle.slave.maxActive}"/>
+		<property name="maxIdle" value="${spring.ds.oracle.slave.maxIdle}"/>
+		<property name="maxWait" value="${spring.ds.oracle.slave.maxWait}" />
+		<property name="minIdle" value="${spring.ds.oracle.slave.minIdle}"/>
+		<property name="numTestsPerEvictionRun" value="${spring.ds.oracle.slave.numTestsPerEvictionRun}" />
+		<property name="testWhileIdle" value="${spring.ds.oracle.slave.testWhileIdle}" />
+		<property name="testOnBorrow" value="${spring.ds.oracle.slave.testOnBorrow}" />
+		<property name="defaultAutoCommit" value="${spring.ds.oracle.slave.defaultAutoCommit}" />
+		<property name="timeBetweenLogStatsMillis" value="${spring.ds.oracle.slave.timeBetweenLogStatsMillis}"/>
+		<property name="filters" value="${spring.ds.oracle.slave.filters}" />
 	</bean>
-	
-	<!-- test db 10.0.0.81:5432/tshow tshow tshow@2014 -->
+
 	<bean id="dataSource_pg_master" class="com.alibaba.druid.pool.DruidDataSource" lazy-init="true">
-		<property name="driverClassName" value="org.postgresql.Driver" />
-		<property name="url" value="jdbc:postgresql://pg1.kktv2.com:6531/tshow?prepareThreshold=0" />
-		<property name="username" value="tshow" />
-		<property name="password" value="tshow2014" />
-		<property name="validationQuery" value="select version()" />
+		<property name="driverClassName" value="${spring.ds.pg.driverClassName}" />
+		<property name="url" value="${spring.ds.pg.url}" />
+		<property name="username" value="${spring.ds.pg.username}" />
+		<property name="password" value="${spring.ds.pg.password}" />
+		<property name="validationQuery" value="${spring.ds.pg.validationQuery}" />
 
-		<property name="poolPreparedStatements" value="false" />
-		<property name="initialSize" value="1" />
-		<property name="maxActive" value="8" />
-		<property name="maxIdle" value="8" />
-		<property name="maxWait" value="5000" />
-		<property name="testOnBorrow" value="true" />
-		<property name="testOnReturn" value="true" />
-		<property name="testWhileIdle" value="true" />
-		<property name="defaultAutoCommit" value="true" />
-		<property name="timeBetweenLogStatsMillis" value="180000"/>
-       	<property name="filters" value="stat,log4j" />
+		<property name="poolPreparedStatements" value="${spring.ds.pg.poolPreparedStatements}" />
+		<property name="initialSize" value="${spring.ds.pg.initialSize}" />
+		<property name="maxActive" value="${spring.ds.pg.maxActive}" />
+		<property name="maxWait" value="${spring.ds.pg.maxWait}" />
+		<property name="testOnBorrow" value="${spring.ds.pg.testOnBorrow}" />
+		<property name="testOnReturn" value="${spring.ds.pg.testOnReturn}" />
+		<property name="testWhileIdle" value="${spring.ds.pg.testWhileIdle}" />
+		<property name="defaultAutoCommit" value="${spring.ds.pg.defaultAutoCommit}" />
+		<property name="filters" value="${spring.ds.pg.filters}" />
+		<property name="minIdle" value="${spring.ds.pg.minIdle}" />
+		<property name="numTestsPerEvictionRun" value="${spring.ds.pg.numTestsPerEvictionRun}" />
+		<property name="timeBetweenLogStatsMillis" value="${spring.ds.pg.timeBetweenLogStatsMillis}" />
 	</bean>
-	
+
 	<bean id="dataSource_pg_slave" class="com.alibaba.druid.pool.DruidDataSource" lazy-init="true">
-		<property name="driverClassName" value="org.postgresql.Driver" />
-		<property name="url" value="jdbc:postgresql://pg2.kktv2.com:6532/tshow?prepareThreshold=0" />
-		<property name="username" value="tshow" />
-		<property name="password" value="tshow2014" />
-		<property name="validationQuery" value="select version()" />
+		<property name="driverClassName" value="${spring.ds.pg.slave.driverClassName}" />
+		<property name="url" value="${spring.ds.pg.slave.url}" />
+		<property name="username" value="${spring.ds.pg.slave.username}" />
+		<property name="password" value="${spring.ds.pg.slave.password}" />
+		<property name="validationQuery" value="${spring.ds.pg.slave.validationQuery}" />
 
-		<property name="poolPreparedStatements" value="false" />
-		<property name="initialSize" value="1" />
-		<property name="maxActive" value="8" />
-		<property name="maxIdle" value="8" />
-		<property name="maxWait" value="5000" />
-		<property name="testOnBorrow" value="true" />
-		<property name="testOnReturn" value="true" />
-		<property name="testWhileIdle" value="true" />
-		<property name="defaultAutoCommit" value="true" />
-		<property name="timeBetweenLogStatsMillis" value="180000"/>
-       	<property name="filters" value="stat,log4j" />
+		<property name="poolPreparedStatements" value="${spring.ds.pg.slave.poolPreparedStatements}" />
+		<property name="initialSize" value="${spring.ds.pg.slave.initialSize}" />
+		<property name="maxActive" value="${spring.ds.pg.slave.maxActive}" />
+		<property name="maxWait" value="${spring.ds.pg.slave.maxWait}" />
+		<property name="testOnBorrow" value="${spring.ds.pg.slave.testOnBorrow}" />
+		<property name="testOnReturn" value="${spring.ds.pg.slave.testOnReturn}" />
+		<property name="testWhileIdle" value="${spring.ds.pg.slave.testWhileIdle}" />
+		<property name="defaultAutoCommit" value="${spring.ds.pg.slave.defaultAutoCommit}" />
+		<property name="filters" value="${spring.ds.pg.slave.filters}" />
+		<property name="minIdle" value="${spring.ds.pg.slave.minIdle}" />
+		<property name="numTestsPerEvictionRun" value="${spring.ds.pg.slave.numTestsPerEvictionRun}" />
+		<property name="timeBetweenLogStatsMillis" value="${spring.ds.pg.slave.timeBetweenLogStatsMillis}" />
 	</bean>
-	
+
 	<bean id="dataSource_pg_kkgame" class="com.alibaba.druid.pool.DruidDataSource" lazy-init="true">
-		<property name="driverClassName" value="org.postgresql.Driver" />
-		<property name="url" value="jdbc:postgresql://pg1.kktv2.com:6531/kkgame?prepareThreshold=0" />
-		<property name="username" value="kkgame" />
-		<property name="password" value="kkgame2015" />
-		<property name="validationQuery" value="select version()" />
+		<property name="driverClassName" value="${spring.ds.pg.kkgame.driverClassName}" />
+		<property name="url" value="${spring.ds.pg.kkgame.url}" />
+		<property name="username" value="${spring.ds.pg.kkgame.username}" />
+		<property name="password" value="${spring.ds.pg.kkgame.password}" />
+		<property name="validationQuery" value="${spring.ds.pg.kkgame.validationQuery}" />
 
-		<property name="poolPreparedStatements" value="false" />
-		<property name="initialSize" value="1" />
-		<property name="maxActive" value="8" />
-		<property name="maxIdle" value="8" />
-		<property name="maxWait" value="5000" />
-		<property name="testOnBorrow" value="true" />
-		<property name="testOnReturn" value="true" />
-		<property name="testWhileIdle" value="true" />
-		<property name="defaultAutoCommit" value="true" />
-		<property name="timeBetweenLogStatsMillis" value="180000"/>
-       	<property name="filters" value="stat,log4j" />
+		<property name="poolPreparedStatements" value="${spring.ds.pg.kkgame.poolPreparedStatements}" />
+		<property name="initialSize" value="${spring.ds.pg.kkgame.initialSize}" />
+		<property name="maxActive" value="${spring.ds.pg.kkgame.maxActive}" />
+		<property name="maxIdle" value="${spring.ds.pg.kkgame.maxIdle}" />
+		<property name="maxWait" value="${spring.ds.pg.kkgame.maxWait}" />
+		<property name="testOnBorrow" value="${spring.ds.pg.kkgame.testOnBorrow}" />
+		<property name="testOnReturn" value="${spring.ds.pg.kkgame.testOnReturn}" />
+		<property name="testWhileIdle" value="${spring.ds.pg.kkgame.testWhileIdle}" />
+		<property name="defaultAutoCommit" value="${spring.ds.pg.kkgame.defaultAutoCommit}" />
+		<property name="timeBetweenLogStatsMillis" value="${spring.ds.pg.kkgame.timeBetweenLogStatsMillis}"/>
+		<property name="filters" value="${spring.ds.pg.kkgame.filters}" />
 	</bean>
-	
+
 	<bean id="dataSource_pg_kkcx" class="com.alibaba.druid.pool.DruidDataSource" lazy-init="true">
-		<property name="driverClassName" value="org.postgresql.Driver" />
-		<property name="url" value="jdbc:postgresql://pg1.kktv2.com:6531/kkcx?prepareThreshold=0" />
-		<property name="username" value="kkcx" />
-		<property name="password" value="kkcx2015" />
-		<property name="validationQuery" value="select version()" />
+		<property name="driverClassName" value="${spring.ds.pg.kkcx.driverClassName}" />
+		<property name="url" value="${spring.ds.pg.kkcx.url}" />
+		<property name="username" value="${spring.ds.pg.kkcx.username}" />
+		<property name="password" value="${spring.ds.pg.kkcx.password}" />
+		<property name="validationQuery" value="${spring.ds.pg.kkcx.validationQuery}" />
 
-		<property name="poolPreparedStatements" value="false" />
-		<property name="initialSize" value="1" />
-		<property name="maxActive" value="8" />
-		<property name="maxIdle" value="8" />
-		<property name="maxWait" value="5000" />
-		<property name="testOnBorrow" value="true" />
-		<property name="testOnReturn" value="true" />
-		<property name="testWhileIdle" value="true" />
-		<property name="defaultAutoCommit" value="true" />
-		<property name="timeBetweenLogStatsMillis" value="180000"/>
-       	<property name="filters" value="stat,log4j" />
+		<property name="poolPreparedStatements" value="${spring.ds.pg.kkcx.poolPreparedStatements}" />
+		<property name="initialSize" value="${spring.ds.pg.kkcx.initialSize}" />
+		<property name="maxActive" value="${spring.ds.pg.kkcx.maxActive}" />
+		<property name="maxIdle" value="${spring.ds.pg.kkcx.maxIdle}" />
+		<property name="maxWait" value="${spring.ds.pg.kkcx.maxWait}" />
+		<property name="testOnBorrow" value="${spring.ds.pg.kkcx.testOnBorrow}" />
+		<property name="testOnReturn" value="${spring.ds.pg.kkcx.testOnReturn}" />
+		<property name="testWhileIdle" value="${spring.ds.pg.kkcx.testWhileIdle}" />
+		<property name="defaultAutoCommit" value="${spring.ds.pg.kkcx.defaultAutoCommit}" />
+		<property name="timeBetweenLogStatsMillis" value="${spring.ds.pg.kkcx.timeBetweenLogStatsMillis}"/>
+		<property name="filters" value="${spring.ds.pg.kkcx.filters}" />
 	</bean>
-	
+
 </beans>

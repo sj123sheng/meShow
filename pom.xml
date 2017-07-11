@@ -434,6 +434,11 @@
 			<version>3.0.2</version>
     	</dependency>
     	<dependency>
+			  <groupId>com.baidu.disconf</groupId>
+			  <artifactId>disconf-client</artifactId>
+			  <version>2.6.33</version>
+		</dependency>
+    	<dependency>
   			<groupId>com.melot.module.driver.msgbuilder</groupId>
   			<artifactId>showmoney-module-msgbuilder</artifactId>
   			<version>1.0.2</version>

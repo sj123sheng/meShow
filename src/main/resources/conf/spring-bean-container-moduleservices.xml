@@ -8,12 +8,12 @@
         http://www.springframework.org/schema/context/spring-context.xsd">
 	<!-- Zookeeper 服务地址 -->
 	<bean id="zkServices" class="java.lang.String">
-		<constructor-arg type="java.lang.String" value="zk1.kktv2.com:2181,zk2.kktv2.com:2181,zk3.kktv2.com:2181" />
+		<constructor-arg type="java.lang.String" value="${zkServices}" />
 	</bean>
 
 	<!-- 本机地址 -->
 	<bean id="serverIp" class="java.lang.String">
-		<constructor-arg type="java.lang.String" value="localhost" />
+		<constructor-arg type="java.lang.String" value="${serverIp}" />
 	</bean>
 
 	<!-- 模块加载器 -->
@@ -30,9 +30,9 @@
 				<value>com.melot.blacklist.driver.service.BlacklistService</value>
 				<value>com.melot.client.api.TimSystemService</value>
 				<value>com.melot.video.driver.service.VideoInfoService</value>
-				<!-- kkGame使用 -->
+				<!-- kkGame使用 
 				<value>com.melot.gambling.service.GambleInfoService</value>
-				<value>com.melot.lottery.service.LotteryTicketModuleService</value>
+				<value>com.melot.lottery.service.LotteryTicketModuleService</value>-->
 			</list>
 		</constructor-arg>
 		<constructor-arg name="zkServices" ref="zkServices" />
