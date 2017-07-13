@@ -382,7 +382,7 @@ public class UserFunctions {
                                 String dateString = DateUtil.formatDateTime(new Date(), null);
                                 String format = smsConfig.getMessage();
                                 String message = String.format(format, nickName, userId, dateString);
-                                SmsSource.sendSms(phoneNum, String.valueOf(17), message, 1);
+                                SmsSource.sendSms(phoneNum, String.valueOf(17), message, 1,userId);
                             }
 						} else {
 							logger.error("Mongodb中未找到短信配置信息! smsType:" + 17 + ", userId:" + userId + ", phoneNum:" + phoneNum);
@@ -1229,7 +1229,7 @@ public class UserFunctions {
                                         String dateString = DateUtil.formatDateTime(new Date(), null);
                                         String format = smsConfig.getMessage();
                                         String message = String.format(format, nickName, userId, dateString, CityUtil.getCityName(cityMap.get("city")));
-                                        SmsSource.sendSms(phone, String.valueOf(16), message, 1);
+                                        SmsSource.sendSms(phone, String.valueOf(16), message, 1,userId);
                                     }
                                 } else {
                                     logger.error("Mongodb中未找到短信配置信息! smsType:" + 16 + ", userId:" + userId + ", phoneNum:" + phone);
