@@ -92,4 +92,7 @@
 	<kkrpc:reference id="newsCenter" interface="com.melot.news.service.NewsService" version="1.2.0"></kkrpc:reference>
 	<!-- 资源模块 -->
 	<kkrpc:reference id="resourceCenter" interface="com.melot.resource.service.ResourceService" version="1.0.0"/>
+
+	<!-- 短信服务 -->
+	<kkrpc:reference id="smsService" interface="com.melot.common.driver.service.SmsService" version="1.0.0"/>
 </beans>

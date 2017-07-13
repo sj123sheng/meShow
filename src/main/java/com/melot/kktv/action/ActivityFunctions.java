@@ -1616,4 +1616,49 @@ public class ActivityFunctions {
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 		return result;
     }
+    
+    /**
+     * 获取房间粉丝回馈配置信息(50001031)
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getFanFeedBackConf(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        int roomId;
+        try {
+            roomId = CommonUtil.getJsonParamInt(jsonObject, "roomId", 0, null, 1, Integer.MAX_VALUE);
+        } catch(CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch(Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        try {
+            result.addProperty("fanFeedbackMax", Integer.valueOf(SystemConfig.getValue(SystemConfig.fanFeedbackMax, AppIdEnum.AMUSEMENT)));
+            result.addProperty("fanFeedbackMin", Integer.valueOf(SystemConfig.getValue(SystemConfig.fanFeedbackMin, AppIdEnum.AMUSEMENT)));
+            result.addProperty("fanFeedbackDayLimit", Integer.valueOf(SystemConfig.getValue(SystemConfig.fanFeedbackDayLimit, AppIdEnum.AMUSEMENT)));
+            
+            if (roomId > 0) {
+                ShareService shareService = MelotBeanFactory.getBean("shareService", ShareService.class);
+                long amount = 0;
+                if ("1".equals(shareService.getFanFeedBackInfo(roomId).get("isOpen"))) {
+                    int fanFeedbackEndAmount = Integer.valueOf(SystemConfig.getValue(SystemConfig.fanFeedbackEndAmount, AppIdEnum.AMUSEMENT));
+                    amount = shareService.getShareCoffersByRoomId(roomId) - fanFeedbackEndAmount;
+                }
+                result.addProperty("fanFeedbackAmount", amount > 0 ? amount : 0);
+            }
+        } catch (Exception e) {
+            logger.error("call ShareService getShareCoffersByRoomId catched exception, roomId : " + roomId, e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+        
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
 }

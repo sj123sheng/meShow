@@ -382,7 +382,7 @@ public class UserFunctions {
                                 String dateString = DateUtil.formatDateTime(new Date(), null);
                                 String format = smsConfig.getMessage();
                                 String message = String.format(format, nickName, userId, dateString);
-                                SmsSource.sendSms(phoneNum, String.valueOf(17), message, 1);
+                                SmsSource.sendSms(phoneNum, String.valueOf(17), message, 1,userId);
                             }
 						} else {
 							logger.error("Mongodb中未找到短信配置信息! smsType:" + 17 + ", userId:" + userId + ", phoneNum:" + phoneNum);
@@ -1229,7 +1229,7 @@ public class UserFunctions {
                                         String dateString = DateUtil.formatDateTime(new Date(), null);
                                         String format = smsConfig.getMessage();
                                         String message = String.format(format, nickName, userId, dateString, CityUtil.getCityName(cityMap.get("city")));
-                                        SmsSource.sendSms(phone, String.valueOf(16), message, 1);
+                                        SmsSource.sendSms(phone, String.valueOf(16), message, 1,userId);
                                     }
                                 } else {
                                     logger.error("Mongodb中未找到短信配置信息! smsType:" + 16 + ", userId:" + userId + ", phoneNum:" + phone);
@@ -1374,69 +1374,6 @@ public class UserFunctions {
 		
 		// 返回结果
 		return userInfo;
-	}
-	
-	/**
-	 * 安全解绑手机号(10001042)
-	 * @created 2014-08-21 by RC
-	 * @param jsonObject 请求对象
-	 * @param checkTag 是否验证token标记
-	 * @return
-	 */
-	public JsonObject unbindPhoneSafely(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-	    JsonObject result = new JsonObject();
-	    
-	    // 该接口需要验证token,未验证的返回错误码
-		if (!checkTag) {
-			result.addProperty("TagCode", TagCodeEnum.TOKEN_INCORRECT);
-			return result;
-		}
-		// define usable parameters
-		int userId = 0;
-		String phoneNum = null, verifyCode;
-		// parse the parameters
-		try {
-			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-			phoneNum = CommonUtil.getJsonParamString(jsonObject, "phoneNum", null, TagCodeEnum.PHONE_NUMBER_MISSING, 1, 25);
-			verifyCode = CommonUtil.getJsonParamString(jsonObject, "verifyCode", null, null, 1, Integer.MAX_VALUE);
-		} catch(CommonUtil.ErrorGetParameterException e) {
-			result.addProperty("TagCode", e.getErrCode());
-			return result;
-		} catch(Exception e) {
-			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-			return result;
-		}
-		
-		if (verifyCode != null) {
-			String data = SmsSource.getPhoneSmsData(phoneNum, String.valueOf(18));
-			if (data == null || !data.equals(verifyCode)) {
-				result.addProperty("TagCode", "01180009");
-				return result;
-			}
-		}
-		// if input phone number equal to bound phone number
-		String s_phoneNume = UserService.getPhoneNumberOfUser(userId);
-		if (s_phoneNume != null && !s_phoneNume.equals(phoneNum)) {
-			result.addProperty("TagCode", TagCodeEnum.NOT_USER_PHONE_NUMBER);
-			return result;
-		}
-		
-		// if user has bound other account
-		int accountCnt = AccountService.getUserBoundAccountCount(userId, LoginTypeEnum.PHONE);
-		if (accountCnt == 0) {
-			result.addProperty("TagCode", TagCodeEnum.NONE_OTHER_BOUND_ACCOUNT);
-			return result;
-		}
-		
-		// unbind user phone number account
-		if (!AccountService.unbindPhoneAccount(userId, phoneNum, com.melot.kktv.service.GeneralService.getIpAddr(request, AppIdEnum.AMUSEMENT, 0, null))) {
-			result.addProperty("TagCode", TagCodeEnum.UNBIND_PHONE_NUMBER_FAIULED);
-			return result;
-		}
-
-		// return success response code
-		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-		return result;
 	}
 
 	/**
@@ -2070,7 +2007,7 @@ public class UserFunctions {
 			return result;
 		}
 		userId = resLogin.getUserId();
-		if (fromVerifyLogin == 0 && com.melot.kkcx.service.UserService.getUserSmsSwitchState(userId)
+		if (fromVerifyLogin == 0 && com.melot.kkcx.service.UserService.getUserSmsSwitchState(userId) 
 		        && !ProfileServices.checkUserCommonDevice(userId, deviceUId)) {
 			//异常登录判断
 			KkUserService kkUserService = MelotBeanFactory.getBean("kkUserService", KkUserService.class);
