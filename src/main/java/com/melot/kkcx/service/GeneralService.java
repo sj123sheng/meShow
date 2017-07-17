@@ -23,12 +23,16 @@ import com.melot.content.config.report.service.ReportFlowRecordService;
 import com.melot.kktv.domain.SmsConfig;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CityUtil;
+import com.melot.kktv.util.CollectionEnum;
 import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.Constant;
 import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
+import com.melot.kktv.util.mongodb.CommonDB;
 import com.melot.sdk.core.util.MelotBeanFactory;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 
 /**
  * 通用功能服务
@@ -46,8 +50,8 @@ public class GeneralService {
 	 * @return
 	 */
 	public static SmsConfig getSmsMsgFormat(int appId, int channel, int platform, int smsType) {
-	      // 调用kk-module-server 获取短信配置
-        SmsService smsService = MelotBeanFactory.getBean("smsService", SmsService.class);
+	    // 调用kk-module-server 获取短信配置
+	    SmsService smsService = MelotBeanFactory.getBean("smsService", SmsService.class);
         if (smsService != null) {
             ConfigSms configSms = smsService.getSmsConfig(appId,smsType,platform,null);
             if (configSms != null) {
