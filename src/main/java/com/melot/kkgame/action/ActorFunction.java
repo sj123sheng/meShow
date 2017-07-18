@@ -197,11 +197,12 @@ public class ActorFunction extends BaseAction {
     public JsonObject getActorLiveFlowAddress(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
 
-        int roomId, appId, userId;
+        int roomId, appId, userId, type;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 100, Integer.MAX_VALUE);
             roomId = CommonUtil.getJsonParamInt(jsonObject, "roomId", 0, "03031001", 100, Integer.MAX_VALUE);
             appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 1, Integer.MAX_VALUE);
+            type = CommonUtil.getJsonParamInt(jsonObject, "type", 0, null, 0, Integer.MAX_VALUE);
         } catch (Exception ex) {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
@@ -213,7 +214,13 @@ public class ActorFunction extends BaseAction {
             detail.setActorId(roomId);
             detail.setUserId(userId);
             detail.setClientIp(com.melot.kktv.service.GeneralService.getIpAddr(request, appId, appId, null));
-            String resObj = liveStreamConfigService.getPullStreamAddress(detail);
+            String resObj;
+            
+            if (type == 1) {
+                resObj = liveStreamConfigService.getP2PPullStreamAddress(detail);
+            }else {
+                resObj = liveStreamConfigService.getPullStreamAddress(detail);
+            }
             JsonParser jsonParser = new JsonParser();
             result = jsonParser.parse(resObj).getAsJsonObject();
         } catch (Exception e) {
@@ -237,11 +244,13 @@ public class ActorFunction extends BaseAction {
         }
         String version = null;
         Integer cdnType = null;
+        int type;
         int appId;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
             version = CommonUtil.getJsonParamString(jsonObject, "version", null, null, 0, 40);
             cdnType = CommonUtil.getJsonParamInt(jsonObject, "cdnType", 0, null, 0, 40);
+            type = CommonUtil.getJsonParamInt(jsonObject, "type", 0, null, 0, Integer.MAX_VALUE);
             if (cdnType == 0) { // 客户端第一次获取推流地址应使用上次设置的线路类别
                 cdnType = null;
             }
@@ -272,7 +281,12 @@ public class ActorFunction extends BaseAction {
         detail.setUserId(userId); 
         detail.setClientIp(com.melot.kktv.service.GeneralService.getIpAddr(request, appId, appId, null)); 
         detail.setCdnType(cdnType); 
-        String resObj = liveStreamConfigService.getPushStreamAddress(detail);
+        String resObj;
+        if (type == 1) {
+            resObj = liveStreamConfigService.getP2PPushStringAddress(detail);
+        }else {
+            resObj = liveStreamConfigService.getPushStreamAddress(detail);
+        }
         result = new JsonParser().parse(resObj).getAsJsonObject();
         result.addProperty(TAG_CODE, TagCodeEnum.SUCCESS);
         result.addProperty(ERROR_MSG, "成功");

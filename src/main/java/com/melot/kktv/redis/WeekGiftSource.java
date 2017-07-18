@@ -39,8 +39,8 @@ private static final String SOURCE_NAME = "WeekGift";
 			jedis = getInstance();
 			String key = String.format(WEEKGIFT_KEY_FORMAT, weekTime, giftId);
 			Long rank = jedis.zrevrank(key, userId);
-			if (rank != null && rank.longValue() <= 19l) {
-				Long total = new Long(jedis.zscore(key, userId).longValue());
+			if (rank != null && rank.longValue() <= 19L) {
+				Long total = jedis.zscore(key, userId).longValue();
 				Long diff = 0L;
 				Long downDiff = 0L;
 				String upUid = null;
@@ -50,29 +50,29 @@ private static final String SOURCE_NAME = "WeekGift";
 					if(!tupleSet.isEmpty() && tupleSet.iterator().hasNext()) {
 						Tuple tuple = tupleSet.iterator().next();
 						upUid = tuple.getElement();
-						diff = new Double(tuple.getScore()).longValue() - total;
+						diff = ((long) tuple.getScore()) - total;
 					}
 					tupleSet = jedis.zrevrangeWithScores(key, rank.longValue() + 1, rank.longValue() + 1);
 					if(!tupleSet.isEmpty() && tupleSet.iterator().hasNext()) {
 						Tuple tuple = tupleSet.iterator().next();
 						downUid = tuple.getElement();
-						downDiff = new Double(tuple.getScore()).longValue() - total;
+						downDiff = ((long) tuple.getScore()) - total;
 					}
 				} else {
 					Set<Tuple> tupleSet = jedis.zrevrangeWithScores(key, rank.longValue() + 1, rank.longValue() + 1);
 					if(!tupleSet.isEmpty() && tupleSet.iterator().hasNext()) {
 						Tuple tuple = tupleSet.iterator().next();
 						downUid = tuple.getElement();
-						downDiff = new Double(tuple.getScore()).longValue() - total;
+						downDiff = ((long) tuple.getScore()) - total;
 					}
 				}
 				Set<Tuple> tupleSet = jedis.zrevrangeWithScores(key, 0, 2);
-				map = new HashMap<String, Object>();
+				map = new HashMap<>();
 				int count = 0;
 				for (Tuple tuple : tupleSet) {
 					count++;
 					map.put("userId." + count, Integer.valueOf(tuple.getElement()));
-					map.put("total." + count, new Double(tuple.getScore()).longValue());
+					map.put("total." + count, (long) tuple.getScore());
 				}
 				map.put("rank", rank+1);
 				map.put("total", total);
@@ -97,12 +97,12 @@ private static final String SOURCE_NAME = "WeekGift";
 		try {
 			jedis = getInstance();
 			String key = String.format(WEEKGIFT_KEY_FORMAT, weekTime, giftId);
-			Set<Tuple> tupleSet = jedis.zrevrangeWithScores(key, 0, count - 1);
-			if (tupleSet != null && tupleSet.size() > 0) {
-				map = new LinkedHashMap<Integer, Long>();
+			Set<Tuple> tupleSet = jedis.zrevrangeWithScores(key, 0, count - 1L);
+			if (tupleSet != null && !tupleSet.isEmpty()) {
+				map = new LinkedHashMap<>();
 				for (Iterator<Tuple> iterator = tupleSet.iterator(); iterator.hasNext();) {
 					Tuple tuple = iterator.next();
-					map.put(Integer.valueOf(tuple.getElement()), new Double(tuple.getScore()).longValue());
+					map.put(Integer.valueOf(tuple.getElement()), (long) tuple.getScore());
 				}
 			}
 		} catch (Exception e) {
@@ -121,12 +121,12 @@ private static final String SOURCE_NAME = "WeekGift";
 		try {
 			jedis = getInstance();
 			String key = String.format(WEEKGIFT_USER_KEY_FORMAT, weekTime, giftId);
-			Set<Tuple> tupleSet = jedis.zrevrangeWithScores(key, 0, count - 1);
-			if (tupleSet != null && tupleSet.size() > 0) {
-				map = new LinkedHashMap<Integer, Long>();
+			Set<Tuple> tupleSet = jedis.zrevrangeWithScores(key, 0, count - 1L);
+			if (tupleSet != null && !tupleSet.isEmpty()) {
+				map = new LinkedHashMap<>();
 				for (Iterator<Tuple> iterator = tupleSet.iterator(); iterator.hasNext();) {
 					Tuple tuple = iterator.next();
-					map.put(Integer.valueOf(tuple.getElement()), new Double(tuple.getScore()).longValue());
+					map.put(Integer.valueOf(tuple.getElement()), (long) tuple.getScore());
 				}
 			}
 		} catch (Exception e) {

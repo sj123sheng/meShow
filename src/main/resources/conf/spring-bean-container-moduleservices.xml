@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:context="http://www.springframework.org/schema/context"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/context
         http://www.springframework.org/schema/context/spring-context.xsd">
 	<!-- Zookeeper 服务地址 -->
 	<bean id="zkServices" class="java.lang.String">
-		<constructor-arg type="java.lang.String" value="zk1.kktv2.com:2181,zk2.kktv2.com:2181,zk3.kktv2.com:2181" />
+		<constructor-arg type="java.lang.String"
+			value="zk1.kktv2.com:2181,zk2.kktv2.com:2181,zk3.kktv2.com:2181" />
 	</bean>
 
 	<!-- 本机地址 -->
@@ -17,16 +17,15 @@
 	</bean>
 
 	<!-- 模块加载器 -->
-	<bean id="moduleLoader" class=" com.melot.sdk.core.util.ModuleLoader" destroy-method="destroy">
+	<bean id="moduleLoader" class=" com.melot.sdk.core.util.ModuleLoader"
+		destroy-method="destroy">
 		<!-- 要加载的模块服务列表 -->
 		<constructor-arg name="moduleServiceList">
 			<list>
 				<value>com.melot.opus.service.VideoService</value>
 				<value>com.melot.opus.service.BasicService</value>
-				<value>com.melot.news.service.NewsService</value>
 				<value>com.melot.storehouse.service.StorehouseService</value>
 				<value>com.melot.client.api.TimSystemService</value>
-				<value>com.melot.video.driver.service.VideoInfoService</value>
 				<!-- kkGame使用 -->
 				<value>com.melot.gambling.service.GambleInfoService</value>
 				<value>com.melot.lottery.service.LotteryTicketModuleService</value>
@@ -35,7 +34,7 @@
 		<constructor-arg name="zkServices" ref="zkServices" />
 		<constructor-arg name="serverIp" ref="serverIp" />
 	</bean>
-	
+
 	<context:component-scan base-package="com.melot.sdk.core" />
-    
+
 </beans>

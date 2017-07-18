@@ -1526,16 +1526,16 @@ public class IndexFunctions {
 		JsonObject result = new JsonObject();
 		
 		JsonArray arr = new JsonArray();
-		Map<Integer, JsonObject> allJsonMap = new HashMap<Integer, JsonObject>();
-		Map<Integer, JsonObject> liveJsonMap = new HashMap<Integer, JsonObject>();
+		Map<Integer, JsonObject> allJsonMap = new HashMap<>();
+		Map<Integer, JsonObject> liveJsonMap = new HashMap<>();
 		List<WeekStarGift> weekStarGiftList = ActorGiftService.getWeekStarGiftList(new Date(DateUtil.getWeekBeginTime(System.currentTimeMillis() + RankingEnum.THIS_WEEK_GIFT_RANKING*7*24*3600*1000)));
-		if (weekStarGiftList != null && weekStarGiftList.size() > 0) {
+		if (weekStarGiftList != null && !weekStarGiftList.isEmpty()) {
 			int userId;
 			JsonObject weeklyGiftJson = null;
 			
 			//获取正在直播的actorId
 			String liveActorStr = KKHallSource.getTempDataString(KK_LIVE_ACTOR_ID);
-			List<Integer> liveActorList = new ArrayList<Integer>();
+			List<Integer> liveActorList = new ArrayList<>();
 			if (liveActorStr != null) {
 				String[] liveActor = liveActorStr.split(",");
 				for (String actorId : liveActor) {
@@ -1543,12 +1543,17 @@ public class IndexFunctions {
 				}
 			}
 			
+			Integer giftId, relationGiftId, singlePrice;
+			String giftName;
+			Long weekTime;
+			Map<Integer, Long> giftRankMap;
 			for (WeekStarGift weekStarGift : weekStarGiftList) {
-				Integer giftId = weekStarGift.getGiftId();
-				String giftName = weekStarGift.getGiftName();
-				Integer singlePrice = GiftInfoConfig.getGiftSendPrice(giftId);
-				Long weekTime = weekStarGift.getStarttime().getTime();
-				Map<Integer, Long> giftRankMap = WeekGiftSource.getWeekGiftRank(String.valueOf(weekTime), String.valueOf(giftId), 3);
+				giftId = weekStarGift.getGiftId();
+				relationGiftId = weekStarGift.getRelationGiftId();
+				giftName = weekStarGift.getGiftName();
+				singlePrice = GiftInfoConfig.getGiftSendPrice(giftId);
+				weekTime = weekStarGift.getStarttime().getTime();
+				giftRankMap = WeekGiftSource.getWeekGiftRank(String.valueOf(weekTime), relationGiftId != null && relationGiftId > 0 ? giftId + "_" + relationGiftId : String.valueOf(giftId), 3);
 				if (giftRankMap != null) {
 					for (Entry<Integer, Long> entry : giftRankMap.entrySet()) {
 						weeklyGiftJson = new JsonObject();
@@ -1575,8 +1580,8 @@ public class IndexFunctions {
 			
 			RoomInfo roomInfo;
 			JsonObject finalJson;
-			List<Map.Entry<Integer, JsonObject>> sortList = new ArrayList<Map.Entry<Integer, JsonObject>>(liveJsonMap.entrySet());
-			if (sortList.size() > 0) {
+			List<Map.Entry<Integer, JsonObject>> sortList = new ArrayList<>(liveJsonMap.entrySet());
+			if (!sortList.isEmpty()) {
 				Collections.sort(sortList, new Comparator<Map.Entry<Integer, JsonObject>>() {
 					@Override
 					public int compare(Entry<Integer, JsonObject> o1, Entry<Integer, JsonObject> o2) {
@@ -1602,7 +1607,7 @@ public class IndexFunctions {
 			}
 			
 			if (arr.size() < 3) {
-				List<Map.Entry<Integer, JsonObject>> allSortList = new ArrayList<Map.Entry<Integer, JsonObject>>(allJsonMap.entrySet());
+				List<Map.Entry<Integer, JsonObject>> allSortList = new ArrayList<>(allJsonMap.entrySet());
 				Collections.sort(allSortList, new Comparator<Map.Entry<Integer, JsonObject>>() {
 					@Override
 					public int compare(Entry<Integer, JsonObject> o1, Entry<Integer, JsonObject> o2) {
@@ -1660,13 +1665,17 @@ public class IndexFunctions {
 		
 		JsonArray jUserGiftRankingList = new JsonArray();
 		List<WeekStarGift> weekStarGiftList = ActorGiftService.getWeekStarGiftList(new Date(DateUtil.getWeekBeginTime(System.currentTimeMillis() + RankingEnum.THIS_WEEK_GIFT_RANKING*7*24*3600*1000)));
-		if (weekStarGiftList != null && weekStarGiftList.size() > 0) {
+		if (weekStarGiftList != null && !weekStarGiftList.isEmpty()) {
+		    Integer giftId, relationGiftId;
+		    String giftName;
+		    Long weekTime;
+		    Map<String, Object> rankInfo;
 			for (WeekStarGift weekStarGift : weekStarGiftList) {
-				Integer giftId = weekStarGift.getGiftId();
-				String giftName = weekStarGift.getGiftName();
-				Long weekTime = weekStarGift.getStarttime().getTime();
-				Map<String, Object> rankInfo = WeekGiftSource.getWeekGiftRank(
-						String.valueOf(weekTime), String.valueOf(giftId), String.valueOf(userId));
+				giftId = weekStarGift.getGiftId();
+				relationGiftId = weekStarGift.getRelationGiftId();
+				giftName = weekStarGift.getGiftName();
+				weekTime = weekStarGift.getStarttime().getTime();
+				rankInfo = WeekGiftSource.getWeekGiftRank(String.valueOf(weekTime), relationGiftId != null && relationGiftId > 0 ? giftId + "_" + relationGiftId : String.valueOf(giftId), String.valueOf(userId));
 				if (rankInfo != null) {
 					JsonArray arr = new JsonArray();
 					JsonObject jsonObj = new JsonObject();
@@ -1734,86 +1743,6 @@ public class IndexFunctions {
 	}
 	
 	/**
-	 * 获取周星战报(10002072)
-	 * @param jsonObject
-	 * @param checkTag
-	 * @param request
-	 * @return
-	 */
-	@Deprecated
-	public JsonObject getActorWeeklyPKReport(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-		JsonObject result = new JsonObject();
-		int platform;
-		
-		try {
-            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.WEB, null, 1, Integer.MAX_VALUE);
-        } catch(CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
-            return result;
-        } catch(Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-            return result;
-        }
-		
-		JsonArray rankList = new JsonArray();
-		JsonObject rankObject = new JsonObject();
-		Map<Integer, Long> topActorMap = new HashMap<Integer, Long>();
-		List<WeekStarGift> weekStarGiftList = ActorGiftService.getWeekStarGiftList(new Date(DateUtil.getWeekBeginTime(System.currentTimeMillis() + RankingEnum.THIS_WEEK_GIFT_RANKING*7*24*3600*1000)));
-		if (weekStarGiftList != null && weekStarGiftList.size() > 0) {
-			for(WeekStarGift weekStarGift : weekStarGiftList) {
-				Integer giftId = weekStarGift.getGiftId();
-				String giftName = weekStarGift.getGiftName();
-				Integer singlePrice = GiftInfoConfig.getGiftSendPrice(giftId);
-				Long weekTime = weekStarGift.getStarttime().getTime();
-				Map<Integer, Long> giftRankMap = WeekGiftSource.getWeekGiftRank(String.valueOf(weekTime), String.valueOf(giftId), 3);
-				if (giftRankMap != null) {
-					int flag = 0;
-					JsonArray giftPKArray = new JsonArray();
-					for (Entry<Integer, Long> entry : giftRankMap.entrySet()) {
-						JsonObject giftPKjsonObject = new JsonObject();
-						if (!topActorMap.containsKey(giftId) && topActorMap.get(giftId) == null) {
-							topActorMap.put(giftId, entry.getValue() * singlePrice);
-						}
-						RoomInfo roomInfo = RoomService.getRoomInfo(entry.getKey());
-						if (roomInfo != null && roomInfo.getLiveType().intValue() > 0 && roomInfo.getRoomMode().intValue() != 3) {
-							flag++;
-							giftPKjsonObject = RoomTF.roomInfoToJson(roomInfo, platform, true);
-							giftPKjsonObject.addProperty("giftWorth", entry.getValue() * singlePrice);
-							giftPKjsonObject.addProperty("giftCount", entry.getValue());
-							giftPKjsonObject.addProperty("giftId", giftId);
-							giftPKjsonObject.addProperty("giftName", giftName);
-							giftPKjsonObject.addProperty("giftPic", "http://rescdn.kktv8.com/kktv/icon/web/gift/png/" + giftId + ".png");
-							giftPKArray.add(giftPKjsonObject);
-							if (flag >= 2) {
-								break;
-							}
-						}
-					}
-					if (flag == 2) {
-						rankObject.add(giftId.toString(), giftPKArray);
-					} 
-				}
-			}
-			List<Map.Entry<Integer, Long>> sortList = new ArrayList<Map.Entry<Integer, Long>>(topActorMap.entrySet());
-			Collections.sort(sortList, new Comparator<Map.Entry<Integer, Long>>() {
-				@Override
-				public int compare(Entry<Integer, Long> o1, Entry<Integer, Long> o2) {
-					return o2.getValue().compareTo(o1.getValue());
-				}
-			});
-			for (Map.Entry<Integer, Long> entry : sortList) {
-				if (rankObject.has(entry.getKey().toString()) && rankObject.get(entry.getKey().toString()) != null) {
-					rankList.add(rankObject.get(entry.getKey().toString()).getAsJsonArray());
-				}
-			}
-		}
-		
-		result.add("rankList", rankList);
-		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-		return result;
-	}
-	
-	/**
 	 * 获取新版主播周星争夺战(10002074)
 	 * @param jsonObject
 	 * @param checkTag
@@ -1836,7 +1765,7 @@ public class IndexFunctions {
 		
 		//获取正在直播的actorId
 		String liveActorStr = KKHallSource.getTempDataString(KK_LIVE_ACTOR_ID);
-		List<Integer> liveActorList = new ArrayList<Integer>();
+		List<Integer> liveActorList = new ArrayList<>();
 		if (liveActorStr != null) {
 			String[] liveActor = liveActorStr.split(",");
 			for (String actorId : liveActor) {
@@ -1845,11 +1774,11 @@ public class IndexFunctions {
 		}
 		
 		JsonArray rankList = new JsonArray();
-		Map<Integer, JsonObject> giftMap = new HashMap<Integer, JsonObject>();
-		Map<Integer, JsonObject> allGiftMap = new HashMap<Integer, JsonObject>();
+		Map<Integer, JsonObject> giftMap = new HashMap<>();
+		Map<Integer, JsonObject> allGiftMap = new HashMap<>();
 		List<WeekStarGift> weekStarGiftList = ActorGiftService.getWeekStarGiftList(new Date(DateUtil.getWeekBeginTime(System.currentTimeMillis() + RankingEnum.THIS_WEEK_GIFT_RANKING*7*24*3600*1000)));
-		if (weekStarGiftList != null && weekStarGiftList.size() > 0) {
-		    Integer giftId, singlePrice;
+		if (weekStarGiftList != null && !weekStarGiftList.isEmpty()) {
+		    Integer giftId, singlePrice, relationGiftId;
 		    Long weekTime, tempValue;
 		    String giftName;
 		    Map<Integer, Long> giftRankMap;
@@ -1860,12 +1789,13 @@ public class IndexFunctions {
 		    List<Integer> filterGiftList = new ArrayList<Integer>();
 			for (WeekStarGift weekStarGift : weekStarGiftList) {
 				giftId = weekStarGift.getGiftId();
+				relationGiftId = weekStarGift.getRelationGiftId();
 				giftName = weekStarGift.getGiftName();
 				flag = true;
 				singlePrice = GiftInfoConfig.getGiftSendPrice(giftId);
 				weekTime = weekStarGift.getStarttime().getTime();
-				giftRankMap = WeekGiftSource.getWeekGiftRank(String.valueOf(weekTime), String.valueOf(giftId), 3);
-				if (giftRankMap != null) {
+				giftRankMap = WeekGiftSource.getWeekGiftRank(String.valueOf(weekTime), relationGiftId != null && relationGiftId > 0 ? giftId + "_" + relationGiftId : String.valueOf(giftId), 3);
+				if (giftRankMap != null && !giftRankMap.isEmpty()) {
 					for (Entry<Integer, Long> entry : giftRankMap.entrySet()) {
 						tempId = entry.getKey();
 						tempValue = entry.getValue();
@@ -1898,7 +1828,7 @@ public class IndexFunctions {
 			
 			JsonObject finalJson = new JsonObject();
 			if (giftMap != null && giftMap.size() > 0) {
-				List<Map.Entry<Integer, JsonObject>> actorSortList = new ArrayList<Map.Entry<Integer, JsonObject>>(giftMap.entrySet());
+				List<Map.Entry<Integer, JsonObject>> actorSortList = new ArrayList<>(giftMap.entrySet());
 				Collections.sort(actorSortList, new Comparator<Map.Entry<Integer, JsonObject>>() {
 					@Override
 					public int compare(Entry<Integer, JsonObject> o1, Entry<Integer, JsonObject> o2) {
@@ -1916,7 +1846,7 @@ public class IndexFunctions {
 				}
 			}
 			if (rankList.size() < 5) {
-				List<Map.Entry<Integer, JsonObject>> allActorSortList = new ArrayList<Map.Entry<Integer, JsonObject>>(allGiftMap.entrySet());
+				List<Map.Entry<Integer, JsonObject>> allActorSortList = new ArrayList<>(allGiftMap.entrySet());
 				Collections.sort(allActorSortList, new Comparator<Map.Entry<Integer, JsonObject>>() {
 					@Override
 					public int compare(Entry<Integer, JsonObject> o1, Entry<Integer, JsonObject> o2) {
@@ -1966,28 +1896,35 @@ public class IndexFunctions {
         }
 		
 		JsonArray rankList = new JsonArray();
-		Map<Integer, JsonObject> giftJson = new HashMap<Integer, JsonObject>();
-		Map<Integer, Long> topActorMap = new HashMap<Integer, Long>();
+		Map<Integer, JsonObject> giftJson = new HashMap<>();
+		Map<Integer, Long> topActorMap = new HashMap<>();
 		type = type == 1 ? 0 : -1;
-		int count = new Long(WeekGiftSource.getWeekGiftRankListCount(type)).intValue();
+		int count = (int) WeekGiftSource.getWeekGiftRankListCount(type);
 		if (count <= 0) {
 		    List<WeekStarGift> weekStarGiftList = ActorGiftService.getWeekStarGiftList(new Date(DateUtil.getWeekBeginTime(System.currentTimeMillis() + type*7*24*3600*1000)));
-			if (weekStarGiftList != null && weekStarGiftList.size() > 0) {
+			if (weekStarGiftList != null && !weekStarGiftList.isEmpty()) {
+			    Integer giftId, relationGiftId, singlePrice;
+			    String giftName;
+			    JsonObject wholeJson;
+			    Long weekTime;
+			    Map<Integer, Long> actorGiftRankMap;
 				for (WeekStarGift weekStarGift : weekStarGiftList) {
-					Integer giftId = weekStarGift.getGiftId();
-					String giftName = weekStarGift.getGiftName();
-					JsonObject wholeJson = new JsonObject();
-					Long weekTime = weekStarGift.getStarttime().getTime();
-					Integer singlePrice = GiftInfoConfig.getGiftSendPrice(giftId);
+					giftId = weekStarGift.getGiftId();
+					relationGiftId = weekStarGift.getRelationGiftId();
+					giftName = weekStarGift.getGiftName();
+					wholeJson = new JsonObject();
+					weekTime = weekStarGift.getStarttime().getTime();
+					singlePrice = GiftInfoConfig.getGiftSendPrice(giftId);
 					wholeJson.addProperty("giftId", giftId);
 					wholeJson.addProperty("giftName", giftName);
 					wholeJson.addProperty("giftPrice", singlePrice);
 					wholeJson.addProperty("giftPic", "http://rescdn.kktv8.com/kktv/icon/android/gift/icon/" + giftId + ".png");
-					Map<Integer, Long> actorGiftRankMap = WeekGiftSource.getWeekGiftRank(String.valueOf(weekTime), String.valueOf(giftId), 3);
-					if (actorGiftRankMap != null) {
+					actorGiftRankMap = WeekGiftSource.getWeekGiftRank(String.valueOf(weekTime), relationGiftId != null && relationGiftId > 0 ? giftId + "_" + relationGiftId : String.valueOf(giftId), 3);
+					if (actorGiftRankMap != null && !actorGiftRankMap.isEmpty()) {
 						JsonArray actorArray = new JsonArray();
+						JsonObject actorJson;
 						for (Entry<Integer, Long> entry : actorGiftRankMap.entrySet()) {
-							JsonObject actorJson = new JsonObject();
+							actorJson = new JsonObject();
 							if (!topActorMap.containsKey(giftId) && topActorMap.get(giftId) == null) {
 								topActorMap.put(giftId, entry.getValue() * singlePrice);
 							}
@@ -2001,41 +1938,41 @@ public class IndexFunctions {
 						if (actorArray.size() > 0) {
 							wholeJson.add("actorRankList", actorArray);
 						}
-					}
-					
-					Map<Integer, Long> userGiftRankMap = WeekGiftSource.getUserWeekGiftRank(String.valueOf(weekTime), String.valueOf(giftId), 3);
-					if (userGiftRankMap != null) {
-						JsonArray userArray = new JsonArray();
-						for (Entry<Integer, Long> entry : userGiftRankMap.entrySet()) {
-							JsonObject userJson = new JsonObject();
-							UserProfile userProfile = com.melot.kktv.service.UserService.getUserInfoV2(entry.getKey());
-							if (userProfile != null) {
-								userJson.addProperty("userId", entry.getKey());
-								userJson.addProperty("giftCount", entry.getValue());
-								if (userProfile.getNickName() != null) {
-									userJson.addProperty("nickname", userProfile.getNickName());
-								}
-							    userJson.addProperty("richLevel", userProfile.getUserLevel());
-								String portraitAddress;
-								if (userProfile.getPortrait() != null) {
-									portraitAddress = userProfile.getPortrait().startsWith("http://") ? 
-									        userProfile.getPortrait() : ConfigHelper.getHttpdir() + userProfile.getPortrait();
-								} else {
-									portraitAddress = ConfigHelper.getHttpdir() + ConstantEnum.DEFAULT_PORTRAIT_USER;
-								}
-								userJson.addProperty("portrait_path_original", portraitAddress);
-								userJson.addProperty("portrait_path_48", portraitAddress + "!48");
-								userJson.addProperty("portrait_path_128", portraitAddress + "!128");
-								userJson.addProperty("portrait_path_256", portraitAddress + "!256");
-								userJson.addProperty("portrait_path_272", portraitAddress + "!272");
-								userJson.addProperty("portrait_path_1280", portraitAddress + "!1280");
-								userJson.addProperty("portrait_path_400", portraitAddress + "!400");
-								userJson.addProperty("portrait_path_756", portraitAddress + "!756x567");
-								userArray.add(userJson);
-							}
-						}
-						if (userArray.size() > 0) {
-							wholeJson.add("userRankList", userArray);
+						
+						Map<Integer, Long> userGiftRankMap = WeekGiftSource.getUserWeekGiftRank(String.valueOf(weekTime), relationGiftId != null && relationGiftId > 0 ? giftId + "_" + relationGiftId : String.valueOf(giftId), 3);
+						if (userGiftRankMap != null && !userGiftRankMap.isEmpty()) {
+						    JsonArray userArray = new JsonArray();
+						    for (Entry<Integer, Long> entry : userGiftRankMap.entrySet()) {
+						        JsonObject userJson = new JsonObject();
+						        UserProfile userProfile = com.melot.kktv.service.UserService.getUserInfoV2(entry.getKey());
+						        if (userProfile != null) {
+						            userJson.addProperty("userId", entry.getKey());
+						            userJson.addProperty("giftCount", entry.getValue());
+						            if (userProfile.getNickName() != null) {
+						                userJson.addProperty("nickname", userProfile.getNickName());
+						            }
+						            userJson.addProperty("richLevel", userProfile.getUserLevel());
+						            String portraitAddress;
+						            if (userProfile.getPortrait() != null) {
+						                portraitAddress = userProfile.getPortrait().startsWith("http://") ? 
+						                        userProfile.getPortrait() : ConfigHelper.getHttpdir() + userProfile.getPortrait();
+						            } else {
+						                portraitAddress = ConfigHelper.getHttpdir() + ConstantEnum.DEFAULT_PORTRAIT_USER;
+						            }
+						            userJson.addProperty("portrait_path_original", portraitAddress);
+						            userJson.addProperty("portrait_path_48", portraitAddress + "!48");
+						            userJson.addProperty("portrait_path_128", portraitAddress + "!128");
+						            userJson.addProperty("portrait_path_256", portraitAddress + "!256");
+						            userJson.addProperty("portrait_path_272", portraitAddress + "!272");
+						            userJson.addProperty("portrait_path_1280", portraitAddress + "!1280");
+						            userJson.addProperty("portrait_path_400", portraitAddress + "!400");
+						            userJson.addProperty("portrait_path_756", portraitAddress + "!756x567");
+						            userArray.add(userJson);
+						        }
+						    }
+						    if (userArray.size() > 0) {
+						        wholeJson.add("userRankList", userArray);
+						    }
 						}
 					}
 					if ((wholeJson.has("actorRankList") && wholeJson.get("actorRankList") != null) || (wholeJson.has("userRankList") && wholeJson.get("userRankList") != null)) {
@@ -2043,14 +1980,14 @@ public class IndexFunctions {
 					}
 				}
 				
-				List<Map.Entry<Integer, Long>> sortList = new ArrayList<Map.Entry<Integer, Long>>(topActorMap.entrySet());
+				List<Map.Entry<Integer, Long>> sortList = new ArrayList<>(topActorMap.entrySet());
 				Collections.sort(sortList, new Comparator<Map.Entry<Integer, Long>>() {
 					@Override
 					public int compare(Entry<Integer, Long> o1, Entry<Integer, Long> o2) {
 						return o2.getValue().compareTo(o1.getValue());
 					}
 				});
-				List<String> valueList = new ArrayList<String>();
+				List<String> valueList = new ArrayList<>();
 				for (Entry<Integer, Long> entry : sortList) {
 					if (giftJson.containsKey(entry.getKey())) {
 						valueList.add(giftJson.get(entry.getKey()).toString());
@@ -2066,7 +2003,7 @@ public class IndexFunctions {
 		}
 		
 		List<String> rankListStr = WeekGiftSource.getWeekGiftRankList(start, offset, type);
-		if (rankListStr != null && rankListStr.size() > 0) {
+		if (rankListStr != null && !rankListStr.isEmpty()) {
 		    JsonParser jsonParser = new JsonParser();
 			for (String rank : rankListStr) {
 				rankList.add(jsonParser.parse(rank).getAsJsonObject());

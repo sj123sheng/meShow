@@ -1,7 +1,6 @@
 package com.melot.kktv.action;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -22,6 +21,8 @@ import com.google.gson.JsonParser;
 import com.melot.api.menu.sdk.dao.domain.RoomExtraInfo;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.api.menu.sdk.service.RoomInfoService;
+import com.melot.common.driver.domain.CharmUserInfo;
+import com.melot.common.driver.service.RoomExtendConfService;
 import com.melot.common.driver.service.ShareService;
 import com.melot.content.config.apply.service.ApplyActorService;
 import com.melot.content.config.domain.ApplyActor;
@@ -1416,28 +1417,16 @@ public class NodeFunctions {
 	public JsonObject getLastWeekGiftRanking(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 		JsonObject result = new JsonObject();
 		
-		long weekTime;
-		try {
-			weekTime = CommonUtil.getJsonParamLong(jsonObject, "weekTime", 0, null, 1, Integer.MAX_VALUE);
-        } catch(CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
-            return result;
-        } catch(Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-            return result;
-        }
-		
-		if (weekTime == 0) {
-			weekTime = getLastWeekTime();
-		}
 		List<WeekStarGift> weekStarGiftList = ActorGiftService.getWeekStarGiftList(new Date(DateUtil.getWeekBeginTime(System.currentTimeMillis() - 7*24*3600*1000)));
 		JsonArray jsonArray = new JsonArray();
 		String weekTimeString;
-		if (weekStarGiftList != null && weekStarGiftList.size() > 0) {
+		Integer giftId, relationGiftId;
+		if (weekStarGiftList != null && !weekStarGiftList.isEmpty()) {
 			for (WeekStarGift weekStarGift : weekStarGiftList) {
-				Integer giftId = weekStarGift.getGiftId();
+				giftId = weekStarGift.getGiftId();
+				relationGiftId = weekStarGift.getRelationGiftId();
 				weekTimeString = String.valueOf(weekStarGift.getStarttime().getTime());
-				Map<Integer, Long> giftRankMap = WeekGiftSource.getWeekGiftRank(weekTimeString, String.valueOf(giftId), 1);
+				Map<Integer, Long> giftRankMap = WeekGiftSource.getWeekGiftRank(weekTimeString, relationGiftId != null && relationGiftId > 0 ? giftId + "_" + relationGiftId : giftId.toString(), 1);
 				if (giftRankMap != null) {
 					for (Entry<Integer, Long> entry : giftRankMap.entrySet()) {
 						JsonObject json = new JsonObject();
@@ -1455,22 +1444,6 @@ public class NodeFunctions {
 		return result;
 	}
     
-    /**
-     * 获取当前时间所在星期的上一个星期的开始时间
-     * 
-     * @return
-     */
-    private static long getLastWeekTime() {
-        Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        cal.add(Calendar.DATE, -7);
-        return cal.getTimeInMillis();
-    }
-	
 	/**
 	 * 获取本周周星礼物(10001045)
 	 * @param jsonObject
@@ -1482,14 +1455,14 @@ public class NodeFunctions {
 		JsonObject result = new JsonObject();
 		
 		List<WeekStarGift> weekStarGiftList = ActorGiftService.getWeekStarGiftList(new Date(DateUtil.getWeekBeginTime(System.currentTimeMillis())));
-		List<Integer> giftIds = new ArrayList<Integer>();
-		if (weekStarGiftList != null && weekStarGiftList.size() > 0) {
+		List<Integer> giftIds = new ArrayList<>();
+		if (weekStarGiftList != null && !weekStarGiftList.isEmpty()) {
 			for (WeekStarGift weekStarGift : weekStarGiftList) {
 				giftIds.add(weekStarGift.getGiftId());
 			}
 		}
 		
-		if (giftIds != null) {
+		if (!giftIds.isEmpty()) {
 			result.add("giftIds", new JsonParser().parse(giftIds.toString()).getAsJsonArray());
 		}
 		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
@@ -1526,6 +1499,58 @@ public class NodeFunctions {
             return result;
         }
         
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+    
+    /**
+     * 获取房间魅力榜(50001032)
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getRoomCharmList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        int roomId, offset;
+        try {
+            roomId = CommonUtil.getJsonParamInt(jsonObject, "roomId", 0, TagCodeEnum.ROOMID_MISSING, 1, Integer.MAX_VALUE);
+            offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 10, null, 1, Integer.MAX_VALUE);
+        } catch(CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch(Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        JsonArray jsonArray = new JsonArray();
+        try {
+            RoomExtendConfService roomExtendConfService = (RoomExtendConfService) MelotBeanFactory.getBean("roomExtendConfService");
+            List<CharmUserInfo> charmList = roomExtendConfService.getRoomCharmList(roomId, offset);
+            if (!charmList.isEmpty()) {
+                for (CharmUserInfo charmUserInfo : charmList) {
+                    JsonObject jsonObj = new JsonObject();
+                    jsonObj.addProperty("userId", charmUserInfo.getUserId());
+                    jsonObj.addProperty("nickname", charmUserInfo.getNickname());
+                    jsonObj.addProperty("gender", charmUserInfo.getGender());
+                    jsonObj.addProperty("charmValue", charmUserInfo.getCharmValue());
+                    if (charmUserInfo.getPortrait() != null){
+                        jsonObj.addProperty("portrait", ConfigHelper.getHttpdir() + charmUserInfo.getPortrait());
+                    }
+                    jsonObj.addProperty("actorLevel", charmUserInfo.getActorLevel());
+                    jsonObj.addProperty("richLevel", charmUserInfo.getRichLevel());
+                    jsonArray.add(jsonObj);
+                }
+            }
+        } catch (Exception e) {
+            logger.error("call roomExtendConfService getRoomCharmList catched exception, roomId : " + roomId, e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+        
+        result.add("charmList", jsonArray);
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
