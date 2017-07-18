@@ -276,63 +276,6 @@ public class GameTaskAction extends BaseAction{
     }
     
     /**
-     * 用户分享任务[funcTag=20040004]
-     * @param jsonObject
-     * @param checkTag
-     * @param request
-     * @return
-     */
-    public JsonObject share(JsonObject jsonObject, boolean checkTag, HttpServletRequest request){
-    	JsonObject result = new JsonObject();
-    	
-    	Integer userId=null;
-    	Integer platform=null;
-    	Integer sharedType=null;
-    	Integer sharedSourceId=null;
-    	Integer sharedPlatform=null;
-    	String shareLink="";
-    	String shareTitle="";
-    	String shareReason="";
-    	Date shareTime = new Date();
-    	try {
-    		userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.APPID_MISSING, 1, Integer.MAX_VALUE);
-    		platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, TagCodeEnum.APPID_MISSING, 1, Integer.MAX_VALUE);
-    		sharedType = CommonUtil.getJsonParamInt(jsonObject, "sharedType", 0, TagCodeEnum.APPID_MISSING, 1, Integer.MAX_VALUE);
-    		sharedSourceId = CommonUtil.getJsonParamInt(jsonObject, "sharedSourceId", 0, TagCodeEnum.APPID_MISSING, 1, Integer.MAX_VALUE);
-    		shareLink = CommonUtil.getJsonParamString(jsonObject, "shareLink", "",TagCodeEnum.APPID_MISSING, 0, Integer.MAX_VALUE);
-    		shareTitle = CommonUtil.getJsonParamString(jsonObject, "shareTitle", "",TagCodeEnum.APPID_MISSING, 0, Integer.MAX_VALUE);
-    		shareReason = CommonUtil.getJsonParamString(jsonObject, "shareReason", "",TagCodeEnum.APPID_MISSING, 0, Integer.MAX_VALUE);
-    		sharedPlatform = CommonUtil.getJsonParamInt(jsonObject, "sharedPlatform", 1,TagCodeEnum.APPID_MISSING, 0, Integer.MAX_VALUE);
-    	} catch (CommonUtil.ErrorGetParameterException e) {
-    		result.addProperty(TAG_CODE, e.getErrCode());
-	    	return result;
-    	}
-    	
-    	ShareRecordInfo shareRecord= new ShareRecordInfo();
-    	shareRecord.setUserId(userId);
-    	shareRecord.setPlatform(platform);
-    	shareRecord.setSharedType(sharedType);
-    	shareRecord.setSharedSourceId(sharedSourceId);
-    	shareRecord.setShareLink(shareLink);
-    	shareRecord.setShareTitle(shareTitle);
-    	shareRecord.setShareReason(shareReason);
-    	shareRecord.setShareTime(shareTime);
-    	shareRecord.setSharedPlatform(sharedPlatform);
-    	ShareRecordService shareRecordService = MelotBeanFactory.getBean("shareRecordService", ShareRecordService.class);
-    	try {
-    		if (!signInTaskSource.isHaveShareInTaskValue(userId)) {
-    			shareRecordService.saveShareRecordInfo(shareRecord);
-    			signInTaskSource.setShareVieldValue(userId);
-    		}
-    		result.addProperty(TAG_CODE, TagCodeEnum.SUCCESS);
-    	} catch (Exception e) {
-            logger.error("Fail to call shareRecordService.saveShareRecordInfo ", e);
-        }
-    	
-    	return result;
-    }
-    
-    /**
      * 用户分享任务查询[funcTag=20040005]
      * @param jsonObject
      * @param checkTag

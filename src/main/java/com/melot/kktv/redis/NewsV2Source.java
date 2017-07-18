@@ -27,6 +27,8 @@ public class NewsV2Source {
 	
 	private static final String VIDEO_TOPIC = "video_topic";
 	
+	private static final String POPULAR_TOPIC = "popular_topic";
+	
 	private static final String HOT_COMMENT = "hot_comment";
 	
 	private static final String RECOMMEND_COMMENT = "recommend_comment";
@@ -47,7 +49,7 @@ public class NewsV2Source {
 		Jedis jedis = null;
 		try {
 			jedis = getInstance();
-			Set<String> hot = jedis.zrevrange(type > 0 ? HOT_VIDEO : HOT_NEWS, start, start + offset);
+			Set<String> hot = jedis.zrevrange(type > 0 ? HOT_VIDEO : HOT_NEWS, start, start + offset - 1);
 			return hot;
 		} catch (Exception e) {
 			logger.error("NewsSource.getHotNews exception", e);
@@ -75,11 +77,27 @@ public class NewsV2Source {
 		return null;
 	}
 	
+	public static Set<String> getPopularTopic(int start, int offset) {
+		Jedis jedis = null;
+		try {
+			jedis = getInstance();
+			Set<String> hot = jedis.zrange(POPULAR_TOPIC, start, offset);
+			return hot;
+		} catch (Exception e) {
+			logger.error("NewsSource.getPopularTopic exception", e);
+		} finally {
+			if (jedis != null) {
+				freeInstance(jedis);
+			}
+		}
+		return null;
+	}
+	
 	public static Set<String> getVideoByTime(long timestamp, int start, int count) {
 		Jedis jedis = null;
 		try {
 			jedis = getInstance();
-			Set<String> hot = jedis.zrevrangeByScore(VIDEO_NEWS, System.currentTimeMillis(), timestamp, start, count);
+			Set<String> hot = jedis.zrevrangeByScore(VIDEO_NEWS, timestamp, 0, start, count);
 			return hot;
 		} catch (Exception e) {
 			logger.error("NewsSource.getVideoByTime exception", e);
@@ -161,6 +179,7 @@ public class NewsV2Source {
 			jedis.zrem(HOT_NEWS, newsId);
 			jedis.zrem(HOT_VIDEO, newsId);
 			jedis.zrem(RECOMMEND_NEWS, newsId);
+			jedis.zrem(VIDEO_NEWS, newsId);
 		} catch (Exception e) {
 			logger.error("NewsSource.getRecommendNews exception", e);
 		} finally {

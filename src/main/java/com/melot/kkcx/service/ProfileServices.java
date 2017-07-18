@@ -258,6 +258,10 @@ public class ProfileServices {
     @SuppressWarnings("unchecked")
     public static boolean setUserCommonDevice(int userId, String deviceUId, String deviceName, String deviceModel) {
         try {
+            if (StringUtil.strIsNull(deviceUId) || StringUtil.strIsNull(deviceName) || StringUtil.strIsNull(deviceModel) || userId < 0) {
+                return false;
+            }
+            
             long curTime = System.currentTimeMillis();
             long endTime = curTime + 7*24*3600*1000;
             boolean existFlag = false;
@@ -270,8 +274,8 @@ public class ProfileServices {
                 commonDevices = (List<CommonDevice>) (gson.fromJson(commonDeviceValue, new TypeToken<List<CommonDevice>>(){}.getType()));
                 if (commonDevices != null && commonDevices.size() > 0) {
                     for (CommonDevice commonDevice : commonDevices) {
-                        if (commonDevice.getDeviceUId().equals(deviceUId)) {
-                            commonDevice.setEndTime(curTime);
+                        if (deviceUId.equals(commonDevice.getDeviceUId())) {
+                            commonDevice.setEndTime(endTime);
                             commonDeviceList.add(commonDevice);
                             existFlag = true;
                         } else if (commonDevice.getEndTime() > curTime) {
@@ -311,6 +315,10 @@ public class ProfileServices {
     @SuppressWarnings("unchecked")
     public static boolean delUserCommonDevice(int userId, String deviceUId) {
         try {
+            if (userId < 0 || StringUtil.strIsNull(deviceUId)) {
+                return false;
+            }
+            
             long curTime = System.currentTimeMillis();
             long endTime = 0l;
             List<CommonDevice> commonDevices = new ArrayList<CommonDevice>();
@@ -322,7 +330,7 @@ public class ProfileServices {
                 commonDevices = (List<CommonDevice>) (gson.fromJson(commonDeviceValue, new TypeToken<List<CommonDevice>>(){}.getType()));
                 if (commonDevices != null && commonDevices.size() > 0) {
                     for (CommonDevice commonDevice : commonDevices) {
-                        if (!commonDevice.getDeviceUId().equals(deviceUId) &&  commonDevice.getEndTime() > curTime) {
+                        if (!deviceUId.equals(commonDevice.getDeviceUId()) && commonDevice.getEndTime() > curTime) {
                             commonDeviceNewList.add(commonDevice);
                             if (commonDevice.getEndTime() > endTime) {
                                 endTime = commonDevice.getEndTime();
@@ -375,10 +383,10 @@ public class ProfileServices {
                 String commonDeviceValue = HotDataSource.getTempDataString(commonDeviceKey);
                 List<CommonDevice> commonDevices = new ArrayList<CommonDevice>();
                 if (!StringUtil.strIsNull(commonDeviceValue)) {
-                    commonDevices =  (List<CommonDevice>) (new Gson().fromJson(commonDeviceValue, new TypeToken<List<CommonDevice>>(){}.getType()));
+                    commonDevices = (List<CommonDevice>) (new Gson().fromJson(commonDeviceValue, new TypeToken<List<CommonDevice>>(){}.getType()));
                     if (commonDevices != null && commonDevices.size() > 0) {
                         for (CommonDevice commonDevice : commonDevices) {
-                            if (commonDevice.getDeviceUId().equals(deviceUId) && commonDevice.getEndTime() > System.currentTimeMillis()) {
+                            if (deviceUId.equals(commonDevice.getDeviceUId()) && commonDevice.getEndTime() > System.currentTimeMillis()) {
                                 return true;
                             }
                         }

@@ -451,5 +451,13 @@ public class TagCodeEnum {
     
     /** 交友房表情信息获取失败 */
     public static final String EMOTICON_NOT_FIND = "05110401";
+
+    /** 1v1视频，没有输入主播ID*/
+    public static final String ACTOR_ID_MISSING = "05110601";
     
+    /** 1v1视频，配置信息有误 */
+    public static final String SINGLE_CHAT_CONFIG_ERROR = "05110602";
+    
+    /** 用户没有权限开播*/
+    public static final String SINGLE_CHAT_NOT_ACTOR = "05110701";
 }

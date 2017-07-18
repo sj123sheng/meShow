@@ -34,6 +34,16 @@ public class SystemConfig {
 	
 	public static final String shareCofferLimit = "shareCofferLimit";
 	
+	public static final String fanFeedbackMax = "fanFeedbackMax";
+	
+	public static final String fanFeedbackMin = "fanFeedbackMin";
+	
+	public static final String fanFeedbackDayLimit = "fanFeedbackDayLimit";
+	
+	public static final String fanFeedbackStartAmount = "fanFeedbackStartAmount";
+	
+	public static final String fanFeedbackEndAmount = "fanFeedbackEndAmount";
+	
 	public static final String TABLENAME = "CONF_SYSTEM";
 
 	public static String getValue(String key, int appId) {

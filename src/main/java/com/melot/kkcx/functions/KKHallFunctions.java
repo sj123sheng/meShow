@@ -657,6 +657,49 @@ public class KKHallFunctions {
 
         return result;
     }
+    
+    /**
+     * 获取王牌主播（55000006）
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getTrumpRoomList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        int platform, offset;
+        try {
+            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, TagCodeEnum.PLATFORM_MISSING, 1, Integer.MAX_VALUE);
+            offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 3, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        List<RoomInfo> trumpRoomList = null;
+        try {
+            FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
+            trumpRoomList = firstPageHandler.getTrumpRooms(offset);
+        } catch (Exception e) {
+            logger.error("Fail to call firstPageHandler.getTrumpRooms offset:" + offset, e);
+        }
+
+        JsonArray roomArray = new JsonArray();
+        if (trumpRoomList != null && !trumpRoomList.isEmpty()) {
+            for (RoomInfo roomInfo : trumpRoomList) {
+                roomArray.add(RoomTF.roomInfoToJson(roomInfo, platform));
+            }
+        }
+
+        result.add("roomList", roomArray);
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+        return result;
+    }
 
 }
 

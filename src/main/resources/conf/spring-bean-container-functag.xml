@@ -14,9 +14,11 @@
 		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
 	</bean>
 	 -->
- 
+	
 	<!-- 通用过期接口 -->
-	<bean id="10006005" name="10001040,10004010,10004011,40000013,20010308,20010502,20010503,20010504,20010506,20010507,20010508,50001015,10002039,10002040,20010403,20010402" class="com.melot.sdk.core.function.GenericFunction" >
+	<bean id="10006005"
+		name="10001040,10004010,10004011,40000013,20010308,20010502,20010503,20010504,20010506,20010507,20010508,50001015,10002039,10002040,20010403,20010402,10002072,10001042"
+		class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="otherFunction" />
 		<constructor-arg name="methodName" value="lowVersionExcute" />
 	</bean>
@@ -263,13 +265,6 @@
 		<constructor-arg name="t" ref="indexFunction" />
 		<constructor-arg name="methodName" value="getHallLiveAlbum" />
 	</bean>
-	<!-- 周星战报 -->
-	<bean id="10002072" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="indexFunction" />
-		<constructor-arg name="methodName" value="getActorWeeklyPKReport" />
-		<constructor-arg name="cacheType" value="30" />
-		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
-	</bean>
 	<!-- 获取周星主播和用户前三名排行榜 -->
 	<bean id="10002073" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="indexFunction" />
@@ -331,11 +326,6 @@
 		<constructor-arg name="t" ref="userFunction" />
 		<constructor-arg name="methodName" value="setPassword" />
 	</bean>
-	<!-- 安全解绑手机号 -->
-	<bean id="10001042" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="userFunction" />
-		<constructor-arg name="methodName" value="unbindPhoneSafely" />
-	</bean>
 	
 	<!-- Node调用接口类 -->
 	<!-- 获取用户信息 -->
@@ -372,6 +362,16 @@
 	<bean id="10001045" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="nodeFunction" />
 		<constructor-arg name="methodName" value="getCurrentWeekGift" />
+	</bean>
+	<!-- 获取房间扩展配置信息 -->
+	<bean id="50001030" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="nodeFunction" />
+		<constructor-arg name="methodName" value="getRoomExtendConfInfo" />
+	</bean>
+	<!-- 获取房间魅力榜 -->
+	<bean id="50001032" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="nodeFunction" />
+		<constructor-arg name="methodName" value="getRoomCharmList" />
 	</bean>
 	
 	<!-- 用户档案信息 -->
@@ -630,6 +630,11 @@
 	<bean id="20010022" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="activityFunction" />
 		<constructor-arg name="methodName" value="getActorShareCoffers" />
+	</bean>
+	<!-- 获取房间粉丝回馈配置信息 -->
+	<bean id="50001031" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="activityFunction" />
+		<constructor-arg name="methodName" value="getFanFeedBackConf" />
 	</bean>
 	
 	<!-- 用户关系类 -->
@@ -1995,12 +2000,7 @@
 	<bean id="20040003" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="gameTaskAction" />
 		<constructor-arg name="methodName" value="getUserSignInState" />
-	</bean>	
-	<!-- 分享接口 -->
-	<bean id="20040004" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="gameTaskAction" />
-		<constructor-arg name="methodName" value="share" />
-	</bean>	
+	</bean>
 	<!-- 用户分享任务查询 -->
 	<bean id="20040005" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="gameTaskAction" />
@@ -2175,6 +2175,11 @@
 	<bean id="55000005" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="kkHallFunction" />
 		<constructor-arg name="methodName" value="getHDRoomList" />
+	</bean>
+	<!-- 获取王牌主播 -->
+	<bean id="55000006" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kkHallFunction" />
+		<constructor-arg name="methodName" value="getTrumpRoomList" />
 	</bean>
 	
 	<!-- =============新版公告&帮助================= -->
@@ -2495,5 +2500,41 @@
 	<bean id="50001104" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="configFunctions" />
 		<constructor-arg name="methodName" value="getFriendEmoticonConfigInfo" />
+	</bean>
+	
+	<!-- 获取1v1大厅主播列表 -->
+	<bean id="50001105" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="singleChatFunction" />
+		<constructor-arg name="methodName" value="getActorList" />
+	</bean>
+	
+	<!-- 获取1v1视频单价 -->
+	<bean id="50001106" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="singleChatFunction" />
+		<constructor-arg name="methodName" value="getActorPrice" />
+	</bean>
+	
+	<!-- 校验用户是不是主播 -->
+	<bean id="50001107" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="singleChatFunction" />
+		<constructor-arg name="methodName" value="checkActor" />
+	</bean>
+	
+	<!-- 校验用户能不能接入1v1视频 -->
+	<bean id="50001108" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="singleChatFunction" />
+		<constructor-arg name="methodName" value="checkUser" />
+	</bean>
+	
+	<!-- 获取声网相关信息 -->
+	<bean id="50001109" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="configFunctions" />
+		<constructor-arg name="methodName" value="getAgoraInfo" />
+	</bean>
+	
+	<!-- 校验1v1视频大厅是否显示活动bar -->
+	<bean id="50001110" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="singleChatFunction" />
+		<constructor-arg name="methodName" value="checkBar" />
 	</bean>
 </beans>

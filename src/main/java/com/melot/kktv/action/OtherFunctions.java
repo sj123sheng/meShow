@@ -1950,7 +1950,7 @@ public class OtherFunctions {
         }
         
         int userId, gender, appId, operatorId, familyId, isOk;
-        String realName, identityId, mobileNum, qqNum, wechatNum, idPicOnHand, idPicFont, idPicBack, brokerageFirm;
+        String realName, identityId, mobileNum, qqNum, wechatNum, idPicOnHand, idPicFont, idPicBack;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
             appId = CommonUtil.getJsonParamInt(jsonObject, "a", 0, TagCodeEnum.APPID_MISSING, 1, Integer.MAX_VALUE);
@@ -1971,7 +1971,6 @@ public class OtherFunctions {
             idPicBack =  CommonUtil.getJsonParamString(jsonObject, "identityPictureBack", null, null, 1, 200);
             operatorId = CommonUtil.getJsonParamInt(jsonObject, "operatorId", 0, null, 1, Integer.MAX_VALUE);
             familyId = CommonUtil.getJsonParamInt(jsonObject, "familyId", 0, null, 1, Integer.MAX_VALUE);
-            brokerageFirm = CommonUtil.getJsonParamString(jsonObject, "brokerageFirm", null, "01200001", 1, 200);
             isOk = CommonUtil.getJsonParamInt(jsonObject, "isOk", 0, TagCodeEnum.ISOK_MISSIING, 0, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
@@ -2049,12 +2048,6 @@ public class OtherFunctions {
             
             ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
             
-            //校验经济公司是否存在
-            if (!applyActorService.isExistbrokerageFirm(brokerageFirm)) {
-                result.addProperty("TagCode", "01200003");
-                return result;
-            }
-            
             if (familyId > 0) {
                 FamilyInfo familyInfo = FamilyService.getFamilyInfoByFamilyId(familyId);
                 // 判断家族是否存在
@@ -2118,7 +2111,6 @@ public class OtherFunctions {
             applyActor.setRealName(realName);
             applyActor.setIdentityNumber(identityId);
             applyActor.setIdentityPictureOnHand(idPicOnHand);
-            applyActor.setBrokerageFirm(brokerageFirm);
             
             if (familyId > 0) {
                 applyActor.setApplyFamilyId(familyId);

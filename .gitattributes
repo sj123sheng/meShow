@@ -160,6 +160,7 @@ src/main/java/com/melot/kktv/action/ProfileSecurityFunctions.java -text
 src/main/java/com/melot/kktv/action/RedEnvelopeFunctions.java -text
 src/main/java/com/melot/kktv/action/ResourceFunctions.java -text
 src/main/java/com/melot/kktv/action/RoundRoomFunction.java -text
+src/main/java/com/melot/kktv/action/SingleChatFunction.java -text
 src/main/java/com/melot/kktv/action/TagFunctions.java -text
 src/main/java/com/melot/kktv/action/TempFunctions.java -text
 src/main/java/com/melot/kktv/action/TicketAction.java -text
