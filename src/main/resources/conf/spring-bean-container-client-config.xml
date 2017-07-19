@@ -97,9 +97,6 @@
 	<!-- 1v1视频聊天服务 -->
 	<kkrpc:reference id="singleChatService" interface="com.melot.common.driver.service.SingleChatService" version="1.0.0"/>
 	
-	<!-- 短信服务 -->
-	<kkrpc:reference id="smsService" interface="com.melot.common.driver.service.SmsService" version="1.0.0"/>
-	
 	<!-- IM消息服务 -->
 	<kkrpc:reference id="timSystemService" interface="com.melot.client.api.TimSystemService" version="1.0.0"/>
 </beans>
