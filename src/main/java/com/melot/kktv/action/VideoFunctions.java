@@ -696,7 +696,7 @@ public class VideoFunctions {
             return result;
         }
 		
-    	VideoInfoService videoInfoService = (VideoInfoService)ModuleService.getService("VideoInfoService");
+    	VideoInfoService videoInfoService = (VideoInfoService) MelotBeanFactory.getBean("videoInfoService");
 		List<VideoInfo> vodeoInfoList = videoInfoService.getVideoListByActorId(actorId);
 		JsonArray videoListArray = new JsonArray();
 		if(vodeoInfoList != null && vodeoInfoList.size() > 0){
@@ -728,7 +728,7 @@ public class VideoFunctions {
             return result;
         }
 		
-    	VideoInfoService videoInfoService = (VideoInfoService)ModuleService.getService("VideoInfoService");
+		VideoInfoService videoInfoService = (VideoInfoService) MelotBeanFactory.getBean("videoInfoService");
 		List<VideoInfo> vodeoInfoList = videoInfoService.getVideoListByIds(String.valueOf(videoId));
 		if (vodeoInfoList != null && vodeoInfoList.size() == 1){
 			result.addProperty("fileName", vodeoInfoList.get(0).getFileName());

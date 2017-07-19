@@ -22,20 +22,30 @@ import java.util.Date;
  */
 public class WeekStarGift {
     
-    private int giftId;
+    private Integer giftId;
     
-    private int glevel;
+    private Integer relationGiftId;
+
+    private Integer glevel;
     
     private String giftName;
     
     private Date starttime;
 
-    public int getGiftId() {
+    public Integer getGiftId() {
         return giftId;
     }
 
-    public void setGiftId(int giftId) {
+    public void setGiftId(Integer giftId) {
         this.giftId = giftId;
+    }
+    
+    public Integer getRelationGiftId() {
+        return relationGiftId;
+    }
+    
+    public void setRelationGiftId(Integer relationGiftId) {
+        this.relationGiftId = relationGiftId;
     }
 
     public String getGiftName() {
@@ -46,11 +56,11 @@ public class WeekStarGift {
         this.giftName = giftName;
     }
 
-    public int getGlevel() {
+    public Integer getGlevel() {
         return glevel;
     }
 
-    public void setGlevel(int glevel) {
+    public void setGlevel(Integer glevel) {
         this.glevel = glevel;
     }
 

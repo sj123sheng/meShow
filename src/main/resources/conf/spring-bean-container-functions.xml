@@ -169,4 +169,7 @@
 	<!-- 配置信息相关接口 -->
 	<bean id="configFunctions" class="com.melot.kktv.action.ConfigFunctions" />
 	
+	<!-- 1v1视频相关接口 -->
+	<bean id="singleChatFunction" class="com.melot.kktv.action.SingleChatFunction" />
+	
 </beans>

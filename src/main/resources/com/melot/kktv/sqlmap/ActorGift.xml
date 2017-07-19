@@ -63,10 +63,11 @@
 		<result property="giftName" column="giftName" />
 		<result property="glevel" column="glevel" />
 		<result property="starttime" column="starttime" />
+		<result property="relationGiftId" column="relation_giftid" />
 	</resultMap>
 	
 	<select id="getWeekStarGiftList" resultMap="WeekStarGiftMap" parameterClass="java.util.Date">
-		select a.giftId, a.glevel, a.starttime, b.giftname from giftstar_config a join gift_info b on a.giftId = b.giftId where a.starttime = #weekTime#
+		select a.giftId, a.glevel, a.starttime, b.giftname, a.relation_giftid from giftstar_config a join gift_info b on a.giftId = b.giftId where a.starttime = #weekTime#
 	</select>
 	
 </sqlMap>
