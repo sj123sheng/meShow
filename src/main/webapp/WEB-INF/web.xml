@@ -74,7 +74,11 @@
 		<!-- linux jnisigcheck.so -->
 		<param-value>WEB-INF/jnisigcheck.so</param-value>
 	</context-param>
-	
+	<context-param>
+        <param-name>tlsSoLocationMac</param-name>
+        <!-- macOS macJnisigcheck.so -->
+        <param-value>WEB-INF/jnisigcheckForMac.so</param-value>
+    </context-param>
 	<listener>
         <listener-class>com.melot.kktv.context.ConfigContextListener</listener-class>
 	</listener>
