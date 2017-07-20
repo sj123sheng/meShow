@@ -174,7 +174,7 @@
 		<dependency>
 			<groupId>com.melot</groupId>
 			<artifactId>melot-api-common</artifactId>
-			<version>0.0.35</version><!--$NO-MVN-MAN-VER$-->
+			<version>0.0.34</version><!--$NO-MVN-MAN-VER$-->
 		</dependency>
 		<dependency>
 			<groupId>com.melot.module.api</groupId>
@@ -313,7 +313,7 @@
 		<dependency>
 		  <groupId>com.melot</groupId>
 		  <artifactId>game-stream-live-driver</artifactId>
-		  <version>4.0.3</version>
+		  <version>4.1.4</version>
 		</dependency>
 		<dependency>
 		  <groupId>com.melot</groupId>
@@ -482,7 +482,7 @@
         <dependency>
             <groupId>com.melot.module.driver.msgbuilder</groupId>
             <artifactId>kk-module-msgbuilder</artifactId>
-            <version>1.0.7</version>
+            <version>1.1.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
             <groupId>com.melot</groupId>
@@ -501,6 +501,18 @@
 		    <groupId>com.melot.module</groupId>
 		    <artifactId>kkcore-relation-api</artifactId>
 		    <version>1.0.1</version>
+		</dependency>
+		
+		<dependency>
+		  	<groupId>com.melot.module.driver.msgbuilder</groupId>
+		  	<artifactId>opus-module-msgbuilder</artifactId>
+		  	<version>1.1.11</version>
+		</dependency>
+		
+		<dependency>
+  			<groupId>com.melot.common</groupId>
+  			<artifactId>melot-jedis</artifactId>
+  			<version>1.0.5</version>
 		</dependency>
 	</dependencies>
  	

@@ -10,10 +10,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
-
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
@@ -27,25 +26,27 @@ import com.melot.kktv.model.News;
 import com.melot.kktv.model.NewsTagConf;
 import com.melot.kktv.model.NewsTagRes;
 import com.melot.kktv.redis.NewsSource;
-import com.melot.kktv.util.CollectionEnum;
 import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.Constant;
 import com.melot.kktv.util.DateUtil;
 import com.melot.kktv.util.NewsMediaTypeEnum;
 import com.melot.kktv.util.PlatformEnum;
 import com.melot.kktv.util.StringUtil;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.kktv.util.mongodb.CommonDB;
+import com.melot.kktv.util.CollectionEnum;
 import com.melot.news.domain.NewsCommentHist;
 import com.melot.news.model.NewsInfo;
 import com.melot.news.model.WhiteUser;
 import com.melot.qiniu.common.QiniuService;
 import com.melot.resource.domain.Resource;
 import com.melot.sdk.core.util.MelotBeanFactory;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 import com.upyun.api.UpYun;
+
+import org.apache.log4j.Logger;
 
 import redis.clients.jedis.Tuple;
 
@@ -1182,7 +1183,7 @@ public class NewsService {
 				json.addProperty("richLevel", us.getProfile().getUserLevel());
 			}
 			if (us.getRegisterInfo() != null) {
-				json.addProperty("city", us.getRegisterInfo().getCityId());
+				json.addProperty("city", Math.abs(us.getRegisterInfo().getCityId()));
 			}
 		}
 		json.addProperty("newsId", newsInfo.getNewsId());
@@ -1203,6 +1204,12 @@ public class NewsService {
 		if (newsInfo.getCommentMsg() != null && !newsInfo.getCommentMsg().trim().isEmpty()) {
 			String commentMsg = newsInfo.getCommentMsg();
 			JsonArray commentList = new JsonParser().parse(commentMsg).getAsJsonArray();
+			for (JsonElement je: commentList) {
+				JsonObject temp = je.getAsJsonObject();
+				if (temp.has("portrait_path")) {
+					temp.addProperty("portrait_path_128", temp.get("portrait_path").getAsString() + "!128x96");
+				}
+			}
 			json.add("commentList", commentList);
 		}
 		if (newsInfo.getCommentPraise() != null) {
@@ -1242,7 +1249,7 @@ public class NewsService {
 					mediaSourceJson.addProperty("imageUrl_400", path_400);
 					mediaSourceJson.addProperty("imageUrl_272", path_272);
 					mediaSourceJson.addProperty("imageUrl_128", path_128);
-					mediaSourceJson.remove("imageUrl");
+					mediaSourceJson.addProperty("imageUrl", path_400);
 				} else {
 					// 分平台返回不同尺寸图片
 					String path_original = resVideo.getImageUrl();
@@ -1251,9 +1258,17 @@ public class NewsService {
 					String path_272 = null;
 					String path_128 = null;
 					String path_400 = null;
+					Integer high = resVideo.getFileHeight();
+					Integer width = resVideo.getFileWidth();
+					if (high != null && width != null && high > 0 && width > 0) {
+						int phigh = (400 * high) / width;
+						mediaSourceJson.addProperty("imageUrl", path_original + "?imageView2/1/w/400/h/" + phigh);
+					} else {
+						mediaSourceJson.addProperty("imageUrl", path_original + "?imageView2/1/w/400/h/400");
+					}
 					path_1280 = path_original;
 					path_720 = path_original;
-					path_400 = path_original;
+					path_400 = path_original + "?imageView2/1/w/400/h/300";
 					path_272 = path_original;
 					path_128 = path_original;
 					mediaSourceJson.addProperty("imageUrl_1280", path_1280);
@@ -1261,7 +1276,7 @@ public class NewsService {
 					mediaSourceJson.addProperty("imageUrl_400", path_400);
 					mediaSourceJson.addProperty("imageUrl_272", path_272);
 					mediaSourceJson.addProperty("imageUrl_128", path_128);
-					mediaSourceJson.remove("imageUrl");
+					//mediaSourceJson.remove("imageUrl");
 				}
 			}
 			if (resVideo != null) {
@@ -1299,6 +1314,7 @@ public class NewsService {
 					mediaJson.addProperty("imageUrl_400", path_400);
 					mediaJson.addProperty("imageUrl_272", path_272);
 					mediaJson.addProperty("imageUrl_128", path_128);
+					mediaJson.addProperty("imageUrl", path_400);
 					picArray.add(mediaJson);
 				}
 				json.add("picArray", picArray);
