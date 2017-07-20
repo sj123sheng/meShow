@@ -1,12 +1,16 @@
 <?xml version="1.0"?>
 <config>
 	
-	<roomLiveRecordUrl>http://node01.kktv2.com:8080/recorderServer/services/event/play</roomLiveRecordUrl>
+	<roomLiveRecordUrl>http://219.146.243.130:9090/recorderServer/services/event/play</roomLiveRecordUrl>
 	
-	<kkApiAddress>http://kkapi1.kktv2.com:8080/meShow/entrance</kkApiAddress>
+	<recoderServerAddress>http://10.0.0.82:9191/recorderServer/services/videoRecordForApi/</recoderServerAddress>
 	
-	<kkgameActivity>http://kkapi1.kktv2.com:8081/activity/services</kkgameActivity>
+	<kkgameActivity>http://10.0.0.82:8081/activity/services</kkgameActivity>
 	
+	<!-- beta 服务外网地址
+	<kkApiAddress>http://122.224.137.163:9090/meShow/entrance</kkApiAddress>
+	 -->
+	<kkApiAddress>http://122.224.137.164:8081/meShow/entrance</kkApiAddress>
 	<appId>1</appId>
 	<!-- 是否部允许署多个app 0：允许部署多个app，1： 只能部署一个app -->
 	<moreAppFlag>0</moreAppFlag>
@@ -17,22 +21,23 @@
 	<!-- zookeeper -->
 	<zkServices>zk1.kktv2.com:2181,zk2.kktv2.com:2181,zk3.kktv2.com:2181</zkServices>
 	<nodeName>config</nodeName>
-	
-	 <!-- 存储通用数据 mongodb -->
-     <commonMongoIPPort>mons.kktv2.com:4001</commonMongoIPPort>
-     <!-- <commonMongoPort>4001</commonMongoPort> -->
-     <!-- 存储排行榜数据 mongodb -->
-     <cacheMongoIPPort>mons.kktv2.com:4001</cacheMongoIPPort>
-     <!-- <cacheMongoPort>4001</cacheMongoPort> -->
-     <connectionsPerHost>30</connectionsPerHost>
-     <connectTimeout>120000</connectTimeout>
-     <threadsAllowedToBlockForConnectionMultiplier>20</threadsAllowedToBlockForConnectionMultiplier>
-     <commonDB>meshow</commonDB>
-     <cacheDB>meshowcache</cacheDB>
+    <!-- 存储通用数据 mongodb -->
+	<commonMongoIP>mons.kktv2.com</commonMongoIP>
+	<commonMongoPort>4001</commonMongoPort>
+	<commonMongoIPPort>mons.kktv2.com:4001</commonMongoIPPort>
+	<commonDB>meshow</commonDB>
+	<!-- 存储排行榜数据 mongodb -->
+	<cacheMongoIP>mons.kktv2.com</cacheMongoIP>
+	<cacheMongoPort>4001</cacheMongoPort>
+	<cacheMongoIPPort>mons.kktv2.com:4001</cacheMongoIPPort>
+	<cacheDB>meshowcache</cacheDB>
+	<connectionsPerHost>30</connectionsPerHost>
+	<connectTimeout>120000</connectTimeout>
+	<threadsAllowedToBlockForConnectionMultiplier>20</threadsAllowedToBlockForConnectionMultiplier>
 
     <!-- 正式服地址 http://192.168.100.2:60000/mcm/ -->
-    <mcmURL>http://10.0.13.33:60000/mcm/</mcmURL>
-    <mfsURL>http://10.0.13.33:60001/mfs/</mfsURL>
+    <mcmURL>http://10.0.0.105:60000/mcm/</mcmURL>
+    <mfsURL>http://192.168.100.2:60001/mfs/</mfsURL>
     
     <vip0>100001</vip0>
 	<vip0kickout>5</vip0kickout>
@@ -65,25 +70,23 @@
 	<crashSavePath>/data/app/upload/crash</crashSavePath>
 	
 	<!-- 支付客户端的IP地址 -->
-	<allowedPayClientIp>10.0.13.29</allowedPayClientIp>
-	<allowedPayClientIp>10.0.13.1</allowedPayClientIp>
+	<allowedPayClientIp>192.168.100.5</allowedPayClientIp>
+	<allowedPayClientIp>192.168.100.27</allowedPayClientIp>
+	<allowedPayClientIp>10.0.0.2</allowedPayClientIp>
 	<!-- 注册客户端的IP地址 -->
-        <allowedRegisterClientIp>10.0.13.1</allowedRegisterClientIp>
-        <allowedRegisterClientIp>192.168.100.43</allowedRegisterClientIp>
-    	<allowedRegisterClientIp>192.168.100.38</allowedRegisterClientIp>
-   	    <allowedRegisterClientIp>192.168.100.82</allowedRegisterClientIp>
-    	<allowedRegisterClientIp>192.168.100.83</allowedRegisterClientIp>
-    	<allowedRegisterClientIp>192.168.100.22</allowedRegisterClientIp>
-    	<allowedRegisterClientIp>192.168.100.55</allowedRegisterClientIp>
-    	<allowedRegisterClientIp>192.168.100.27</allowedRegisterClientIp>
-    	<allowedRegisterClientIp>192.168.100.71</allowedRegisterClientIp>
-    	<allowedRegisterClientIp>192.168.100.72</allowedRegisterClientIp>
-    	<allowedRegisterClientIp>192.168.100.80</allowedRegisterClientIp>
-    	<allowedRegisterClientIp>192.168.100.81</allowedRegisterClientIp>
-	<allowedRegisterClientIp>192.168.100.62</allowedRegisterClientIp>
-	<allowedRegisterClientIp>192.168.100.61</allowedRegisterClientIp>
-	<allowedRegisterClientIp>192.168.100.77</allowedRegisterClientIp>
-
+	<allowedRegisterClientIp>192.168.100.5</allowedRegisterClientIp>
+	<allowedRegisterClientIp>10.0.0.2</allowedRegisterClientIp>
+	<allowedRegisterClientIp>10.0.1.1</allowedRegisterClientIp>
+	<allowedRegisterClientIp>10.0.0.1</allowedRegisterClientIp>
+	<allowedRegisterClientIp>10.0.0.106</allowedRegisterClientIp>
+	<allowedRegisterClientIp>122.224.137.164</allowedRegisterClientIp>
+	<allowedRegisterClientIp>10.0.3.58</allowedRegisterClientIp>
+	<allowedRegisterClientIp>10.0.1.22</allowedRegisterClientIp>
+	<allowedRegisterClientIp>10.0.0.105</allowedRegisterClientIp>
+	<allowedRegisterClientIp>172.16.0.35</allowedRegisterClientIp>
+	<allowedRegisterClientIp>10.0.3.1</allowedRegisterClientIp>
+	<allowedRegisterClientIp>10.0.3.21</allowedRegisterClientIp>
+	
 	<!-- 移动端银联支付配置 -->
 	<upVersion>1.0.0</upVersion>
 	<upSecurityKey>4wgOpUyiWDvmFvfpe0Dh5xDepagCzMqc</upSecurityKey>
@@ -208,22 +211,25 @@
 	<chinaUnicomPortalid>322</chinaUnicomPortalid>
 	
 	<!-- 七牛 -->
-	<videoURL>http://kkshare.kktv1.com/</videoURL>
-	<bucket>kksharedvideo</bucket>
-	<domainURL>kkshare.kktv1.com</domainURL>
-	<accessKey>v45tAjFwJErBUif90pYhXjq4tF4NFhFiZM0WbATc</accessKey>
-	<secretKey>prnFJ3WGeJ_XLPtj4EdInWf069Y7qVvFfk411HcR</secretKey>
+	<videoURL>http://fengziathangzhou.qiniudn.com/</videoURL>
+	<bucket>fengziathangzhou</bucket>
+	<domainURL>fengziathangzhou.qiniudn.com</domainURL>
+	<accessKey>c2bcE3Z4GsiZkerla7RE-6Lw9Hz7HrxVzphaVAS-</accessKey>
+	<secretKey>aaOJPcWZf2lk2dugQpJOHd2Rg_-cH6mHMwvc1Qdd</secretKey>
 	
 	<!-- 动态加入推荐动态数量 -->
 	<recNewsAddedCount>5</recNewsAddedCount>
 	
 	<!-- 年度盛典结果信息 -->
-	<annualActor>{86615095:117,39630332:101,29800935:95}</annualActor>
-	<annualFamily>{10783:7739260,11101:4382094,10360:4232859}</annualFamily>
+	<!-- 
+	<annualActor>{5495280:51936701,23132413:16485660,25064127:6913563}</annualActor>
+	 -->
+	<annualActor>{5495280:51936701,1000011:16485660,1000080:6913563}</annualActor>
+	<annualFamily>{10040:115100067,10783:56292329,10981:4212559}</annualFamily>
 	
 	<!-- 房间跑道地址 -->
-	<runwayUrl>http://node01.kktv2.com:8080/</runwayUrl>
- 	
+	<runwayUrl>http://10.0.3.8:8080/</runwayUrl>
+	
 	<!-- 用户送阳光中奖类别 -->
 	<sendSunshinePrizeType>红玫瑰、爱心、30秀币、奶茶、50秀币、100秀币、500秀币等</sendSunshinePrizeType>
 	
