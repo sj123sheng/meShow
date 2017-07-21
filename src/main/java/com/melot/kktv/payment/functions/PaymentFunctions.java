@@ -21,7 +21,6 @@ import com.melot.kktv.payment.domain.ConfPaymentPackage;
 import com.melot.kktv.payment.domain.PaymentPackageGift;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
-import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.PlatformEnum;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.module.medal.driver.domain.ConfMedal;
@@ -63,19 +62,15 @@ public class PaymentFunctions {
         			activityJson.addProperty("activityType", activity.getActivityType());
         		}
         		String activityURL = null;
-        		if (activity.getActivityURL() == null || activity.getActivityURL().trim().equals("")
-        				|| activity.getActivityURL().trim().equals("#")) {
-        			activityURL = ConfigHelper.getActivityUrl() + activity.getActivityURL();
-        		} else {
-        			activityURL = activity.getActivityURL();
-        		}
-        		String activityMobileURL = null;
-                if (activity.getActivityMobileURL() == null || activity.getActivityMobileURL().trim().equals("")
-                        || activity.getActivityMobileURL().trim().equals("#")) {
-                    activityMobileURL = ConfigHelper.getActivityUrl() + activity.getActivityMobileURL();
-                } else {
+                if (!com.melot.kktv.util.StringUtil.strIsNull(activity.getActivityURL())) {
+                    activityURL = activity.getActivityURL();
+                }
+
+                String activityMobileURL = null;
+                if (!com.melot.kktv.util.StringUtil.strIsNull(activity.getActivityMobileURL())) {
                     activityMobileURL = activity.getActivityMobileURL();
                 }
+
                 if (platform != PlatformEnum.WEB) {
                     if (activityMobileURL != null) {
                         activityJson.addProperty("activityURL", activityMobileURL);
