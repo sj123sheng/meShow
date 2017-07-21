@@ -460,4 +460,20 @@ public class TagCodeEnum {
     
     /** 用户没有权限开播*/
     public static final String SINGLE_CHAT_NOT_ACTOR = "05110701";
+    
+    
+    /*------分享接口 20010021 -------*/
+    /**分享平台 为空*/
+    public static final String SHARE_PLATFORM_IS_NULL = "02012104";
+    /**直播间ID 或 资源ID 为空*/
+    public static final String SHARE_SOURCE_ID_IS_NULL = "02012102";
+    /**分享类型为空*/
+    public static final String SHARE_TYPE_IS_NULL = "02012105";
+    /**录屏分享资源为空*/
+    public static final String VIDEO_TAPE_NOT_EXIST = "02012103";
+    /**分享话题为空*/
+    public static final String SHARE_REASON_IS_NULL = "02012106";
+    /**分享连接为空*/
+    public static final String SHARE_LINK_IS_NULL = "02012107";
+    /*-------------------END----------------------*/
 }

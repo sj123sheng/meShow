@@ -1,27 +1,40 @@
 package com.melot.kktv.action;
 
+import java.io.File;
 import java.net.URLDecoder;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.melot.blacklist.service.BlacklistService;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcx.functions.ProfileFunctions;
 import com.melot.kkcx.functions.UserFunctions;
+import com.melot.kkcx.service.AlbumServices;
+import com.melot.kkcx.service.GeneralService;
+import com.melot.kktv.model.FamilyPoster;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.SmsSource;
 import com.melot.kktv.service.AccountService;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
+import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.LoginTypeEnum;
+import com.melot.kktv.util.PictureTypeEnum;
+import com.melot.kktv.util.PictureTypeExtendEnum;
 import com.melot.kktv.util.PlatformEnum;
 import com.melot.kktv.util.SecurityFunctions;
 import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
+import com.melot.module.ModuleService;
+import com.melot.opus.domain.QiNiuTokenConf;
+import com.melot.opus.service.BasicService;
+import com.melot.qiniu.common.QiniuService;
 import com.melot.sdk.core.util.MelotBeanFactory;
 
 public class ProfileSecurityFunctions {
@@ -965,4 +978,218 @@ public class ProfileSecurityFunctions {
         return publicUserFunction.sendSMS(jsonObject, checkTag, request);
     }
 	
+    
+    
+    /**
+     * 获取七牛上传Token (40000026) 走安全签名，允许游客上传资源
+     * @param jsonObject
+     * @param checkTag
+     * @return
+     */
+    @SuppressWarnings("unused")
+    public JsonObject getUploadToken(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+        
+        JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
+        if (rtJO != null) {
+            return rtJO;
+        }
+        // 定义返回结果
+        JsonObject result = new JsonObject();
+        
+        int userId, resType, newsType, resumeUp, mimeType, vframeSeconds, appId = AppIdEnum.GAME, transcoding, opusState, newsState;
+        String videoTitle = null, videoContent = null, uuid;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            resumeUp = CommonUtil.getJsonParamInt(jsonObject, "resumeUp", 0, null, 1, Integer.MAX_VALUE);
+            mimeType = CommonUtil.getJsonParamInt(jsonObject, "mimeType", 0, null, 1, Integer.MAX_VALUE);
+            videoContent = CommonUtil.getJsonParamString(jsonObject, "videoContent", null, null, 1, 500);
+            vframeSeconds = CommonUtil.getJsonParamInt(jsonObject, "vframeSeconds", 0, null, 1, Integer.MAX_VALUE);
+            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, TagCodeEnum.APPID_MISSING, 1, Integer.MAX_VALUE);
+            //original = CommonUtil.getJsonParamInt(jsonObject, "original", 1, null, 1, Integer.MAX_VALUE);
+            if (ConfigHelper.getMoreAppFlag() == 0) {
+                appId = CommonUtil.getJsonParamInt(jsonObject, "a", 0, TagCodeEnum.APPID_MISSING, 1, Integer.MAX_VALUE);
+                if (!GeneralService.isLegalAppId(appId)) {
+                    throw new ErrorGetParameterException(TagCodeEnum.APPID_MISSING);
+                }
+            }
+            videoTitle = CommonUtil.getJsonParamString(jsonObject, "videoTitle", null, null, 1, 50);
+            transcoding = CommonUtil.getJsonParamInt(jsonObject, "transcoding", 0, null, 0, 1);
+            uuid = CommonUtil.getJsonParamString(jsonObject, "uuid", null, null, 1, 40);
+            opusState = CommonUtil.getJsonParamInt(jsonObject, "opusState", 0, null, 1, 9);
+            newsState = CommonUtil.getJsonParamInt(jsonObject, "newsState", 0, null, 1, 9);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        String key = QiniuService.getFileName(appId, userId, null);
+        try {
+            QiNiuTokenConf qiNiuTokenConf = new QiNiuTokenConf();
+            qiNiuTokenConf.setUserId(userId);
+            qiNiuTokenConf.setKey(key);
+            qiNiuTokenConf.setVframeSeconds(vframeSeconds);
+            qiNiuTokenConf.setAppId(appId);
+            qiNiuTokenConf.setMimeType(mimeType);
+            qiNiuTokenConf.setResumeUp(resumeUp);
+            if (videoTitle != null) {
+                qiNiuTokenConf.setVideoTitle(videoTitle);
+            }
+            if (videoContent != null) {
+                qiNiuTokenConf.setVideoContent(videoContent);
+            }
+            qiNiuTokenConf.setFunctag(20002051);
+            if (!StringUtil.strIsNull(ConfigHelper.getKkApiAddress())) {
+                qiNiuTokenConf.setApiAddress(ConfigHelper.getKkApiAddress());
+            }
+            if (!StringUtil.strIsNull(ConfigHelper.getBucket())) {
+                qiNiuTokenConf.setBucket(ConfigHelper.getBucket());
+            }
+            if (!StringUtil.strIsNull(ConfigHelper.getAccessKey())) {
+                qiNiuTokenConf.setAccessKey(ConfigHelper.getAccessKey());
+            }
+            if (!StringUtil.strIsNull(ConfigHelper.getSecretKey())) {
+                qiNiuTokenConf.setSecretKey(ConfigHelper.getSecretKey());
+            }
+            
+            qiNiuTokenConf.setNewsState(newsState);
+            qiNiuTokenConf.setOpusState(opusState);
+            qiNiuTokenConf.setTranscoding(transcoding);
+            if (!StringUtil.strIsNull(uuid)) {
+                qiNiuTokenConf.setUuid(uuid);
+            }
+            System.out.println(new Gson().toJson(qiNiuTokenConf));
+            String token = getQinuUploadToken(qiNiuTokenConf);
+            if (token != null && !token.trim().isEmpty()) {
+                result.addProperty("upToken", token);
+                result.addProperty("key", key);
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            } else {
+                result.addProperty("TagCode", TagCodeEnum.GET_UPLOAD_TOKEN_FAIL);   
+            }
+        } catch (Exception e) {
+            loginLogger.error("ProfileSecurityFunctions.getUploadToken error , userId : " + userId, e);
+            result.addProperty("TagCode", TagCodeEnum.GET_UPLOAD_TOKEN_FAIL);   
+        }
+        
+        return result;
+    }
+    
+    /**
+     * 图片信息、视频存入数据库
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     * @throws Exception
+     */
+    public JsonObject insertToDB(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception{
+        
+        JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
+        if (rtJO != null) {
+            return rtJO;
+        }
+        
+        JsonObject result = new JsonObject();
+        // 验证参数
+        int userId, familyId = 0, pictureType, appId;
+        String url = null;
+        String pictureName = null;
+        
+        try {
+            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 0, Integer.MAX_VALUE);
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            pictureType = CommonUtil.getJsonParamInt(jsonObject, "pictureType", 0, "04010004", -10, Integer.MAX_VALUE);
+            if (pictureType == PictureTypeEnum.family_poster) {
+                familyId = CommonUtil.getJsonParamInt(jsonObject, "familyId", 0, "04010016", 1, Integer.MAX_VALUE);
+            }
+            
+            url = CommonUtil.getJsonParamString(jsonObject, "url", null, "04010024", 1, Integer.MAX_VALUE);
+            url = url.replaceFirst(ConfigHelper.getHttpdir(), "");
+            url = url.replaceFirst("/kktv", "");
+            File tempFile = new File(url);
+            pictureName = tempFile.getName();
+        } catch(CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch(Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        if (appId == AppIdEnum.GAME) {
+            com.melot.kktv.action.AlbumFunctions publicAlbumFunction = (com.melot.kktv.action.AlbumFunctions) MelotBeanFactory.getBean("publicAlbumFunction");
+            return publicAlbumFunction.insertToDB(jsonObject, checkTag, request);
+        }
+        
+        // 0.头像 1.直播海报(弃用) 2.照片3.资源图片4.背景图
+        if (pictureType == PictureTypeEnum.portrait) { // 0 : 头像
+            try {
+                result = AlbumServices.addPortraitNew(userId, url, pictureName);
+            } catch (Exception e) {
+                loginLogger.error("Failed to insert to DB.", e);
+                result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
+            }
+        } else if (pictureType == PictureTypeEnum.background) { // 4 : 背景图
+            try {
+                result = AlbumServices.addBackgroundNew(userId , url, pictureName);
+            } catch (Exception e) {
+                loginLogger.error("Failed to insert to DB." + e);
+                result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
+            }
+        } else if (pictureType == PictureTypeEnum.family_poster) { // 5:家族海报
+            FamilyPoster familyPoster = new FamilyPoster();
+            try {
+                familyPoster.setPath_original(url);
+                FamilyAction familyAction = MelotBeanFactory.getBean("familyFunction", FamilyAction.class);
+                result = familyAction.setFamilyPoster(userId, familyId, familyPoster);
+            } catch (Exception e) {
+                loginLogger.debug("Failed to insert to DB." + e);
+                result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
+            }
+        } else if (pictureType == PictureTypeEnum.imchat) { // 6:群聊
+            try {
+                result = AlbumServices.addIMChatImage(userId, pictureType, url, pictureName);
+            } catch (Exception e) {
+                loginLogger.error("Failed to insert to DB." + e);
+                result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
+            }
+        }else if (pictureType == PictureTypeExtendEnum.video_tape) {// 9:录屏分享视频
+            try {
+                result = AlbumServices.addVideoTape(userId, url, pictureName);
+            } catch (Exception e) {
+                loginLogger.error("Failed to insert to DB." + e);
+                result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
+            }
+        } else { // 1.直播海报(弃用) 2.照片 3.资源图片
+            try {
+                if (pictureType == 3) {
+                    // 动态图片不保存在user_picture中
+                    result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                    result.addProperty("pictureId", 1); // 必须返回一个值否则客户端会报错
+                } else {
+                    result = AlbumServices.addPictureNew(userId, pictureType, url, pictureName);
+                }
+            } catch (Exception e) {
+                loginLogger.debug("Failed to insert to DB." + e);
+                result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
+            }
+        }
+        
+        return result;
+    }
+    
+    /**
+     * 获取七牛上传视频token
+     * @param qiNiuTokenConf
+     * @return
+     */
+    private static String getQinuUploadToken(QiNiuTokenConf qiNiuTokenConf) {
+        BasicService basicService = (BasicService) ModuleService.getService("BasicService");
+        if (basicService != null) {
+            return basicService.getUpLoadTokenByDomain(qiNiuTokenConf);
+        }
+        return null;
+    }
 }

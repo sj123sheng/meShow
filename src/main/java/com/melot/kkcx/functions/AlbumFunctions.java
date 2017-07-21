@@ -30,6 +30,7 @@ import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.Constant;
 import com.melot.kktv.util.PictureTypeEnum;
+import com.melot.kktv.util.PictureTypeExtendEnum;
 import com.melot.kktv.util.PlatformEnum;
 import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
@@ -901,7 +902,14 @@ public class AlbumFunctions {
 				logger.error("Failed to insert to DB." + e);
                 result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
 			}
-		} else { // 1.直播海报(弃用) 2.照片 3.资源图片
+		}else if (pictureType == PictureTypeExtendEnum.video_tape) {// 9:录屏分享视频
+            try {
+                result = AlbumServices.addVideoTape(userId, url, pictureName);
+            } catch (Exception e) {
+                logger.error("Failed to insert to DB." + e);
+                result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
+            }
+        } else { // 1.直播海报(弃用) 2.照片 3.资源图片
 			try {
 				if (pictureType == 3) {
 					// 动态图片不保存在user_picture中

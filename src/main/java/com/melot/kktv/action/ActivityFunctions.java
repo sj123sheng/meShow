@@ -7,6 +7,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.google.gson.JsonArray;
@@ -20,6 +21,7 @@ import com.melot.kktv.domain.RechargerPackage;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConfigHelper;
+import com.melot.kktv.util.PlatformEnum;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.confdynamic.SystemConfig;
 import com.melot.kktv.util.db.DB;
@@ -1536,12 +1538,18 @@ public class ActivityFunctions {
     public JsonObject recordRoomShare(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
     	JsonObject result = new JsonObject();
     	
-    	int userId, sharePlatform, shareSourceId, shareType;
+    	int userId, sharePlatform, shareSourceId, shareType,v,platform;
+        String shareReason,sharelink;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
             sharePlatform = CommonUtil.getJsonParamInt(jsonObject, "sharePlatform", 1, TagCodeEnum.ROOMID_MISSING, 1, Integer.MAX_VALUE);
             shareSourceId = CommonUtil.getJsonParamInt(jsonObject, "shareSourceId", 0, TagCodeEnum.ROOMID_MISSING, 1, Integer.MAX_VALUE);
             shareType = CommonUtil.getJsonParamInt(jsonObject, "shareType", 0, TagCodeEnum.ROOMID_MISSING, 1, Integer.MAX_VALUE);
+        
+            shareReason = CommonUtil.getJsonParamString(jsonObject, "shareReason", null, null, 1, Integer.MAX_VALUE);
+            sharelink = CommonUtil.getJsonParamString(jsonObject, "sharelink", null, null, 1, Integer.MAX_VALUE);
+            v = CommonUtil.getJsonParamInt(jsonObject, "v", 0, null, 1, Integer.MAX_VALUE);
+            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -1559,6 +1567,22 @@ public class ActivityFunctions {
         	shareInfo.setSharedPlatform(sharePlatform);
         	shareInfo.setSharedType(shareType);
         	shareInfo.setSharedSourceId(shareSourceId);
+        	
+        	// 分享视频动态、普通动态 title和link不能为空
+            if (shareType == 6 || shareType == 5 ) {
+                if ((platform == PlatformEnum.ANDROID && v > 99) || (platform == PlatformEnum.IPHONE && v > 131)) {
+                    if (StringUtils.isBlank(shareReason)) {
+                        shareReason = "0";
+                    }
+                    if (StringUtils.isBlank(sharelink)) {
+                        result.addProperty("TagCode", TagCodeEnum.SHARE_LINK_IS_NULL);
+                        return result;
+                    }
+                }
+            }
+            shareInfo.setShareReason(shareReason);
+            shareInfo.setShareLink(sharelink);
+        	
         	JsonObject json = missionService.share(shareInfo);
         	if (json != null && json.get("TagCode").getAsString().equals("00000000")) {
         		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
