@@ -30,6 +30,9 @@
 			<resource>
 				<directory>${basedir}/src/main/resources</directory>
 				<targetPath>.</targetPath>
+                <excludes>
+                    <exclude>disconf.properties</exclude>
+                </excludes>
 			</resource>
 		</resources>
 		<!-- 
