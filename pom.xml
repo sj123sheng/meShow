@@ -517,6 +517,13 @@
   			<artifactId>melot-jedis</artifactId>
   			<version>1.0.5</version>
 		</dependency>
+		
+		<!-- 1v1服务 -->
+		<dependency>
+            <groupId>com.melot.module.driver.msgbuilder</groupId>
+            <artifactId>single-chat-api</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
  	
 </project>

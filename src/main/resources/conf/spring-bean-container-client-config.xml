@@ -69,8 +69,8 @@
 	<kkrpc:reference id="privateLetterService" interface="com.melot.letter.driver.service.PrivateLetterService" version="1.0.0"></kkrpc:reference>
 
 	<!-- 敏感词模块 -->
-	<kkrpc:reference id="chatAnalyzerService" interface="com.melot.chat.service.ChatAnalyzerService" version="1.0.0"></kkrpc:reference>
-	<kkrpc:reference id="privateChatAnalyzerService" interface="com.melot.chat.service.PrivateChatAnalyzerService" version="1.0.0"></kkrpc:reference>
+	<kkrpc:reference id="chatAnalyzerService" interface="com.melot.chat.service.ChatAnalyzerService" version="1.0.1"></kkrpc:reference>
+	<kkrpc:reference id="privateChatAnalyzerService" interface="com.melot.chat.service.PrivateChatAnalyzerService" version="1.0.1"></kkrpc:reference>
 
 	<!-- 轮播房 -->	
 	<kkrpc:reference id="roundRoomService" interface="com.melot.round.driver.service.RoundRoomService"  version="1.0.0"></kkrpc:reference>
@@ -95,7 +95,7 @@
 	<!-- 资源模块 -->
 	<kkrpc:reference id="resourceCenter" interface="com.melot.resource.service.ResourceService" version="1.0.0"/>
 	<!-- 1v1视频聊天服务 -->
-	<kkrpc:reference id="singleChatService" interface="com.melot.common.driver.service.SingleChatService" version="1.0.0"/>
+	<kkrpc:reference id="singleChatService" interface="com.melot.singlechat.driver.service.SingleChatService" version="1.0.1"/>
 	
 	<!-- IM消息服务 -->
 	<kkrpc:reference id="timSystemService" interface="com.melot.client.api.TimSystemService" version="1.0.0"/>
