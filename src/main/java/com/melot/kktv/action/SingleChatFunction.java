@@ -440,39 +440,37 @@ public class SingleChatFunction {
             logger.error(String.format("Module error :ticketService.getUserRemainTickets(%s,%s)", userId, 100005), e);
         }
         
-        if (ticketNum == -1) {
-            // 需要跟活动沟通如何校验用户大厅界面是否显示，以及显示的url
-            JsonObject json = new JsonObject();            
-            try {
-                int flag = 0;
-                String url = "";
-                String desc = ""; 
-                
-                json.addProperty("type", 148);
-                json.addProperty("userId", 45416315 );
-                json.addProperty("key", "451a1sd8asd1asda6fdas89aw9");
-                MissionService missionService = MelotBeanFactory.getBean("missionService", MissionService.class);
-                JsonObject activeInfo = missionService.doActivityService(json);
-                logger.info("MissionService.doActivityService(" + json + "):" + activeInfo);
-                if (activeInfo != null) {
-                    if (!activeInfo.get("flag").isJsonNull()) {
-                        flag = activeInfo.get("flag").getAsInt();
-                    }
-                    if (!activeInfo.get("url").isJsonNull()) {
-                        url = activeInfo.get("url").getAsString();
-                    }
-                    if (!activeInfo.get("desc").isJsonNull()) {
-                        desc = activeInfo.get("desc").getAsString();
-                    }
+        // 需要跟活动沟通如何校验用户大厅界面是否显示，以及显示的url
+        JsonObject json = new JsonObject();
+        try {
+            int flag = 0;
+            String url = "";
+            String desc = ""; 
+            
+            json.addProperty("type", 148);
+            json.addProperty("userId", userId );
+            json.addProperty("key", "451a1sd8asd1asda6fdas89aw9");
+            MissionService missionService = MelotBeanFactory.getBean("missionService", MissionService.class);
+            JsonObject activeInfo = missionService.doActivityService(json);
+            logger.info("MissionService.doActivityService(" + json + "):" + activeInfo);
+            if (activeInfo != null) {
+                if (!activeInfo.get("flag").isJsonNull()) {
+                    flag = activeInfo.get("flag").getAsInt();
                 }
-                
-                if (flag == 1) {
-                    result.addProperty("desc", desc);
-                    result.addProperty("url", url);
+                if (!activeInfo.get("url").isJsonNull()) {
+                    url = activeInfo.get("url").getAsString();
                 }
-            } catch (Exception e) {
-                logger.error(String.format("Module error: MissionService.doActivityService(%s)", json), e);
+                if (!activeInfo.get("desc").isJsonNull()) {
+                    desc = activeInfo.get("desc").getAsString();
+                }
             }
+            
+            if (flag == 1) {
+                result.addProperty("desc", desc);
+                result.addProperty("url", url);
+            }
+        } catch (Exception e) {
+            logger.error(String.format("Module error: MissionService.doActivityService(%s)", json), e);
         }
         
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
