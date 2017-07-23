@@ -26,6 +26,7 @@ import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.PlatformEnum;
+import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.module.packagegift.driver.domain.UserTicketInfo;
 import com.melot.module.packagegift.driver.service.TicketService;
@@ -464,8 +465,12 @@ public class SingleChatFunction {
                     desc = activeInfo.get("desc").getAsString();
                 }
             }
-            
+            flag = userId % 2 == 0 ? 0 : 1;
+            url = "www.baidu.com";
             if (flag == 1) {
+                if (StringUtil.strIsNull(desc)) {
+                    desc = MelotBeanFactory.getBean("singleChatActiveDefaultDesc", String.class);
+                }
                 result.addProperty("desc", desc);
                 result.addProperty("url", url);
             }
