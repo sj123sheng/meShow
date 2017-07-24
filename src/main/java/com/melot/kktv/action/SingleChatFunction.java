@@ -414,9 +414,11 @@ public class SingleChatFunction {
         JsonObject result = new JsonObject();
         
         int userId;
+        String token;
         
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            token = CommonUtil.getJsonParamString(jsonObject, "token", null, TagCodeEnum.TOKEN_INCORRECT, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -450,7 +452,7 @@ public class SingleChatFunction {
             
             json.addProperty("type", 148);
             json.addProperty("userId", userId );
-            json.addProperty("key", "451a1sd8asd1asda6fdas89aw9");
+            json.addProperty("token", token);
             MissionService missionService = MelotBeanFactory.getBean("missionService", MissionService.class);
             JsonObject activeInfo = missionService.doActivityService(json);
             logger.info("MissionService.doActivityService(" + json + "):" + activeInfo);
