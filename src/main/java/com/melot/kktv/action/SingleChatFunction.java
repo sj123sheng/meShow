@@ -452,7 +452,7 @@ public class SingleChatFunction {
             
             json.addProperty("type", 148);
             json.addProperty("userId", userId );
-            json.addProperty("token", token);
+            json.addProperty("key", "451a1sd8asd1asda6fdas89aw9");
             MissionService missionService = MelotBeanFactory.getBean("missionService", MissionService.class);
             JsonObject activeInfo = missionService.doActivityService(json);
             logger.info("MissionService.doActivityService(" + json + "):" + activeInfo);
