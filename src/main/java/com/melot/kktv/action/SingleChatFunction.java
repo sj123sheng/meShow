@@ -467,8 +467,6 @@ public class SingleChatFunction {
                     desc = activeInfo.get("desc").getAsString();
                 }
             }
-            flag = userId % 2 == 0 ? 0 : 1;
-            url = "www.baidu.com";
             if (flag == 1) {
                 if (StringUtil.strIsNull(desc)) {
                     desc = MelotBeanFactory.getBean("singleChatActiveDefaultDesc", String.class);
