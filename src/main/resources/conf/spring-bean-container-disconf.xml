@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:context="http://www.springframework.org/schema/context" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:aop="http://www.springframework.org/schema/aop" xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+    xmlns:aop="http://www.springframework.org/schema/aop"
     xsi:schemaLocation="http://www.springframework.org/schema/beans
            http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
            http://www.springframework.org/schema/aop 
@@ -23,8 +23,11 @@
     <bean id="reloadableConf" class="com.baidu.disconf.client.addons.properties.ReloadablePropertiesFactoryBean">
         <property name="locations">
             <list>
-                <value>classpath:datasource.properties</value>
-                <value>classpath:config.properties</value>
+                <value>classpath:/conf/datasource.properties</value>
+                <value>classpath:/conf/config.properties</value>
+                <value>classpath:../config.xml</value>
+                <value>classpath:../JedisPoolConfig.xml</value>
+                <value>classpath:../textFilter.data</value>
             </list>
         </property>
     </bean>

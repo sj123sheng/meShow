@@ -7,9 +7,10 @@
 		<artifactId>melot-api-sdk</artifactId>
 		<version>0.0.4</version>
 	</parent>
-	
-	<artifactId>melot-meshow</artifactId>
-	<packaging>jar</packaging>
+
+    <groupId>com.melot</groupId>
+	<artifactId>meShow</artifactId>
+	<packaging>war</packaging>
 	<version>2.2.11.51</version>
 	
 	<name>meShow</name>
@@ -23,16 +24,13 @@
 
 	<build>
 		<directory>${basedir}/target</directory>
-		<finalName>${project.artifactId}-${project.version}</finalName>
+		<finalName>${project.artifactId}</finalName>
 		<sourceDirectory>${basedir}/src/main/java</sourceDirectory>
 		<outputDirectory>${basedir}/target/classes</outputDirectory>
 		<resources>
 			<resource>
 				<directory>${basedir}/src/main/resources</directory>
 				<targetPath>.</targetPath>
-                <excludes>
-                    <exclude>disconf.properties</exclude>
-                </excludes>
 			</resource>
 		</resources>
 		<!-- 
@@ -86,7 +84,7 @@
 				</configuration>
 			</plugin>
 
-			<plugin>
+			<!--<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>2.4</version>
@@ -105,7 +103,7 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>
+			</plugin>-->
 		</plugins>
 	</build>
 
