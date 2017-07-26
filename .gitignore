@@ -1,4 +1,5 @@
 /*.settings
+.DS_Store
 ### Java template
 # Compiled class file
 /target
