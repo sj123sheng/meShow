@@ -193,4 +193,52 @@
 		p_getPhotoCommentList(?,?,?)}
 	</procedure>
 
+
+<!-- 添加背景图片 -->
+	<parameterMap id="addVideoTapeMap" class="java.util.Map">
+		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="fileName" mode="IN" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="path_original" mode="IN" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="videoTapeId" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="oldPath" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+	</parameterMap>
+
+	<procedure id="addVideoTape" parameterMap="addVideoTapeMap">
+		{call
+		p_addVideoTape(?,?,?,?,?,?)}
+	</procedure>
+	
+	
+	<!-- 获取用户录屏资源 -->
+	<resultMap id="videoTape" class="com.melot.kktv.model.VideoTape">
+		<result property="videoTapeId" column="video_tape_id" javaType="java.lang.Integer" jdbcType="INTEGER" />
+		<result property="userId" column="userid" javaType="java.lang.Integer" jdbcType="INTEGER" />
+		<result property="filename" column="filename" javaType="java.lang.String" jdbcType="VARCHAR" />
+		<result property="path_original" column="path_original" javaType="java.lang.String" jdbcType="VARCHAR" />
+		<result property="useable" column="useable" javaType="java.lang.Integer" jdbcType="INTEGER" />
+		<result property="uploadTime" column="uploadTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+		<result property="checkid" column="checkid"/>
+	</resultMap>
+	
+	<parameterMap id="getVideoTapeListMap" class="java.util.Map">
+		<parameter property="videoTapeId" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="videoTapeList" mode="OUT" jdbcType="ORACLECURSOR"
+			javaType="java.sql.ResultSet"  resultMap="videoTape" />
+	</parameterMap>
+
+	<procedure id="getVideoTapeList" parameterMap="getVideoTapeListMap">
+		{call p_getVideoTapeList(?,?,?)}
+	</procedure>
 </sqlMap>

@@ -25,7 +25,6 @@ import com.melot.family.driver.domain.RespMsg;
 import com.melot.family.driver.service.FamilyAdminService;
 import com.melot.family.driver.service.FamilyInfoService;
 import com.melot.family.driver.service.FamilyOperatorService;
-import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcx.transform.RoomTF;
 import com.melot.kktv.domain.Honour;
 import com.melot.kktv.model.Family;
@@ -717,26 +716,6 @@ public class FamilyService {
 					resMap.put("pageTotal", CommonUtil.getPageTotal(total.intValue(), countPerPage));
 					@SuppressWarnings("unchecked")
 					List<FamilyMember> memberList = (List<FamilyMember>) map.get("memberList");
-					if (memberList != null && memberList.size() > 0) {
-						List<Integer> userIds = new ArrayList<Integer>();
-						Map<Integer, UserProfile> profileMap = new HashMap<Integer, UserProfile>();
-						for (FamilyMember familyMember : memberList) {
-							userIds.add(familyMember.getUserId());
-						}
-						List<UserProfile> profileList = UserService.getUserProfileAll(userIds);
-						if (profileList != null && profileList.size() > 0) {
-							for (UserProfile userProfile : profileList) {
-								profileMap.put(userProfile.getUserId(), userProfile);
-							}
-							for (FamilyMember familyMember : memberList) {
-								if (profileMap.containsKey(familyMember.getUserId()) && profileMap.get(familyMember.getUserId()) != null) {
-									familyMember.setNickname(profileMap.get(familyMember.getUserId()).getNickName());
-									familyMember.setActorTag(profileMap.get(familyMember.getUserId()).getIsActor());
-								}
-							}
-						}
-					}
-					
 					resMap.put("memberList", memberList);
 				} else {
 					resMap.put("pageTotal", 0l);
@@ -910,7 +889,6 @@ public class FamilyService {
 					resMap.put("pageTotal", CommonUtil.getPageTotal(total.intValue(), countPerPage));
 					@SuppressWarnings("unchecked")
 					List<FamilyApplicant> applicantList = (List<FamilyApplicant>) map.get("applicantList");
-					applicantList = UserService.addUserExtra(applicantList);
 					resMap.put("applicantList", applicantList);
 				} else {
 					resMap.put("pageTotal", 0l);

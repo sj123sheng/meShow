@@ -1,18 +1,5 @@
 package com.melot.kkcx.functions;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.log4j.Logger;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -29,15 +16,14 @@ import com.melot.kkcore.relation.service.ActorRelationService;
 import com.melot.kkcx.service.RoomService;
 import com.melot.kkcx.transform.RoomTF;
 import com.melot.kktv.service.UserRelationService;
-import com.melot.kktv.util.AppIdEnum;
-import com.melot.kktv.util.CommonUtil;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.PlatformEnum;
-import com.melot.kktv.util.StringUtil;
-import com.melot.kktv.util.TagCodeEnum;
+import com.melot.kktv.util.*;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.sdk.core.util.MelotBeanFactory;
+import org.apache.log4j.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.*;
 
 /**
  * Title: HallFunctions
@@ -87,12 +73,6 @@ public class KKHallFunctions {
 
         int roomCount = 0;
 
-        //不是自己不可查看相关列表
-        if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-            return result;
-        }
-        
         final String ROOM_CACHE_KEY = String.format(KK_USER_ROOM_CACHE_KEY, appId, userId);
         if (!KKHallSource.exists(ROOM_CACHE_KEY)) {
             List<String> roomJsonList = new ArrayList<String>();

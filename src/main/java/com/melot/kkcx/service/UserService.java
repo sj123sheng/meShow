@@ -596,7 +596,6 @@ public class UserService {
         return null;
 	}
 	
-	
 	/**
 	 * 从内存数据库中读出用户actorLevel
 	 * @param userId
@@ -676,18 +675,18 @@ public class UserService {
     }
     
     public static UserInfoDetail getUserInfoDetail(int userId) {
-    	try {
-			KkUserService userService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
-			UserInfoDetail userInfoDetail = userService.getUserDetailInfo(userId);
-			if (userInfoDetail != null && userInfoDetail.getRegisterInfo() != null) {
-			    return userInfoDetail;
-			} else {
-			    return null;
-			}
-		} catch (Exception e) {
-			logger.error("call KkUserService getUserStaticInfo catched exception, userId : " + userId, e);
-		}
-    	return null;
+        try {
+            KkUserService userService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
+            UserInfoDetail userInfoDetail = userService.getUserDetailInfo(userId);
+            if (userInfoDetail != null && userInfoDetail.getRegisterInfo() != null) {
+                return userInfoDetail;
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            logger.error("call KkUserService getUserStaticInfo catched exception, userId : " + userId, e);
+        }
+        return null;
     }
     
     /**

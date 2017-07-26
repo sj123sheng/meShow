@@ -65,7 +65,7 @@ public class ThirdVerifyUtil {
 			if (result != null && checkResult(result)) {
 				return TagCodeEnum.SUCCESS;
 			} else {
-				logger.error("call third verify service return null or return unexpected, url : " + url + param + ", result : " + result);
+				logger.warn("call third verify service return null or return unexpected, url : " + url + param + ", result : " + result);
 				return null;
 			}
 		}

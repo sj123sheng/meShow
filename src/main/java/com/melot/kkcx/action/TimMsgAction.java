@@ -77,6 +77,7 @@ public class TimMsgAction extends ActionSupport {
 		List<String> msgTypeList = new ArrayList<String>();
 		msgTypeList.add("TIMTextElem");
 		msgTypeList.add("TIMImageElem");
+		msgTypeList.add("TIMCustomElem");
 
 		String callbackCommand = request.getParameter("CallbackCommand");
 		String sdkAppid = request.getParameter("SdkAppid");
@@ -163,8 +164,8 @@ public class TimMsgAction extends ActionSupport {
 						}
 					}
 					
-					// 文本关键字校验
-                    if (item.getMsgType().equalsIgnoreCase("TIMTextElem") && !isCheck) {
+					// 刷新私信列表
+                    if (!isCheck) {
                         TimService.pushMsg(10, fromUserId, toUserId, type, time, item.getMsgContent().getText());
                         
                         PrivateLetterSource.refreshSession(String.valueOf(toUserId),String.valueOf(fromUserId));

@@ -11,13 +11,13 @@ import org.apache.log4j.Logger;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
-import com.melot.common.driver.base.Result;
-import com.melot.common.driver.base.ResultCode;
-import com.melot.common.driver.domain.HistSingleChatInfo;
-import com.melot.common.driver.domain.SingleChatActorInfo;
-import com.melot.common.driver.domain.SingleChatRoomInfo;
-import com.melot.common.driver.domain.SingleChatUserInfo;
-import com.melot.common.driver.service.SingleChatService;
+import com.melot.singlechat.driver.base.Result;
+import com.melot.singlechat.driver.base.ResultCode;
+import com.melot.singlechat.driver.domain.HistSingleChatInfo;
+import com.melot.singlechat.driver.domain.SingleChatActorInfo;
+import com.melot.singlechat.driver.domain.SingleChatRoomInfo;
+import com.melot.singlechat.driver.domain.SingleChatUserInfo;
+import com.melot.singlechat.driver.service.SingleChatService;
 import com.melot.kk.activity.driver.MissionService;
 import com.melot.kkcore.user.api.UserAssets;
 import com.melot.kkcore.user.service.KkUserService;
@@ -26,6 +26,7 @@ import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.PlatformEnum;
+import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.module.packagegift.driver.domain.UserTicketInfo;
 import com.melot.module.packagegift.driver.service.TicketService;
@@ -413,9 +414,11 @@ public class SingleChatFunction {
         JsonObject result = new JsonObject();
         
         int userId;
+        String token;
         
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            token = CommonUtil.getJsonParamString(jsonObject, "token", null, TagCodeEnum.TOKEN_INCORRECT, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -440,39 +443,39 @@ public class SingleChatFunction {
             logger.error(String.format("Module error :ticketService.getUserRemainTickets(%s,%s)", userId, 100005), e);
         }
         
-        if (ticketNum == -1) {
-            // 需要跟活动沟通如何校验用户大厅界面是否显示，以及显示的url
-            JsonObject json = new JsonObject();            
-            try {
-                int flag = 0;
-                String url = "";
-                String desc = ""; 
-                
-                json.addProperty("type", 148);
-                json.addProperty("userId", 45416315 );
-                json.addProperty("key", "451a1sd8asd1asda6fdas89aw9");
-                MissionService missionService = MelotBeanFactory.getBean("missionService", MissionService.class);
-                JsonObject activeInfo = missionService.doActivityService(json);
-                logger.info("MissionService.doActivityService(" + json + "):" + activeInfo);
-                if (activeInfo != null) {
-                    if (!activeInfo.get("flag").isJsonNull()) {
-                        flag = activeInfo.get("flag").getAsInt();
-                    }
-                    if (!activeInfo.get("url").isJsonNull()) {
-                        url = activeInfo.get("url").getAsString();
-                    }
-                    if (!activeInfo.get("desc").isJsonNull()) {
-                        desc = activeInfo.get("desc").getAsString();
-                    }
+        // 需要跟活动沟通如何校验用户大厅界面是否显示，以及显示的url
+        JsonObject json = new JsonObject();
+        try {
+            int flag = 0;
+            String url = "";
+            String desc = ""; 
+            
+            json.addProperty("type", 148);
+            json.addProperty("userId", userId );
+            json.addProperty("key", "451a1sd8asd1asda6fdas89aw9");
+            MissionService missionService = MelotBeanFactory.getBean("missionService", MissionService.class);
+            JsonObject activeInfo = missionService.doActivityService(json);
+            logger.info("MissionService.doActivityService(" + json + "):" + activeInfo);
+            if (activeInfo != null) {
+                if (!activeInfo.get("flag").isJsonNull()) {
+                    flag = activeInfo.get("flag").getAsInt();
                 }
-                
-                if (flag == 1) {
-                    result.addProperty("desc", desc);
-                    result.addProperty("url", url);
+                if (!activeInfo.get("url").isJsonNull()) {
+                    url = activeInfo.get("url").getAsString();
                 }
-            } catch (Exception e) {
-                logger.error(String.format("Module error: MissionService.doActivityService(%s)", json), e);
+                if (!activeInfo.get("desc").isJsonNull()) {
+                    desc = activeInfo.get("desc").getAsString();
+                }
             }
+            if (flag == 1) {
+                if (StringUtil.strIsNull(desc)) {
+                    desc = MelotBeanFactory.getBean("singleChatActiveDefaultDesc", String.class);
+                }
+                result.addProperty("desc", desc);
+                result.addProperty("url", url);
+            }
+        } catch (Exception e) {
+            logger.error(String.format("Module error: MissionService.doActivityService(%s)", json), e);
         }
         
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);

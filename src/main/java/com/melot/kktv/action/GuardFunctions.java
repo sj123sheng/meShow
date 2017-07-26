@@ -360,11 +360,6 @@ public class GuardFunctions {
 	public JsonObject getUserGuardList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
     	JsonObject result = new JsonObject();
     	
-    	if (!checkTag) {
-    	    result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-            return result;
-    	}
-    	
     	int userId, platform, start, offset;
     	try {
     		userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);

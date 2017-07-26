@@ -262,10 +262,10 @@ public class TimService {
 		try {
 		    PrivateLetterService privateLetterService = (PrivateLetterService) MelotBeanFactory.getBean("privateLetterService");
 		    if (privateLetterService != null) {
-		    	if (msgType.equalsIgnoreCase("TIMImageElem")) {
-		    		msgType = "image";
-		    	}else{
+		    	if (msgType.equalsIgnoreCase("TIMTextElem")) {
 		    		msgType = "text";
+		    	}else{
+		    		msgType = "image";
 		    	}
 		        String resultCode = privateLetterService.checkSendPrivateLetter(userId, receiveId, msgType);
 		        if (!StringUtils.isEmpty(resultCode)) {
