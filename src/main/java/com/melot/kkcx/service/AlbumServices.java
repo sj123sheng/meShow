@@ -247,5 +247,42 @@ public class AlbumServices {
 		}
 	}
 	
+	/**
+     * 添加录屏分享
+     * @param userId
+     * @param path_original
+     * @param videoName
+     * @return
+     */
+    public static JsonObject addVideoTape(int userId, String path_original, String videoName) {
+        // 调用存储过程入库
+        Map<Object, Object> map = new HashMap<Object, Object>();
+        map.put("userId", userId);
+        map.put("path_original", path_original);
+        map.put("fileName", videoName);
+        try {
+            SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Album.addVideoTape", map);
+            String TagCode = (String) map.get("TagCode");
+            if (TagCode.equals(TagCodeEnum.SUCCESS)) {
+                JsonObject obj = new JsonObject();
+                obj.addProperty("videoTapeId", String.valueOf(map.get("videoTapeId")));
+                obj.addProperty("oldPath", String.valueOf(map.get("oldPath")));
+                obj.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                return obj;
+            } else {
+                logger.error("调用存储过程(Album.addVideoTape)未的到正常结果(TagCode:"+TagCode+") userId:" + userId + ",path_original:"+ path_original);
+                JsonObject obj = new JsonObject();
+                obj.addProperty("TagCode", "04010010");
+                // 本次请求结束
+                return obj;
+            }
+        } catch (SQLException e) {
+            logger.error("添加录屏分享视频上传回调入库失败(userId:" + userId + ",path_original:"+ path_original + e);
+            JsonObject obj = new JsonObject();
+            obj.addProperty("TagCode", "04010009");
+            // 本次请求结束
+            return obj;
+        }
+    }
 	
 }

@@ -1,5 +1,11 @@
 package com.melot.kktv.context;
 
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+
+import org.apache.log4j.Logger;
+import org.apache.log4j.xml.DOMConfigurator;
+
 import com.ibatis.sqlmap.client.SqlMapClient;
 import com.melot.common.melot_jedis.RedisDataSourceFactory;
 import com.melot.kktv.lottery.WeeklyCheckIn;
@@ -16,11 +22,6 @@ import com.melot.kktv.util.mongodb.CommonDB;
 import com.melot.kktv.util.mongodb.MongoDBInstance;
 import com.melot.kktv.util.redis.RedisConfigHelper;
 import com.melot.sdk.core.util.MelotBeanFactory;
-import org.apache.log4j.Logger;
-import org.apache.log4j.xml.DOMConfigurator;
-
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
 
 public class ConfigContextListener implements ServletContextListener {
 	

@@ -17,8 +17,7 @@
 	</bean>
 
 	<!-- 模块加载器 -->
-	<bean id="moduleLoader" class=" com.melot.sdk.core.util.ModuleLoader"
-		destroy-method="destroy">
+	<bean id="moduleLoader" class=" com.melot.sdk.core.util.ModuleLoader" destroy-method="destroy">
 		<!-- 要加载的模块服务列表 -->
 		<constructor-arg name="moduleServiceList">
 			<list>

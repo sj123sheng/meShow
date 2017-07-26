@@ -1435,6 +1435,16 @@
 		<constructor-arg name="t" ref="profileSecurityFunction" />
 		<constructor-arg name="methodName" value="identifyPhoneByType" />
 	</bean>
+	<!-- 允许游客上传 sv安全签名接口 -->
+	<bean id="40000026" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="profileSecurityFunction" />
+		<constructor-arg name="methodName" value="getUploadToken" />
+	</bean>
+	<!-- 允许游客资源入库 sv安全签名接口 -->
+	<bean id="40000027" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="profileSecurityFunction" />
+		<constructor-arg name="methodName" value="insertToDB" />
+	</bean>
 	
 	<!-- 系统资源相关的接口类 -->
 	<!-- 商城车市获取车辆列表 -->
@@ -2537,4 +2547,11 @@
 		<constructor-arg name="t" ref="singleChatFunction" />
 		<constructor-arg name="methodName" value="checkBar" />
 	</bean>
+	
+	<!-- 获取礼物配置信息 -->
+	<bean id="50001111" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="configFunctions" />
+		<constructor-arg name="methodName" value="getGrammarId" />
+	</bean>
+	
 </beans>

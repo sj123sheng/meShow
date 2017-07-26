@@ -24,7 +24,6 @@ import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.util.CollectionUtils;
 import com.melot.kktv.util.HttpClient;
 import com.melot.letter.driver.service.PrivateLetterService;
-import com.melot.module.ModuleService;
 import com.melot.sdk.core.util.MelotBeanFactory;
 
 /**
@@ -58,7 +57,7 @@ public class TimService {
             String isTimRegister = HotDataSource.getHotFieldValue(userId, "isTimRegister");
             if (StringUtils.isEmpty(isTimRegister)) {
                 String identifier = TIM_IDENTIFIER_PREFIX + userId;
-                TimSystemService timService = (TimSystemService) ModuleService.getService("TimSystemService");
+                TimSystemService timService = MelotBeanFactory.getBean("timSystemService", TimSystemService.class);
                 String ret = timService.accountImport(identifier, nickname, "");
                 if (ret.equalsIgnoreCase("ok")) {
                     HotDataSource.setHotFieldValue(userId, "isTimRegister", "1");
@@ -88,7 +87,7 @@ public class TimService {
         String sig = null;
         try {
             String identifier = TIM_IDENTIFIER_PREFIX + userId;
-            TimSystemService timService = (TimSystemService) ModuleService.getService("TimSystemService");
+            TimSystemService timService = MelotBeanFactory.getBean("timSystemService", TimSystemService.class);
             sig = timService.getUserSig(identifier);
         } catch (Exception e) {
             logger.error("Fail to call im interface to get signature, userId " + userId, e);
@@ -262,10 +261,10 @@ public class TimService {
 		try {
 		    PrivateLetterService privateLetterService = (PrivateLetterService) MelotBeanFactory.getBean("privateLetterService");
 		    if (privateLetterService != null) {
-		    	if (msgType.equalsIgnoreCase("TIMImageElem")) {
-		    		msgType = "image";
-		    	}else{
+		    	if (msgType.equalsIgnoreCase("TIMTextElem")) {
 		    		msgType = "text";
+		    	}else{
+		    		msgType = "image";
 		    	}
 		        String resultCode = privateLetterService.checkSendPrivateLetter(userId, receiveId, msgType);
 		        if (!StringUtils.isEmpty(resultCode)) {
