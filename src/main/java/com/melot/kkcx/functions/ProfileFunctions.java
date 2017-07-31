@@ -1038,26 +1038,18 @@ public class ProfileFunctions {
 	 * @return
 	 */
 	public JsonObject getUserLiveState(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-		// 获取参数
-		JsonElement userIdje = jsonObject.get("userId");
-		// 验证参数
+	    JsonObject result = new JsonObject();
+	    
 		int userId;
-		if (userIdje != null && !userIdje.isJsonNull() && !userIdje.getAsString().isEmpty()) {
-			// 验证数字
-			try {
-				userId = userIdje.getAsInt();
-			} catch (Exception e) {
-				JsonObject result = new JsonObject();
-				result.addProperty("TagCode", "05420002");
-				return result;
-			}
-		} else {
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", "05420001");
-			return result;
-		}
-		
-		JsonObject result = new JsonObject();
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "05420002", 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
 		
 		RoomInfo roomInfo = com.melot.kktv.service.RoomService.getRoomInfo(userId);
 		if (roomInfo != null) {
@@ -1078,6 +1070,9 @@ public class ProfileFunctions {
 			}
 			if (roomInfo.getNextStarttime() != null) {
 				result.addProperty("nextstarttime", roomInfo.getNextStarttime().getTime());
+			}
+			if (roomInfo.getRoomSource() != null) {
+			    result.addProperty("roomSource", roomInfo.getRoomSource());
 			}
 			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 		} else {
