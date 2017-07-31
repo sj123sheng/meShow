@@ -1031,16 +1031,16 @@ public class ProfileFunctions {
         return getUserInfo(jsonObject, false, request);
     }
 	
-    /**
-     * 获取用户直播状态(10005042)
-     * 
-     * @param jsonObject 请求对象
-     * @return
-     */
-    public JsonObject getUserLiveState(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-        JsonObject result = new JsonObject();
-
-        int userId;
+	/**
+	 * 获取用户直播状态(10005042)
+	 * 
+	 * @param jsonObject 请求对象
+	 * @return
+	 */
+	public JsonObject getUserLiveState(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+	    JsonObject result = new JsonObject();
+	    
+		int userId;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "05420002", 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
@@ -1050,37 +1050,37 @@ public class ProfileFunctions {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
+		
+		RoomInfo roomInfo = com.melot.kktv.service.RoomService.getRoomInfo(userId);
+		if (roomInfo != null) {
+		    if (roomInfo.getScreenType() != null) {
+		        result.addProperty("screenType", roomInfo.getScreenType());
+		    } else {
+		        result.addProperty("screenType", 1);
+		    }
 
-        RoomInfo roomInfo = com.melot.kktv.service.RoomService.getRoomInfo(userId);
-        if (roomInfo != null) {
-            if (roomInfo.getScreenType() != null) {
-                result.addProperty("screenType", roomInfo.getScreenType());
-            } else {
-                result.addProperty("screenType", 1);
-            }
-
-            if (roomInfo.getLiveType() != null) {
-                result.addProperty("liveType", roomInfo.getLiveType());
-            }
-            if (roomInfo.getLiveStarttime() != null) {
-                result.addProperty("livestarttime", roomInfo.getLiveStarttime().getTime());
-            }
-            if (roomInfo.getLiveEndtime() != null) {
-                result.addProperty("liveendtime", roomInfo.getLiveEndtime().getTime());
-            }
-            if (roomInfo.getNextStarttime() != null) {
-                result.addProperty("nextstarttime", roomInfo.getNextStarttime().getTime());
-            }
-            if (roomInfo.getRoomSource() != null) {
-                result.addProperty("roomSource", roomInfo.getRoomSource());
-            }
-            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        } else {
-            result.addProperty("TagCode", "05420003");
-        }
-
-        return result;
-    }
+			if (roomInfo.getLiveType() != null) {
+				result.addProperty("liveType", roomInfo.getLiveType());
+			}
+			if (roomInfo.getLiveStarttime() != null) {
+				result.addProperty("livestarttime", roomInfo.getLiveStarttime().getTime());
+			}
+			if (roomInfo.getLiveEndtime() != null) {
+				result.addProperty("liveendtime", roomInfo.getLiveEndtime().getTime());
+			}
+			if (roomInfo.getNextStarttime() != null) {
+				result.addProperty("nextstarttime", roomInfo.getNextStarttime().getTime());
+			}
+			if (roomInfo.getRoomSource() != null) {
+			    result.addProperty("roomSource", roomInfo.getRoomSource());
+			}
+			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+		} else {
+			result.addProperty("TagCode", "05420003");
+		}
+		
+		return result;
+	}
 	
 	/**
 	 * 更新用户信息(10005002)
