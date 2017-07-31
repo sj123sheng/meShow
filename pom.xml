@@ -33,6 +33,7 @@
 				<targetPath>.</targetPath>
                 <excludes>
                     <exclude>disconf.properties</exclude>
+                    <exclude>META-INF/cat/*</exclude>
                 </excludes>
 			</resource>
 		</resources>
