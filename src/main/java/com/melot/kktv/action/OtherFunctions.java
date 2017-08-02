@@ -735,7 +735,7 @@ public class OtherFunctions {
 			int reportType = CommonUtil.getJsonParamInt(jsonObject, "reportType", 0, null, 1, Integer.MAX_VALUE);
 			int reportTag = CommonUtil.getJsonParamInt(jsonObject, "reportTag", 0, tagCode_prefix + "05", 1, 5);
 			String reason = CommonUtil.getJsonParamString(jsonObject, "reason", null, null, 1, 50);
-			String evidenceUrls = CommonUtil.getJsonParamString(jsonObject, "evidenceUrls", null, TagCodeEnum.EVIDENCEURLS_MISSING, 1, 500);
+			String evidenceUrls = CommonUtil.getJsonParamString(jsonObject, "evidenceUrls", null, null, 1, 500);
 			int roomId = CommonUtil.getJsonParamInt(jsonObject, "roomId", 0, null, 1, Integer.MAX_VALUE);
 			int newsId = CommonUtil.getJsonParamInt(jsonObject, "newsId", 0, null, 1, Integer.MAX_VALUE);
 			if(reportTag == 2 && roomId == 0){
