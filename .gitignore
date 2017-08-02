@@ -1,4 +1,6 @@
 /*.settings
+#disconf配置文件过滤
+/disconf
 .DS_Store
 ### Java template
 # Compiled class file
@@ -7,6 +9,7 @@
 
 # Log file
 *.log
+*.log.*
 
 # BlueJ files
 *.ctxt
