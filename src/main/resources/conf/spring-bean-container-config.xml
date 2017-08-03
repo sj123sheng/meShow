@@ -12,15 +12,15 @@
 	</bean>
 	
 	<bean id="httpdir" class="java.lang.String">
-		<constructor-arg type="java.lang.String" value="http://ures.kktv8.com/kktv" />
+		<constructor-arg type="java.lang.String" value="${httpdir}" />
 	</bean>
 	
 	<bean id="mcmURL" class="java.lang.String">
-		<constructor-arg type="java.lang.String" value="http://admapi.kktv2.com:60000/mcm/" />
+		<constructor-arg type="java.lang.String" value="${mcmURL}" />
 	</bean>
 	
 	<bean id="mfsURL" class="java.lang.String">
-		<constructor-arg type="java.lang.String" value="http://admapi.kktv2.com:60000/mfs/" />
+		<constructor-arg type="java.lang.String" value="${mfsURL}" />
 	</bean>
 	
 	<bean id="versionSavePath" class="java.lang.String">
@@ -31,4 +31,8 @@
 		<constructor-arg type="java.lang.String" value="/data/app/upload/crash" />
 	</bean>
 	
+	<!-- 私聊活动默认desc描述 -->
+	<bean id="singleChatActiveDefaultDesc" class="java.lang.String">
+		<constructor-arg type="java.lang.String" value="你有免费体验券可以领取" />
+	</bean>
 </beans>

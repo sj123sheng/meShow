@@ -11,7 +11,7 @@
 
 	<!-- 配置服务注册中心信息 -->
 	<kkrpc:registry id="myregistry"
-		address="zk1.kktv2.com:2181,zk2.kktv2.com:2181,zk3.kktv2.com:2181"
+		address="${myregistry.address}"
 		connecttimeout="10000" sessiontimeout="30000"></kkrpc:registry>
 
 	<!-- <kkrpc:monitor name="mymonitor" interval="${monitor.interval}" timeout="${monitor.timeout}" 
