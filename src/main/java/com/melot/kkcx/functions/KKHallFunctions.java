@@ -73,6 +73,12 @@ public class KKHallFunctions {
 
         int roomCount = 0;
 
+        //不是自己不可查看相关列表
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        }
+        
         final String ROOM_CACHE_KEY = String.format(KK_USER_ROOM_CACHE_KEY, appId, userId);
         if (!KKHallSource.exists(ROOM_CACHE_KEY)) {
             List<String> roomJsonList = new ArrayList<String>();
@@ -222,7 +228,8 @@ public class KKHallFunctions {
                 // firstPageHandler.getRecommendRooms(null, null, appId, 2 *
                 // offset);
                 // 将兴趣推荐作为优质主播库，从中随机推荐1~4个在播主播，推荐的主播不能与兴趣推荐前14个相同
-                List<RoomInfo> roomList = firstPageHandler.getKKRecommendRooms(userId, appId, start + filter, 2 * offset);
+                String recommendRoomKey = String.format(KKHallSource.KK_FIRST_RECOMMENDED_ROOMLIST_CACHE_KEY, new Random().nextInt(10));
+                List<RoomInfo> roomList = firstPageHandler.getKKRecommendRooms(userId, appId, start + filter, 2 * offset, recommendRoomKey);
                 if (roomList != null && roomList.size() > 0) {
                     for (int i = 0; i < roomList.size(); i++) {
                         if (roomIdList.contains(roomList.get(i).getActorId())) {
@@ -260,13 +267,17 @@ public class KKHallFunctions {
     public JsonObject getKKRecommendedList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
         JsonObject result = new JsonObject();
 
-        int appId, start, offset, platform, userId;
+        int appId, start, offset, platform, userId, firstView, roomListIndex;
         try {
             platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, TagCodeEnum.PLATFORM_MISSING, 1, Integer.MAX_VALUE);
             appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 0, Integer.MAX_VALUE);
             start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, TagCodeEnum.START_MISSING, 0, Integer.MAX_VALUE);
             offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 0, TagCodeEnum.OFFSET_MISSING, 1, Integer.MAX_VALUE);
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
+            //是否第一次进来查看页面-（下拉刷新跟web端刷新页面不属于第一次进来查看  1：是第一次 0：不是第一次）
+            firstView = CommonUtil.getJsonParamInt(jsonObject, "firstView", 1, null, 0, Integer.MAX_VALUE);
+            //回传当时随机获取的是10个列表中的哪个列表（第一次进来查看和第一次下拉刷新是没有该值的）
+            roomListIndex = CommonUtil.getJsonParamInt(jsonObject, "roomListIndex", -1, null, 0, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -282,8 +293,16 @@ public class KKHallFunctions {
 
         try {
             FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
-            roomCount = firstPageHandler.getKKRecommendRoomCount(userId, appId);
-            List<RoomInfo> roomList = firstPageHandler.getKKRecommendRooms(userId, appId, start, offset);
+            String recommendRoomKey = KKHallSource.KK_FIRST_RECOMMENDED_ROOMLIST_CACHE_KEY;
+            if(firstView == 0) {
+                recommendRoomKey = KKHallSource.KK_RELOAD_RECOMMENDED_ROOMLIST_CACHE_KEY;
+            }
+            if(roomListIndex == -1) {
+                roomListIndex = new Random().nextInt(10);
+            }
+            recommendRoomKey = String.format(recommendRoomKey, roomListIndex);
+            roomCount = firstPageHandler.getKKRecommendRoomCount(userId, appId, recommendRoomKey);
+            List<RoomInfo> roomList = firstPageHandler.getKKRecommendRooms(userId, appId, start, offset, recommendRoomKey);
             if (roomList != null && roomList.size() > 0) {
                 for (RoomInfo roomInfo : roomList) {
                     roomArray.add(RoomTF.roomInfoToJson(roomInfo, platform));
@@ -294,6 +313,7 @@ public class KKHallFunctions {
         }
 
         result.add("roomList", roomArray);
+        result.addProperty("roomListIndex", roomListIndex);
         result.addProperty("roomTotal", roomCount < 1 ? roomArray.size() : roomCount);
         result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
@@ -513,7 +533,8 @@ public class KKHallFunctions {
         List<Integer> recommendedRoomIdList = new ArrayList<Integer>();
         try {
             FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
-            recommendedRoomList = firstPageHandler.getKKRecommendRooms(1, 0, 0, 9);
+            String recommendRoomKey = String.format(KKHallSource.KK_FIRST_RECOMMENDED_ROOMLIST_CACHE_KEY, new Random().nextInt(10));
+            recommendedRoomList = firstPageHandler.getKKRecommendRooms(1, 0, 0, 9, recommendRoomKey);
         } catch (Exception e) {
             logger.error("Fail to call firstPageHandler.getKKRecommendRooms(1, 0, 0, 9)", e);
         }

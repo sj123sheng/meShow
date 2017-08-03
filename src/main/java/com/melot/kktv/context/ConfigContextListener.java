@@ -77,7 +77,15 @@ public class ConfigContextListener implements ServletContextListener {
 			WordsFilter.init(event.getServletContext().getRealPath("/") + wordsDictLocation);
 		}
 		String tlsPemLocation = event.getServletContext().getInitParameter("tlsPemLocation");
-		String tlsSoLocation = event.getServletContext().getInitParameter("tlsSoLocation");
+		String tlsSoLocation = null;
+		String osName = System.getProperty("os.name");
+        if(osName.startsWith("Windows")) {
+            tlsSoLocation = event.getServletContext().getInitParameter("tlsSoLocationWindows");
+        }else if(osName.startsWith("Mac OS")){
+            tlsSoLocation = event.getServletContext().getInitParameter("tlsSoLocationMac");
+        }else {
+            tlsSoLocation = event.getServletContext().getInitParameter("tlsSoLocationLinux");
+        }
 		if (tlsPemLocation != null && tlsSoLocation != null) {
 			TlsSig.init(event.getServletContext().getRealPath("/") + tlsPemLocation, event.getServletContext().getRealPath("/") + tlsSoLocation);
 		}

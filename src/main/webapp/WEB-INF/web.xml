@@ -65,13 +65,20 @@
 		<param-value>WEB-INF/ec_key.pem</param-value>
 	</context-param>
 	<context-param>
-		<param-name>tlsSoLocation</param-name>
+		<param-name>tlsSoLocationWindows</param-name>
+		<!-- windows jnisigcheck.dll -->
+		<param-value>WEB-INF/jnisigcheck.dll</param-value>
+	</context-param>
+	<context-param>
+		<param-name>tlsSoLocationLinux</param-name>
 		<!-- linux jnisigcheck.so -->
 		<param-value>WEB-INF/jnisigcheck.so</param-value>
-		<!-- windows jnisigcheck.dll 
-		<param-value>WEB-INF/jnisigcheck.dll</param-value>-->
 	</context-param>
-	
+	<context-param>
+        <param-name>tlsSoLocationMac</param-name>
+        <!-- macOS macJnisigcheck.so -->
+        <param-value>WEB-INF/jnisigcheckForMac.so</param-value>
+    </context-param>
 	<listener>
         <listener-class>com.melot.kktv.context.ConfigContextListener</listener-class>
 	</listener>

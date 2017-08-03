@@ -15,17 +15,13 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.melot.kktv.model.RechargeRecord;
-import com.melot.kktv.util.mongodb.CommonDB;
 import com.melot.kktv.util.AppIdEnum;
-import com.melot.kktv.util.CollectionEnum;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.DateUtil;
 import com.melot.kktv.util.PlatformEnum;
-import com.melot.kktv.util.db.SqlMapClientHelper;
-import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.TagCodeEnum;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
+import com.melot.kktv.util.db.DB;
+import com.melot.kktv.util.db.SqlMapClientHelper;
 
 /**
  * 充值接口类
@@ -37,7 +33,7 @@ public class ChargingFunctions {
 
 	/** 日志记录对象 */
 	private static Logger logger = Logger.getLogger(ChargingFunctions.class);
-	
+
 	/**
 	 * 获取充值的说明信息
 	 * @param jsonObject
@@ -46,40 +42,40 @@ public class ChargingFunctions {
 	 * @return
 	 */
 	public JsonObject getChargeInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-		
-		JsonObject result = new JsonObject();
-		
 		int appId, platform;
 		try {
             appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 1, Integer.MAX_VALUE);
             platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.WEB, null, 1, Integer.MAX_VALUE);
         } catch(Exception e) {
+			JsonObject result = new JsonObject();
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-		
-		String content = "";
-		double ratio = 0;
-		
-		DBObject query = new BasicDBObject();
-		query.put("appId", appId);
-        query.put("platform", platform);
-		DBObject item = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.NOTICEOFCHARGE).findOne(query);
-		if (item != null) {
-			if (item.containsField("content")) {
-				content = item.get("content").toString();
-			}
-			if (item.containsField("ratio")) {
-				ratio = Double.parseDouble(item.get("ratio").toString());
-			}
-		}
-        
-		result.addProperty("content", content);
-		result.addProperty("ratio", ratio);
+		JsonObject result = getChargeConfigInfo(appId,platform);
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 		return result;
 	}
-	
+
+	/**
+	 * 获得充值的说明信息 写死
+	 * @param appId
+	 * @param platform
+	 * @return
+	 */
+	private JsonObject getChargeConfigInfo(int appId,int platform){
+		JsonObject result = new JsonObject();
+		if(appId == 1){
+			result.addProperty("ratio", 0.0);
+			if(platform == 1 || platform == 2){
+				result.addProperty("content", " ");
+			}
+			else if(platform == 3 || platform == 4){
+				result.addProperty("content", "提示：人民币和秀币的兑换比例为1:700");
+			}
+		}
+        return result;
+	}
+
 	/**
 	 * 获取用户充值记录列表
 	 * 

@@ -12,6 +12,7 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.google.common.collect.Maps;
 import org.apache.log4j.Logger;
 
 import com.google.gson.Gson;
@@ -56,6 +57,7 @@ import com.melot.sdk.core.util.MelotBeanFactory;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+import org.bson.BSONObject;
 
 /**
  * 动态的接口类
@@ -389,13 +391,13 @@ public class NewsFunctions {
 		}
 		if (rewardCountje != null && !rewardCountje.getAsString().isEmpty() && !rewardCountje.isJsonNull() && rewardCountje.getAsInt() > 0) {
 			rewardCount = rewardCountje.getAsInt();
-			DBObject rewardDBObj = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.NEWSREWARDCONFIG)
-					.findOne(new BasicDBObject("rewardCount", rewardCount));
-			if (rewardDBObj != null) {
-				rewardCost = (Integer) rewardDBObj.get("rewardCost");
-				rewardText = (String) rewardDBObj.get("rewardDes");
+			Map<String,Object> rewardMap = getRewardDBObj(rewardCount);
+//			DBObject rewardDBObj = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.NEWSREWARDCONFIG)
+//					.findOne(new BasicDBObject("rewardCount", rewardCount));
+			rewardCost = (Integer) rewardMap.get("rewardCost");
+			if(null != rewardMap.get("rewardDes")){
+				rewardText = (String) rewardMap.get("rewardDes");
 				totalCost = rewardCost * rewardCount;
-				
 				long showMoney = com.melot.kktv.service.UserService.getUserShowMoney(userId);
 				if (showMoney < totalCost) {
 					JsonObject result = new JsonObject();
@@ -526,7 +528,28 @@ public class NewsFunctions {
 		}
 		
 	}
-	
+
+	/**
+	 * 根据不同的rewardCount值获取RewardDBObj(写死)
+	 * @param rewardCount
+	 * @return
+	 */
+	private Map<String,Object> getRewardDBObj(int rewardCount){
+		Map<String,Object> map = Maps.newHashMap();
+		map.put("rewardCount",rewardCount);
+		map.put("rewardCost",100);
+		if(rewardCount == 1){
+			map.put("rewardDes","捧个人场");
+		}else if(rewardCount == 10){
+			map.put("rewardDes","捧个钱场");
+		}else if(rewardCount == 888){
+			map.put("rewardDes","包个大礼");
+		}else if(rewardCount == 9999){
+			map.put("rewardDes","包个全场");
+		}
+		return map;
+	}
+
 	/**
 	 * 删除评论
 	 * 
@@ -1321,27 +1344,30 @@ public class NewsFunctions {
 		
 		JsonObject result = new JsonObject();
 		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-		
-		Integer rewardCost = null;
 		// 返回打赏列表  只在第一页返回打赏列表信息
-		JsonArray rewardArray = new JsonArray();
-		DBCursor rewardDBCur = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.NEWSREWARDCONFIG)
-				.find().sort(new BasicDBObject("rewardCount", 1));
-		if (rewardDBCur != null) {
-			for (DBObject rewardDBObj : rewardDBCur) {
-				JsonObject rewardObj = new JsonObject();
-				if (rewardCost == null) {
-					rewardCost = (Integer) rewardDBObj.get("rewardCost");
-				}
-				rewardObj.addProperty("rewardCount", rewardDBObj.get("rewardCount").toString());
-				rewardObj.addProperty("rewardDes", rewardDBObj.get("rewardDes").toString());
-				rewardArray.add(rewardObj);
-			}
-		}
-		result.addProperty("rewardCost", rewardCost);
-		result.add("rewardList", rewardArray);
-	
+		result.addProperty("rewardCost", 10);
+		result.add("rewardList", getRewards());
 		return result;
+	}
+
+	/**
+	 * 获得打赏列表（写死）
+	 * @return
+	 */
+	private JsonArray getRewards(){
+		JsonArray rewardArray = new JsonArray();
+		rewardArray.add(reward(1,"捧个人场"));
+		rewardArray.add(reward(10,"捧个钱场"));
+		rewardArray.add(reward(888,"包个大礼"));
+		rewardArray.add(reward(9999,"包个全场"));
+		return rewardArray;
+	}
+
+	private JsonObject reward(int rewardCount,String rewardDes){
+		JsonObject rewardObj = new JsonObject();
+		rewardObj.addProperty("rewardCount",rewardCount);
+		rewardObj.addProperty("rewardDes",rewardDes);
+		return rewardObj;
 	}
 	
 	/**

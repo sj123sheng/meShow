@@ -24,6 +24,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.melot.api.menu.sdk.dao.domain.HomePage;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.api.menu.sdk.dao.domain.SysMenu;
 import com.melot.api.menu.sdk.handler.FirstPageHandler;
@@ -1190,86 +1191,27 @@ public class IndexFunctions {
 		}
 		return result;
 	}
-	
+
 	/**
 	 * 获取房间分类信息
-	 * @return
+	 * 台湾版本在使用
+	 *
+	 * @return 直接返回如下
+	 * {
+			TagCode: "00000000",
+			catalogInfo: [
+				{
+				  defaultTag: "全部"
+				}
+	        ]
+	    }
 	 */
 	public JsonObject getCatalogInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 		JsonObject result = new JsonObject();
 		JsonArray catalogInfo = new JsonArray();
-		if(CommonDB.getInstance(CommonDB.COMMONDB).collectionExists(CollectionEnum.CATALOGINFO)) {
-			DBCursor cursor = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.CATALOGINFO).find();
-			while (cursor.hasNext()) {
-				DBObject element = cursor.next();
-				if(element.containsField("catalogTag")  
-						&& element.containsField("catalogList")) {
-					JsonObject catalogObj = new JsonObject();
-					String catalogTag = (String) element.get("catalogTag");
-					JsonArray catalogArray = new JsonParser().parse((String) element.get("catalogList")).getAsJsonArray();
-					if(catalogArray.size()==1 && catalogArray.get(0).getAsJsonObject()
-							.get("catalogId").getAsInt() == Constant.default_catalog_tag) {
-						catalogObj.addProperty("defaultTag", catalogTag);
-					} else {
-						catalogObj.addProperty("catalogTag", catalogTag);
-						catalogObj.add("catalogList", catalogArray);
-					}
-					catalogInfo.add(catalogObj);
-				}
-			}
-		}
-		if(catalogInfo.size()==0) {
-			Map<String, Object> map = new HashMap<String, Object>();
-			try {
-				SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Index.getCatalogInfo", map);
-			} catch (Exception e) {
-				logger.error("未能正常调用存储过程", e);
-				result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
-				return result;
-			}
-			String tagCode = map.get("TagCode").toString();
-			if (tagCode.equals(TagCodeEnum.SUCCESS)) {
-				@SuppressWarnings("unchecked")
-				List<Object> catalogList = (ArrayList<Object>) map.get("catalogList");
-				if(catalogList.size()>0) {
-					Map<String, JsonArray> catalogMap = new HashMap<String, JsonArray>();
-					List<String> tagList = new ArrayList<String>();
-					for (Object object : catalogList) {
-						Catalog catalog = (Catalog) object;
-						String catalogTag = catalog.getCatalogtag();
-						JsonObject catalogObj = new JsonObject();
-						catalogObj.addProperty("catalogId", catalog.getCatalogid());
-						catalogObj.addProperty("catalogName", catalog.getCatalogname());
-						if(!catalogMap.containsKey(catalogTag)) catalogMap.put(catalogTag, new JsonArray());
-						catalogMap.get(catalogTag).add(catalogObj);
-						if(!tagList.contains(catalogTag)) tagList.add(catalogTag);
-					}
-					for (int i = 0; i < tagList.size(); i++) {
-						String catalogTag = tagList.get(i);
-						JsonArray catalogArray = catalogMap.get(catalogTag);
-						JsonObject catalogObj = new JsonObject();
-						if(catalogArray.size()==1 && catalogArray.get(0).getAsJsonObject()
-								.get("catalogId").getAsInt()==Constant.default_catalog_tag) {
-							catalogObj.addProperty("defaultTag", catalogTag);
-						} else {
-							catalogObj.addProperty("catalogTag", catalogTag);
-							catalogObj.add("catalogList", catalogArray);
-						}
-						catalogInfo.add(catalogObj);
-						
-						BasicDBObject insertDBObject = new BasicDBObject();
-						insertDBObject.put("catalogTag", catalogTag);
-						insertDBObject.put("catalogList", catalogArray.toString());
-						
-						CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.CATALOGINFO)
-							.insert(insertDBObject);
-					}
-				}
-			} else {
-				result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
-				return result;
-			}
-		}
+		JsonObject catalogObj = new JsonObject();
+		catalogObj.addProperty("defaultTag", "全部");
+		catalogInfo.add(catalogObj);
 		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 		result.add("catalogInfo", catalogInfo);
 		return result;
@@ -2162,11 +2104,11 @@ public class IndexFunctions {
 	public JsonObject getHallParts(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 		JsonObject result = new JsonObject();
 		
-		int platform, appId, appChannel;
+		int platform, appId, channel;
 		try {
 			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.WEB, null, 1, Integer.MAX_VALUE);
 			appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 1, Integer.MAX_VALUE);
-			appChannel = CommonUtil.getJsonParamInt(jsonObject, "c", AppChannelEnum.KK, null, 1, Integer.MAX_VALUE);
+			channel = CommonUtil.getJsonParamInt(jsonObject, "c", AppChannelEnum.KK, null, 1, Integer.MAX_VALUE);
 		} catch(CommonUtil.ErrorGetParameterException e) {
 			result.addProperty("TagCode", e.getErrCode());
 			return result;
@@ -2174,130 +2116,56 @@ public class IndexFunctions {
 			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
 			return result;
 		}
+
+        List<HomePage> tempList = null;
+        try {
+            FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
+            tempList = firstPageHandler.getFistPagelist(appId, channel, platform, false);
+        } catch(Exception e) {
+            logger.error("Fail to call firstPageHandler.getFistPagelist ", e);
+        }
+        
+        JsonArray plateList = new JsonArray();
+        if (tempList != null) {
+            for (HomePage temp : tempList) {
+                JsonObject json = new JsonObject();
+                if (temp.getTitleName() != null) {
+                    json.addProperty("partName", temp.getTitleName());
+                }
+                if (temp.getLiveTotal() != null) {
+                    json.addProperty("onlineCount", temp.getLiveTotal());
+                } else {
+                    json.addProperty("onlineCount", 0);
+                }
+                if (temp.getDetailId() != null) {
+                    // 专区编号
+                    json.addProperty("partId", temp.getDetailId());
+                }
+                if (temp.getCdnState() != null) {
+                    if (temp.getCdnState() > 0 && temp.getSeatType() != 3) {
+                        JsonArray roomArray = new JsonArray();
+                        List<RoomInfo> roomList = temp.getRooms();
+                        if (roomList != null) {
+                            for (RoomInfo roomInfo : roomList) {
+                                roomArray.add(RoomTF.roomInfoToJsonTemp(roomInfo, platform));
+                            }
+                        }
+                        json.add("rcdRooms", roomArray);
+                    } else {
+                        json.add("rcdRooms", new JsonArray());
+                    }
+                }
+                plateList.add(json);
+            }
+            
+        }
 		
-		// 从MONGODB的hallPartConfig中获取预告节目列表
-		JsonArray jsonArr = new JsonArray();
-		DBObject queryObj = new BasicDBObject();
-		queryObj.put("appId", appId);
-		queryObj.put("appChannel", appChannel);
-		long count = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.HALLPARTCONFIG).count(queryObj);
-		if (count == 0) {
-			queryObj.put("appId", AppIdEnum.AMUSEMENT);
-			queryObj.put("appChannel", AppChannelEnum.KK);
-		}
-		DBCursor hallModuleCur = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.HALLPARTCONFIG)
-				.find(queryObj).sort(new BasicDBObject("sortIndex", 1));
-		while (hallModuleCur.hasNext()) {
-			JsonObject modulecofig = new JsonObject();
-			DBObject hallPart = hallModuleCur.next();
-			int partId = Integer.parseInt(hallPart.get("partId").toString());
-			int rcdCount = 0;
-			if (platform == PlatformEnum.WEB) {
-				rcdCount = Integer.parseInt(hallPart.get("webRcdCount").toString());
-			}
-			if (platform == PlatformEnum.ANDROID) {
-				rcdCount = Integer.parseInt(hallPart.get("androidRcdCount").toString());
-			}
-			if (platform == PlatformEnum.IPHONE || platform == PlatformEnum.IPAD) {
-				rcdCount = Integer.parseInt(hallPart.get("iphoneRcdCount").toString());
-			}
-			if (rcdCount == 0) {
-				continue;
-			}
-			modulecofig = getPartRoomList(partId, 0, rcdCount, platform);
-			if (modulecofig != null) {
-				modulecofig.addProperty("partId", partId);
-				jsonArr.add(modulecofig);
-			}
-		}
-		hallModuleCur.close();
-		/*************kk现场***************/
-		if (platform == PlatformEnum.WEB) {
-			LiveAlbumService liveAlbumService = MelotBeanFactory.getBean("liveAlbumService", LiveAlbumService.class);
-			QiniuService qiniuService = MelotBeanFactory.getBean("qiniuService", QiniuService.class);
-			int liveShowCount = liveAlbumService.getAlbumCount();
-			if (liveShowCount > 0) {
-				List<LiveAlbum> liveAlbums = liveAlbumService.getAddedAlbumList(0, 3);
-				String domain = qiniuService.getDomain();
-				domain = domain != null ? domain : "";
-				if (liveAlbums != null && liveAlbums.size() > 0) {
-					JsonArray liveShowArray = new JsonArray();
-					for (LiveAlbum lab : liveAlbums) {
-						liveShowArray.add(LiveShowTF.toJsonObject(lab, domain));
-					}
-					result.addProperty("liveShowCount", liveShowCount);
-					result.add("liveShowList", liveShowArray);
-				}
-			}
-		}
-		/*************kk现场***************/
-		result.add("partList", jsonArr);
+		result.add("partList", plateList);
 		result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
 		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 		
 		// 返回结果
 		return result;
-	}
-	
-	private static JsonObject getPartRoomList(int partId, int start, int offset, int platform) {
-		
-		JsonObject moduleObject = null;
-		
-		int cataId = 0;
-		if (partId == 106) {
-			cataId = 47;
-		} else if(partId == 100) {
-			cataId = 16;
-		} else if(partId == 104) {
-			cataId = 31;
-		} else if(partId == 101) {
-			cataId = 22;
-		} else if(partId == 103) {
-			cataId = 18;
-		} else if(partId == 107) {
-			cataId = 46;
-		} else if(partId == 203) {
-			cataId = 120;
-		} else if(partId == 105) {
-			cataId = 51;
-		} else if(partId == 108) {
-			cataId = 156;
-		} else if(partId == 110) {
-		    cataId = 281;
-        } else if(partId == 502) {
-            cataId = 397;
-		} else {
-			return moduleObject;
-		}
-		
-		try {
-			FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
-			SysMenu sysMenu = firstPageHandler.getPartList(cataId, null, null, start, offset);
-			if (sysMenu != null) {
-				moduleObject = new JsonObject();
-				if (sysMenu.getTitleName() != null) {
-					moduleObject.addProperty("partName", sysMenu.getTitleName());
-					if (partId == 100) {
-						moduleObject.addProperty("partName", "兴趣推荐");
-					}
-				}
-				if (sysMenu.getRoomCount() != null) {
-					moduleObject.addProperty("onlineCount", sysMenu.getRoomCount());
-				}
-				JsonArray roomArray = new JsonArray();
-				List<RoomInfo> roomList = sysMenu.getRooms();
-				if (roomList != null) {
-					for (RoomInfo roomInfo : roomList) {
-						roomArray.add(RoomTF.roomInfoToJsonTemp(roomInfo, platform));
-					}
-				}
-				moduleObject.add("rcdRooms", roomArray);
-			}
-		} catch(Exception e) {
-		    logger.error("IndexFunctions.getPartRoomList(" + partId + ", " + start + ", " + offset + ", " + platform + ")", e);
-		}
-		
-		return moduleObject;
 	}
 	
 	/**
@@ -2309,10 +2177,10 @@ public class IndexFunctions {
 		
 		JsonObject result = new JsonObject();
 		
-		int partId, start, offset, platform;
+		int cataId, start, offset, platform;
 		try {
 			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, 1, Integer.MAX_VALUE);
-			partId = CommonUtil.getJsonParamInt(jsonObject, "partId", 0, "02320001", 1, Integer.MAX_VALUE);
+			cataId = CommonUtil.getJsonParamInt(jsonObject, "partId", 0, "02320001", 1, Integer.MAX_VALUE);
 			start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, "02320003", 0, Integer.MAX_VALUE);
 			offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 0, "02320005", 0, Integer.MAX_VALUE);
 		} catch(CommonUtil.ErrorGetParameterException e) {
@@ -2321,31 +2189,6 @@ public class IndexFunctions {
 		} catch(Exception e) {
 			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
 			return result;
-		}
-		
-		int cataId = 0;
-		if (partId == 106) {
-			cataId = 47;
-		} else if(partId == 100) {
-			cataId = 16;
-		} else if(partId == 104) {
-			cataId = 31;
-		} else if(partId == 101) {
-			cataId = 22;
-		} else if(partId == 103) {
-			cataId = 18;
-		} else if(partId == 107) {
-			cataId = 46;
-		} else if(partId == 203) {
-			cataId = 120;
-		} else if(partId == 105) {
-			cataId = 51;
-		} else if(partId == 108) {
-			cataId = 156;
-		} else if(partId == 110) {
-		    cataId = 281;
-        } else if(partId == 502) {
-            cataId = 397;
 		}
 		
 		int roomCount = 0;

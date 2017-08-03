@@ -337,6 +337,12 @@ public class UserRelationFunctions {
 	 */
     public JsonObject getUserFollowedList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
 	    JsonObject result = new JsonObject();
+	    
+	    //仅自己可查看关注列表
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        }
 
         @SuppressWarnings("unused")
         int userId, pageIndex, countPerPage, platform, appId;
@@ -408,14 +414,14 @@ public class UserRelationFunctions {
 	 * @return 结果字符串
 	 */
 	public JsonObject getUserFansList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
-		// 该接口toke可选
+	    JsonObject result = new JsonObject();
+	    
+	    // 该接口toke可选
 		int selfTag = 0;// 不带token,查看他人的粉丝列表
 		if (checkTag) {
 			selfTag = 1;// 带有token,查看自己的粉丝列表
 		}
 		
-		JsonObject result = new JsonObject();
-
         int userId = 0;
         int pageIndex = 1;
         int countPerPage = 20;
@@ -451,6 +457,12 @@ public class UserRelationFunctions {
 			}
 		}
 		result.addProperty("fansCount", totalCount);
+		
+		//不是自己查看仅返回粉丝数
+		if (!checkTag) {
+		    result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+		    return result;
+		}
 		
 		JsonArray jRoomList = new JsonArray();
 		
@@ -1107,6 +1119,11 @@ public class UserRelationFunctions {
 	@SuppressWarnings("unchecked")
 	public JsonObject getUserManagedRoomList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
 	    JsonObject result = new JsonObject();
+	    
+	    if (!checkTag) { 
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        }
         
         int userId, pageIndex, countPerPage, platform;
         
