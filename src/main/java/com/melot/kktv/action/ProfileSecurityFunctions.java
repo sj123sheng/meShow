@@ -278,7 +278,7 @@ public class ProfileSecurityFunctions {
 			}
 			jsonObject.addProperty("uuid", uuid);//set the decoded uuid
 			
-			if (loginType == LoginTypeEnum.WEIXIN || loginType == LoginTypeEnum.QQ) {
+			if (loginType == LoginTypeEnum.WEIXIN) {
 				String unionid = SecurityFunctions.decodeUnionId(jsonObject);
 				if (unionid != null){
 					jsonObject.addProperty("unionid", unionid);//set the decoded unionid
@@ -469,7 +469,7 @@ public class ProfileSecurityFunctions {
 			} catch (Exception e) {
 			}
 		}
-		if (loginType == LoginTypeEnum.WEIXIN || loginType == LoginTypeEnum.QQ) {
+		if (loginType == LoginTypeEnum.WEIXIN) {
 			String unionid = SecurityFunctions.decodeUnionId(jsonObject);
 			if (unionid != null){
 				jsonObject.addProperty("unionid", unionid);//set the decoded unionid

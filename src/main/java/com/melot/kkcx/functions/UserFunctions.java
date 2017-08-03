@@ -48,6 +48,7 @@ import com.melot.kktv.service.DataAcqService;
 import com.melot.kktv.service.UserRelationService;
 import com.melot.kktv.service.UserService;
 import com.melot.kktv.third.ThirdVerifyUtil;
+import com.melot.kktv.third.service.QQService;
 import com.melot.kktv.util.AppChannelEnum;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CityUtil;
@@ -679,6 +680,10 @@ public class UserFunctions {
 				if (openPlatform == LoginTypeEnum.ALIPAY) {
 					alipayUserInfo = ret;
 				}
+				if (openPlatform == LoginTypeEnum.QQ) {
+				    QQService qqService = (QQService) MelotBeanFactory.getBean("qqService");
+                    unionid = qqService.getUnionID(sessionId);
+				}
 			} else {
 				result.addProperty("TagCode", "01060048");
 				return result;
@@ -1008,7 +1013,7 @@ public class UserFunctions {
 	    
         int loginType, appId, channel, inviterId, userId = 0, platform = 0, roomFrom;
         int gpsCityId;// 客户端通过GPS拿到的城市定位ID【参数里面是city】
-        String isSafe, username = null, phoneNum = null, psword = null, token = null, uuid = null, unionid = null, deviceUId = null, clientIp = null;
+        String isSafe, username = null, phoneNum = null, psword = null, token = null, uuid = null, unionid = null, deviceUId = null, clientIp = null, sessionId = null;
         try {
             loginType = CommonUtil.getJsonParamInt(jsonObject, "loginType", 0, "01130001", Integer.MIN_VALUE, Integer.MAX_VALUE);
             isSafe = CommonUtil.getJsonParamString(jsonObject, "isSafe", null, null, 0, 256);
@@ -1051,8 +1056,15 @@ public class UserFunctions {
                 psword = CommonUtil.getJsonParamString(jsonObject, "psword", null, "01130004", 0, 512);
             } else {
                 uuid = CommonUtil.getJsonParamString(jsonObject, "uuid", null, "01130008", 0, 512);
-                if (loginType == LoginTypeEnum.WEIXIN || loginType == LoginTypeEnum.QQ) {
+                if (loginType == LoginTypeEnum.WEIXIN) {
                     unionid = CommonUtil.getJsonParamString(jsonObject, "unionid", null, null, 0, 512);
+                }
+                if (loginType == LoginTypeEnum.QQ) {
+                    sessionId = CommonUtil.getJsonParamString(jsonObject, "sessionId", null, null, 0, 512);
+                    if (sessionId != null) {
+                        QQService qqService = (QQService) MelotBeanFactory.getBean("qqService");
+                        unionid = qqService.getUnionID(sessionId);
+                    }
                 }
                 if (loginType == LoginTypeEnum.DIDA) {
                     //70091 固定channelid
