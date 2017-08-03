@@ -8,9 +8,9 @@
 		<version>0.0.4</version>
 	</parent>
 	
-	<artifactId>melot-meshow</artifactId>
-	<packaging>jar</packaging>
-	<version>2.2.11.49</version>
+	<artifactId>meShow</artifactId>
+	<packaging>war</packaging>
+	<version>2.2.11.50</version>
 	
 	<name>meShow</name>
 	<url>http://maven.apache.org</url>
@@ -23,13 +23,17 @@
 
 	<build>
 		<directory>${basedir}/target</directory>
-		<finalName>${project.artifactId}-${project.version}</finalName>
+		<finalName>${project.artifactId}</finalName>
 		<sourceDirectory>${basedir}/src/main/java</sourceDirectory>
 		<outputDirectory>${basedir}/target/classes</outputDirectory>
 		<resources>
 			<resource>
 				<directory>${basedir}/src/main/resources</directory>
 				<targetPath>.</targetPath>
+                <excludes>
+                    <exclude>disconf.properties</exclude>
+                    <exclude>META-INF/cat/*</exclude>
+                </excludes>
 			</resource>
 		</resources>
 		<!-- 
@@ -83,7 +87,7 @@
 				</configuration>
 			</plugin>
 
-			<plugin>
+			<!--<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>2.4</version>
@@ -102,7 +106,7 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>
+			</plugin>-->
 		</plugins>
 	</build>
 
@@ -208,7 +212,7 @@
 		<dependency>
 			<groupId>com.melot</groupId>
 		  	<artifactId>api-menu-sdk</artifactId>
-		  	<version>1.1.41</version><!--$NO-MVN-MAN-VER$-->
+		  	<version>1.1.42</version><!--$NO-MVN-MAN-VER$-->
 		</dependency>
 		<dependency>
 			<groupId>com.melot</groupId>
@@ -428,6 +432,17 @@
 			<artifactId>cat-client</artifactId>
 			<version>3.0.2</version>
     	</dependency>
+        <dependency>
+            <groupId>com.baidu.disconf</groupId>
+            <artifactId>disconf-core-melot</artifactId>
+            <version>2.6.33</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.baidu.disconf</groupId>
+            <artifactId>disconf-client-melot</artifactId>
+            <version>2.6.33</version>
+        </dependency>
     	<dependency>
   			<groupId>com.melot.module.driver.msgbuilder</groupId>
   			<artifactId>showmoney-module-msgbuilder</artifactId>
