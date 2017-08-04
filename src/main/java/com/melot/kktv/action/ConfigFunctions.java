@@ -1,16 +1,6 @@
 package com.melot.kktv.action;
 
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.log4j.Logger;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.melot.common.driver.base.Result;
 import com.melot.common.driver.base.ResultCode;
 import com.melot.common.driver.domain.AgoraInfo;
@@ -31,6 +21,10 @@ import com.melot.room.gift.domain.GiftListResourceURL;
 import com.melot.room.gift.domain.ReturnResult;
 import com.melot.room.gift.service.GiftListService;
 import com.melot.sdk.core.util.MelotBeanFactory;
+import org.apache.log4j.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * Title: ConfigFunctions
@@ -419,35 +413,6 @@ public class ConfigFunctions {
             result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
             return result;
         }        
-    }
-    /**
-     * 50001111
-     * VR主播获取grammarId信息
-     * @param jsonObject
-     * @param checkTag
-     * @param request
-     * @return
-     */
-    public JsonObject getGrammarId(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-        JsonObject result = new JsonObject();
-        
-        try {
-            // 获取VR使用的grammarId（这块暂时不做强制有数据）
-            GiftListService giftListService = MelotBeanFactory.getBean("giftListService", GiftListService.class);
-            ReturnResult<String> grammarIdResult = giftListService.getGiftNameListGrammarId();
-            if (grammarIdResult != null && ReturnResultCode.SUCCESS.equals(grammarIdResult.getCode())) {
-                result.addProperty("grammarId", grammarIdResult.getData());
-            }else {
-                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
-                return result;
-            }
-        } catch (Exception e) {
-            logger.error("Module Error GiftListService.listGiftIconUrl()", e);
-            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
-            return result;
-        }
-        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        return result;
     }
     
     /**
