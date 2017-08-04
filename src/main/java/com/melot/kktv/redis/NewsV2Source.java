@@ -27,8 +27,6 @@ public class NewsV2Source {
 	
 	private static final String VIDEO_TOPIC = "video_topic";
 	
-	private static final String POPULAR_TOPIC = "popular_topic";
-	
 	private static final String HOT_COMMENT = "hot_comment";
 	
 	private static final String RECOMMEND_COMMENT = "recommend_comment";
@@ -69,22 +67,6 @@ public class NewsV2Source {
 			return hot;
 		} catch (Exception e) {
 			logger.error("NewsSource.getHotTopic exception", e);
-		} finally {
-			if (jedis != null) {
-				freeInstance(jedis);
-			}
-		}
-		return null;
-	}
-	
-	public static Set<String> getPopularTopic(int start, int offset) {
-		Jedis jedis = null;
-		try {
-			jedis = getInstance();
-			Set<String> hot = jedis.zrange(POPULAR_TOPIC, start, offset);
-			return hot;
-		} catch (Exception e) {
-			logger.error("NewsSource.getPopularTopic exception", e);
 		} finally {
 			if (jedis != null) {
 				freeInstance(jedis);

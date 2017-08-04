@@ -50,27 +50,27 @@ public class GeneralService {
 	 * @return
 	 */
 	public static SmsConfig getSmsMsgFormat(int appId, int channel, int platform, int smsType) {
-	    
-        DBObject queryDBObject = new BasicDBObject();
-        queryDBObject.put("smsType", smsType);
-        queryDBObject.put("appId", appId);
-        queryDBObject.put("platform", platform);
-//      queryDbObject.put("channel", channel);
-        DBObject smsObj = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.SMSCONFIG)
-                .findOne(queryDBObject);
-        if (smsObj != null && smsObj.get("message") != null) {
-            SmsConfig smsConfig = new SmsConfig();
-            smsConfig.setAppId((Integer) smsObj.get("appId"));
-            smsConfig.setChannel((Integer) smsObj.get("channel"));
-            smsConfig.setPlatform((Integer) smsObj.get("platform"));
-            smsConfig.setDailyCount((Integer) smsObj.get("dailyCount"));
-            smsConfig.setMessage((String) smsObj.get("message"));
-            smsConfig.setSmsType((Integer) smsObj.get("smsType"));
-            smsConfig.setActiveTime((Integer) smsObj.get("activeTime"));
-            return smsConfig;
-        }
-        
-        return null;
+		
+		DBObject queryDBObject = new BasicDBObject();
+		queryDBObject.put("smsType", smsType);
+		queryDBObject.put("appId", appId);
+		queryDBObject.put("platform", platform);
+//		queryDbObject.put("channel", channel);
+		DBObject smsObj = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.SMSCONFIG)
+				.findOne(queryDBObject);
+		if (smsObj != null && smsObj.get("message") != null) {
+			SmsConfig smsConfig = new SmsConfig();
+			smsConfig.setAppId((Integer) smsObj.get("appId"));
+			smsConfig.setChannel((Integer) smsObj.get("channel"));
+			smsConfig.setPlatform((Integer) smsObj.get("platform"));
+			smsConfig.setDailyCount((Integer) smsObj.get("dailyCount"));
+			smsConfig.setMessage((String) smsObj.get("message"));
+			smsConfig.setSmsType((Integer) smsObj.get("smsType"));
+			smsConfig.setActiveTime((Integer) smsObj.get("activeTime"));
+			return smsConfig;
+		}
+		
+		return null;
 	}
 	
 	/**
