@@ -76,14 +76,19 @@
 		) t where t.rk = 2
 	</select>
 	
-	<select id="getWeeklyFansRanking" resultMap="fansRankingItem" parameterClass="Integer">
+	<select id="getWeeklyFansRanking" resultMap="fansRankingItem" parameterClass="java.util.Map">
 		select t3.userId, t3.contribution, ai.type as roomSource 
 		  	from (select t2.userId, t2.contribution
 				  from (select t1.*, rownum as rn
 				          from (select t.userid, sum(t.amount) AS contribution
 				                  from gift_history t
-				                 where t.touserid = #roomId#
-				                   and t.dtime >= trunc(sysdate) - 7
+				                 where t.dtime >= trunc(sysdate) - 7
+				                   <isEqual property="roomSource" compareValue="14">
+			             					and t.roomid = #roomId#
+			         			   </isEqual>
+                                   <isNotEqual property="roomSource" compareValue="14">
+                                            and t.touserid = #roomId#
+                                   </isNotEqual>
 				                   and <![CDATA[t.dtime < trunc(sysdate)]]>
 				                   and not exists(select 1
 				                   		  from hist_xman_consume p
@@ -98,14 +103,19 @@
 			   order by t3.contribution desc
 	</select>
 	
-	<select id="getMonthlyFansRanking" resultMap="fansRankingItem" parameterClass="Integer">
+	<select id="getMonthlyFansRanking" resultMap="fansRankingItem" parameterClass="java.util.Map">
 		select t3.userId, t3.contribution, ai.type as roomSource 
 		 	from (select t2.userId, t2.contribution
 			      from (select t1.*, rownum as rn
 				          from (select t.userid, sum(t.amount) AS contribution
 				                  from gift_history t
-				                 where t.touserid = #roomId#
-				                   and t.dtime >= trunc(sysdate) - 30
+				                 where t.dtime >= trunc(sysdate) - 30
+				                   <isEqual property="roomSource" compareValue="14">
+			             					and t.roomid = #roomId#
+			         			   </isEqual>
+                                   <isNotEqual property="roomSource" compareValue="14">
+                                            and t.touserid = #roomId#
+                                   </isNotEqual>
 				                   and <![CDATA[t.dtime < trunc(sysdate)]]>
 				                   and not exists(select 1
 				                   		  from hist_xman_consume p

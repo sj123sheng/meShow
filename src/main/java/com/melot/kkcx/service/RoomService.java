@@ -2,7 +2,9 @@ package com.melot.kkcx.service;
 
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -52,13 +54,22 @@ public class RoomService {
     	String data = MatchSource.getRoomFansRankCache(String.valueOf(slotType), String.valueOf(roomId));
     	if (data == null) {
     		try {
+    		    //交友房需统计送礼给用户
+    		    int roomSource = 0;
+    		    RoomInfo roomInfo = com.melot.kktv.service.RoomService.getRoomInfo(roomId);
+    		    if (roomInfo != null) {
+    		        roomSource = roomInfo.getRoomSource();
+    		    }
+    		    Map<String, Object> map = new HashMap<>();
+    		    map.put("roomId", roomId);
+    		    map.put("roomSource", roomSource);
 				if (slotType == RankingEnum.RANKING_WEEKLY) {
 					fansList = (List<FansRankingItem>) SqlMapClientHelper.getInstance(DB.MASTER)
-							.queryForList("User.getWeeklyFansRanking", roomId);
+							.queryForList("User.getWeeklyFansRanking", map);
 				}
 				if (slotType == RankingEnum.RANKING_MONTHLY) {
 					fansList = (List<FansRankingItem>) SqlMapClientHelper.getInstance(DB.MASTER)
-							.queryForList("User.getMonthlyFansRanking", roomId);
+							.queryForList("User.getMonthlyFansRanking", map);
 				}
 			} catch (SQLException e) {
 				logger.error("未能正常调用SQL语句", e);	
