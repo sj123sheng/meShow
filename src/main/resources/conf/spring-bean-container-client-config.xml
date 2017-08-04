@@ -99,4 +99,7 @@
 	
 	<!-- IM消息服务 -->
 	<kkrpc:reference id="timSystemService" interface="com.melot.client.api.TimSystemService" version="1.0.0"/>
+	
+	<!-- 短信服务 -->
+	<kkrpc:reference id="smsService" interface="com.melot.sms.api.service.SmsService" version="1.0.1"/>
 </beans>

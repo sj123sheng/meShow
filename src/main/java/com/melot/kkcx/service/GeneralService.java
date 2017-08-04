@@ -16,23 +16,19 @@ import org.springframework.beans.BeanUtils;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.melot.chat.service.ChatAnalyzerService;
-import com.melot.common.driver.domain.ConfigSms;
-//import com.melot.common.driver.service.SmsService;
 import com.melot.content.config.domain.ReportFlowRecord;
 import com.melot.content.config.report.service.ReportFlowRecordService;
 import com.melot.kktv.domain.SmsConfig;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CityUtil;
-import com.melot.kktv.util.CollectionEnum;
 import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.Constant;
 import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
-import com.melot.kktv.util.mongodb.CommonDB;
 import com.melot.sdk.core.util.MelotBeanFactory;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
+import com.melot.sms.api.domain.ConfigSms;
+import com.melot.sms.api.service.SmsService;
 
 /**
  * 通用功能服务
@@ -51,25 +47,15 @@ public class GeneralService {
 	 */
 	public static SmsConfig getSmsMsgFormat(int appId, int channel, int platform, int smsType) {
 	    
-        DBObject queryDBObject = new BasicDBObject();
-        queryDBObject.put("smsType", smsType);
-        queryDBObject.put("appId", appId);
-        queryDBObject.put("platform", platform);
-//      queryDbObject.put("channel", channel);
-        DBObject smsObj = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.SMSCONFIG)
-                .findOne(queryDBObject);
-        if (smsObj != null && smsObj.get("message") != null) {
-            SmsConfig smsConfig = new SmsConfig();
-            smsConfig.setAppId((Integer) smsObj.get("appId"));
-            smsConfig.setChannel((Integer) smsObj.get("channel"));
-            smsConfig.setPlatform((Integer) smsObj.get("platform"));
-            smsConfig.setDailyCount((Integer) smsObj.get("dailyCount"));
-            smsConfig.setMessage((String) smsObj.get("message"));
-            smsConfig.setSmsType((Integer) smsObj.get("smsType"));
-            smsConfig.setActiveTime((Integer) smsObj.get("activeTime"));
-            return smsConfig;
+	    SmsService smsService = MelotBeanFactory.getBean("smsService", SmsService.class);
+        if (smsService != null) {
+            ConfigSms configSms = smsService.getSmsConfig(appId,smsType,platform,null);
+            if (configSms != null) {
+                SmsConfig smsConfig = new SmsConfig();
+                BeanUtils.copyProperties(configSms, smsConfig);
+                return smsConfig;
+            }
         }
-        
         return null;
 	}
 	
