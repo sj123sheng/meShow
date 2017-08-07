@@ -41,6 +41,7 @@ import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.NewsV2Source;
 import com.melot.kktv.service.DataAcqService;
 import com.melot.kktv.service.UserRelationService;
+import com.melot.kktv.util.AppChannelEnum;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConfigHelper;
@@ -338,14 +339,8 @@ public class UserRelationFunctions {
     public JsonObject getUserFollowedList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
 	    JsonObject result = new JsonObject();
 	    
-	    //仅自己可查看关注列表
-        if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-            return result;
-        }
-
         @SuppressWarnings("unused")
-        int userId, pageIndex, countPerPage, platform, appId;
+        int userId, pageIndex, countPerPage, platform, appId, channel;
         
         //排序规则  默认:直播状态,1:关注时间
         Integer sortType = null;
@@ -358,6 +353,7 @@ public class UserRelationFunctions {
             platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, 1, Integer.MAX_VALUE);
             sortType = CommonUtil.getJsonParamInt(jsonObject, "sortType", 0, null, 0, Integer.MAX_VALUE);
             appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 1, Integer.MAX_VALUE);
+            channel = CommonUtil.getJsonParamInt(jsonObject, "c", AppChannelEnum.KK, null, 0, Integer.MAX_VALUE);
         } catch(CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -366,6 +362,13 @@ public class UserRelationFunctions {
             return result;
         }
 	    
+
+        //仅自己可查看关注列表
+        if (!checkTag && channel != 70542 && channel != 559) {
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        }
+        
         int pageTotal = 0;
     	
     	//get total follow count 
