@@ -10,6 +10,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.google.common.collect.Lists;
 import org.apache.log4j.Logger;
 
 import com.chinacreator.videoalliance.util.ChinaUnicomEnum;
@@ -710,7 +711,60 @@ public class OtherFunctions {
 	    
 	    return result;
 	}
-	
+
+	/**
+	 * 提交举报V2 （51090101）
+	 * @param jsonObject
+	 * @param checkTag
+	 * @param request
+	 * @return
+	 */
+	public JsonObject commitReportV2(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+		String tagCode_prefix = "51090101";
+		JsonObject result = new JsonObject();
+		List<Integer> a = Lists.newArrayList();
+		if (!checkTag) {
+			result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+			return result;
+		}
+		try {
+			int userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, tagCode_prefix + "01", 1, Integer.MAX_VALUE);
+			String nickname = CommonUtil.getJsonParamString(jsonObject, "nickname", null, tagCode_prefix + "02", 1, 20);
+			int toUserId = CommonUtil.getJsonParamInt(jsonObject, "toUserId", 0, tagCode_prefix + "03", 1, Integer.MAX_VALUE);
+			String toNickname = CommonUtil.getJsonParamString(jsonObject, "toNickname", null, tagCode_prefix + "04", 1, 20);
+			int reportType = CommonUtil.getJsonParamInt(jsonObject, "reportType", 0, null, 1, Integer.MAX_VALUE);
+			int reportTag = CommonUtil.getJsonParamInt(jsonObject, "reportTag", 0, tagCode_prefix + "05", 1, 5);
+			String reason = CommonUtil.getJsonParamString(jsonObject, "reason", null, null, 1, 50);
+			String evidenceUrls = CommonUtil.getJsonParamString(jsonObject, "evidenceUrls", null, null, 1, 500);
+			int roomId = CommonUtil.getJsonParamInt(jsonObject, "roomId", 0, null, 1, Integer.MAX_VALUE);
+			int newsId = CommonUtil.getJsonParamInt(jsonObject, "newsId", 0, null, 1, Integer.MAX_VALUE);
+			if(reportTag == 2 && roomId == 0){
+				result.addProperty("TagCode", tagCode_prefix + "06");
+				return result;
+			}
+			else if(reportTag == 3 && newsId == 0){
+				result.addProperty("TagCode", tagCode_prefix + "07");
+				return result;
+			}
+			Integer reportId = GeneralService.roomReport(userId, nickname, toUserId, toNickname, reportType,1, reason, evidenceUrls);
+			if (reportId != null && reportId > 0) {
+				// 插流水，现在已不用
+//				ConsumeService.insertReportHistory(reportId, userId, 0, 0);
+				logger.info("CommitReportV2 api : userId" + userId + "to report toUserId" + toUserId);
+				result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+			} else {
+				result.addProperty("TagCode", tagCode_prefix + "08");
+			}
+			return result;
+		} catch (CommonUtil.ErrorGetParameterException e) {
+			result.addProperty("TagCode", e.getErrCode());
+			return result;
+		} catch (Exception e) {
+			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+			return result;
+		}
+	}
+
 	/**
 	 * 获得举报处理结果列表接口(20000009)
 	 */
