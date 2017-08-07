@@ -102,4 +102,8 @@
 	
 	<!-- IM消息服务 -->
 	<kkrpc:reference id="timSystemService" interface="com.melot.client.api.TimSystemService" version="1.0.0"/>
+
+	<!-- 主播代言团服务 -->
+	<kkrpc:reference id="shareActivityService" interface="com.melot.share.driver.service.ShareActivityService" version="1.0.1"/>
+
 </beans>

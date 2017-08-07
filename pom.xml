@@ -519,6 +519,14 @@
             <artifactId>single-chat-api</artifactId>
             <version>1.0.0</version>
 		</dependency>
+
+        <!-- 代言团 -->
+        <dependency>
+            <groupId>com.melot</groupId>
+            <artifactId>kk-activity-share-driver</artifactId>
+            <version>1.0.1</version>
+        </dependency>
+
 	</dependencies>
  	
 </project>

@@ -2553,5 +2553,16 @@
 		<constructor-arg name="t" ref="configFunctions" />
 		<constructor-arg name="methodName" value="getGrammarId" />
 	</bean>
-	
+
+    <!-- 获取主播代言团列表 -->
+    <bean id="51020101" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="actorKKTVFunction" />
+        <constructor-arg name="methodName" value="getRepresentList" />
+    </bean>
+    <!-- 更新H5页面上的 UV 数据 -->
+    <bean id="51020102" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="actorKKTVFunction" />
+        <constructor-arg name="methodName" value="updateUV" />
+    </bean>
+
 </beans>
