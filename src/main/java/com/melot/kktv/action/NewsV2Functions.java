@@ -807,7 +807,7 @@ public class NewsV2Functions {
         }
 
         // 若是推荐话题则返回图片和简介
-        Set<String> hotTopic = NewsV2Source.getPopularTopic(0, -1);
+        Set<String> hotTopic = NewsV2Source.getHotTopic(0, -1);
         if (hotTopic != null && hotTopic.size() > 0) {
             for (String str : hotTopic) {
                 try {
@@ -840,19 +840,20 @@ public class NewsV2Functions {
                 }
                 result.add("newsList", jNewsList);
                 result.addProperty("countTotal", count);
+                result.addProperty("pathPrefix", ConfigHelper.getHttpdir()); // 图片前缀
+                result.addProperty("mediaPathPrefix", ConfigHelper.getMediahttpdir()); // 多媒体前缀
+                result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());// 七牛前缀
                 result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                return result;
             } else {
                 result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                return result;
             }
         } else {
             result.addProperty("countTotal", count);
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
         }
-        result.addProperty("pathPrefix", ConfigHelper.getHttpdir()); // 图片前缀
-        result.addProperty("mediaPathPrefix", ConfigHelper.getMediahttpdir()); // 多媒体前缀
-        result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());// 七牛前缀
-        return result;
-
 
     }
 
@@ -902,18 +903,20 @@ public class NewsV2Functions {
 
                 result.add("newsList", jNewsList);
                 result.addProperty("countTotal", count);
+                result.addProperty("pathPrefix", ConfigHelper.getHttpdir()); // 图片前缀
+                result.addProperty("mediaPathPrefix", ConfigHelper.getMediahttpdir()); // 多媒体前缀
+                result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());// 七牛前缀
                 result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                return result;
             } else {
                 result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                return result;
             }
         } else {
             result.addProperty("countTotal", count);
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
         }
-        result.addProperty("pathPrefix", ConfigHelper.getHttpdir()); // 图片前缀
-        result.addProperty("mediaPathPrefix", ConfigHelper.getMediahttpdir()); // 多媒体前缀
-        result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());// 七牛前缀
-        return result;
     }
 
     /**

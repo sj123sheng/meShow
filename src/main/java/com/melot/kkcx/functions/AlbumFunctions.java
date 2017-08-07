@@ -3,7 +3,6 @@ package com.melot.kkcx.functions;
 import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,25 +17,21 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.melot.kkcx.service.AlbumServices;
 import com.melot.kkcx.service.ProfileServices;
-import com.melot.kkcx.service.UserService;
 import com.melot.kktv.action.FamilyAction;
 import com.melot.kktv.model.FamilyPoster;
 import com.melot.kktv.model.Photo;
 import com.melot.kktv.model.PhotoComment;
 import com.melot.kktv.service.LiveVideoService;
 import com.melot.kktv.util.AppIdEnum;
-import com.melot.kktv.util.CollectionEnum;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.Constant;
 import com.melot.kktv.util.PictureTypeEnum;
 import com.melot.kktv.util.PictureTypeExtendEnum;
-import com.melot.kktv.util.PlatformEnum;
 import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
-import com.melot.kktv.util.mongodb.CommonDB;
 import com.melot.module.api.exceptions.MelotModuleException;
 import com.melot.module.poster.driver.domain.PosterInfo;
 import com.melot.module.poster.driver.domain.UpYunInfo;
@@ -44,9 +39,6 @@ import com.melot.module.poster.driver.service.PosterService;
 import com.melot.opus.domain.TempUserResource;
 import com.melot.opus.util.OpusCostantEnum;
 import com.melot.sdk.core.util.MelotBeanFactory;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
 import com.upyun.api.UpYun;
 
 public class AlbumFunctions {
@@ -165,13 +157,6 @@ public class AlbumFunctions {
 			if (tempUserResource != null) {
 			    LiveVideoService.delTempUserResourceById(tempUserResource.getId(), userId, OpusCostantEnum.CHECKING_PHOTO_RES_TYPE, photoId, null);
 			}
-			
-			// 若主播删除相册,删除mongodb中相册记录
-			DBObject dbObj = new BasicDBObject();
-			dbObj.put("userId", userId);
-			dbObj.put("photoId", photoId);
-			CommonDB.getInstance(CommonDB.CACHEDB).getCollection(CollectionEnum.ACTORALBUMRECORD).remove(dbObj);
-			
 			String picUrl = (String) map.get("oldPath");
 			if (!StringUtil.strIsNull(picUrl) && !OpusCostantEnum.CHECKING_PHOTO_RESOURCEURL.equals(picUrl)) {
 			    if (picUrl != null && !picUrl.contains("checking")) {
@@ -206,12 +191,6 @@ public class AlbumFunctions {
 		} else if (TagCode.equals("03") || TagCode.equals("04")) {
 			/* '03'; -- 照片不属于该用户 */
 			/* '04'; -- 照片不存在 */
-		    if (TagCode.equals("04")) {
-		        DBObject dbObj = new BasicDBObject();
-		        dbObj.put("userId", userId);
-		        dbObj.put("photoId", photoId);
-		        CommonDB.getInstance(CommonDB.CACHEDB).getCollection(CollectionEnum.ACTORALBUMRECORD).remove(dbObj);
-		    }
 			JsonObject result = new JsonObject();
 			result.addProperty("TagCode", "040201" + TagCode + "");
 			return result;
@@ -234,29 +213,21 @@ public class AlbumFunctions {
 		// 获取参数
 		JsonElement userIdje = jsonObject.get("userId");
 		JsonElement pageIndexje = jsonObject.get("pageIndex");
-		JsonElement platformje = jsonObject.get("platform");
+
+		JsonObject result = new JsonObject();
+
 		// 验证参数
 		int userId;
 		int pageIndex;
-		int platform = PlatformEnum.WEB; 
-		if (platformje != null && !platformje.isJsonNull() && platformje.getAsInt()>0) {
-			try {
-				platform = platformje.getAsInt();
-			} catch (Exception e) {
-				platform = PlatformEnum.WEB; 
-			}
-		}
 		if (userIdje != null && !userIdje.isJsonNull() && !userIdje.getAsString().equals("")) {
 			// 验证数字
 			try {
 				userId = userIdje.getAsInt();
 			} catch (Exception e) {
-				JsonObject result = new JsonObject();
 				result.addProperty("TagCode", "04030002");
 				return result;
 			}
 		} else {
-			JsonObject result = new JsonObject();
 			result.addProperty("TagCode", "04030001");
 			return result;
 		}
@@ -265,104 +236,46 @@ public class AlbumFunctions {
 			try {
 				pageIndex = pageIndexje.getAsInt();
 			} catch (Exception e) {
-				JsonObject result = new JsonObject();
 				result.addProperty("TagCode", "04030004");
 				return result;
 			}
 		} else {
-			JsonObject result = new JsonObject();
 			result.addProperty("TagCode", "04030003");
 			return result;
 		}
-		
-		JsonObject result = new JsonObject();
+
 		JsonArray jPhotoList = new JsonArray();
-		
-		boolean isActor = UserService.isActor(userId);
-		
-		if (isActor) {
-			int totalCount = CommonDB.getInstance(CommonDB.CACHEDB).getCollection(CollectionEnum.ACTORALBUMRECORD)
-					.find(new BasicDBObject("userId", userId), new BasicDBObject("photoId", 1)).count();
-			int nPerPage = 12;
-			if (totalCount>0) {
-				int pageTotal = (int) totalCount/nPerPage;
-				if(totalCount%nPerPage>0) pageTotal++;
-				int skipCount = 0;
-				int limitCount = totalCount;
-				if (platform==PlatformEnum.WEB) {
-					skipCount = (pageIndex-1)*nPerPage;
-					limitCount = nPerPage;
-					result.addProperty("pageTotal", pageTotal);		
-				} else {
-					limitCount = Constant.return_photo_count;
-					result.addProperty("pageTotal", 1);		
-				}
-				DBCursor albumCursor = CommonDB.getInstance(CommonDB.CACHEDB).getCollection(CollectionEnum.ACTORALBUMRECORD)
-						.find(new BasicDBObject("userId", userId))
-						.sort(new BasicDBObject("photoId", -1)).skip(skipCount).limit(limitCount);
-				for (DBObject dbObject : albumCursor) {
-					Photo photo = new Photo();
-					photo.setClicks((Integer) dbObject.get("clicks"));
-					photo.setComments((Integer) dbObject.get("comments"));
-					photo.setPhoto_path_128((String) dbObject.get("photo_path_original") + "!128x96");
-					photo.setPhoto_path_1280((String) dbObject.get("photo_path_original") + "!1280");
-					photo.setPhoto_path_272((String) dbObject.get("photo_path_original") + "!272");
-					photo.setPhoto_path_original((String) dbObject.get("photo_path_original"));
-					photo.setPhotoId((Integer) dbObject.get("photoId"));
-					photo.setPhotoName((String) dbObject.get("photoName"));
-					photo.setPicType((Integer) dbObject.get("picType"));
-					photo.setUploadTime(new Date((Long) dbObject.get("uploadTime")));
-					jPhotoList.add(photo.toJsonObject());
-				}
-			}
+
+		// 调用存储过程得到结果
+		Map<Object, Object> map = new HashMap<Object, Object>();
+		map.put("userId", userId);
+		map.put("pageIndex", pageIndex);
+		try {
+			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Album.getUserPhotoList", map);
+		} catch (SQLException e) {
+			logger.error("未能正常调用存储过程", e);
+			result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
+			return result;
 		}
-		if (jPhotoList.size()==0) {
-			// 调用存储过程得到结果
-			Map<Object, Object> map = new HashMap<Object, Object>();
-			map.put("userId", userId);
-			map.put("pageIndex", pageIndex);
-			try {
-				SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Album.getUserPhotoList", map);
-			} catch (SQLException e) {
-				logger.error("未能正常调用存储过程", e);
-				result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
-				return result;
+		String TagCode = (String) map.get("TagCode");
+		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
+			// 取出列表
+			@SuppressWarnings("unchecked")
+			List<Object> photoList = (ArrayList<Object>) map.get("photoList");
+			for (Object object : photoList) {
+				Photo photo = (Photo) object;
+				JsonObject pObj = photo.toJsonObject();
+				jPhotoList.add(pObj);
 			}
-			String TagCode = (String) map.get("TagCode");
-			if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-				// 取出列表
-				@SuppressWarnings("unchecked")
-				List<Object> photoList = (ArrayList<Object>) map.get("photoList");
-				for (Object object : photoList) {
-					Photo photo = (Photo) object;
-					JsonObject pObj = photo.toJsonObject();
-					jPhotoList.add(pObj);
-					if (isActor && platform != PlatformEnum.WEB) {
-						DBObject dbObj = new BasicDBObject();
-						dbObj.put("userId", userId);
-						dbObj.put("photoId", photo.getPhotoId());
-						dbObj.put("photoName", photo.getPhotoName());
-						dbObj.put("picType", photo.getPicType());
-						dbObj.put("clicks", photo.getClicks());
-						dbObj.put("comments", photo.getComments());
-						dbObj.put("uploadTime", photo.getUploadTime().getTime());
-						dbObj.put("photo_path_original", photo.getPhoto_path_original());
-						dbObj.put("photo_path_1280", photo.getPhoto_path_1280());
-						dbObj.put("photo_path_272", photo.getPhoto_path_272());
-						dbObj.put("photo_path_128", photo.getPhoto_path_128());
-						CommonDB.getInstance(CommonDB.CACHEDB).getCollection(CollectionEnum.ACTORALBUMRECORD).insert(dbObj);
-					}
-				}
-				result.addProperty("pageTotal", (Integer) map.get("pageTotal"));
-			} else if (TagCode.equals("02")) {
-				/* '02';分页超出范围 */
-				result.addProperty("pageTotal", (Integer) map.get("pageTotal"));
-			} else {
-				// 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
-				logger.error("调用存储过程(Album.getUserPhotoList(" + new Gson().toJson(map) + "))未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
-				result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
-				return result;
-			}
+			result.addProperty("pageTotal", (Integer) map.get("pageTotal"));
+		} else if (TagCode.equals("02")) {
+			/* '02';分页超出范围 */
+			result.addProperty("pageTotal", (Integer) map.get("pageTotal"));
+		} else {
+			// 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
+			logger.error("调用存储过程(Album.getUserPhotoList(" + new Gson().toJson(map) + "))未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
+			result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
+			return result;
 		}
 		// 返回结果
 		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
@@ -450,27 +363,17 @@ public class AlbumFunctions {
 			return result;
 		}
 		String TagCode = (String) map.get("TagCode");
+		JsonObject result = new JsonObject();
 		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-			
-			// 评论主播相册,更新相册评论数
-			DBObject queryObj = new BasicDBObject();
-			queryObj.put("photoId", photoId);
-			
-			CommonDB.getInstance(CommonDB.CACHEDB).getCollection(CollectionEnum.ACTORALBUMRECORD)
-				.update(queryObj, new BasicDBObject("$inc",new BasicDBObject("comments",1)), false, false);
-			
-			JsonObject result = new JsonObject();
 			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 			return result;
 		} else if (TagCode.equals("03")) {
 			/* '03'; 照片不存在 */
-			JsonObject result = new JsonObject();
 			result.addProperty("TagCode", "040401" + TagCode + "");
 			return result;
 		} else {
 			// 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
 			logger.error("调用存储过程(Album.commentPhoto(" + new Gson().toJson(map) + "))未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
-			JsonObject result = new JsonObject();
 			result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
 			return result;
 		}
@@ -540,26 +443,18 @@ public class AlbumFunctions {
 			return result;
 		}
 		String TagCode = (String) map.get("TagCode");
+		JsonObject result = new JsonObject();
 		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-			Integer photoId = (Integer) map.get("photoId");
-			// 评论主播相册,更新相册评论数
-			DBObject queryObj = new BasicDBObject();
-			queryObj.put("photoId", photoId);
-			CommonDB.getInstance(CommonDB.CACHEDB).getCollection(CollectionEnum.ACTORALBUMRECORD)
-				.update(queryObj, new BasicDBObject("$inc",new BasicDBObject("comments", -1)), false, false);
-			JsonObject result = new JsonObject();
 			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 			return result;
 		} else if (TagCode.equals("03") || TagCode.equals("04")) {
 			/* '03'; --评论不存在 */
 			/* '03'; --用户不是照片所有者,无权限删除 */
-			JsonObject result = new JsonObject();
 			result.addProperty("TagCode", "040501" + TagCode + "");
 			return result;
 		} else {
 			// 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
 			logger.error("调用存储过程(Album.deletePhotoComment(" + new Gson().toJson(map) + "))未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
-			JsonObject result = new JsonObject();
 			result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
 			return result;
 		}
@@ -616,14 +511,6 @@ public class AlbumFunctions {
 				jCommentList.add(((PhotoComment) object).toJsonObject());
 			}
 			result.add("commentList", jCommentList);
-			
-			// 评论主播相册,更新相册评论数
-			DBObject queryObj = new BasicDBObject();
-			queryObj.put("photoId", photoId);
-			
-			CommonDB.getInstance(CommonDB.CACHEDB).getCollection(CollectionEnum.ACTORALBUMRECORD)
-				.update(queryObj, new BasicDBObject("$inc",new BasicDBObject("clicks",1)), false, false);
-			
 			// 返回结果
 			return result;
 		} else if (TagCode.equals("03")) {

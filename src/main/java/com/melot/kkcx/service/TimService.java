@@ -24,6 +24,7 @@ import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.util.CollectionUtils;
 import com.melot.kktv.util.HttpClient;
 import com.melot.letter.driver.service.PrivateLetterService;
+import com.melot.module.ModuleService;
 import com.melot.sdk.core.util.MelotBeanFactory;
 
 /**
@@ -57,7 +58,7 @@ public class TimService {
             String isTimRegister = HotDataSource.getHotFieldValue(userId, "isTimRegister");
             if (StringUtils.isEmpty(isTimRegister)) {
                 String identifier = TIM_IDENTIFIER_PREFIX + userId;
-                TimSystemService timService = MelotBeanFactory.getBean("timSystemService", TimSystemService.class);
+                TimSystemService timService = (TimSystemService) ModuleService.getService("TimSystemService");
                 String ret = timService.accountImport(identifier, nickname, "");
                 if (ret.equalsIgnoreCase("ok")) {
                     HotDataSource.setHotFieldValue(userId, "isTimRegister", "1");
@@ -87,7 +88,7 @@ public class TimService {
         String sig = null;
         try {
             String identifier = TIM_IDENTIFIER_PREFIX + userId;
-            TimSystemService timService = MelotBeanFactory.getBean("timSystemService", TimSystemService.class);
+            TimSystemService timService = (TimSystemService) ModuleService.getService("TimSystemService");
             sig = timService.getUserSig(identifier);
         } catch (Exception e) {
             logger.error("Fail to call im interface to get signature, userId " + userId, e);

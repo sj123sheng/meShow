@@ -48,6 +48,7 @@ import com.melot.kktv.redis.MedalSource;
 import com.melot.kktv.redis.QQVipSource;
 import com.melot.kktv.redis.WeekGiftSource;
 import com.melot.kktv.service.UserRelationService;
+import com.melot.kktv.util.AppChannelEnum;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CityUtil;
 import com.melot.kktv.util.CommonUtil;
@@ -84,11 +85,12 @@ public class NodeFunctions {
 	    JsonObject result = new JsonObject();
 	    
 	    @SuppressWarnings("unused")
-        int userId, roomId, appId;
+        int userId, roomId, appId, channel = 0;
 	    try {
 	        userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "05010001", 1, Integer.MAX_VALUE);
 	        roomId = CommonUtil.getJsonParamInt(jsonObject, "roomId", 0, null, 1, Integer.MAX_VALUE);
 	        appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 0, Integer.MAX_VALUE);
+	        channel = CommonUtil.getJsonParamInt(jsonObject, "c", AppChannelEnum.KK, null, 0, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -328,7 +330,7 @@ public class NodeFunctions {
 		    result.addProperty("gender", userInfoDetail.getProfile().getGender());
 		    result.addProperty("actorTag", userInfoDetail.getProfile().getIsActor());
 		    result.addProperty("fansCount", UserRelationService.getFansCount(userId));
-		    if (checkTag) {
+		    if (checkTag || channel == 70542 || channel == 559) {
 		        result.addProperty("followCount", UserRelationService.getFollowsCount(userId));
 		    }
 		    result.addProperty("openPlatform", userInfoDetail.getRegisterInfo().getOpenPlatform());

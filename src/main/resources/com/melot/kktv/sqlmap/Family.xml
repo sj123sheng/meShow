@@ -11,11 +11,13 @@
 		<result property="familyId" column="familyId" />
 		<result property="memberId" column="memberId" />
 		<result property="userId" column="userId" />
+		<result property="nickname" column="nickname" />
 		<result property="portrait_path_original" column="portrait_path_original" />
 		<result property="portrait_path_1280" column="portrait_path_1280" />
 		<result property="portrait_path_256" column="portrait_path_256" />
 		<result property="portrait_path_128" column="portrait_path_128" />
 		<result property="portrait_path_48" column="portrait_path_48" />
+		<result property="actorTag" column="actorTag" />
 		<result property="memberGrade" column="memberGrade" />
 		<result property="joinDate" column="joinTime" />
 	</resultMap>
@@ -117,7 +119,7 @@
 	</parameterMap>
 	
 	<procedure id="getFamilyManagerList" parameterMap="managerListMap">
-		{call p_getfamilymanagerlist_V2(?,?,?)}
+		{call pack_family_v2.p_getFamilyManagerList(?,?,?)}
 	</procedure>
 	
 	<!-- 获取家族成员列表 -->
