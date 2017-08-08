@@ -225,7 +225,7 @@
 		<dependency>
   			<groupId>com.melot</groupId>
   			<artifactId>melot-site-content-config</artifactId>
-  			<version>1.1.15-SNAPSHOT</version><!--$NO-MVN-MAN-VER$-->
+  			<version>1.1.14</version><!--$NO-MVN-MAN-VER$-->
 		</dependency>
 		<dependency>
 			<groupId>com.sun.jersey</groupId>
@@ -411,6 +411,12 @@
             <groupId>com.melot</groupId>
             <artifactId>tim-client-api</artifactId>
             <version>0.0.5</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.melot</groupId>
+                    <artifactId>zk_common_server</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 		<dependency>
 			<groupId>com.melot</groupId>
@@ -524,7 +530,7 @@
         <dependency>
             <groupId>com.melot</groupId>
             <artifactId>kk-activity-share-driver</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.2</version>
         </dependency>
 
 	</dependencies>
