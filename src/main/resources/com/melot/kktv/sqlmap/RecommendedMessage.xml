@@ -65,4 +65,8 @@
 		{call p_getrecommendmsgslist(?,?,?,?,?,?)}
 	</procedure>
 	
+	<select id="getRecommendedMsgHtml" parameterClass="java.lang.Integer" resultClass="java.lang.String">
+		SELECT t.htmlcontent FROM conf_recommended_msgs t WHERE t.msgid = #msgId#
+	</select>
+	
 </sqlMap>

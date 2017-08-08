@@ -471,8 +471,8 @@ public class ProfileFunctions {
             result.add("props", propArray);
             
 			// 调用时带有token 说明是本人调用,需要返回用户秀币
-			if (checkTag) {
-			    result.addProperty("followCount", UserRelationService.getFollowsCount(userId));
+			if (checkTag || channel == 70542 || channel == 559) {
+				result.addProperty("followCount", UserRelationService.getFollowsCount(userId));
 			    if (userInfoDetail.getProfile().getPhoneNum() != null) {
 			        result.addProperty("phoneNum", userInfoDetail.getProfile().getPhoneNum());
 			    }

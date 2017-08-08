@@ -466,6 +466,42 @@ public class MessageBoxV2Functions {
         return result;
     }
     
+    /**
+     * 获取新鲜播报消息 HTML 富文本内容 (50006106)
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     * @throws Exception
+     */
+    public JsonObject getRecommendedMsgHtml(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+        JsonObject result = new JsonObject();
+        
+        int msgId;
+        
+        try {
+            msgId = CommonUtil.getJsonParamInt(jsonObject, "msgId", 0, "50610601", 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        try {
+            String htmlData = (String) SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("RecommendedMessage.getRecommendedMsgHtml", msgId);
+            result.addProperty("htmlData", htmlData);
+            
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        } catch (Exception e) {
+            logger.error("未能正常调用存储过程 RecommendedMessage.getRecommendedMsgHtml", e);
+            result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
+        }
+        
+        return result;
+    }
+    
     private static void setUserMessageValue(int userId, int value) {
         Jedis jedis = null;
         try {

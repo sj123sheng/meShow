@@ -72,12 +72,6 @@ public class KKHallFunctions {
         appId = 0;
 
         int roomCount = 0;
-
-        //不是自己不可查看相关列表
-        if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-            return result;
-        }
         
         final String ROOM_CACHE_KEY = String.format(KK_USER_ROOM_CACHE_KEY, appId, userId);
         if (!KKHallSource.exists(ROOM_CACHE_KEY)) {

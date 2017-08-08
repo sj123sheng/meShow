@@ -1792,6 +1792,13 @@
 		<constructor-arg name="t" ref="messageBoxV2Function" />
 		<constructor-arg name="methodName" value="markAllMessagesRead" />
 	</bean>
+	<!-- 获取新鲜播报的HTML富文本内容 -->
+	<bean id="50006106" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="messageBoxV2Function" />
+		<constructor-arg name="methodName" value="getRecommendedMsgHtml" />
+		<constructor-arg name="cacheType" value="300" />
+		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
+	</bean>
 	
 	<!-- 守护功能类 -->
 	<!-- 获取守护购买列表 -->
