@@ -1,5 +1,6 @@
 package com.melot.kktv.action;
 
+import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.melot.kktv.util.*;
@@ -55,6 +56,8 @@ public class ActorFunction {
             List<RankData> rankDataList = shareActivityService.getRankList(userId > 0 ? userId : null, actorId);
             
             if (CollectionUtils.isEmpty(rankDataList)) {
+
+                rankDataList = Lists.newArrayList();
                 /*result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
                 return result;*/
                 RankData rankData1 = new RankData();
