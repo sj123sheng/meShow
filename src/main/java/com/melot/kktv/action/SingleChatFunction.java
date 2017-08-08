@@ -239,6 +239,11 @@ public class SingleChatFunction {
                 }
             }
             
+            if (ResultCode.ERROR_FORBIDEN_BY_INSPECTION.equals(isActorResult.getCode())) {
+                result.addProperty("TagCode", "05110806");
+                return result;
+            }
+            
             result.addProperty("TagCode", TagCodeEnum.SINGLE_CHAT_NOT_ACTOR);
             return result;
         } catch (Exception e) {
@@ -293,6 +298,10 @@ public class SingleChatFunction {
                     result.addProperty("TagCode", "05110807");
                     return result;
                 }
+            }
+            if (ResultCode.ERROR_FORBIDEN_BY_INSPECTION.equals(checkUserResult.getCode())) {
+                result.addProperty("TagCode", "05110806");
+                return result;
             }
             if (ResultCode.SUCCESS.equals(checkUserResult.getCode())) {
                 boolean canChat = checkUserResult.getData();
