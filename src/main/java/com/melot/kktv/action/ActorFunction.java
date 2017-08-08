@@ -70,7 +70,7 @@ public class ActorFunction {
                 RankData rankData2 = new RankData();
                 rankData2.setUserId(104357526);
                 rankData2.setNickName("゛NA 娜拉");
-                rankData1.setGender(1);
+                rankData2.setGender(1);
                 rankData2.setPortrait("/portrait/20170730/11/104357526_4120897.jpg");
                 rankData2.setRank(2);
                 rankData2.setUserCount(80);
@@ -80,7 +80,7 @@ public class ActorFunction {
                 RankData rankData3 = new RankData();
                 rankData3.setUserId(100803678);
                 rankData3.setNickName("KK最丑需要时你在哪");
-                rankData1.setGender(1);
+                rankData3.setGender(1);
                 rankData3.setPortrait("/portrait/20170807/0/100803678_5217117.jpg");
                 rankData3.setRank(3);
                 rankData3.setUserCount(30);
@@ -95,7 +95,7 @@ public class ActorFunction {
                     RankData rankData = new RankData();
                     rankData.setUserId(89705961);
                     rankData.setNickName("大 韵 韵 ♡");
-                    rankData1.setGender(0);
+                    rankData.setGender(0);
                     rankData.setPortrait("/portrait/20170802/10/89705961_215146.png");
                     rankData.setRank(i);
                     rankData.setUserCount(10-i);
@@ -107,7 +107,7 @@ public class ActorFunction {
                 RankData rankData15 = new RankData();
                 rankData15.setUserId(90631785);
                 rankData15.setNickName("甜橙\uD83C\uDF3B冉冉冉冉冉冉");
-                rankData1.setGender(1);
+                rankData15.setGender(1);
                 rankData15.setPortrait("/portrait/20170730/12/90631785_158709.jpg");
                 rankData15.setRank(15);
                 rankData15.setUserCount(1);
