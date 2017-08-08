@@ -420,35 +420,6 @@ public class ConfigFunctions {
             return result;
         }        
     }
-    /**
-     * 50001111
-     * VR主播获取grammarId信息
-     * @param jsonObject
-     * @param checkTag
-     * @param request
-     * @return
-     */
-    public JsonObject getGrammarId(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-        JsonObject result = new JsonObject();
-        
-        try {
-            // 获取VR使用的grammarId（这块暂时不做强制有数据）
-            GiftListService giftListService = MelotBeanFactory.getBean("giftListService", GiftListService.class);
-            ReturnResult<String> grammarIdResult = giftListService.getGiftNameListGrammarId();
-            if (grammarIdResult != null && ReturnResultCode.SUCCESS.equals(grammarIdResult.getCode())) {
-                result.addProperty("grammarId", grammarIdResult.getData());
-            }else {
-                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
-                return result;
-            }
-        } catch (Exception e) {
-            logger.error("Module Error GiftListService.listGiftIconUrl()", e);
-            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
-            return result;
-        }
-        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        return result;
-    }
     
     /**
      * VR主播获取grammarId信息(50001111)
