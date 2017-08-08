@@ -52,7 +52,7 @@ public class ActorFunction {
         // 获取主播列表
         try {
             ShareActivityService shareActivityService = MelotBeanFactory.getBean("shareActivityService", ShareActivityService.class);
-            List<RankData> rankDataList = shareActivityService.getRankList(userId, actorId);
+            List<RankData> rankDataList = shareActivityService.getRankList(userId > 0 ? userId : null, actorId);
             
             if (CollectionUtils.isEmpty(rankDataList)) {
                 /*result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
@@ -117,8 +117,9 @@ public class ActorFunction {
             }
             
             JsonArray representList = new JsonArray();
-            String identity = "";
-            for (int i = 0; i < rankDataList.size(); i++) {
+
+            int rankDataSize = rankDataList.size();
+            for (int i = 0; i < rankDataSize; i++) {
 
                 RankData rankData = rankDataList.get(i);
                 JsonObject representJson = new JsonObject();
@@ -126,13 +127,28 @@ public class ActorFunction {
                 representJson.addProperty("nickname", rankData.getNickName());
                 representJson.addProperty("gender", rankData.getGender());
                 representJson.addProperty("ranking", rankData.getRank());
-                switch (i) {
-                    case 0 : identity = "团长"; break;
-                    case 1 : identity = "副团长"; break;
-                    case 2 : identity = "副团长"; break;
-                    default: break;
+                String identity = "";
+                if(rankData.getRank() != null) {
+                    switch (rankData.getRank()) {
+                        case 1:
+                            identity = "团长";
+                            break;
+                        case 2:
+                            identity = "副团长";
+                            break;
+                        case 3:
+                            identity = "副团长";
+                            break;
+                        default:
+                            break;
+                    }
                 }
+
                 representJson.addProperty("identity", identity);
+
+                representJson.addProperty("absorbFansCount", rankData.getUserCount());
+                representJson.addProperty("shareCount", rankData.getShareTimes());
+                representJson.addProperty("onlookersCount", rankData.getUserUv());
 
                 if (rankData.getPortrait() != null) {
                     String portraitAddress = rankData.getPortrait();
@@ -146,17 +162,15 @@ public class ActorFunction {
                     representJson.addProperty("portrait_path_756", portraitAddress + "!756x567");
                 }
 
-                representJson.addProperty("absorbFansCount", rankData.getUserCount());
-                representJson.addProperty("shareCount", rankData.getShareTimes());
-                representJson.addProperty("onlookersCount", rankData.getUserUv());
+                if(userId > 0 && i == rankDataSize - 1) {
+                    result.add("mySelfRepresent", representJson);
+                }else {
+                    representList.add(representJson);
+                }
 
-                representList.add(representJson);
             }
 
-            if(userId > 0 && representList.size() > 0) {
-                JsonObject mySelfRepresent = (JsonObject)representList.get(representList.size() -1);
-                result.add("mySelfRepresent", mySelfRepresent);
-            }
+
             result.add("representList", representList);
             result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
@@ -191,6 +205,11 @@ public class ActorFunction {
             return result;
         } catch (Exception e) {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        if(userId == 0) {
+            result.addProperty("TagCode", TagCodeEnum.USERID_MISSING);
             return result;
         }
 
