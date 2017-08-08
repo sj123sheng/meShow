@@ -2560,4 +2560,5 @@
 		<constructor-arg name="t" ref="configFunctions" />
 		<constructor-arg name="methodName" value="getGrammarId" />
 	</bean>
+
 </beans>
