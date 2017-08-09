@@ -1,6 +1,5 @@
 package com.melot.kktv.action;
 
-import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.melot.kktv.util.*;
@@ -56,67 +55,8 @@ public class ActorFunction {
             List<RankData> rankDataList = shareActivityService.getRankList(userId > 0 ? userId : null, actorId);
             
             if (CollectionUtils.isEmpty(rankDataList)) {
-
-                rankDataList = Lists.newArrayList();
-                /*result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
-                return result;*/
-                RankData rankData1 = new RankData();
-                rankData1.setUserId(69257104);
-                rankData1.setNickName("小西西 ღ 头疼啊啊");
-                rankData1.setGender(1);
-                rankData1.setPortrait("/portrait/20160917/11/69257104_4030735.jpg");
-                rankData1.setRank(1);
-                rankData1.setUserCount(100);
-                rankData1.setShareTimes(205);
-                rankData1.setUserUv(360);
-
-                RankData rankData2 = new RankData();
-                rankData2.setUserId(104357526);
-                rankData2.setNickName("゛NA 娜拉");
-                rankData2.setGender(1);
-                rankData2.setPortrait("/portrait/20170730/11/104357526_4120897.jpg");
-                rankData2.setRank(2);
-                rankData2.setUserCount(80);
-                rankData2.setShareTimes(105);
-                rankData2.setUserUv(160);
-
-                RankData rankData3 = new RankData();
-                rankData3.setUserId(100803678);
-                rankData3.setNickName("KK最丑需要时你在哪");
-                rankData3.setGender(1);
-                rankData3.setPortrait("/portrait/20170807/0/100803678_5217117.jpg");
-                rankData3.setRank(3);
-                rankData3.setUserCount(30);
-                rankData3.setShareTimes(45);
-                rankData3.setUserUv(56);
-
-                rankDataList.add(0,rankData1);
-                rankDataList.add(1,rankData2);
-                rankDataList.add(2,rankData3);
-
-                for (int i = 4; i < 9; i++) {
-                    RankData rankData = new RankData();
-                    rankData.setUserId(89705961);
-                    rankData.setNickName("大 韵 韵 ♡");
-                    rankData.setGender(0);
-                    rankData.setPortrait("/portrait/20170802/10/89705961_215146.png");
-                    rankData.setRank(i);
-                    rankData.setUserCount(10-i);
-                    rankData.setShareTimes(10-i);
-                    rankData.setUserUv(10-i);
-                    rankDataList.add(i-1,rankData);
-                }
-
-                RankData rankData15 = new RankData();
-                rankData15.setUserId(90631785);
-                rankData15.setNickName("甜橙\uD83C\uDF3B冉冉冉冉冉冉");
-                rankData15.setGender(1);
-                rankData15.setPortrait("/portrait/20170730/12/90631785_158709.jpg");
-                rankData15.setRank(15);
-                rankData15.setUserCount(1);
-                rankData15.setShareTimes(1);
-                rankData15.setUserUv(0);
-                rankDataList.add(8,rankData15);
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
             }
             
             JsonArray representList = new JsonArray();
