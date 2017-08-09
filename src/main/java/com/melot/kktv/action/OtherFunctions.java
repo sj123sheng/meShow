@@ -11,6 +11,10 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import com.google.common.collect.Lists;
+import com.melot.kk.module.report.dbo.ReportFlowRecord;
+import com.melot.kk.module.report.service.ReportFlowService;
+import com.melot.kk.module.report.util.CommonStateCode;
+import com.melot.kk.module.report.util.Result;
 import org.apache.log4j.Logger;
 
 import com.chinacreator.videoalliance.util.ChinaUnicomEnum;
@@ -711,7 +715,6 @@ public class OtherFunctions {
 	    
 	    return result;
 	}
-
 	/**
 	 * 提交举报V2 （51090101）
 	 * @param jsonObject
@@ -733,7 +736,7 @@ public class OtherFunctions {
 			int toUserId = CommonUtil.getJsonParamInt(jsonObject, "toUserId", 0, tagCode_prefix + "03", 1, Integer.MAX_VALUE);
 			String toNickname = CommonUtil.getJsonParamString(jsonObject, "toNickname", null, tagCode_prefix + "04", 1, 20);
 			int reportType = CommonUtil.getJsonParamInt(jsonObject, "reportType", 0, null, 1, Integer.MAX_VALUE);
-			int reportTag = CommonUtil.getJsonParamInt(jsonObject, "reportTag", 0, tagCode_prefix + "05", 1, 5);
+			int reportTag = CommonUtil.getJsonParamInt(jsonObject, "reportTag", 0, tagCode_prefix + "05", 1, 6);
 			String reason = CommonUtil.getJsonParamString(jsonObject, "reason", null, null, 1, 50);
 			String evidenceUrls = CommonUtil.getJsonParamString(jsonObject, "evidenceUrls", null, null, 1, 500);
 			int roomId = CommonUtil.getJsonParamInt(jsonObject, "roomId", 0, null, 1, Integer.MAX_VALUE);
@@ -746,8 +749,21 @@ public class OtherFunctions {
 				result.addProperty("TagCode", tagCode_prefix + "07");
 				return result;
 			}
-			Integer reportId = GeneralService.roomReport(userId, nickname, toUserId, toNickname, reportType,1, reason, evidenceUrls);
-			if (reportId != null && reportId > 0) {
+			ReportFlowService reportFlowService = (ReportFlowService)MelotBeanFactory.getBean("reportFlowService");
+			ReportFlowRecord reportFlowRecord = new ReportFlowRecord();
+			reportFlowRecord.setUserId(userId);
+			reportFlowRecord.setUserName(nickname);
+			reportFlowRecord.setBeUserId(toUserId);
+			reportFlowRecord.setBeUserName(toNickname);
+			reportFlowRecord.setReportTag(reportTag);
+			reportFlowRecord.setReportType(reportType);
+			reportFlowRecord.setReportReason(reason);
+			reportFlowRecord.setEvidenceUrls(evidenceUrls);
+			reportFlowRecord.setRoomId(roomId);
+			reportFlowRecord.setNewsId(newsId);
+			Result<Boolean> flag = reportFlowService.saveReportFlowRecord(reportFlowRecord);
+//			Integer reportId = GeneralService.roomReport(userId, nickname, toUserId, toNickname, reportType,1, reason, evidenceUrls);
+			if (flag.getCode().equals(CommonStateCode.SUCCESS) && flag.getData()) {
 				// 插流水，现在已不用
 //				ConsumeService.insertReportHistory(reportId, userId, 0, 0);
 				logger.info("CommitReportV2 api : userId" + userId + "to report toUserId" + toUserId);
