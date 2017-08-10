@@ -1038,7 +1038,7 @@ public class NodeFunctions {
 	        RoomInfo roomInfo = null;
         	t = Cat.getProducer().newTransaction("MCall", "RoomService.getRoomInfo");
 			try {
-				roomInfo = RoomService.getRoomInfoByIdInDb(userId);
+				roomInfo = RoomService.getRoomInfoByIdInDbFromNode(userId);
 				t.setStatus(Transaction.SUCCESS);
 			} catch (Exception e) {
 				Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息

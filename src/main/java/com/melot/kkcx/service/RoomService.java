@@ -145,6 +145,24 @@ public class RoomService {
     }
     
     /**
+     * 来自node获取用户房间信息(pg) 原始数据不替换
+     * @param userId 用户Id
+     * @return
+     */
+    public static RoomInfo getRoomInfoByIdInDbFromNode(int userId) {
+        if (userId <= 0) {
+            return null;
+        }
+        try {
+            RoomInfoService roomInfoServie = MelotBeanFactory.getBean("roomInfoService", RoomInfoService.class);
+            return roomInfoServie.getRoomInfoByActoridInDbFromNode(userId);
+        } catch (Exception e) {
+           logger.error("RoomService.getRoomInfo, userId : " + userId, e);
+           return null;
+        }
+    }
+    
+    /**
      * 更新房间信息(pg)
      * @param roomInfo
      * @return
