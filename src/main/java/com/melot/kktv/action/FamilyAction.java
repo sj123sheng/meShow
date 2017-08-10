@@ -1,24 +1,6 @@
 package com.melot.kktv.action;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.log4j.Logger;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.blacklist.service.BlacklistService;
@@ -31,47 +13,28 @@ import com.melot.family.driver.domain.RespMsg;
 import com.melot.family.driver.service.FamilyAdminNewService;
 import com.melot.family.driver.service.FamilyInfoService;
 import com.melot.kkcore.user.api.UserProfile;
-import com.melot.kkcx.service.FamilyMatchService;
-import com.melot.kkcx.service.FamilyService;
-import com.melot.kkcx.service.RoomService;
-import com.melot.kkcx.service.UserAssetServices;
-import com.melot.kkcx.service.UserService;
+import com.melot.kkcx.model.RecentFamilyMatch;
+import com.melot.kkcx.service.*;
 import com.melot.kkcx.transform.RoomTF;
 import com.melot.kktv.domain.Honour;
 import com.melot.kktv.domain.PreviewAct;
-import com.melot.kktv.model.Family;
-import com.melot.kktv.model.FamilyApplicant;
-import com.melot.kktv.model.FamilyHonor;
-import com.melot.kktv.model.FamilyMatchChampion;
-import com.melot.kktv.model.FamilyMatchRank;
-import com.melot.kktv.model.FamilyMember;
-import com.melot.kktv.model.FamilyPoster;
+import com.melot.kktv.model.*;
 import com.melot.kktv.redis.FamilyApplySource;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.MatchSource;
 import com.melot.kktv.redis.MedalSource;
-import com.melot.kktv.util.AppIdEnum;
-import com.melot.kktv.util.CollectionEnum;
-import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.*;
 import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.Constant;
-import com.melot.kktv.util.DateUtil;
-import com.melot.kktv.util.FamilyMemberEnum;
-import com.melot.kktv.util.FamilyRankingEnum;
-import com.melot.kktv.util.PaginationUtil;
-import com.melot.kktv.util.PlatformEnum;
-import com.melot.kktv.util.StringUtil;
-import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
-import com.melot.kktv.util.mongodb.CommonDB;
 import com.melot.module.medal.driver.domain.ResultByFamilyMedal;
 import com.melot.module.medal.driver.service.FamilyMedalService;
 import com.melot.sdk.core.util.MelotBeanFactory;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
+import org.apache.log4j.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+import java.sql.SQLException;
+import java.util.*;
 
 /**
  * 家族相关接口
@@ -111,17 +74,14 @@ public class FamilyAction {
 			result.addProperty("TagCode", e.getErrCode());
 			return result;
 		}
-		
-		// 获取上期家族比赛冠军
+
+        //获取最近2期家族擂台赛信息
+        RecentFamilyMatch recentFamilyMatch = getRecentFamilyMatch();
+
+        // 获取上期家族比赛冠军
 		Integer lastChampionFamilyId = null;
-		Date lastDate = DateUtil.addOnField(new Date(), Calendar.DATE, -7);
-		DBObject queryDbObject = new BasicDBObject();
-		queryDbObject.put("startTime", new BasicDBObject("$lt", lastDate.getTime()));
-		queryDbObject.put("endTime", new BasicDBObject("$gt", lastDate.getTime()));
-		DBObject configObj = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.FAMILYMATCHCONFIG)
-				.findOne(queryDbObject, new BasicDBObject("period", 1));
-		if (configObj != null && configObj.get("period") != null) {
-			Integer period = (Integer) configObj.get("period");
+		if (recentFamilyMatch != null) {
+			Integer period = recentFamilyMatch.getLastPeriod();
 			FamilyMatchRank familyMatchRank = FamilyMatchService.getFamilyMatchChampion(period);
 			Family lastChampionFamily = FamilyService.getFamilyInfo(familyMatchRank.getFamilyId().intValue(), platform);
 			// 获取上期冠军家族当前消费榜排名
@@ -211,6 +171,22 @@ public class FamilyAction {
 		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 		return result;
 	}
+
+	/**
+     * 获取最近2期家族擂台赛信息
+     */
+    private RecentFamilyMatch getRecentFamilyMatch() {
+        String data = MatchSource.getRecentFamilyMatch();
+        RecentFamilyMatch recentFamilyMatch = null;
+        if (data != null) {
+            try {
+                TypeToken<RecentFamilyMatch> typeToken = new TypeToken<RecentFamilyMatch>(){};
+                recentFamilyMatch = new Gson().fromJson(data, typeToken.getType());
+            } catch (Exception e) {
+            }
+        }
+        return recentFamilyMatch;
+    }
 
 	/* ----------------------- 家族主页 ----------------------- */
 	
@@ -1505,79 +1481,18 @@ public class FamilyAction {
 		//  定义结果
 		JsonObject result = new JsonObject();
 		JsonArray rankArr = new JsonArray();
-		// 读取mongodb评委分数
-		long curTime = System.currentTimeMillis();
+
+        //获取最近2期家族擂台赛信息
+        RecentFamilyMatch recentFamilyMatch = getRecentFamilyMatch();
+
 		if (periodType == 0) {
 			// 本期
-			// period startTime endTime giftId giftRate giftDiff
-			DBCursor configCursor = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.FAMILYMATCHCONFIG)
-					.find(new BasicDBObject("endTime", new BasicDBObject("$gt", curTime)))
-					.sort(new BasicDBObject("period", 1)).limit(1);
-			Integer v_period = null;
-			Integer v_play = null;
-			Long v_endTime = null;
-			if (configCursor == null || configCursor.size() == 0) {
-				// 若未找到本期比赛信息 则返回上一期结果
-				configCursor = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.FAMILYMATCHCONFIG)
-						.find(new BasicDBObject("endTime", new BasicDBObject("$lt", curTime)))
-						.sort(new BasicDBObject("period", -1)).limit(1);
-				DBObject configObj = configCursor.next();
-				v_period = (Integer) configObj.get("period");
-				DBCursor playCursor = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.FAMILYMATCHPLAYCONFIG)
-					.find(new BasicDBObject("period", v_period)).sort(new BasicDBObject("play", -1)).limit(1);
-				if (playCursor != null && playCursor.size() > 0) {
-					DBObject playObj = playCursor.next();
-					v_play = (Integer) playObj.get("play");
-					v_endTime = (Long) playObj.get("endTime");
-				}
-			} else {
-				DBObject configObj = configCursor.next();
-				v_period = (Integer) configObj.get("period");
-				long size = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.FAMILYMATCHPLAYCONFIG)
-					.count(new BasicDBObject("period", v_period));
-				if (size > 0) {
-					DBObject refObj = new BasicDBObject();
-					refObj.put("period", v_period);
-					refObj.put("startTime", new BasicDBObject("$lte", curTime));
-					refObj.put("endTime", new BasicDBObject("$gt", curTime));
-					DBObject playObj = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.FAMILYMATCHPLAYCONFIG).findOne(refObj);
-					if (playObj != null) {
-						v_play = (Integer) playObj.get("play");
-						v_endTime = (Long) playObj.get("endTime");
-					} else {
-						// 若未找到本期比赛本场次信息 则返回本期上一场
-						refObj = new BasicDBObject();
-						refObj.put("period", v_period);
-						refObj.put("endTime", new BasicDBObject("$lte", curTime));
-						DBCursor dbCusor = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.FAMILYMATCHPLAYCONFIG)
-								.find(refObj).sort(new BasicDBObject("play", -1)).limit(1);
-						if (dbCusor != null) {
-							for (DBObject dbObject : dbCusor) {
-								playObj = dbObject;
-								v_play = (Integer) playObj.get("play");
-								v_endTime = (Long) playObj.get("endTime");
-							}
-						}
-					}
-				} else {
-					// 若未找到本期比赛场次信息 则返回上一期结果
-					configCursor = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.FAMILYMATCHCONFIG)
-							.find(new BasicDBObject("endTime", new BasicDBObject("$lt", curTime)))
-							.sort(new BasicDBObject("period", -1)).limit(1);
-					configObj = configCursor.next();
-					v_period = (Integer) configObj.get("period");
-					DBCursor playCursor = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.FAMILYMATCHPLAYCONFIG)
-						.find(new BasicDBObject("period", v_period)).sort(new BasicDBObject("play", 1)).limit(1);
-					if (playCursor != null && playCursor.size() > 0) {
-						DBObject playObj = playCursor.next();
-						v_play = (Integer) playObj.get("play");
-						v_endTime = (Long) playObj.get("endTime");
-					}
-				}
-			}
-			// period startTime endTime giftId giftRate giftDiff
-			if (v_period != null && v_play != null && v_endTime != null) {
+			if (recentFamilyMatch != null) {
 				List<FamilyMatchRank> rankList = null;
+				Integer v_period = recentFamilyMatch.getThisPeriod();
+				Integer v_play = recentFamilyMatch.getThisPlay();
+				Date v_endTime = recentFamilyMatch.getThisEndTime();
+
 				String data = MatchSource.getFamilyMatchPlay(String.valueOf(v_period), String.valueOf(v_play));
 				if (data != null) {
 					try {
@@ -1604,49 +1519,34 @@ public class FamilyAction {
 					if (statsMap.get("endTime") != null) {
 						result.addProperty("endTime", Long.parseLong(statsMap.get("endTime")));
 					} else {
-						result.addProperty("endTime", v_endTime);
+						result.addProperty("endTime", v_endTime.getTime());
 					}
 				}
 			}
 		}
 		if (periodType == -1) {
 			// 上期
-			// 检查本期比赛是否配置
-			DBCursor configCursor = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.FAMILYMATCHCONFIG)
-					.find(new BasicDBObject("endTime", new BasicDBObject("$gt", curTime)))
-					.sort(new BasicDBObject("period", 1)).limit(1);
-			if(configCursor==null || configCursor.size()==0) {
-				// 若未找到本期比赛信息 则返回上上期结果
-				configCursor = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.FAMILYMATCHCONFIG)
-						.find(new BasicDBObject("endTime", new BasicDBObject("$lt", curTime)))
-						.sort(new BasicDBObject("period", -1)).limit(1);
-			}
-			// period startTime endTime giftId giftRate giftDiff
-			DBObject configObj = configCursor.next();
-			Integer v_period = (Integer) configObj.get("period");
-			// 返回上期比赛配置
-			configCursor = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.FAMILYMATCHCONFIG)
-					.find(new BasicDBObject("period", new BasicDBObject("$lt", v_period)))
-					.sort(new BasicDBObject("period", -1)).limit(1);
-			configObj = configCursor.next();
-			v_period = (Integer) configObj.get("period");
-			// 上期数据8小时更新一次 redis中读取缓存
-			List<FamilyMatchRank> rankList = null;
-			String data = MatchSource.getFamilyMatchActorCache(String.valueOf(v_period));
-			if (data != null) {
-				try {
-					TypeToken<List<FamilyMatchRank>> typeToken = new TypeToken<List<FamilyMatchRank>>(){};
-					rankList = new Gson().fromJson(data, typeToken.getType());
-					// 返回客户端数据
-					rankArr = new JsonArray();
-					for (FamilyMatchRank fmRank : rankList) {
-						JsonObject rankJson = fmRank.toJsonObject(platform);
-						rankArr.add(rankJson);
-					}
-				} catch (Exception e) {
-					rankList = null;
-				}
-			}
+            if (recentFamilyMatch != null) {
+                Integer v_last_period = recentFamilyMatch.getLastPeriod();
+                // 上期数据8小时更新一次 redis中读取缓存
+                List<FamilyMatchRank> rankList = null;
+                String data = MatchSource.getFamilyMatchActorCache(String.valueOf(v_last_period));
+                if (data != null) {
+                    try {
+                        TypeToken<List<FamilyMatchRank>> typeToken = new TypeToken<List<FamilyMatchRank>>() {
+                        };
+                        rankList = new Gson().fromJson(data, typeToken.getType());
+                        // 返回客户端数据
+                        rankArr = new JsonArray();
+                        for (FamilyMatchRank fmRank : rankList) {
+                            JsonObject rankJson = fmRank.toJsonObject(platform);
+                            rankArr.add(rankJson);
+                        }
+                    } catch (Exception e) {
+                        rankList = null;
+                    }
+                }
+            }
 		}
 		// 返回结果
 		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
@@ -1692,42 +1592,20 @@ public class FamilyAction {
 		//  定义结果
 		JsonObject result = new JsonObject();
 		JsonArray rankArr = new JsonArray();
-		// 读取mongodb评委分数
-		long curTime = System.currentTimeMillis();
-		DBObject configObj = null;
-		if (periodType == 0) {
-			DBCursor configCursor = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.FAMILYMATCHCONFIG)
-					.find(new BasicDBObject("endTime", new BasicDBObject("$gt", curTime)))
-					.sort(new BasicDBObject("period", 1)).limit(1);
-			// 检查本期比赛是否配置
-			if (configCursor == null || configCursor.size() == 0) {
-				// 若未找到本期比赛信息 则返回上期结果
-				configCursor = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.FAMILYMATCHCONFIG)
-						.find(new BasicDBObject("endTime", new BasicDBObject("$lt", curTime)))
-						.sort(new BasicDBObject("period", -1)).limit(1);
-				configObj = configCursor.next();
-			} else {
-				configObj = configCursor.next();
-				long size = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.FAMILYMATCHPLAYCONFIG)
-						.count(new BasicDBObject("period", (Integer) configObj.get("period")));
-				if (size == 0) {
-					// 若未找到本期比赛场次信息 则返回上期结果
-					configCursor = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.FAMILYMATCHCONFIG)
-							.find(new BasicDBObject("endTime", new BasicDBObject("$lt", curTime)))
-							.sort(new BasicDBObject("period", -1)).limit(1);
-					configObj = configCursor.next();
-				}
-			}
-		}
-		if (periodType == -1) {
-			DBCursor configCursor = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.FAMILYMATCHCONFIG)
-					.find(new BasicDBObject("endTime", new BasicDBObject("$lt", curTime)))
-					.sort(new BasicDBObject("period", -1)).limit(1);
-			configObj = configCursor.next();
-		}
+
+        //获取最近2期家族擂台赛信息
+        RecentFamilyMatch recentFamilyMatch = getRecentFamilyMatch();
+        Integer v_period = null;
+        if(recentFamilyMatch != null) {
+            if (periodType == 0) {
+                v_period = recentFamilyMatch.getThisPeriod();
+            }
+            if (periodType == -1) {
+                v_period = recentFamilyMatch.getLastPeriod();
+            }
+        }
 		// period startTime endTime giftId userCount
-		if (configObj != null && configObj.get("period") != null) {
-			Integer v_period = (Integer) configObj.get("period");
+		if (v_period != null) {
 			// 本期数据1分钟更新一次 上期8小时更新一次  redis中读取缓存
 			List<FamilyMatchRank> rankList = null;
 			String data = MatchSource.getFamilyMatchUserCache(String.valueOf(v_period));
@@ -1742,7 +1620,7 @@ public class FamilyAction {
 						rankArr.add(rankJson);
 					}
 				} catch (Exception e) {
-					rankList = null;
+
 				}
 			}
 		}
@@ -1831,116 +1709,104 @@ public class FamilyAction {
 		        }
 		    }
         } else {
-            long curTime = System.currentTimeMillis();
-            // 检查本期比赛是否配置
-            DBCursor configCursor = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.FAMILYMATCHCONFIG)
-                    .find(new BasicDBObject("endTime", new BasicDBObject("$gt", curTime)))
-                    .sort(new BasicDBObject("period", 1)).limit(1);
-            if (configCursor == null || configCursor.size() == 0) {
-                // 若未找到本期比赛信息 则返回上上期结果
-                configCursor = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.FAMILYMATCHCONFIG)
-                        .find(new BasicDBObject("endTime", new BasicDBObject("$lt", curTime)))
-                        .sort(new BasicDBObject("period", -1)).limit(1);
-            }
             // 上期
-            DBObject configObj = configCursor.next();
-            Integer v_period = (Integer) configObj.get("period");
-            // 返回上期比赛配置
-            configCursor = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.FAMILYMATCHCONFIG)
-                    .find(new BasicDBObject("period", new BasicDBObject("$lt", v_period)))
-                    .sort(new BasicDBObject("period", -1)).limit(1);
-            configObj = configCursor.next();
-            v_period = (Integer) configObj.get("period");
-            if (type == 1) {
-                // 家族冠军榜
-                // 8小时更新一次  redis中读取缓存
-                String data = MatchSource.getFamilyMatchFamilyChampion();
-                if (data != null) {
-                    try {
-                        rankArr = new JsonParser().parse(data).getAsJsonArray();
-                    } catch (Exception e) {
-                        rankArr = null;
-                    }
-                }
-                if (rankArr == null || rankArr.size() == 0) {
-                    // oracle 读取
-                    try {
-                        Map<Object, Object> map = new HashMap<Object, Object>();
-                        map.put("period", v_period);
-                        SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Family.getFamilyMatchFamilyChampion", map);
-                        String TagCode = (String) map.get("TagCode");
-                        if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-                            if (map.containsKey("rankList") && map.get("rankList") != null) {
-                                List<FamilyMatchChampion> rankList = (ArrayList<FamilyMatchChampion>) map.get("rankList");
-                                rankArr = new JsonArray();
-                                for (FamilyMatchChampion fmChampion : rankList) {
-                                    JsonObject rankJson = fmChampion.toJsonObject(platform);
-                                    rankArr.add(rankJson);
-                                }
-                                // 保存redis存储 8小时过期
-                                MatchSource.setFamilyMatchFamilyChampion(rankArr.toString(), ConfigHelper.getFamilyMatchCacheRefreshExpireTime());
-                            } else {
-                                logger.error("调用存储过程得到rankList为null,jsonObject:" + jsonObject.toString());
-                            }
-                        } else {
-                            logger.error("调用存储过程(Family.getFamilyMatchFamilyChampion)未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
+            //获取最近2期家族擂台赛信息
+            RecentFamilyMatch recentFamilyMatch = getRecentFamilyMatch();
+            Integer v_last_period = null;
+            if(recentFamilyMatch != null) {
+                v_last_period = recentFamilyMatch.getLastPeriod();
+
+                if (type == 1) {
+                    // 家族冠军榜
+                    // 8小时更新一次  redis中读取缓存
+                    String data = MatchSource.getFamilyMatchFamilyChampion();
+                    if (data != null) {
+                        try {
+                            rankArr = new JsonParser().parse(data).getAsJsonArray();
+                        } catch (Exception e) {
+                            rankArr = null;
                         }
-                    } catch (SQLException e) {
-                        logger.error("未能正常调用存储过程", e);
                     }
-                }
-            }
-            if (type == 2) {
-                // 富豪冠军榜
-                // 8小时更新一次  redis中读取缓存
-                String data = MatchSource.getFamilyMatchRichChampion();
-                if (data != null) {
-                    try {
-                        rankArr = new JsonParser().parse(data).getAsJsonArray();
-                    } catch (Exception e) {
-                        rankArr = null;
-                    }
-                }
-                if (rankArr == null || rankArr.size() == 0) {
-                    // oracle 读取
-                    try {
-                        Map<Object, Object> map = new HashMap<Object, Object>();
-                        map.put("period", v_period);
-                        SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Family.getFamilyMatchRichChampion", map);
-                        String TagCode = (String) map.get("TagCode");
-                        if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-                            if(map.containsKey("rankList") && map.get("rankList")!=null) {
-                                List<FamilyMatchChampion> rankList = (ArrayList<FamilyMatchChampion>) map.get("rankList");
-                                rankArr = new JsonArray();
-                                for (FamilyMatchChampion fmChampion : rankList) {
-                                    JsonObject rankJson = fmChampion.toJsonObject(platform);
-                                    
-                                    // 获取用户有效靓号
-                                    JsonObject validVirtualId =  UserAssetServices.getValidVirtualId(fmChampion.getUserId()); //获取用户虚拟账号
-                                    if(validVirtualId != null) {
-                                        if (validVirtualId.get("idType").getAsInt() == 1) {
-                                            // 支持老版靓号
-                                            rankJson.addProperty("luckyId", validVirtualId.get("id").getAsInt());
-                                        }
-                                        rankJson.add("validId", validVirtualId);
+                    if (rankArr == null || rankArr.size() == 0) {
+                        // oracle 读取
+                        try {
+                            Map<Object, Object> map = new HashMap<Object, Object>();
+                            map.put("period", v_last_period);
+                            SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Family.getFamilyMatchFamilyChampion", map);
+                            String TagCode = (String) map.get("TagCode");
+                            if (TagCode.equals(TagCodeEnum.SUCCESS)) {
+                                if (map.containsKey("rankList") && map.get("rankList") != null) {
+                                    List<FamilyMatchChampion> rankList = (ArrayList<FamilyMatchChampion>) map.get("rankList");
+                                    rankArr = new JsonArray();
+                                    for (FamilyMatchChampion fmChampion : rankList) {
+                                        JsonObject rankJson = fmChampion.toJsonObject(platform);
+                                        rankArr.add(rankJson);
                                     }
-                                    
-                                    // 读取富豪等级
-                                    rankJson.addProperty("richLevel", UserService.getRichLevel(fmChampion.getUserId()));
-                                    rankJson.addProperty("roomSource", AppIdEnum.AMUSEMENT);
-                                    rankJson.addProperty("roomType", AppIdEnum.AMUSEMENT);
-                                    rankArr.add(rankJson);
+                                    // 保存redis存储 8小时过期
+                                    MatchSource.setFamilyMatchFamilyChampion(rankArr.toString(), ConfigHelper.getFamilyMatchCacheRefreshExpireTime());
+                                } else {
+                                    logger.error("调用存储过程得到rankList为null,jsonObject:" + jsonObject.toString());
                                 }
-                                // 保存redis存储 8小时过期
-                                MatchSource.setFamilyMatchRichChampion(rankArr.toString(), ConfigHelper.getFamilyMatchCacheRefreshExpireTime());
                             } else {
-                                logger.error("调用存储过程得到rankList为null,jsonObject:" + jsonObject.toString());
+                                logger.error("调用存储过程(Family.getFamilyMatchFamilyChampion)未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
                             }
-                        } else {
-                            logger.error("调用存储过程(Family.getFamilyMatchRichChampion)未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
+                        } catch (SQLException e) {
+                            logger.error("未能正常调用存储过程", e);
                         }
-                    } catch (SQLException e) {
-                        logger.error("未能正常调用存储过程", e);
+                    }
+                }
+                if (type == 2) {
+                    // 富豪冠军榜
+                    // 8小时更新一次  redis中读取缓存
+                    String data = MatchSource.getFamilyMatchRichChampion();
+                    if (data != null) {
+                        try {
+                            rankArr = new JsonParser().parse(data).getAsJsonArray();
+                        } catch (Exception e) {
+                            rankArr = null;
+                        }
+                    }
+                    if (rankArr == null || rankArr.size() == 0) {
+                        // oracle 读取
+                        try {
+                            Map<Object, Object> map = new HashMap<Object, Object>();
+                            map.put("period", v_last_period);
+                            SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Family.getFamilyMatchRichChampion", map);
+                            String TagCode = (String) map.get("TagCode");
+                            if (TagCode.equals(TagCodeEnum.SUCCESS)) {
+                                if (map.containsKey("rankList") && map.get("rankList") != null) {
+                                    List<FamilyMatchChampion> rankList = (ArrayList<FamilyMatchChampion>) map.get("rankList");
+                                    rankArr = new JsonArray();
+                                    for (FamilyMatchChampion fmChampion : rankList) {
+                                        JsonObject rankJson = fmChampion.toJsonObject(platform);
+
+                                        // 获取用户有效靓号
+                                        JsonObject validVirtualId = UserAssetServices.getValidVirtualId(fmChampion.getUserId()); //获取用户虚拟账号
+                                        if (validVirtualId != null) {
+                                            if (validVirtualId.get("idType").getAsInt() == 1) {
+                                                // 支持老版靓号
+                                                rankJson.addProperty("luckyId", validVirtualId.get("id").getAsInt());
+                                            }
+                                            rankJson.add("validId", validVirtualId);
+                                        }
+
+                                        // 读取富豪等级
+                                        rankJson.addProperty("richLevel", UserService.getRichLevel(fmChampion.getUserId()));
+                                        rankJson.addProperty("roomSource", AppIdEnum.AMUSEMENT);
+                                        rankJson.addProperty("roomType", AppIdEnum.AMUSEMENT);
+                                        rankArr.add(rankJson);
+                                    }
+                                    // 保存redis存储 8小时过期
+                                    MatchSource.setFamilyMatchRichChampion(rankArr.toString(), ConfigHelper.getFamilyMatchCacheRefreshExpireTime());
+                                } else {
+                                    logger.error("调用存储过程得到rankList为null,jsonObject:" + jsonObject.toString());
+                                }
+                            } else {
+                                logger.error("调用存储过程(Family.getFamilyMatchRichChampion)未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
+                            }
+                        } catch (SQLException e) {
+                            logger.error("未能正常调用存储过程", e);
+                        }
                     }
                 }
             }
