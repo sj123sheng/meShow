@@ -183,6 +183,7 @@ public class FamilyAction {
                 TypeToken<RecentFamilyMatch> typeToken = new TypeToken<RecentFamilyMatch>(){};
                 recentFamilyMatch = new Gson().fromJson(data, typeToken.getType());
             } catch (Exception e) {
+                logger.error("Fail to parse [" + data + "] to RecentFamilyMatch", e);
             }
         }
         return recentFamilyMatch;
@@ -1485,68 +1486,65 @@ public class FamilyAction {
         //获取最近2期家族擂台赛信息
         RecentFamilyMatch recentFamilyMatch = getRecentFamilyMatch();
 
-		if (periodType == 0) {
+		if (periodType == 0 && recentFamilyMatch != null) {
 			// 本期
-			if (recentFamilyMatch != null) {
-				List<FamilyMatchRank> rankList = null;
-				Integer v_period = recentFamilyMatch.getThisPeriod();
-				Integer v_play = recentFamilyMatch.getThisPlay();
-				Date v_endTime = recentFamilyMatch.getThisEndTime();
+            List<FamilyMatchRank> rankList = null;
+            Integer v_period = recentFamilyMatch.getThisPeriod();
+            Integer v_play = recentFamilyMatch.getThisPlay();
+            Date v_endTime = recentFamilyMatch.getThisEndTime();
 
-				String data = MatchSource.getFamilyMatchPlay(String.valueOf(v_period), String.valueOf(v_play));
-				if (data != null) {
-					try {
-						TypeToken<List<FamilyMatchRank>> typeToken = new TypeToken<List<FamilyMatchRank>>(){};
-						rankList = new Gson().fromJson(data, typeToken.getType());
-						// 返回客户端数据
-						rankArr = new JsonArray();
-						for (FamilyMatchRank fmRank : rankList) {
-							JsonObject rankJson = fmRank.toJsonObject(platform);
-							rankArr.add(rankJson);
-						}
-					} catch (Exception e) {
-						rankList = null;
-					}
-				}
-				// 获取家族比赛时间统计
-				Map<String, String> statsMap = MatchSource.getFamilyMatchStats(String.valueOf(v_period), String.valueOf(v_play));
-				if (statsMap != null) {
-					if (statsMap.get("updateTime") != null) {
-						result.addProperty("updateTime", Long.parseLong(statsMap.get("updateTime")));
-					} else {
-						result.addProperty("updateTime", System.currentTimeMillis());
-					}
-					if (statsMap.get("endTime") != null) {
-						result.addProperty("endTime", Long.parseLong(statsMap.get("endTime")));
-					} else {
-						result.addProperty("endTime", v_endTime.getTime());
-					}
-				}
-			}
-		}
-		if (periodType == -1) {
-			// 上期
-            if (recentFamilyMatch != null) {
-                Integer v_last_period = recentFamilyMatch.getLastPeriod();
-                // 上期数据8小时更新一次 redis中读取缓存
-                List<FamilyMatchRank> rankList = null;
-                String data = MatchSource.getFamilyMatchActorCache(String.valueOf(v_last_period));
-                if (data != null) {
-                    try {
-                        TypeToken<List<FamilyMatchRank>> typeToken = new TypeToken<List<FamilyMatchRank>>() {
-                        };
-                        rankList = new Gson().fromJson(data, typeToken.getType());
-                        // 返回客户端数据
-                        rankArr = new JsonArray();
-                        for (FamilyMatchRank fmRank : rankList) {
-                            JsonObject rankJson = fmRank.toJsonObject(platform);
-                            rankArr.add(rankJson);
-                        }
-                    } catch (Exception e) {
-                        rankList = null;
+            String data = MatchSource.getFamilyMatchPlay(String.valueOf(v_period), String.valueOf(v_play));
+            if (data != null) {
+                try {
+                    TypeToken<List<FamilyMatchRank>> typeToken = new TypeToken<List<FamilyMatchRank>>(){};
+                    rankList = new Gson().fromJson(data, typeToken.getType());
+                    // 返回客户端数据
+                    rankArr = new JsonArray();
+                    for (FamilyMatchRank fmRank : rankList) {
+                        JsonObject rankJson = fmRank.toJsonObject(platform);
+                        rankArr.add(rankJson);
                     }
+                } catch (Exception e) {
+                    rankList = null;
                 }
             }
+            // 获取家族比赛时间统计
+            Map<String, String> statsMap = MatchSource.getFamilyMatchStats(String.valueOf(v_period), String.valueOf(v_play));
+            if (statsMap != null) {
+                if (statsMap.get("updateTime") != null) {
+                    result.addProperty("updateTime", Long.parseLong(statsMap.get("updateTime")));
+                } else {
+                    result.addProperty("updateTime", System.currentTimeMillis());
+                }
+                if (statsMap.get("endTime") != null) {
+                    result.addProperty("endTime", Long.parseLong(statsMap.get("endTime")));
+                } else {
+                    result.addProperty("endTime", v_endTime.getTime());
+                }
+            }
+		}
+		if (periodType == -1 && recentFamilyMatch != null) {
+			// 上期
+            Integer v_last_period = recentFamilyMatch.getLastPeriod();
+            // 上期数据8小时更新一次 redis中读取缓存
+            List<FamilyMatchRank> rankList = null;
+            String data = MatchSource.getFamilyMatchActorCache(String.valueOf(v_last_period));
+            if (data != null) {
+                try {
+                    TypeToken<List<FamilyMatchRank>> typeToken = new TypeToken<List<FamilyMatchRank>>() {
+                    };
+                    rankList = new Gson().fromJson(data, typeToken.getType());
+                    // 返回客户端数据
+                    rankArr = new JsonArray();
+                    for (FamilyMatchRank fmRank : rankList) {
+                        JsonObject rankJson = fmRank.toJsonObject(platform);
+                        rankArr.add(rankJson);
+                    }
+                } catch (Exception e) {
+                    rankList = null;
+                }
+            }
+
 		}
 		// 返回结果
 		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
@@ -1620,7 +1618,7 @@ public class FamilyAction {
 						rankArr.add(rankJson);
 					}
 				} catch (Exception e) {
-
+                    result.addProperty("TagCode", "08180002");
 				}
 			}
 		}
