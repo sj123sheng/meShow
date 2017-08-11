@@ -1,26 +1,5 @@
 package com.melot.kktv.action;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
-import java.util.regex.Pattern;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.util.EntityUtils;
-import org.apache.log4j.Logger;
-
-import redis.clients.jedis.Tuple;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -37,23 +16,24 @@ import com.melot.kktv.redis.NewsSource;
 import com.melot.kktv.redis.NewsV2Source;
 import com.melot.kktv.service.NewsService;
 import com.melot.kktv.service.ResourceService;
-import com.melot.kktv.util.AppIdEnum;
-import com.melot.kktv.util.CollectionEnum;
-import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.*;
 import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.Constant;
-import com.melot.kktv.util.NewsMediaTypeEnum;
-import com.melot.kktv.util.PlatformEnum;
-import com.melot.kktv.util.StringUtil;
-import com.melot.kktv.util.TagCodeEnum;
-import com.melot.kktv.util.mongodb.CommonDB;
 import com.melot.news.domain.NewsCommentHist;
 import com.melot.news.model.NewsInfo;
 import com.melot.resource.domain.Resource;
-import com.melot.sdk.core.util.MelotBeanFactory;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.apache.log4j.Logger;
+import redis.clients.jedis.Tuple;
+
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.util.*;
+import java.util.regex.Pattern;
 
 public class NewsV2Functions {
 
@@ -264,7 +244,7 @@ public class NewsV2Functions {
             // NewsV2Source.delHot(newsId);
             ResourceService.delResource(newsInfo);
             // 查询该动态是否为mongo中最新动态
-            DBObject newsDBObj = (DBObject) CommonDB.getInstance(CommonDB.CACHEDB).getCollection(CollectionEnum.USERLATESTNEWS).findOne(new BasicDBObject("userId", userId));
+            /*DBObject newsDBObj = (DBObject) CommonDB.getInstance(CommonDB.CACHEDB).getCollection(CollectionEnum.USERLATESTNEWS).findOne(new BasicDBObject("userId", userId));
             int lastNewsId = 0;
             if (newsDBObj != null && newsDBObj.containsField("latestNews") && newsDBObj.get("latestNews") != null) {
                 String str = (String) newsDBObj.get("latestNews");
@@ -322,7 +302,7 @@ public class NewsV2Functions {
                     }
                 }
 
-            }
+            }*/
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
         } else {

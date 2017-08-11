@@ -1,23 +1,8 @@
 package com.melot.kkcx.functions;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.log4j.Logger;
-
 import com.dianping.cat.Cat;
 import com.dianping.cat.message.Transaction;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.content.config.apply.service.ApplyActorService;
 import com.melot.content.config.domain.ApplyActor;
@@ -28,49 +13,20 @@ import com.melot.kkcore.user.api.UserInfoDetail;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.api.UserRegistry;
 import com.melot.kkcore.user.service.KkUserService;
-import com.melot.kkcx.model.ActorLevel;
-import com.melot.kkcx.model.CommonDevice;
-import com.melot.kkcx.model.LotteryPrize;
-import com.melot.kkcx.model.LotteryPrizeList;
-import com.melot.kkcx.model.RichLevel;
-import com.melot.kkcx.model.StarInfo;
-import com.melot.kkcx.service.FamilyService;
-import com.melot.kkcx.service.GeneralService;
-import com.melot.kkcx.service.MessageBoxServices;
-import com.melot.kkcx.service.ProfileServices;
-import com.melot.kkcx.service.UserAssetServices;
-import com.melot.kkcx.service.UserService;
+import com.melot.kkcx.model.*;
+import com.melot.kkcx.service.*;
 import com.melot.kkgame.domain.GameUserInfo;
 import com.melot.kkgame.redis.LiveTypeSource;
 import com.melot.kktv.domain.mongo.MongoRoom;
 import com.melot.kktv.lottery.arithmetic.LotteryArithmetic;
 import com.melot.kktv.lottery.arithmetic.LotteryArithmeticCache;
-import com.melot.kktv.model.BuyProperties;
-import com.melot.kktv.model.ConsumerRecord;
-import com.melot.kktv.model.Family;
-import com.melot.kktv.model.GiftRecord;
-import com.melot.kktv.model.Honor;
-import com.melot.kktv.model.LiveRecord;
-import com.melot.kktv.model.MedalInfo;
-import com.melot.kktv.model.Task;
-import com.melot.kktv.model.WinLotteryRecord;
+import com.melot.kktv.model.*;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.MedalSource;
 import com.melot.kktv.redis.QQVipSource;
 import com.melot.kktv.service.LiveVideoService;
-import com.melot.kktv.service.NewsService;
 import com.melot.kktv.service.UserRelationService;
-import com.melot.kktv.util.AppChannelEnum;
-import com.melot.kktv.util.AppIdEnum;
-import com.melot.kktv.util.CityUtil;
-import com.melot.kktv.util.CollectionEnum;
-import com.melot.kktv.util.CommonUtil;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.DateUtil;
-import com.melot.kktv.util.PlatformEnum;
-import com.melot.kktv.util.StringUtil;
-import com.melot.kktv.util.TagCodeEnum;
-import com.melot.kktv.util.TextFilter;
+import com.melot.kktv.util.*;
 import com.melot.kktv.util.confdynamic.MedalConfig;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
@@ -95,6 +51,11 @@ import com.melot.showmoney.driver.domain.ShowMoneyHistory;
 import com.melot.showmoney.driver.service.ShowMoneyService;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import org.apache.log4j.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+import java.sql.SQLException;
+import java.util.*;
 
 public class ProfileFunctions {
 	
@@ -421,7 +382,10 @@ public class ProfileFunctions {
 			
 			// web端不返回 
 			if (platform != PlatformEnum.WEB) {
-			    try {
+                result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+                result.addProperty("mediaPathPrefix", ConfigHelper.getMediahttpdir()); // 多媒体前缀
+                result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());//七牛前缀
+			    /*try {
 			        JsonObject latestNews = null;
 		        	t = Cat.getProducer().newTransaction("MCall", "NewsService.getUserLatestNews");
 					try {
@@ -441,7 +405,7 @@ public class ProfileFunctions {
 			        }
                 } catch (Exception e) {
                     logger.error("NewsService.getUserLatestNews(" + userId + ") execute exception.", e);
-                }
+                }*/
 			}
 			
             // 获取用户会员信息
