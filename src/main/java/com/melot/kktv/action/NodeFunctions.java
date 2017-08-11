@@ -330,9 +330,7 @@ public class NodeFunctions {
 		    result.addProperty("gender", userInfoDetail.getProfile().getGender());
 		    result.addProperty("actorTag", userInfoDetail.getProfile().getIsActor());
 		    result.addProperty("fansCount", UserRelationService.getFansCount(userId));
-		    if (checkTag || channel == 70542 || channel == 559) {
-		        result.addProperty("followCount", UserRelationService.getFollowsCount(userId));
-		    }
+		    result.addProperty("followCount", UserRelationService.getFollowsCount(userId));
 		    result.addProperty("openPlatform", userInfoDetail.getRegisterInfo().getOpenPlatform());
 		    result.addProperty("registerTime", userInfoDetail.getRegisterInfo().getRegisterTime());
 			if (userInfoDetail.getProfile().getPhoneNum() != null) {
@@ -1038,7 +1036,7 @@ public class NodeFunctions {
 	        RoomInfo roomInfo = null;
         	t = Cat.getProducer().newTransaction("MCall", "RoomService.getRoomInfo");
 			try {
-				roomInfo = RoomService.getRoomInfoByIdInDbFromNode(userId);
+				roomInfo = RoomService.getRoomInfoByIdInDb(userId);
 				t.setStatus(Transaction.SUCCESS);
 			} catch (Exception e) {
 				Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
