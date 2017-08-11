@@ -22,8 +22,9 @@ import com.melot.kkcx.model.MsgBody;
 import com.melot.kkcx.model.TimContent;
 import com.melot.kkcx.service.TimService;
 import com.melot.kkcx.util.Constant;
-import com.melot.kktv.redis.PrivateLetterSource;
 import com.melot.kktv.util.CollectionUtils;
+import com.melot.letter.driver.service.PrivateLetterService;
+import com.melot.sdk.core.util.MelotBeanFactory;
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionSupport;
 
@@ -167,8 +168,13 @@ public class TimMsgAction extends ActionSupport {
 					// 刷新私信列表
                     if (!isCheck) {
                         TimService.pushMsg(10, fromUserId, toUserId, type, time, item.getMsgContent().getText());
-                        
-                        PrivateLetterSource.refreshSession(String.valueOf(toUserId),String.valueOf(fromUserId));
+                        try {
+                            // 调用模块接口
+                            PrivateLetterService privateLetterService = (PrivateLetterService)MelotBeanFactory.getBean("privateLetterService");
+                            privateLetterService.refreshPrivateSession(toUserId, fromUserId);
+                        } catch (Exception e) {
+                            logger.error("timMsgCallback execute refreshPrivateSession catched exception", e);
+                        }                        
                     }
 				}
 			}

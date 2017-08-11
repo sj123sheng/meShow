@@ -58,7 +58,6 @@ public class TimService {
             String isTimRegister = HotDataSource.getHotFieldValue(userId, "isTimRegister");
             if (StringUtils.isEmpty(isTimRegister)) {
                 String identifier = TIM_IDENTIFIER_PREFIX + userId;
-//                TimSystemService timService = MelotBeanFactory.getBean("timSystemService", TimSystemService.class);
                 TimSystemService timService = (TimSystemService) ModuleService.getService("TimSystemService");
                 String ret = timService.accountImport(identifier, nickname, "");
                 if (ret.equalsIgnoreCase("ok")) {
@@ -89,7 +88,10 @@ public class TimService {
         String sig = null;
         try {
             String identifier = TIM_IDENTIFIER_PREFIX + userId;
+<<<<<<< HEAD
 //            TimSystemService timService = MelotBeanFactory.getBean("timSystemService", TimSystemService.class);
+=======
+>>>>>>> origin/master
             TimSystemService timService = (TimSystemService) ModuleService.getService("TimSystemService");
             sig = timService.getUserSig(identifier);
         } catch (Exception e) {

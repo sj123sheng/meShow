@@ -12,7 +12,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.melot.kktv.redis.PrivateLetterSource;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
@@ -192,17 +191,10 @@ public class PrivateLetterFunctions {
 			return result;
 		}
 		
-		PrivateLetterSource.setTopSession(String.valueOf(userId), String.valueOf(topUserId));
-		
-		Map<String,JsonArray> mapSession = getPrivateSession(userId);
-		// 置顶会话列表
-		if (mapSession.containsKey(TOP_SESSION_KEY)) {
-			result.add("sessionList",mapSession.get(TOP_SESSION_KEY));
-		}
-		// 普通会话列表
-		if (mapSession.containsKey(GENERAL_SESSION_KEY)) {
-			result.add("generalSessionList",mapSession.get(GENERAL_SESSION_KEY));
-		}
+		// 调用模块接口
+        PrivateLetterService privateLetterService = (PrivateLetterService)MelotBeanFactory.getBean("privateLetterService");
+        privateLetterService.setTopPrivateSession(userId, topUserId);
+        
 		result.addProperty("TagCode",TagCodeEnum.SUCCESS);
 		return result;
 		
@@ -216,11 +208,15 @@ public class PrivateLetterFunctions {
 	private Map<String,JsonArray> getPrivateSession(Integer userId){
 		Map<String, JsonArray> map = new HashMap<String, JsonArray>();
 		try {
-			LinkedList<Integer> toplist  = PrivateLetterSource.getTopSession(String.valueOf(userId),100);
+		    
+		 // 调用模块接口
+	        PrivateLetterService privateLetterService = (PrivateLetterService)MelotBeanFactory.getBean("privateLetterService");
+		    
+			LinkedList<Integer> toplist  = privateLetterService.getTopSession(userId,100);
 			if (toplist != null && toplist.size() > 0) {
 				map.put(TOP_SESSION_KEY, new Gson().toJsonTree(toplist).getAsJsonArray());
 			}
-			LinkedList<Integer> generalList  = PrivateLetterSource.getGeneralSession(String.valueOf(userId), 500);
+			LinkedList<Integer> generalList  = privateLetterService.getGeneralSession(userId, 500);
 			if (generalList != null && generalList.size() > 0) {
 				map.put(GENERAL_SESSION_KEY, new Gson().toJsonTree(generalList).getAsJsonArray());
 			}
@@ -257,18 +253,11 @@ public class PrivateLetterFunctions {
 			result.addProperty("TagCode", e.getErrCode());
 			return result;
 		}
+		 // 调用模块接口
+        PrivateLetterService privateLetterService = (PrivateLetterService)MelotBeanFactory.getBean("privateLetterService");
 		
-		PrivateLetterSource.removeTopSession(String.valueOf(userId), String.valueOf(topUserId));
+        privateLetterService.removeTopPrivateSession(userId, topUserId);
 		
-		Map<String,JsonArray> mapSession = getPrivateSession(userId);
-		// 置顶会话列表
-		if (mapSession.containsKey(TOP_SESSION_KEY)) {
-			result.add("sessionList",mapSession.get(TOP_SESSION_KEY));
-		}
-		// 普通会话列表
-		if (mapSession.containsKey(GENERAL_SESSION_KEY)) {
-			result.add("generalSessionList",mapSession.get(GENERAL_SESSION_KEY));
-		}
 		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 		return result;
 		
@@ -302,17 +291,11 @@ public class PrivateLetterFunctions {
 			return result;
 		}
 		
-		PrivateLetterSource.refreshSession(String.valueOf(userId), String.valueOf(toUserId));
+		   // 调用模块接口
+        PrivateLetterService privateLetterService = (PrivateLetterService)MelotBeanFactory.getBean("privateLetterService");
+        
+        privateLetterService.refreshPrivateSession(userId, toUserId);
 		
-		Map<String,JsonArray> mapSession = getPrivateSession(userId);
-		// 置顶会话列表
-		if (mapSession.containsKey(TOP_SESSION_KEY)) {
-			result.add("sessionList",mapSession.get(TOP_SESSION_KEY));
-		}
-		// 普通会话列表
-		if (mapSession.containsKey(GENERAL_SESSION_KEY)) {
-			result.add("generalSessionList",mapSession.get(GENERAL_SESSION_KEY));
-		}
 		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 		return result;
 		
@@ -346,17 +329,11 @@ public class PrivateLetterFunctions {
 			return result;
 		}
 		
-		PrivateLetterSource.removeSession(String.valueOf(userId), String.valueOf(toUserId));
+		// 调用模块接口
+        PrivateLetterService privateLetterService = (PrivateLetterService)MelotBeanFactory.getBean("privateLetterService");
+        
+        privateLetterService.removePrivateSession(userId, toUserId);
 		
-		Map<String,JsonArray> mapSession = getPrivateSession(userId);
-		// 置顶会话列表
-		if (mapSession.containsKey(TOP_SESSION_KEY)) {
-			result.add("sessionList",mapSession.get(TOP_SESSION_KEY));
-		}
-		// 普通会话列表
-		if (mapSession.containsKey(GENERAL_SESSION_KEY)) {
-			result.add("generalSessionList",mapSession.get(GENERAL_SESSION_KEY));
-		}
 		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 		return result;
 		

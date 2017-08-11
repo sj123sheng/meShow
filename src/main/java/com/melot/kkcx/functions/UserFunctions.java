@@ -70,6 +70,7 @@ import com.melot.module.iprepository.driver.service.IpRepositoryService;
 import com.melot.module.packagegift.driver.service.VipService;
 import com.melot.module.task.driver.service.TaskInterfaceService;
 import com.melot.sdk.core.util.MelotBeanFactory;
+import com.melot.sms.api.service.SmsService;
 
 public class UserFunctions {
 	
@@ -383,7 +384,10 @@ public class UserFunctions {
                                 String dateString = DateUtil.formatDateTime(new Date(), null);
                                 String format = smsConfig.getMessage();
                                 String message = String.format(format, nickName, userId, dateString);
-                                SmsSource.sendSms(phoneNum, String.valueOf(17), message, 1);
+//                                SmsSource.sendSms(phoneNum, String.valueOf(17), message, 1);
+                                
+                                SmsService smsService = MelotBeanFactory.getBean("smsService", SmsService.class);
+                                smsService.sendSms(1,17,phoneNum,message,userId,platform,100);
                             }
 						} else {
 							logger.error("Mongodb中未找到短信配置信息! smsType:" + 17 + ", userId:" + userId + ", phoneNum:" + phoneNum);
@@ -1241,7 +1245,11 @@ public class UserFunctions {
                                         String dateString = DateUtil.formatDateTime(new Date(), null);
                                         String format = smsConfig.getMessage();
                                         String message = String.format(format, nickName, userId, dateString, CityUtil.getCityName(cityMap.get("city")));
-                                        SmsSource.sendSms(phone, String.valueOf(16), message, 1);
+//                                        SmsSource.sendSms(phone, String.valueOf(16), message, 1);
+                                        
+                                        SmsService smsService = MelotBeanFactory.getBean("smsService", SmsService.class);
+                                        smsService.sendSms(1,16,phone,message,userId,platform,100);
+                                        
                                     }
                                 } else {
                                     logger.error("Mongodb中未找到短信配置信息! smsType:" + 16 + ", userId:" + userId + ", phoneNum:" + phone);
@@ -1515,7 +1523,7 @@ public class UserFunctions {
         } catch (Exception e) {
             logger.error("fail to BlacklistService, phone: " + phoneNum, e);
         }		
-		
+        
 		// 校验验证码
 		String data = SmsSource.getPhoneSmsData(phoneNum, String.valueOf(SmsTypEnum.APPLY_RETRIEVE_PASSWORD));
 		if (data != null && data.equals(verifyCode)) {

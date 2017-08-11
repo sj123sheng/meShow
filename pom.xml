@@ -176,9 +176,9 @@
 			<artifactId>melot-util</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.melot</groupId>
-			<artifactId>melot-api-common</artifactId>
-			<version>0.0.34</version><!--$NO-MVN-MAN-VER$-->
+		  	<groupId>com.melot</groupId>
+		  	<artifactId>melot-api-common</artifactId>
+		  	<version>0.0.36</version>
 		</dependency>
 		<dependency>
 			<groupId>com.melot.module.api</groupId>
@@ -212,7 +212,11 @@
 		<dependency>
 			<groupId>com.melot</groupId>
 		  	<artifactId>api-menu-sdk</artifactId>
+<<<<<<< HEAD
 		  	<version>1.1.44</version><!--$NO-MVN-MAN-VER$-->
+=======
+		  	<version>1.1.43</version><!--$NO-MVN-MAN-VER$-->
+>>>>>>> origin/master
 		</dependency>
 		<dependency>
 			<groupId>com.melot</groupId>
@@ -467,9 +471,9 @@
 			<version>1.0.0</version>
 		</dependency>
 		<dependency>
-			<groupId>com.melot.module.driver.msgbuilder</groupId>
-			<artifactId>private-letter-msgbuilder</artifactId>
-			<version>1.0.0</version>
+		  	<groupId>com.melot.module.driver.msgbuilder</groupId>
+		  	<artifactId>private-letter-msgbuilder</artifactId>
+		  	<version>1.0.3-SNAPSHOT</version>
 		</dependency>
 		<dependency>
   			<groupId>com.melot.module.driver.msgbuilder</groupId>
