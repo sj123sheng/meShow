@@ -83,11 +83,13 @@ public class FamilyAction {
 		if (recentFamilyMatch != null) {
 			Integer period = recentFamilyMatch.getLastPeriod();
 			FamilyMatchRank familyMatchRank = FamilyMatchService.getFamilyMatchChampion(period);
-			Family lastChampionFamily = FamilyService.getFamilyInfo(familyMatchRank.getFamilyId().intValue(), platform);
-			// 获取上期冠军家族当前消费榜排名
-			if (lastChampionFamily != null && lastChampionFamily.getFamilyId() != null) {
-				lastChampionFamilyId = lastChampionFamily.getFamilyId();
-			}
+			if(familyMatchRank != null) {
+                Family lastChampionFamily = FamilyService.getFamilyInfo(familyMatchRank.getFamilyId().intValue(), platform);
+                // 获取上期冠军家族当前消费榜排名
+                if (lastChampionFamily != null && lastChampionFamily.getFamilyId() != null) {
+                    lastChampionFamilyId = lastChampionFamily.getFamilyId();
+                }
+            }
 		}
 		
 		// 判断家族列表缓存是否失效或是否未缓存
