@@ -290,8 +290,9 @@ public class SingleChatFunction {
                 return result;
             }
             if (ResultCode.ERROR_USER_NO_MOBILE.equals(checkUserResult.getCode())) {
-                // 安卓版本在101以下的，提醒用户更新手机版本
-                if (PlatformEnum.ANDROID == platform && v <= 101) {
+                // 安卓版本在101以下的，IOS的133，提醒用户更新手机版本
+                if ((PlatformEnum.ANDROID == platform && v <= 101)
+                        ||(PlatformEnum.IPHONE == platform && v < 133)) {
                     result.addProperty("TagCode", "20001006");
                     return result;
                 }else {
