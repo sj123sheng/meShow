@@ -51,15 +51,15 @@ public class RoomService {
     	
     	List<FansRankingItem> fansList = null;
     	
-    	String data = MatchSource.getRoomFansRankCache(String.valueOf(slotType), String.valueOf(roomId));
+    	//交友房需统计送礼给用户
+        int roomSource = 0;
+        RoomInfo roomInfo = com.melot.kktv.service.RoomService.getRoomInfo(roomId);
+        if (roomInfo != null) {
+            roomSource = roomInfo.getRoomSource();
+        }
+    	String data = MatchSource.getRoomFansRankCache(String.valueOf(slotType), String.valueOf(roomId), String.valueOf(roomSource));
     	if (data == null) {
     		try {
-    		    //交友房需统计送礼给用户
-    		    int roomSource = 0;
-    		    RoomInfo roomInfo = com.melot.kktv.service.RoomService.getRoomInfo(roomId);
-    		    if (roomInfo != null) {
-    		        roomSource = roomInfo.getRoomSource();
-    		    }
     		    Map<String, Object> map = new HashMap<>();
     		    map.put("roomId", roomId);
     		    map.put("roomSource", roomSource);
@@ -93,7 +93,7 @@ public class RoomService {
 				if (diffSeconds < seconds) {
 					seconds = diffSeconds;
 				}
-				MatchSource.setRoomFansRankCache(String.valueOf(slotType), String.valueOf(roomId),
+				MatchSource.setRoomFansRankCache(String.valueOf(slotType), String.valueOf(roomId), String.valueOf(roomSource),
 						new Gson().toJson(fansList), seconds);
 			}
     	} else {
