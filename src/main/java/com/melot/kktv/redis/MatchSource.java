@@ -1,19 +1,20 @@
 package com.melot.kktv.redis;
 
+import com.google.gson.JsonObject;
+import com.melot.kktv.util.redis.RedisConfigHelper;
+import redis.clients.jedis.Jedis;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.gson.JsonObject;
-import com.melot.kktv.util.redis.RedisConfigHelper;
-
-import redis.clients.jedis.Jedis;
-
 public class MatchSource {
 	
 	private static final String SOURCE_NAME = "Match";
-	
+
+    // 最近2场家族擂台赛信息
+    private static final String RECENTFAMILYMATCHCACHE_KEY = "recentFamilyMatch";
 	// 家族擂台赛本期本场比赛结果	(familyMatchPlay_period_play)
 	private static final String FAMILYMATCHPLAYCACHE_KEY = "familyMatchPlay_%s_%s";
 	// 家族擂台赛每期的用户结果缓存数据 familyMatchUserCache_period
@@ -50,7 +51,7 @@ public class MatchSource {
 	/**
 	 * 房间粉丝榜单缓存数据 roomFansRank_slotType_roomId
 	 */
-	private static final String ROOMFANSRANK_KEY = "roomFansRank_%s_%s";
+	private static final String ROOMFANSRANK_KEY = "roomFansRank_%s_%s_%s";
 	
 	private static Jedis getInstance() {
 		return RedisConfigHelper.getJedis(SOURCE_NAME);
@@ -717,13 +718,14 @@ public class MatchSource {
 	 * 保存房间粉丝榜单缓存数据
 	 * @param roomId 房间编号
 	 * @param slotType 榜单类型 1:周榜 2:月榜 3:总榜
+	 * @param roomSource 房间来源
 	 * @param seconds 过期时间
 	 */
-	public static void setRoomFansRankCache(String slotType, String roomId, String data, int seconds) {
+	public static void setRoomFansRankCache(String slotType, String roomId, String roomSource, String data, int seconds) {
 		Jedis jedis = null;
 		try {
 			jedis = getInstance();
-			String pattern = String.format(ROOMFANSRANK_KEY, slotType, roomId);
+			String pattern = String.format(ROOMFANSRANK_KEY, slotType, roomId, roomSource);
 			jedis.set(pattern, data);
 			jedis.expire(pattern, seconds);
 		} catch (Exception e) {
@@ -739,14 +741,15 @@ public class MatchSource {
 	 * 获取房间粉丝榜单缓存数据
 	 * @param slotType 榜单类型 1:周榜 2:月榜 3:总榜
 	 * @param roomId 房间编号
+	 * @param roomSource 房间来源
 	 * @return
 	 */
-	public static String getRoomFansRankCache(String slotType, String roomId) {
+	public static String getRoomFansRankCache(String slotType, String roomId, String roomSource) {
 		Jedis jedis = null;
 		String data = null;
 		try {
 			jedis = getInstance();
-			String pattern = String.format(ROOMFANSRANK_KEY, slotType, roomId);
+			String pattern = String.format(ROOMFANSRANK_KEY, slotType, roomId, roomSource);
 			data = jedis.get(pattern);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -801,5 +804,27 @@ public class MatchSource {
 		}
 		return null;
 	}
+
+    /**
+     * 获取最近2场家族擂台赛信息
+     * @param period
+     * @param play
+     */
+    public static String getRecentFamilyMatch() {
+        Jedis jedis = null;
+        String data = null;
+        try {
+            jedis = getInstance();
+            String pattern = String.format(RECENTFAMILYMATCHCACHE_KEY);
+            data = jedis.get(pattern);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if(jedis!=null) {
+                freeInstance(jedis);
+            }
+        }
+        return data;
+    }
 	
 }

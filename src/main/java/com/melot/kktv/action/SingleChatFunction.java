@@ -239,6 +239,11 @@ public class SingleChatFunction {
                 }
             }
             
+            if (ResultCode.ERROR_FORBIDEN_BY_INSPECTION.equals(isActorResult.getCode())) {
+                result.addProperty("TagCode", "05110806");
+                return result;
+            }
+            
             result.addProperty("TagCode", TagCodeEnum.SINGLE_CHAT_NOT_ACTOR);
             return result;
         } catch (Exception e) {
@@ -260,10 +265,14 @@ public class SingleChatFunction {
         
         int userId;
         int actorId;
+        int v;
+        int platform;
         
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, Integer.MIN_VALUE, Integer.MAX_VALUE);
             actorId = CommonUtil.getJsonParamInt(jsonObject, "actorId", 0, TagCodeEnum.ACTOR_ID_MISSING, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            v = CommonUtil.getJsonParamInt(jsonObject, "v", 0, null, 1, Integer.MAX_VALUE);
+            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -278,6 +287,21 @@ public class SingleChatFunction {
             Result<Boolean> checkUserResult = singleChatService.checkUser(userId);
             if (checkUserResult == null || checkUserResult.getCode() == null) {
                 result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            if (ResultCode.ERROR_USER_NO_MOBILE.equals(checkUserResult.getCode())) {
+                // 安卓版本在101以下的，IOS的133，提醒用户更新手机版本
+                if ((PlatformEnum.ANDROID == platform && v <= 101)
+                        ||(PlatformEnum.IPHONE == platform && v < 133)) {
+                    result.addProperty("TagCode", "20001006");
+                    return result;
+                }else {
+                    result.addProperty("TagCode", "05110807");
+                    return result;
+                }
+            }
+            if (ResultCode.ERROR_FORBIDEN_BY_INSPECTION.equals(checkUserResult.getCode())) {
+                result.addProperty("TagCode", "05110806");
                 return result;
             }
             if (ResultCode.SUCCESS.equals(checkUserResult.getCode())) {

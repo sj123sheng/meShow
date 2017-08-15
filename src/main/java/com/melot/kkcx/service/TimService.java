@@ -1,13 +1,5 @@
 package com.melot.kkcx.service;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-import java.util.Map.Entry;
-
-import org.apache.log4j.Logger;
-
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -26,6 +18,13 @@ import com.melot.kktv.util.HttpClient;
 import com.melot.letter.driver.service.PrivateLetterService;
 import com.melot.module.ModuleService;
 import com.melot.sdk.core.util.MelotBeanFactory;
+import org.apache.log4j.Logger;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Random;
 
 /**
  * Title: TimService

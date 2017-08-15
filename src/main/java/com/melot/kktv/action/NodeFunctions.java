@@ -330,9 +330,7 @@ public class NodeFunctions {
 		    result.addProperty("gender", userInfoDetail.getProfile().getGender());
 		    result.addProperty("actorTag", userInfoDetail.getProfile().getIsActor());
 		    result.addProperty("fansCount", UserRelationService.getFansCount(userId));
-		    if (checkTag || channel == 70542 || channel == 559) {
-		        result.addProperty("followCount", UserRelationService.getFollowsCount(userId));
-		    }
+		    result.addProperty("followCount", UserRelationService.getFollowsCount(userId));
 		    result.addProperty("openPlatform", userInfoDetail.getRegisterInfo().getOpenPlatform());
 		    result.addProperty("registerTime", userInfoDetail.getRegisterInfo().getRegisterTime());
 			if (userInfoDetail.getProfile().getPhoneNum() != null) {

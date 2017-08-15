@@ -1,20 +1,6 @@
 package com.melot.kktv.service;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Pattern;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.ibatis.sqlmap.client.SqlMapSession;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
@@ -26,29 +12,25 @@ import com.melot.kktv.model.News;
 import com.melot.kktv.model.NewsTagConf;
 import com.melot.kktv.model.NewsTagRes;
 import com.melot.kktv.redis.NewsSource;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.Constant;
-import com.melot.kktv.util.DateUtil;
-import com.melot.kktv.util.NewsMediaTypeEnum;
-import com.melot.kktv.util.PlatformEnum;
-import com.melot.kktv.util.StringUtil;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
+import com.melot.kktv.util.*;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.kktv.util.mongodb.CommonDB;
-import com.melot.kktv.util.CollectionEnum;
 import com.melot.news.domain.NewsCommentHist;
 import com.melot.news.model.NewsInfo;
 import com.melot.news.model.WhiteUser;
 import com.melot.qiniu.common.QiniuService;
 import com.melot.resource.domain.Resource;
 import com.melot.sdk.core.util.MelotBeanFactory;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import com.upyun.api.UpYun;
-
 import org.apache.log4j.Logger;
-
 import redis.clients.jedis.Tuple;
+
+import java.sql.SQLException;
+import java.util.*;
+import java.util.regex.Pattern;
 
 public class NewsService {
 	
@@ -958,45 +940,6 @@ public class NewsService {
 				logger.error("NewsService.delNewsOnThirdPart exception, newsId : " + news.getNewsId(), e);
 			}
 		}
-	}
-	
-	/**
-	 * 获取用户最新动态
-	 * @param userId
-	 * @return
-	 */
-	public static JsonObject getUserLatestNews(int userId) {
-		// 从mongodb中获取最新动态
-		DBObject newsDBObj = (DBObject) CommonDB.getInstance(CommonDB.CACHEDB).getCollection(CollectionEnum.USERLATESTNEWS)
-				.findOne(new BasicDBObject("userId", userId));
-		if (newsDBObj != null) {
-			if(newsDBObj.containsField("latestNews") && newsDBObj.get("latestNews")!=null ) {
-				JsonObject latestNews = null;
-				try {
-					String latestNewsStr = (String) newsDBObj.get("latestNews");
-					latestNews = new JsonParser().parse(latestNewsStr).getAsJsonObject();
-				} catch (Exception e) {
-//					logger.error("Parse Json String error, userId:" + userId);
-				}
-				if (latestNews != null) {
-					if (latestNews.has("mediaSource") && latestNews.get("mediaSource") != null) {
-						JsonObject mediaSource = null;
-						try {
-							String mediaSourceStr = latestNews.get("mediaSource").getAsString();
-							mediaSource = new JsonParser().parse(mediaSourceStr).getAsJsonObject();
-						} catch (Exception e) {
-//							logger.error("Parse Json String error, userId:" + userId);
-						}
-						if (mediaSource != null) {
-							latestNews.add("mediaSource", mediaSource);
-						}
-					}
-					return latestNews;
-				}
-			}
-		}
-		
-		return null;
 	}
 	
 	public static int addNews(NewsInfo newsInfo, String topic) {

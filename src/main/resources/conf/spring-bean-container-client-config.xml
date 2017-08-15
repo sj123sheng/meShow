@@ -96,7 +96,12 @@
 	<kkrpc:reference id="resourceCenter" interface="com.melot.resource.service.ResourceService" version="1.0.0"/>
 	<!-- 1v1视频聊天服务 -->
 	<kkrpc:reference id="singleChatService" interface="com.melot.singlechat.driver.service.SingleChatService" version="1.0.0"/>
-	
+ 
+    <!-- 主播模块 -->
+    <kkrpc:reference id="areaNewActorsService" interface="com.melot.common.driver.service.AreaNewActorsService" version="1.0.0" ></kkrpc:reference>
+
+    <kkrpc:reference id="reportFlowService" interface="com.melot.kk.module.report.service.ReportFlowService" version="1.0.0" />
+
 	<!-- 短信服务 -->
 	<kkrpc:reference id="smsService" interface="com.melot.sms.api.service.SmsService" version="1.0.1"/>
 

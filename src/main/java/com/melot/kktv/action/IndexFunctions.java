@@ -1,35 +1,14 @@
 package com.melot.kktv.action;
 
-import java.sql.SQLException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Random;
-import java.util.Set;
-import java.util.regex.Pattern;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.log4j.Logger;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.melot.api.menu.sdk.dao.domain.HomePage;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.api.menu.sdk.dao.domain.SysMenu;
 import com.melot.api.menu.sdk.handler.FirstPageHandler;
 import com.melot.api.menu.sdk.redis.KKHallSource;
 import com.melot.api.menu.sdk.service.RoomInfoService;
+import com.melot.common.driver.domain.AreaNewActors;
+import com.melot.common.driver.service.AreaNewActorsService;
 import com.melot.content.config.domain.LiveAlbum;
 import com.melot.content.config.domain.LiveVideo;
 import com.melot.content.config.live.service.LiveAlbumService;
@@ -47,36 +26,12 @@ import com.melot.kkcx.service.UserService;
 import com.melot.kkcx.transform.LiveShowTF;
 import com.melot.kkcx.transform.NewsRewardRankTF;
 import com.melot.kkcx.transform.RoomTF;
-import com.melot.kktv.model.Activity;
-import com.melot.kktv.model.Catalog;
-import com.melot.kktv.model.HotActivity;
-import com.melot.kktv.model.NewsRewardRank;
-import com.melot.kktv.model.Notice;
-import com.melot.kktv.model.PreviewAct;
-import com.melot.kktv.model.RankUser;
-import com.melot.kktv.model.Room;
-import com.melot.kktv.model.WeekStarGift;
-import com.melot.kktv.redis.GiftRecordSource;
-import com.melot.kktv.redis.HotDataSource;
-import com.melot.kktv.redis.NewsSource;
-import com.melot.kktv.redis.SearchWordsSource;
-import com.melot.kktv.redis.WeekGiftSource;
+import com.melot.kktv.model.*;
+import com.melot.kktv.redis.*;
 import com.melot.kktv.service.NewsService;
 import com.melot.kktv.service.RoomService;
-import com.melot.kktv.util.AppChannelEnum;
-import com.melot.kktv.util.AppIdEnum;
-import com.melot.kktv.util.CityUtil;
-import com.melot.kktv.util.CollectionEnum;
-import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.*;
 import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.Constant;
-import com.melot.kktv.util.ConstantEnum;
-import com.melot.kktv.util.DateUtil;
-import com.melot.kktv.util.PlatformEnum;
-import com.melot.kktv.util.RankingEnum;
-import com.melot.kktv.util.StringUtil;
-import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.confdynamic.GiftInfoConfig;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
@@ -85,6 +40,14 @@ import com.melot.sdk.core.util.MelotBeanFactory;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+import org.apache.log4j.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
 /**
  * 大厅相关的接口类
@@ -101,8 +64,10 @@ public class IndexFunctions {
      * 正在直播的主播id
      */
     private static final String KK_LIVE_ACTOR_ID = "KKLiveActorId";
-	
-	/**
+
+    private static AreaNewActorsService areaNewActorsService = MelotBeanFactory.getBean("areaNewActorsService", AreaNewActorsService.class);
+
+    /**
 	 * 获取大厅目录人数
 	 * 
 	 * @param jsonObject 请求对象
@@ -1191,7 +1156,7 @@ public class IndexFunctions {
 		}
 		return result;
 	}
-
+	
 	/**
 	 * 获取房间分类信息
 	 * 台湾版本在使用
@@ -2254,28 +2219,16 @@ public class IndexFunctions {
 		}
 		
 		JsonObject result = new JsonObject();
-		
-		DBObject refObj = new BasicDBObject();
-		refObj.put("year", year);
-		refObj.put("month", month);
-		DBObject keysObj = new BasicDBObject();
-		keysObj.put("areaId", 1);
-		keysObj.put("area", 1);
-		keysObj.put("add", 1);
-		keysObj.put("total", 1);
-		DBCursor dbCur = CommonDB.getInstance(CommonDB.CACHEDB).getCollection(CollectionEnum.AREAACTORCOUNTRECORD)
-				.find(refObj, keysObj).sort(new BasicDBObject("total", -1));
+
+        List<AreaNewActors> areaNewActorsList = areaNewActorsService.getAreaNewActorsList(year,month, null);
+
 		JsonArray areaArray = new JsonArray();
-		for (DBObject dbObject : dbCur) {
-			Integer areaId = (Integer) dbObject.get("areaId"); // 地区
-			String area = (String) dbObject.get("area"); // 地区
-			Integer add = (Integer) dbObject.get("add"); // 本月新增
-			Integer total = (Integer) dbObject.get("total"); // 总计
+		for (AreaNewActors areaNewActors : areaNewActorsList) {
 			JsonObject areaObj = new JsonObject();
-			areaObj.addProperty("areaId", areaId);
-			areaObj.addProperty("area", area);
-			areaObj.addProperty("add", add);
-			areaObj.addProperty("total", total);
+			areaObj.addProperty("areaId", areaNewActors.getAreaId());
+			areaObj.addProperty("area", areaNewActors.getAreaName());
+			areaObj.addProperty("add", areaNewActors.getAddCount());
+			areaObj.addProperty("total", areaNewActors.getTotalCount());
 			areaArray.add(areaObj);
 		}
 		result.add("areaList", areaArray);

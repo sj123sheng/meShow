@@ -2,7 +2,9 @@ package com.melot.kkcx.service;
 
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -49,16 +51,25 @@ public class RoomService {
     	
     	List<FansRankingItem> fansList = null;
     	
-    	String data = MatchSource.getRoomFansRankCache(String.valueOf(slotType), String.valueOf(roomId));
+    	//交友房需统计送礼给用户
+        int roomSource = 0;
+        RoomInfo roomInfo = com.melot.kktv.service.RoomService.getRoomInfo(roomId);
+        if (roomInfo != null) {
+            roomSource = roomInfo.getRoomSource();
+        }
+    	String data = MatchSource.getRoomFansRankCache(String.valueOf(slotType), String.valueOf(roomId), String.valueOf(roomSource));
     	if (data == null) {
     		try {
+    		    Map<String, Object> map = new HashMap<>();
+    		    map.put("roomId", roomId);
+    		    map.put("roomSource", roomSource);
 				if (slotType == RankingEnum.RANKING_WEEKLY) {
 					fansList = (List<FansRankingItem>) SqlMapClientHelper.getInstance(DB.MASTER)
-							.queryForList("User.getWeeklyFansRanking", roomId);
+							.queryForList("User.getWeeklyFansRanking", map);
 				}
 				if (slotType == RankingEnum.RANKING_MONTHLY) {
 					fansList = (List<FansRankingItem>) SqlMapClientHelper.getInstance(DB.MASTER)
-							.queryForList("User.getMonthlyFansRanking", roomId);
+							.queryForList("User.getMonthlyFansRanking", map);
 				}
 			} catch (SQLException e) {
 				logger.error("未能正常调用SQL语句", e);	
@@ -82,7 +93,7 @@ public class RoomService {
 				if (diffSeconds < seconds) {
 					seconds = diffSeconds;
 				}
-				MatchSource.setRoomFansRankCache(String.valueOf(slotType), String.valueOf(roomId),
+				MatchSource.setRoomFansRankCache(String.valueOf(slotType), String.valueOf(roomId), String.valueOf(roomSource),
 						new Gson().toJson(fansList), seconds);
 			}
     	} else {
@@ -127,6 +138,24 @@ public class RoomService {
         try {
             RoomInfoService roomInfoServie = MelotBeanFactory.getBean("roomInfoService", RoomInfoService.class);
             return roomInfoServie.getRoomInfoByIdInDb(userId);
+        } catch (Exception e) {
+           logger.error("RoomService.getRoomInfo, userId : " + userId, e);
+           return null;
+        }
+    }
+    
+    /**
+     * 来自node获取用户房间信息(pg) 原始数据不替换
+     * @param userId 用户Id
+     * @return
+     */
+    public static RoomInfo getRoomInfoByIdInDbFromNode(int userId) {
+        if (userId <= 0) {
+            return null;
+        }
+        try {
+            RoomInfoService roomInfoServie = MelotBeanFactory.getBean("roomInfoService", RoomInfoService.class);
+            return roomInfoServie.getRoomInfoByActoridInDbFromNode(userId);
         } catch (Exception e) {
            logger.error("RoomService.getRoomInfo, userId : " + userId, e);
            return null;

@@ -1,25 +1,7 @@
 package com.melot.kktv.action;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.servlet.http.HttpServletRequest;
-
 import com.google.common.collect.Maps;
-import org.apache.log4j.Logger;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.content.config.domain.ApplyContractInfo;
 import com.melot.family.driver.domain.FamilyInfo;
@@ -37,27 +19,18 @@ import com.melot.kktv.model.SysMsg;
 import com.melot.kktv.redis.NewsSource;
 import com.melot.kktv.service.LiveVideoService;
 import com.melot.kktv.service.NewsService;
-import com.melot.kktv.util.AppIdEnum;
-import com.melot.kktv.util.CollectionEnum;
-import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.*;
 import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.Constant;
-import com.melot.kktv.util.NewsMediaTypeEnum;
-import com.melot.kktv.util.NewsTypeEnum;
-import com.melot.kktv.util.PlatformEnum;
-import com.melot.kktv.util.StringUtil;
-import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
-import com.melot.kktv.util.mongodb.CommonDB;
 import com.melot.news.model.NewsInfo;
 import com.melot.opus.util.OpusCostantEnum;
 import com.melot.sdk.core.util.MelotBeanFactory;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-import org.bson.BSONObject;
+import org.apache.log4j.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+import java.sql.SQLException;
+import java.util.*;
 
 /**
  * 动态的接口类
@@ -151,51 +124,9 @@ public class NewsFunctions {
 		            }
 		        }
 		    }
-			//查询该动态是否为mongo中最新动态
-			DBObject newsDBObj = (DBObject) CommonDB.getInstance(CommonDB.CACHEDB).getCollection(CollectionEnum.USERLATESTNEWS)
-					.findOne(new BasicDBObject("userId", userId));
-			int lastNewsId = 0;
-			if (newsDBObj != null && newsDBObj.containsField("newsId") && newsDBObj.get("newsId")!=null) {
-				lastNewsId = (Integer)newsDBObj.get("newsId");
-			}
-			
-			//如果该动态存在于mongo 则删除
-			DBObject remDBObj = new BasicDBObject();
-			remDBObj.put("newsId", newsId);
-			remDBObj.put("userId", userId);
-			CommonDB.getInstance(CommonDB.CACHEDB).getCollection(CollectionEnum.USERLATESTNEWS).remove(remDBObj);
-			
-			// 删除redis中的缓存（推荐动态与热拍动态）
-			NewsSource.delRecAndRepaiNews(String.valueOf(newsId));
-			
-			//如果删除的动态为用户最新动态  则将用户的上一条最新动态保存到Mongodb中
-			if (lastNewsId == newsId && map.get("newsId") != null) {
-				newsId = (Integer) map.get("newsId");
-				Date publishedTime = (Date)map.get("publishedTime");
-				JsonObject jObject = new JsonObject();
-				jObject.addProperty("newsId", newsId);
-				jObject.addProperty("content", map.get("content").toString());
-				jObject.addProperty("publishedTime", publishedTime.getTime());
-				if (map.get("resourceUrl") != null && !map.get("resourceUrl").toString().contains("path_original")) {
-					String resourceUrl = map.get("resourceUrl").toString().replaceFirst(ConfigHelper.getHttpdir(), "");
-					JsonObject resourceUrlJson = new JsonObject();
-					resourceUrlJson.addProperty("path_original", resourceUrl);
-					resourceUrlJson.addProperty("path_128", resourceUrl + "!128x96");
-					jObject.addProperty("resourceUrl", resourceUrlJson.toString());
-				}
-				if(map.get("mediaSource") != null)
-					jObject.addProperty("mediaSource", map.get("mediaSource").toString());
-				DBObject updateDBObj = new BasicDBObject();
-				updateDBObj.put("publishedTime", publishedTime.getTime());
-				updateDBObj.put("latestNews", jObject.toString());
-				updateDBObj.put("newsId", newsId);
-				updateDBObj.put("newsType", map.get("newsType")); 
-				updateDBObj.put("commentCount", map.get("commentCount")); // 评论数
-				updateDBObj.put("rewardCount", map.get("rewardCount")); // 打赏数
-				CommonDB.getInstance(CommonDB.CACHEDB).getCollection(CollectionEnum.USERLATESTNEWS).update(
-						new BasicDBObject("userId", userId), 
-						new BasicDBObject("$set", updateDBObj), true, false);
-			}
+
+            // 删除redis中的缓存（推荐动态与热拍动态）
+            NewsSource.delRecAndRepaiNews(String.valueOf(newsId));
 
 			JsonObject result = new JsonObject();
 			result.addProperty("TagCode", "" + TagCode + "");
@@ -496,12 +427,12 @@ public class NewsFunctions {
 				result.addProperty("showMoney", showmoney);
 				
 				//更新mongodb用户最新动态的打赏数
-				CommonDB.getInstance(CommonDB.CACHEDB).getCollection(CollectionEnum.USERLATESTNEWS).update(
+				/*CommonDB.getInstance(CommonDB.CACHEDB).getCollection(CollectionEnum.USERLATESTNEWS).update(
 						new BasicDBObject("newsId", newsId), 
 						new BasicDBObject("$inc", new BasicDBObject("rewardCount", rewardCount)), false, false);
 				CommonDB.getInstance(CommonDB.CACHEDB).getCollection(CollectionEnum.USERLATESTNEWS).update(
 						new BasicDBObject("newsId", newsId), 
-						new BasicDBObject("$inc", new BasicDBObject("commentCount", 1)), false, false);
+						new BasicDBObject("$inc", new BasicDBObject("commentCount", 1)), false, false);*/
 				
 				result.addProperty("rewardCount", (Integer)map.get("rewardCount"));
 				result.addProperty("commentCount", (Integer)map.get("commentCount"));
@@ -619,9 +550,9 @@ public class NewsFunctions {
 			Integer newsId = (Integer) map.get("newsId");
 			
 			//更新mongodb用户最新动态的评论数
-			CommonDB.getInstance(CommonDB.CACHEDB).getCollection(CollectionEnum.USERLATESTNEWS).update(
+			/*CommonDB.getInstance(CommonDB.CACHEDB).getCollection(CollectionEnum.USERLATESTNEWS).update(
 					new BasicDBObject("newsId", newsId), 
-					new BasicDBObject("$inc", new BasicDBObject("commentCount", -1)), false, false);
+					new BasicDBObject("$inc", new BasicDBObject("commentCount", -1)), false, false);*/
 			
 			JsonObject result = new JsonObject();
 			result.addProperty("TagCode", TagCode);
