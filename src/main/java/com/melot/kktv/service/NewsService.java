@@ -1450,5 +1450,19 @@ public class NewsService {
 		return null;
 	}
 
+	public static List<NewsInfo> getNewsListByResType(int userId, int newsType, int start, int offset) {
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
+		if (newsService != null) {
+			return newsService.getNewsListByNewsType(userId, newsType, start, offset);
+		}
+		return null;
+	}
 	
+	public static int getNewsCountByResType(int userId, int newsType, int state) {
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
+		if (newsService != null) {
+			return newsService.getNewsInfoCount(userId, newsType, null, state);
+		}
+		return 0;
+	}
 }
