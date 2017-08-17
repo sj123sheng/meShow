@@ -1,5 +1,13 @@
 package com.melot.kkcx.service;
 
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Random;
+
+import org.apache.log4j.Logger;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -16,15 +24,7 @@ import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.util.CollectionUtils;
 import com.melot.kktv.util.HttpClient;
 import com.melot.letter.driver.service.PrivateLetterService;
-import com.melot.module.ModuleService;
 import com.melot.sdk.core.util.MelotBeanFactory;
-import org.apache.log4j.Logger;
-
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Random;
 
 /**
  * Title: TimService
@@ -57,7 +57,7 @@ public class TimService {
             String isTimRegister = HotDataSource.getHotFieldValue(userId, "isTimRegister");
             if (StringUtils.isEmpty(isTimRegister)) {
                 String identifier = TIM_IDENTIFIER_PREFIX + userId;
-                TimSystemService timService = (TimSystemService) ModuleService.getService("TimSystemService");
+                TimSystemService timService = (TimSystemService) MelotBeanFactory.getBean("timSystemService");
                 String ret = timService.accountImport(identifier, nickname, "");
                 if (ret.equalsIgnoreCase("ok")) {
                     HotDataSource.setHotFieldValue(userId, "isTimRegister", "1");
@@ -87,7 +87,7 @@ public class TimService {
         String sig = null;
         try {
             String identifier = TIM_IDENTIFIER_PREFIX + userId;
-            TimSystemService timService = (TimSystemService) ModuleService.getService("TimSystemService");
+            TimSystemService timService = (TimSystemService) MelotBeanFactory.getBean("timSystemService");
             sig = timService.getUserSig(identifier);
         } catch (Exception e) {
             logger.error("Fail to call im interface to get signature, userId " + userId, e);

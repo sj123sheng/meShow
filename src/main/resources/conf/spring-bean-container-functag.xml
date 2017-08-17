@@ -59,13 +59,6 @@
 		<constructor-arg name="cacheType" value="60" />
 		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
 	</bean>
-	<!-- 获得kk游戏推荐栏目 -->
-	<bean id="20010304" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="gameHallAction" />
-		<constructor-arg name="methodName" value="getKKRecommended" />
-		<constructor-arg name="cacheType" value="60" />
-		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
-	</bean>
 	<!-- 获得所有栏目及其子栏目列表 -->
 	<bean id="20010305" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="hallFunction" />
@@ -1581,28 +1574,6 @@
 		<constructor-arg name="methodName" value="getMatchNews" />
 	</bean>
 	
-	<!-- 游戏视频接口类 -->
-	<!-- 获取游戏离线视频列表 -->
-	<bean id="20030001" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="gameVideoAction" />
-		<constructor-arg name="methodName" value="getGameVideoList" />
-	</bean>
-	<!-- （更新）作品  -->
-	<bean id="20030002" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="gameVideoAction" />
-		<constructor-arg name="methodName" value="saveGameVideo" />
-	</bean>
-	<!-- 根据Id 获取作品详细信息 -->
-	<bean id="20030003" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="gameVideoAction" />
-		<constructor-arg name="methodName" value="getGameVideoInfoById" />
-	</bean>
-	<!-- 游戏视频点赞 -->
-	<bean id="20030004" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="gameVideoAction" />
-		<constructor-arg name="methodName" value="appreciateUserNewsById" />
-	</bean>
-	
 	<!-- 游戏活动接口类 -->
 	<!-- 
 	<bean id="11003002" class="com.melot.sdk.core.function.GenericFunction">
@@ -2045,61 +2016,6 @@
 		<constructor-arg name="methodName" value="getSharingFollowList"></constructor-arg>
 	</bean>
 	
-	<!-- 竞猜接口类 -->
-	<!-- 获取竞猜列表 -->
-	<bean id="20050001" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="gamblingFunction"/>
-		<constructor-arg name="methodName" value="getGamblingList" />
-		<constructor-arg name="cacheType" value="60" />
-	</bean>
-	<!-- 用户参与投注 -->
-	<bean id="20050002" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="gamblingFunction"/>
-		<constructor-arg name="methodName" value="userBetIn" />
-	</bean>	
-	<!-- 获取房间内竞猜列表 -->
-	<bean id="20050003" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="gamblingFunction"/>
-		<constructor-arg name="methodName" value="getGamblingListInRoom" />
-		<constructor-arg name="cacheType" value="30" />
-	</bean>	
-	<!-- 获取房间内竞猜列表 -->
-	<bean id="20050004" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="gamblingFunction"/>
-		<constructor-arg name="methodName" value="getGambleInfo" />
-	</bean>	
-	<!-- 获取用户押注流水 -->
-	<bean id="20050005" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="gamblingFunction"/>
-		<constructor-arg name="methodName" value="getUserGamble" />
-	</bean>	
-	<!-- 获取用户押注统计 -->
-	<bean id="20050006" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="gamblingFunction"/>
-		<constructor-arg name="methodName" value="getGambleResult" />
-	</bean>	
-	<!-- 主播新增竞猜盘口 -->
-	<bean id="20050007" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="gamblingFunction"/>
-		<constructor-arg name="methodName" value="addGambleByAnchor"/>
-	</bean>	
-	<!-- 主播删除竞猜盘口 -->
-	<bean id="20050008" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="gamblingFunction"/>
-		<constructor-arg name="methodName" value="cancelGambleByAnchor"/>
-	</bean>	
-	<!-- 主播清算竞猜盘口 -->
-	<bean id="20050009" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="gamblingFunction"/>
-		<constructor-arg name="methodName" value="clearGambleByAnchor"/>
-	</bean>	
-	<!-- 首页获取竞猜列表,需多返回一个头像地址 -->
-	<bean id="20050010" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="gamblingFunction"/>
-		<constructor-arg name="methodName" value="getGamblingListForPortal" />
-		<constructor-arg name="cacheType" value="60" />
-	</bean>
-	
 	<!-- (主键式)获取预告节目信息 -->
 	<bean id="20060001" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="eventFunction"/>
@@ -2232,12 +2148,6 @@
 		<constructor-arg name="methodName" value="getNoticeDetail" />
 	</bean>
 	
-	<!-- 获取主播额外信息接口 -->
-	 <bean id="10008000" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="actorFunction"/>
-		<constructor-arg name="methodName" value="getActorInfo"/>
-	</bean>
-	
 	<!-- 主播段获取直播工具设置 -->
 	<bean id="60001001" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="actorFunction"/>
@@ -2268,36 +2178,6 @@
 		<constructor-arg name="methodName" value="upAdfa"/>
 	</bean>
 	
-	<!-- 获取可投注的彩票 -->
-	<bean id="80005036" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="lotteryFunction" />
-		<constructor-arg name="methodName" value="getAvailableLotteryTicketList" />
-	</bean>
-	
-	<!-- 获取奖池情况 -->
-	<bean id="80005037" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="lotteryFunction" />
-		<constructor-arg name="methodName" value="getLotteryPoolList" />
-	</bean>
-	
-	<!-- 投注 -->
-	<bean id="80005038" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="lotteryFunction" />
-		<constructor-arg name="methodName" value="addNewBetting" />
-	</bean>
-	
-	<!-- 投注记录查询 -->
-	<bean id="80005039" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="lotteryFunction" />
-		<constructor-arg name="methodName" value="queryLotteryHistory" />
-	</bean>
-	
-	<!-- 查询用户在系统总投注信息 -->
-	<bean id="80005040" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="lotteryFunction" />
-		<constructor-arg name="methodName" value="getLotteryTimes" />
-	</bean>
-
 	<!-- 活动接口 -->
 	<bean id="88008800" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="rankFunction" />

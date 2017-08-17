@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 import com.google.gson.Gson;
 import com.melot.client.api.TimSystemService;
 import com.melot.module.ModuleService;
+import com.melot.sdk.core.util.MelotBeanFactory;
 
 /**
  * Title: SendTimMsgService
@@ -62,7 +63,7 @@ public class SendTimMsgService implements Runnable {
 
     @Override
     public void run() {
-        TimSystemService timService = (TimSystemService) ModuleService.getService("TimSystemService");
+        TimSystemService timService = (TimSystemService) MelotBeanFactory.getBean("timSystemService");
         Map<String, Object> map = null;
         List<String> tos;
         while (true) {

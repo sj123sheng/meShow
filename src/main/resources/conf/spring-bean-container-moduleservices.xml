@@ -21,14 +21,13 @@
 		<!-- 要加载的模块服务列表 -->
 		<constructor-arg name="moduleServiceList">
 			<list>
-				<value>com.melot.opus.service.VideoService</value>
-				<value>com.melot.opus.service.BasicService</value>
-				<value>com.melot.storehouse.service.StorehouseService</value>
-				<value>com.melot.client.api.TimSystemService</value>
-				<value>com.melot.video.driver.service.VideoInfoService</value>
-				<!-- kkGame使用 
-				<value>com.melot.gambling.service.GambleInfoService</value>
-				<value>com.melot.lottery.service.LotteryTicketModuleService</value>-->
+				<!-- <value>com.melot.opus.service.VideoService</value> -->
+				<!-- <value>com.melot.opus.service.BasicService</value> -->
+				<!-- <value>com.melot.storehouse.service.StorehouseService</value> -->
+<!-- 				<value>com.melot.client.api.TimSystemService</value> -->
+				<!-- kkGame使用 -->
+				<!-- <value>com.melot.gambling.service.GambleInfoService</value> -->
+				<!-- <value>com.melot.lottery.service.LotteryTicketModuleService</value> -->
 			</list>
 		</constructor-arg>
 		<constructor-arg name="zkServices" ref="zkServices" />

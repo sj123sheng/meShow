@@ -417,7 +417,7 @@
 		<dependency>
             <groupId>com.melot</groupId>
             <artifactId>tim-client-api</artifactId>
-            <version>0.0.5</version>
+            <version>0.0.6</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.melot</groupId>
@@ -539,6 +539,12 @@
             <artifactId>kk-activity-share-driver</artifactId>
             <version>1.0.2</version>
         </dependency>
+
+	    <dependency>
+		    <groupId>com.melot.module</groupId>
+		    <artifactId>opus-module-api</artifactId>
+		    <version>1.0.2</version>
+	    </dependency>
 
 	</dependencies>
  	

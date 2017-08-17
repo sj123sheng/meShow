@@ -1186,7 +1186,7 @@ public class ProfileSecurityFunctions {
      * @return
      */
     private static String getQinuUploadToken(QiNiuTokenConf qiNiuTokenConf) {
-        BasicService basicService = (BasicService) ModuleService.getService("BasicService");
+        BasicService basicService = (BasicService) MelotBeanFactory.getBean("basicService");
         if (basicService != null) {
             return basicService.getUpLoadTokenByDomain(qiNiuTokenConf);
         }

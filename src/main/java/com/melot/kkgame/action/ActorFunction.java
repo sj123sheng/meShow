@@ -24,13 +24,8 @@ import com.melot.content.config.domain.ApplyActor;
 import com.melot.game.config.sdk.actor.service.ActorLiveInfoService;
 import com.melot.game.config.sdk.domain.ActorLiveInfo;
 import com.melot.ios.idfa.driver.UpIdfaService;
-import com.melot.kkcore.user.api.UserProfile;
-import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.service.GeneralService;
 import com.melot.kkgame.logger.HadoopLogger;
-import com.melot.kkgame.redis.ActorInfoSource;
-import com.melot.kkgame.redis.GamblingSource;
-import com.melot.kkgame.redis.support.RedisException;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.TagCodeEnum;
@@ -49,68 +44,9 @@ import com.melot.stream.driver.service.domain.ClientDetail;
  */
 public class ActorFunction extends BaseAction {
 
-    
     private static Logger logger = Logger.getLogger(ActorFunction.class);
-    private ActorInfoSource actorInfoSource;
-    private GamblingSource gamblingSource;
     
     private ActorLiveInfo defaultActorLiveInfo;
-    
-    public void setActorInfoSource(ActorInfoSource actorInfoSource) {
-        this.actorInfoSource = actorInfoSource;
-    }
-    
-    public void setGamblingSource(GamblingSource gamblingSource) {
-        this.gamblingSource = gamblingSource;
-    }
-
-    /***
-     *  
-     *  10008000 - 获取主播当次直播的相关信息 
-     * 
-     */
-    public JsonObject getActorInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-        JsonObject result = new JsonObject();
-        if (!checkTag) {
-            result.addProperty(TAG_CODE, TagCodeEnum.TOKEN_NOT_CHECKED);
-            return result;
-        }
-        int userId;
-        try{
-            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-        } catch (CommonUtil.ErrorGetParameterException e) {
-            result.addProperty(TAG_CODE, e.getErrCode());
-            return result;
-        } catch (Exception e) {
-            result.addProperty(TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
-            return result;
-        }
-        try {
-            KkUserService kkUserService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
-            UserProfile userProfile = kkUserService.getUserProfile(userId);
-            int actorLevel = userProfile.getActorLevel();
-            
-            long time = actorInfoSource.getLoudspeakerTime(userId); //获取主播在自己房间发送小喇叭次数
-            result.addProperty(TAG_CODE, TagCodeEnum.SUCCESS);
-            result.addProperty("userId", userId);
-            result.addProperty("hornTime", time);
-            
-            if (gamblingSource.isOnWhiteList(userId)) { //先判断主播是否在白名单
-                result.addProperty("canGamble", 1);
-            } else { 
-                if (gamblingSource.canGambling(userId) && actorLevel > GamblingFunction.ACTOR_CAN_GAMBLE_LEVEL) { //非白名单用户必须主播等级达到10并且不在黑名单
-                    result.addProperty("canGamble", 1);
-                } else {
-                    result.addProperty("canGamble", 0);
-                }
-            } 
-        } catch (RedisException e) {
-            logger.error("get redis error", e);
-            result.addProperty(TAG_CODE, TagCodeEnum.IRREGULAR_RESULT);
-            return result;
-        }
-        return result;
-    }
     
     /**
      * 修改房间主题（10005055）
