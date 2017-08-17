@@ -1139,6 +1139,12 @@
 		<constructor-arg name="methodName" value="getCommentListByTopic" />
 	</bean>
 	
+	<!-- 根据newsType获取动态 -->
+	<bean id="20006030" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="newsV2Function" />
+		<constructor-arg name="methodName" value="getNewsListByNewsType" />
+	</bean>
+	
 	<!-- 获取热门视频动态列表 -->
 	<bean id="20000402" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="newsV2Function" />
