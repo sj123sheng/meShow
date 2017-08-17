@@ -593,13 +593,10 @@ public class UserFunctions {
 		String clientIp = null;
 		// 快牙数据
 		String phoneNum = null;
-		// facebook 同一用户多个应用下的UUID
-		String uuids = null;
 		try {
 			appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 1, Integer.MAX_VALUE);
 			openPlatform = CommonUtil.getJsonParamInt(jsonObject, "openPlatform", 0, "01060001", 1, Integer.MAX_VALUE);
 			uuid = CommonUtil.getJsonParamString(jsonObject, "uuid", null, "01060003", 1, Integer.MAX_VALUE);
-			uuids = CommonUtil.getJsonParamString(jsonObject, "uuids", null, null, 1, Integer.MAX_VALUE);
 			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, "01060004", 1, Integer.MAX_VALUE);
 			if (platform != PlatformEnum.WEB && platform != PlatformEnum.ANDROID && platform != PlatformEnum.IPHONE && platform != PlatformEnum.IPAD) {
 				// platform参数非法
@@ -675,15 +672,16 @@ public class UserFunctions {
                 || openPlatform == LoginTypeEnum.FACEBOOK)
                 && sessionId == null) {
             //老版本qq和微博不传session,过渡:兼容不做验证  2016-1-13 cj
-		    if (openPlatform == LoginTypeEnum.FACEBOOK && uuids != null) {
+		    if (openPlatform == LoginTypeEnum.FACEBOOK && unionid != null) {
                 com.melot.kkcore.account.service.AccountService accountService = (com.melot.kkcore.account.service.AccountService) MelotBeanFactory.getBean("kkAccountService");
-                String[] uuidArr = uuids.split(",");
+                String[] uuidArr = unionid.split(",");
                 for (String uuidStr : uuidArr) {
                     if (accountService.isUuidValid(uuidStr, openPlatform) > 0) {
                         result.addProperty("TagCode", "01060103");
                         return result;
                     }
                 }
+                unionid = null;
             }
         } else {
 			//Third user login verify
@@ -1030,7 +1028,7 @@ public class UserFunctions {
 	    
         int loginType, appId, channel, inviterId, userId = 0, platform = 0, roomFrom;
         int gpsCityId;// 客户端通过GPS拿到的城市定位ID【参数里面是city】
-        String isSafe, username = null, phoneNum = null, psword = null, token = null, uuid = null, unionid = null, deviceUId = null, clientIp = null, sessionId = null, uuids = null;
+        String isSafe, username = null, phoneNum = null, psword = null, token = null, uuid = null, unionid = null, deviceUId = null, clientIp = null, sessionId = null;
         try {
             loginType = CommonUtil.getJsonParamInt(jsonObject, "loginType", 0, "01130001", Integer.MIN_VALUE, Integer.MAX_VALUE);
             isSafe = CommonUtil.getJsonParamString(jsonObject, "isSafe", null, null, 0, 256);
@@ -1073,7 +1071,6 @@ public class UserFunctions {
                 psword = CommonUtil.getJsonParamString(jsonObject, "psword", null, "01130004", 0, 512);
             } else {
                 uuid = CommonUtil.getJsonParamString(jsonObject, "uuid", null, "01130008", 0, 512);
-                uuids = CommonUtil.getJsonParamString(jsonObject, "uuids", null, null, 0, Integer.MAX_VALUE);
                 if (loginType == LoginTypeEnum.WEIXIN) {
                     unionid = CommonUtil.getJsonParamString(jsonObject, "unionid", null, null, 0, 512);
                 }
@@ -1110,8 +1107,8 @@ public class UserFunctions {
 
         com.melot.kkcore.account.service.AccountService accountService = (com.melot.kkcore.account.service.AccountService) MelotBeanFactory.getBean("kkAccountService");
         
-        if (loginType == LoginTypeEnum.FACEBOOK && uuids != null) {
-            String[] uuidArr = uuids.split(",");
+        if (loginType == LoginTypeEnum.FACEBOOK && unionid != null) {
+            String[] uuidArr = unionid.split(",");
             for (String uuidStr : uuidArr) {
                 if (accountService.isUuidValid(uuidStr, loginType) > 0) {
                     uuid = uuidStr;
