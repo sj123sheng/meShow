@@ -24,7 +24,7 @@ import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.news.model.NewsInfo;
-import com.melot.opus.util.OpusCostantEnum;
+import com.melot.opus.driver.enums.OpusCostantEnum;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import org.apache.log4j.Logger;
 

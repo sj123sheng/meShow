@@ -44,7 +44,7 @@ import com.melot.module.task.driver.domain.GetUserTaskListResp;
 import com.melot.module.task.driver.domain.GetUserTaskRewardResp;
 import com.melot.module.task.driver.domain.UserTask;
 import com.melot.module.task.driver.service.TaskInterfaceService;
-import com.melot.opus.util.OpusCostantEnum;
+import com.melot.opus.driver.enums.OpusCostantEnum;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import com.melot.showmoney.driver.domain.PageShowMoneyHistory;
 import com.melot.showmoney.driver.domain.ShowMoneyHistory;
