@@ -2,6 +2,7 @@ package com.melot.kktv.action;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.melot.kktv.redis.GiftRecordSource;
 import com.melot.kktv.util.*;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import com.melot.share.driver.domain.RankData;
@@ -125,7 +126,7 @@ public class ActorFunction {
             return result;
         }
     }
-    
+
     /**
      * 更新H5页面上的 UV 数据 (UV：独立访问用户数)【51020102】
      * @param jsonObject
@@ -168,6 +169,54 @@ public class ActorFunction {
 
         } catch (Exception e) {
             logger.error("Module Error ShareActivityService.getRankList(" + actorId + ", " + userId + ")", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 获取h5新注册用户是否领取过新手礼包【51020103】
+     * @param jsonObject
+     * @param request
+     * @return
+     */
+    public JsonObject getUserReceivedNoviceGift(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        // 定义返回结果
+        JsonObject result = new JsonObject();
+
+        int userId;
+
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        if(userId == 0) {
+            result.addProperty("TagCode", TagCodeEnum.USERID_MISSING);
+            return result;
+        }
+
+        try {
+
+            //查询该用户是否领取过新手礼包 true-未领取过 false-领取过
+            boolean haveReceivedNoviceGift = GiftRecordSource.haveReceivedNoviceGift(userId);
+
+            if(haveReceivedNoviceGift) {
+                GiftRecordSource.removeNoviceGift(userId);
+            }
+
+            result.addProperty("haveReceivedNoviceGift", haveReceivedNoviceGift);
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+
+        } catch (Exception e) {
+            logger.error("Module Error ActorFunction.getUserReceivedNoviceGift(" + userId + ")", e);
             result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             return result;
         }
