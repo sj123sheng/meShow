@@ -21,6 +21,7 @@ import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.kktv.util.mongodb.CommonDB;
 import com.melot.kktv.util.mongodb.MongoDBInstance;
 import com.melot.kktv.util.redis.RedisConfigHelper;
+import com.melot.kktv.util.cache.EhCache;
 import com.melot.sdk.core.util.MelotBeanFactory;
 
 public class ConfigContextListener implements ServletContextListener {
@@ -43,6 +44,9 @@ public class ConfigContextListener implements ServletContextListener {
 		
 		// 销毁Spring容器
 		MelotBeanFactory.close();
+		
+		// 销毁缓存
+		EhCache.destroy();
 	}
 
 	@Override
@@ -89,6 +93,9 @@ public class ConfigContextListener implements ServletContextListener {
 		if (tlsPemLocation != null && tlsSoLocation != null) {
 			TlsSig.init(event.getServletContext().getRealPath("/") + tlsPemLocation, event.getServletContext().getRealPath("/") + tlsSoLocation);
 		}
+		
+		// 初始化ehcache缓存
+		EhCache.init();
 		
 		//init config
 		String path = event.getServletContext().getRealPath("/") + configLocation;

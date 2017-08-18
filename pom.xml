@@ -170,6 +170,7 @@
 		<dependency>
 			<groupId>com.melot</groupId>
 			<artifactId>melot-sdk</artifactId>
+			<version>2.2.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.melot</groupId>
