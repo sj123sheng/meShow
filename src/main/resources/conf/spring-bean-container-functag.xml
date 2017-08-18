@@ -2462,5 +2462,10 @@
         <constructor-arg name="t" ref="actorKKTVFunction" />
         <constructor-arg name="methodName" value="updateUV" />
     </bean>
+    <!-- 获取h5新注册用户是否领取过新手礼包 -->
+    <bean id="51020103" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="actorKKTVFunction" />
+        <constructor-arg name="methodName" value="getUserReceivedNoviceGift" />
+    </bean>
 
 </beans>
