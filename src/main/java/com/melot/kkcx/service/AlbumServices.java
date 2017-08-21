@@ -1,7 +1,6 @@
 package com.melot.kkcx.service;
 
 import java.sql.SQLException;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,17 +9,12 @@ import org.apache.log4j.Logger;
 import com.google.gson.JsonObject;
 import com.melot.kktv.service.LiveVideoService;
 import com.melot.kktv.util.AppIdEnum;
-import com.melot.kktv.util.CollectionEnum;
 import com.melot.kktv.util.Constant;
-import com.melot.kktv.util.PictureTypeEnum;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
-import com.melot.kktv.util.mongodb.CommonDB;
 import com.melot.opus.domain.TempUserResource;
 import com.melot.opus.driver.enums.OpusCostantEnum;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 import com.upyun.api.UpYun;
 
 public class AlbumServices {
@@ -112,60 +106,6 @@ public class AlbumServices {
 			    tempUserResource.setResourceId(pictureId);
 			    LiveVideoService.addTempUserResource(tempUserResource);
 			}
-			
-			Date uploadTime = new Date();
-			if(map.containsKey("uploadTime")) {
-				uploadTime = (Date) map.get("uploadTime");
-			}
-			
-			// 若主播上传相册,mongodb中存储相册记录
-			path_original = OpusCostantEnum.CHECKING_PHOTO_RESOURCEURL;
-			if (UserService.isActor(userId)) {
-				int picCount = CommonDB.getInstance(CommonDB.CACHEDB).getCollection(CollectionEnum.ACTORALBUMRECORD)
-						.find(new BasicDBObject("userId", userId)).count();
-				if (pictureType == PictureTypeEnum.poster && picCount > 0) {
-					pictureType = PictureTypeEnum.picture;
-				}
-				DBObject dbObj = new BasicDBObject();
-				dbObj.put("userId", userId);
-				dbObj.put("photoId", pictureId);
-				dbObj.put("picType", pictureType);
-				dbObj.put("clicks", 0);
-				dbObj.put("comments", 0);
-				dbObj.put("uploadTime", uploadTime.getTime());
-				dbObj.put("photo_path_original", path_original);
-				CommonDB.getInstance(CommonDB.CACHEDB).getCollection(CollectionEnum.ACTORALBUMRECORD).insert(dbObj);
-			}
-			// 上传照片不会自动发布动态，待照片审核通过会自动发布
-			/*if (pictureType == PictureTypeEnum.picture 
-					|| pictureType == PictureTypeEnum.poster) {
-				if (map.containsKey("newsId") && map.get("newsId") != null) {
-					try {
-						Integer newsId = (Integer) map.get("newsId");	
-						// 将最新动态保存到Mongodb中
-						JsonObject jObject = new JsonObject();
-						jObject.addProperty("newsId", newsId);
-						jObject.addProperty("content", "上传了一张照片");
-						jObject.addProperty("publishedTime", uploadTime.getTime());
-						JsonObject resourceUrl = new JsonObject();
-						resourceUrl.addProperty("path_original", path_original);
-						resourceUrl.addProperty("path_1280", path_original + "!1280");
-						resourceUrl.addProperty("path_272", path_original + "!272");
-						resourceUrl.addProperty("path_128", path_original + "!128x96");
-						jObject.addProperty("resourceUrl", resourceUrl.toString());
-						DBObject updateDBObj = new BasicDBObject();
-						updateDBObj.put("publishedTime", uploadTime.getTime());
-						updateDBObj.put("latestNews", jObject.toString());
-						updateDBObj.put("newsId", newsId);
-						updateDBObj.put("newsType", NewsTypeEnum.UPLOAD_PHOTO);
-						updateDBObj.put("commentCount", 0); // 评论数
-						updateDBObj.put("rewardCount", 0); // 打赏数
-						CommonDB.getInstance(CommonDB.CACHEDB).getCollection(CollectionEnum.USERLATESTNEWS).update(
-								new BasicDBObject("userId", userId), 
-								new BasicDBObject("$set", updateDBObj), true, false);
-					} catch (Exception e) {}
-				}
-			}*/
 			
 			JsonObject obj = new JsonObject();
 			obj.addProperty("TagCode", TagCodeEnum.SUCCESS);
