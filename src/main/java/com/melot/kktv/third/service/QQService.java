@@ -16,18 +16,14 @@ import com.melot.kktv.util.TagCodeEnum;
 public class QQService extends BaseService {
 	
 	private static Logger logger = Logger.getLogger(QQService.class);
-
-	private static final String appId = "100288580";
-	
-	private String serverUrl;
 	
 	private String unionServerUrl;
 	
 	public String verifyUser(String uuid, String sessionId) {
 		HttpURLConnection url_con = null;
 		try {
-			String param = "?access_token=" + sessionId + "&oauth_consumer_key=" + appId + "&openid=" + uuid + "&format=json"; 			
-			URL url = new URL(serverUrl + param);			
+		    String param = "?access_token=" + sessionId + "&unionid=1";
+			URL url = new URL(unionServerUrl + param);			
 			url_con = (HttpURLConnection) url.openConnection();
             url_con.setRequestMethod("GET");
             url_con.setConnectTimeout(10000);
@@ -41,11 +37,11 @@ public class QQService extends BaseService {
             while ((tempLine = rd.readLine()) != null) {
                 tempStr.append(tempLine);
             }
-            JsonObject jsonObj = new JsonParser().parse(tempStr.toString()).getAsJsonObject();
-            if (jsonObj.get("ret") != null && jsonObj.get("ret").getAsInt() == 0) {
-            	return TagCodeEnum.SUCCESS;
+            JsonObject jsonObj = new JsonParser().parse(tempStr.toString().substring(tempStr.indexOf("{"), tempStr.lastIndexOf("}") + 1)).getAsJsonObject();
+            if (jsonObj.get("unionid") != null) {
+                return TagCodeEnum.SUCCESS;
             } else {
-            	logger.error("qq服务端验证用户失败, respose:" + jsonObj.toString());
+                logger.error("qq服务端验证用户失败, respose:" + jsonObj.toString());
             }
             rd.close();
             in.close();
@@ -91,10 +87,6 @@ public class QQService extends BaseService {
         return null;
     }
 
-	public void setServerUrl(String serverUrl) {
-		this.serverUrl = serverUrl;
-	}
-    
     public void setUnionServerUrl(String unionServerUrl) {
         this.unionServerUrl = unionServerUrl;
     }
