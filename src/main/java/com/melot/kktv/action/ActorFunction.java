@@ -204,14 +204,14 @@ public class ActorFunction {
 
         try {
 
-            //查询该用户是否领取过新手礼包 true-未领取过 false-领取过
-            boolean haveReceivedNoviceGift = GiftRecordSource.haveReceivedNoviceGift(userId);
+            //查询该用户是否未领取过新手礼包 true-未领取过 false-领取过
+            boolean unReceivedNoviceGift = GiftRecordSource.unReceivedNoviceGift(userId);
 
-            if(haveReceivedNoviceGift) {
+            if(unReceivedNoviceGift) {
                 GiftRecordSource.removeNoviceGift(userId);
             }
 
-            result.addProperty("haveReceivedNoviceGift", haveReceivedNoviceGift);
+            result.addProperty("haveReceivedNoviceGift", !unReceivedNoviceGift);
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
 

@@ -138,10 +138,10 @@ public class GiftRecordSource {
 	}
 
     /**
-     * 查询该用户是否领取过新手礼包 true-未领取过 false-领取过
+     * 查询该用户是否未领取过新手礼包 true-未领取过 false-领取过
      * @return
      */
-    public static boolean haveReceivedNoviceGift(Integer userId) {
+    public static boolean unReceivedNoviceGift(Integer userId) {
         Jedis jedis = null;
         try {
             jedis = getInstance();
