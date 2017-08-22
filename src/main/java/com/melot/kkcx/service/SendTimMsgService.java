@@ -12,7 +12,6 @@ import org.apache.log4j.Logger;
 
 import com.google.gson.Gson;
 import com.melot.client.api.TimSystemService;
-import com.melot.module.ModuleService;
 import com.melot.sdk.core.util.MelotBeanFactory;
 
 /**

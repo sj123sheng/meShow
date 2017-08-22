@@ -17,7 +17,7 @@
 	
 	<!-- 通用过期接口 -->
 	<bean id="10006005"
-		name="10001040,10004010,10004011,40000013,20010308,20010502,20010503,20010504,20010506,20010507,20010508,50001015,10002039,10002040,20010403,20010402,10002072,10001042"
+		name="10001040,10004010,10004011,40000013,20010308,20010502,20010503,20010504,20010506,20010507,20010508,50001015,10002039,10002040,20010403,20010402,10002072,10001042,10002009,10002010"
 		class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="otherFunction" />
 		<constructor-arg name="methodName" value="lowVersionExcute" />
@@ -156,16 +156,6 @@
 	<bean id="10002017" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="indexFunction" />
 		<constructor-arg name="methodName" value="getCatalogInfo" />
-	</bean>
-	<!-- 获取本周礼物之星列表 -->
-	<bean id="10002009" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="indexFunction" />
-		<constructor-arg name="methodName" value="getCurrentGiftStarList" />
-	</bean>
-	<!-- 获取上周礼物之星列表 -->
-	<bean id="10002010" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="indexFunction" />
-		<constructor-arg name="methodName" value="getLastGiftStarList" />
 	</bean>
 	<!-- 获取本周礼物消耗排行榜 -->
 	<bean id="10002011" class="com.melot.sdk.core.function.GenericFunction">

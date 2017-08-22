@@ -31,7 +31,6 @@ import com.melot.kktv.util.PlatformEnum;
 import com.melot.kktv.util.SecurityFunctions;
 import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
-import com.melot.module.ModuleService;
 import com.melot.opus.domain.QiNiuTokenConf;
 import com.melot.opus.service.BasicService;
 import com.melot.qiniu.common.QiniuService;

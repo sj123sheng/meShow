@@ -1,6 +1,29 @@
 package com.melot.kktv.action;
 
-import com.google.gson.*;
+import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Random;
+import java.util.Set;
+import java.util.regex.Pattern;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.log4j.Logger;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.melot.api.menu.sdk.dao.domain.HomePage;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.api.menu.sdk.dao.domain.SysMenu;
@@ -26,28 +49,38 @@ import com.melot.kkcx.service.UserService;
 import com.melot.kkcx.transform.LiveShowTF;
 import com.melot.kkcx.transform.NewsRewardRankTF;
 import com.melot.kkcx.transform.RoomTF;
-import com.melot.kktv.model.*;
-import com.melot.kktv.redis.*;
+import com.melot.kktv.model.Activity;
+import com.melot.kktv.model.HotActivity;
+import com.melot.kktv.model.NewsRewardRank;
+import com.melot.kktv.model.Notice;
+import com.melot.kktv.model.PreviewAct;
+import com.melot.kktv.model.RankUser;
+import com.melot.kktv.model.Room;
+import com.melot.kktv.model.WeekStarGift;
+import com.melot.kktv.redis.GiftRecordSource;
+import com.melot.kktv.redis.HotDataSource;
+import com.melot.kktv.redis.NewsSource;
+import com.melot.kktv.redis.SearchWordsSource;
+import com.melot.kktv.redis.WeekGiftSource;
 import com.melot.kktv.service.NewsService;
 import com.melot.kktv.service.RoomService;
-import com.melot.kktv.util.*;
+import com.melot.kktv.util.AppChannelEnum;
+import com.melot.kktv.util.AppIdEnum;
+import com.melot.kktv.util.CityUtil;
+import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
+import com.melot.kktv.util.ConfigHelper;
+import com.melot.kktv.util.Constant;
+import com.melot.kktv.util.ConstantEnum;
+import com.melot.kktv.util.DateUtil;
+import com.melot.kktv.util.PlatformEnum;
+import com.melot.kktv.util.RankingEnum;
+import com.melot.kktv.util.StringUtil;
+import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.confdynamic.GiftInfoConfig;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
-import com.melot.kktv.util.mongodb.CommonDB;
 import com.melot.sdk.core.util.MelotBeanFactory;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-import org.apache.log4j.Logger;
-
-import javax.servlet.http.HttpServletRequest;
-import java.sql.SQLException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.regex.Pattern;
 
 /**
  * 大厅相关的接口类
@@ -1179,248 +1212,6 @@ public class IndexFunctions {
 		catalogInfo.add(catalogObj);
 		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 		result.add("catalogInfo", catalogInfo);
-		return result;
-	}
-	
-	/**
-	 * 获取本周礼物之星列表(10002009)
-	 * 
-	 * @return 结果字符串
-	 */
-	@Deprecated
-	public JsonObject getCurrentGiftStarList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-		// 获取参数
-		JsonElement userTypeje = jsonObject.get("userType");
-		
-		JsonElement platformje = jsonObject.get("platform");
-		Integer platform = 0;
-		if (platformje!=null && !platformje.isJsonNull() && platformje.getAsInt()>0) {
-			try {
-				platform = platformje.getAsInt();
-			} catch (Exception e) {
-				platform = 0;
-			}
-		}
-		
-		// 验证参数
-		Integer userType = 0; // 0:明星排行榜 1:富豪排行榜
-		Integer weekType = RankingEnum.THIS_WEEK_GIFT_RANKING; // 0:本周排行榜 -1:上周排行榜
-		if (userTypeje!=null && !userTypeje.isJsonNull() && userTypeje.getAsInt()>0) {
-			userType = userTypeje.getAsInt();
-		}
-		JsonObject result = new JsonObject();
-		JsonArray giftStarList = new JsonArray();
-		if (CommonDB.getInstance(CommonDB.CACHEDB).collectionExists(CollectionEnum.WEEKGIFTRANKING)) {
-			DBObject refObj = new BasicDBObject();
-			refObj.put("userType", userType);
-			refObj.put("weekType", weekType);
-			DBObject keysObj = new BasicDBObject();
-			keysObj.put("giftId", 1);
-			keysObj.put("giftName", 1);
-			keysObj.put("giftCount", 1);
-			keysObj.put("iphoneIcon", 1);
-			keysObj.put("androidIcon", 1);
-			keysObj.put("userId", 1);
-			keysObj.put("nickname", 1);
-			keysObj.put("actorLevel", 1);
-			keysObj.put("richLevel", 1);
-			DBCursor rankingCursor = CommonDB.getInstance(CommonDB.CACHEDB).getCollection(CollectionEnum.WEEKGIFTRANKING)
-					.find(refObj, keysObj).sort(new BasicDBObject("giftWorth", -1));
-			if (rankingCursor != null && rankingCursor.count() > 0) {
-				String ids = "";
-				while (rankingCursor.hasNext()) {
-					DBObject element = rankingCursor.next();
-					JsonObject jObject = new JsonObject();
-					Integer giftId = Integer.valueOf(element.get("giftId").toString());
-					jObject.addProperty("giftId", giftId);
-					jObject.addProperty("giftName", String.valueOf(element.get("giftName").toString()));
-					jObject.addProperty("total", Integer.valueOf(element.get("giftCount").toString()));
-					if(platform.equals(PlatformEnum.ANDROID)) {
-						jObject.addProperty("androidIcon", String.valueOf(element.get("androidIcon").toString()));
-					}
-					if(platform.equals(PlatformEnum.IPHONE)) {
-						jObject.addProperty("iphoneIcon", String.valueOf(element.get("iphoneIcon").toString()));
-					}
-					if(platform.equals(PlatformEnum.IPAD)) {
-						jObject.addProperty("iphoneIcon", String.valueOf(element.get("iphoneIcon").toString()));
-					}
-					jObject.addProperty("userId", Integer.valueOf(element.get("userId").toString()));
-					ids += Integer.valueOf(element.get("userId").toString()) + ",";
-					if(element.containsField("nickname")&&element.get("nickname")!=null) {
-						jObject.addProperty("nickname", GeneralService.replaceSensitiveWords(Integer.valueOf(element.get("userId").toString()), String.valueOf(element.get("nickname").toString())));
-					}
-					jObject.addProperty("actorLevel", element.get("actorLevel") != null ? Integer.valueOf(element.get("actorLevel").toString()) : 0);
-					jObject.addProperty("richLevel", element.get("richLevel") != null ? Integer.valueOf(element.get("richLevel").toString()) : 0);
-					
-					// 增加返回roomSource
-					if (element.containsField("roomSource") && element.get("roomSource") != null) {
-                        jObject.addProperty("roomSource", Integer.parseInt(element.get("roomSource").toString()));
-                        jObject.addProperty("roomType", Integer.parseInt(element.get("roomSource").toString()));
-                    } else {
-                        jObject.addProperty("roomSource", AppIdEnum.AMUSEMENT);
-                        jObject.addProperty("roomType", AppIdEnum.AMUSEMENT);
-                    }
-					
-					giftStarList.add(jObject);
-				}
-				
-				//get live state from pg
-				RoomInfoService roomInfoService = (RoomInfoService) MelotBeanFactory.getBean("roomInfoService");
-				if (roomInfoService != null) {
-					List<RoomInfo> roomInfoList = roomInfoService.getRoomListByRoomIds(ids);
-					if (roomInfoList != null && roomInfoList.size() > 0) {
-						Map<Integer, RoomInfo> roomMap = new HashMap<Integer, RoomInfo>();
-						for (RoomInfo roomInfo : roomInfoList) {
-							roomMap.put(roomInfo.getActorId(), roomInfo);
-						}
-						if (roomMap.size() > 0) {
-							for(JsonElement json : giftStarList) {
-								JsonObject temp = json.getAsJsonObject();
-								if (roomMap.containsKey(temp.get("userId").getAsInt())) {
-									RoomInfo roomInfo = roomMap.get(temp.get("userId").getAsInt());
-									if (roomInfo.getLiveStarttime() != null && roomInfo.getLiveEndtime() == null) {
-										temp.addProperty("liveType", 1);
-										temp.addProperty("livestarttime", roomInfo.getLiveStarttime().getTime());
-										temp.addProperty("onlineCount", roomInfo.getPeopleInRoom());
-									} else {
-										temp.addProperty("liveType", 0);
-									}
-									
-									if (roomInfo.getScreenType() != null) {
-									    temp.addProperty("screenType", roomInfo.getScreenType());
-							        } else {
-							            temp.addProperty("screenType", 1);
-							        }
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-		result.add("giftStarList", giftStarList);
-		return result;
-	}
-
-	/**
-	 * 获取上周礼物之星列表(10002010)
-	 * 
-	 * @return 结果字符串
-	 */
-	@Deprecated
-	public JsonObject getLastGiftStarList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-		// 获取参数
-		JsonElement userTypeje = jsonObject.get("userType");
-		
-		JsonElement platformje = jsonObject.get("platform");
-		Integer platform = 0;
-		if (platformje!=null && !platformje.isJsonNull() && platformje.getAsInt()>0) {
-			try {
-				platform = platformje.getAsInt();
-			} catch (Exception e) {
-				platform = 0;
-			}
-		}
-		
-		// 验证参数
-		Integer userType = 0; // 0:明星排行榜 1:富豪排行榜
-		Integer weekType = RankingEnum.LAST_WEEK_GIFT_RANKING; // 0:本周排行榜 -1:上周排行榜
-		if (userTypeje != null && !userTypeje.isJsonNull() && userTypeje.getAsInt() > 0) {
-			userType = userTypeje.getAsInt();
-		}
-		JsonObject result = new JsonObject();
-		JsonArray giftStarList = new JsonArray();
-		if (CommonDB.getInstance(CommonDB.CACHEDB).collectionExists(CollectionEnum.WEEKGIFTRANKING)) {
-			DBObject refObj = new BasicDBObject();
-			refObj.put("userType", userType);
-			refObj.put("weekType", weekType);
-			DBObject keysObj = new BasicDBObject();
-			keysObj.put("giftId", 1);
-			keysObj.put("giftName", 1);
-			keysObj.put("giftCount", 1);
-			keysObj.put("iphoneIcon", 1);
-			keysObj.put("androidIcon", 1);
-			keysObj.put("userId", 1);
-			keysObj.put("nickname", 1);
-			keysObj.put("actorLevel", 1);
-			keysObj.put("richLevel", 1);
-			DBCursor rankingCursor = CommonDB.getInstance(CommonDB.CACHEDB).getCollection(CollectionEnum.WEEKGIFTRANKING)
-					.find(refObj, keysObj).sort(new BasicDBObject("giftWorth", -1));
-			if (rankingCursor != null && rankingCursor.count() > 0) {
-				String ids = "";
-				while (rankingCursor.hasNext()) {
-					DBObject element = rankingCursor.next();
-					JsonObject jObject = new JsonObject();
-					Integer giftId = Integer.valueOf(element.get("giftId").toString());
-					jObject.addProperty("giftId", giftId);
-					jObject.addProperty("giftName", String.valueOf(element.get("giftName").toString()));
-					jObject.addProperty("total", Integer.valueOf(element.get("giftCount").toString()));
-					if (platform.equals(PlatformEnum.ANDROID)) {
-						jObject.addProperty("androidIcon", String.valueOf(element.get("androidIcon").toString()));
-					}
-					if (platform.equals(PlatformEnum.IPHONE)) {
-						jObject.addProperty("iphoneIcon", String.valueOf(element.get("iphoneIcon").toString()));
-					}
-					if (platform.equals(PlatformEnum.IPAD)) {
-						jObject.addProperty("iphoneIcon", String.valueOf(element.get("iphoneIcon").toString()));
-					}
-					jObject.addProperty("userId", Integer.valueOf(element.get("userId").toString()));
-					ids += Integer.valueOf(element.get("userId").toString()) + ",";
-					if (element.containsField("nickname") && element.get("nickname") != null) {
-						jObject.addProperty("nickname", GeneralService.replaceSensitiveWords(Integer.valueOf(element.get("userId").toString()), String.valueOf(element.get("nickname").toString())));
-					}
-					jObject.addProperty("actorLevel", Integer.valueOf(element.get("actorLevel").toString()));
-					jObject.addProperty("richLevel", Integer.valueOf(element.get("richLevel").toString()));
-					
-					// 增加返回roomSource
-					if (element.containsField("roomSource") && element.get("roomSource") != null) {
-					    jObject.addProperty("roomSource", Integer.parseInt(element.get("roomSource").toString()));
-					    jObject.addProperty("roomType", Integer.parseInt(element.get("roomSource").toString()));
-					} else {
-					    jObject.addProperty("roomSource", AppIdEnum.AMUSEMENT);
-					    jObject.addProperty("roomType", AppIdEnum.AMUSEMENT);
-					}
-                    
-					giftStarList.add(jObject);
-				}
-				
-				//get live state from pg
-				RoomInfoService roomInfoService = (RoomInfoService) MelotBeanFactory.getBean("roomInfoService");
-				if (roomInfoService != null) {
-					List<RoomInfo> roomInfoList = roomInfoService.getRoomListByRoomIds(ids);
-					if (roomInfoList != null && roomInfoList.size() > 0) {
-						Map<Integer, RoomInfo> roomMap = new HashMap<Integer, RoomInfo>();
-						for (RoomInfo roomInfo : roomInfoList) {
-							roomMap.put(roomInfo.getActorId(), roomInfo);
-						}
-						if (roomMap.size() > 0) {
-							for(JsonElement json : giftStarList) {
-								JsonObject temp = json.getAsJsonObject();
-								if (roomMap.containsKey(temp.get("userId").getAsInt())) {
-									RoomInfo roomInfo = roomMap.get(temp.get("userId").getAsInt());
-									if (roomInfo.getLiveStarttime() != null && roomInfo.getLiveEndtime() == null) {
-										temp.addProperty("liveType", 1);
-										temp.addProperty("livestarttime", roomInfo.getLiveStarttime().getTime());
-										temp.addProperty("onlineCount", roomInfo.getPeopleInRoom());
-									} else {
-										temp.addProperty("liveType", 0);
-									}
-									
-									if (roomInfo.getScreenType() != null) {
-                                        temp.addProperty("screenType", roomInfo.getScreenType());
-                                    } else {
-                                        temp.addProperty("screenType", 1);
-                                    }
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-		result.add("giftStarList", giftStarList);
 		return result;
 	}
 	

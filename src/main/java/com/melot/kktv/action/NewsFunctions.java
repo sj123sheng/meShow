@@ -323,8 +323,6 @@ public class NewsFunctions {
 		if (rewardCountje != null && !rewardCountje.getAsString().isEmpty() && !rewardCountje.isJsonNull() && rewardCountje.getAsInt() > 0) {
 			rewardCount = rewardCountje.getAsInt();
 			Map<String,Object> rewardMap = getRewardDBObj(rewardCount);
-//			DBObject rewardDBObj = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.NEWSREWARDCONFIG)
-//					.findOne(new BasicDBObject("rewardCount", rewardCount));
 			rewardCost = (Integer) rewardMap.get("rewardCost");
 			if(null != rewardMap.get("rewardDes")){
 				rewardText = (String) rewardMap.get("rewardDes");
@@ -425,15 +423,6 @@ public class NewsFunctions {
 				// 获取当前用户秀币余额
 				long showmoney = com.melot.kktv.service.UserService.getUserShowMoney(userId);
 				result.addProperty("showMoney", showmoney);
-				
-				//更新mongodb用户最新动态的打赏数
-				/*CommonDB.getInstance(CommonDB.CACHEDB).getCollection(CollectionEnum.USERLATESTNEWS).update(
-						new BasicDBObject("newsId", newsId), 
-						new BasicDBObject("$inc", new BasicDBObject("rewardCount", rewardCount)), false, false);
-				CommonDB.getInstance(CommonDB.CACHEDB).getCollection(CollectionEnum.USERLATESTNEWS).update(
-						new BasicDBObject("newsId", newsId), 
-						new BasicDBObject("$inc", new BasicDBObject("commentCount", 1)), false, false);*/
-				
 				result.addProperty("rewardCount", (Integer)map.get("rewardCount"));
 				result.addProperty("commentCount", (Integer)map.get("commentCount"));
 				result.addProperty("TagCode", TagCode);
@@ -548,11 +537,6 @@ public class NewsFunctions {
 		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
 			
 			Integer newsId = (Integer) map.get("newsId");
-			
-			//更新mongodb用户最新动态的评论数
-			/*CommonDB.getInstance(CommonDB.CACHEDB).getCollection(CollectionEnum.USERLATESTNEWS).update(
-					new BasicDBObject("newsId", newsId), 
-					new BasicDBObject("$inc", new BasicDBObject("commentCount", -1)), false, false);*/
 			
 			JsonObject result = new JsonObject();
 			result.addProperty("TagCode", TagCode);

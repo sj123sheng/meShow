@@ -243,66 +243,6 @@ public class NewsV2Functions {
             NewsV2Source.delHotRef(String.valueOf(newsId));
             // NewsV2Source.delHot(newsId);
             ResourceService.delResource(newsInfo);
-            // 查询该动态是否为mongo中最新动态
-            /*DBObject newsDBObj = (DBObject) CommonDB.getInstance(CommonDB.CACHEDB).getCollection(CollectionEnum.USERLATESTNEWS).findOne(new BasicDBObject("userId", userId));
-            int lastNewsId = 0;
-            if (newsDBObj != null && newsDBObj.containsField("latestNews") && newsDBObj.get("latestNews") != null) {
-                String str = (String) newsDBObj.get("latestNews");
-                try {
-                    JsonObject json = new JsonParser().parse(str).getAsJsonObject();
-                    lastNewsId = json.get("newsId").getAsInt();
-                } catch (Exception e) {}
-            }
-            // 如果删除的动态为用户最新动态 则将用户的上一条最新动态保存到Mongodb中
-            if (lastNewsId == newsId) {
-                com.melot.resource.service.ResourceService resourceService = (com.melot.resource.service.ResourceService) MelotBeanFactory.getBean("resourceCenter");
-                if (resourceService != null) {
-                    List<NewsInfo> lastNews = NewsService.getSelfNewsList(userId, 1, 1, 0, 0);
-                    if (lastNews != null && lastNews.size() > 0 && lastNews.get(0) != null) {
-                        NewsInfo temp = lastNews.get(0);
-                        // 审核通过置为最新动态
-                        DBObject updateDBObj = new BasicDBObject();
-                        JsonObject lastNewsJson = new JsonObject();
-                        lastNewsJson.addProperty("newsId", temp.getNewsId());
-                        if (newsInfo.getTopic() != null) {
-                            lastNewsJson.addProperty("topic", temp.getTopic());
-                        }
-                        if (newsInfo.getTopicId() != null) {
-                            lastNewsJson.addProperty("topicId", temp.getTopicId());
-                        }
-                        lastNewsJson.addProperty("content", temp.getContent());
-                        lastNewsJson.addProperty("publishedTime", temp.getPublishedTime().getTime());
-                        if (temp.getRefVideo() == null) {
-                            JsonObject mediaSource = new JsonObject();
-                            // 图片类型存一张
-                            mediaSource.addProperty("mediaType", 1);// 1-图片 3-视频
-                            String[] urls = getRegexAdmin(temp.getRefImage()).split(",");
-                            mediaSource.addProperty("picCount", urls.length);
-                            Resource resource = resourceService.getResource(Integer.valueOf(urls[0]), 1);
-                            mediaSource.addProperty("imageUrl_1280", resource.getImageUrl());
-                            mediaSource.addProperty("imageUrl_272", resource.getImageUrl());
-                            mediaSource.addProperty("imageUrl_128", resource.getImageUrl());
-                            lastNewsJson.addProperty("mediaSource", new Gson().toJson(mediaSource));
-                        } else {
-                            JsonObject mediaSource = new JsonObject();
-
-                            // 图片类型存一张
-                            mediaSource.addProperty("mediaType", 3);// 1-图片 3-视频
-                            Resource resource = resourceService.getResource(Integer.valueOf(getRegexAdmin(temp.getRefVideo())), 3);
-                            mediaSource.addProperty("imageUrl_1280", resource.getImageUrl());
-                            mediaSource.addProperty("imageUrl_272", resource.getImageUrl());
-                            mediaSource.addProperty("imageUrl_128", resource.getImageUrl());
-                            lastNewsJson.addProperty("mediaSource", new Gson().toJson(mediaSource));
-                        }
-                        updateDBObj.put("latestNews", new Gson().toJson(lastNewsJson));
-                        CommonDB.getInstance(CommonDB.CACHEDB).getCollection(CollectionEnum.USERLATESTNEWS).update(new BasicDBObject("userId", userId),
-                                new BasicDBObject("$set", updateDBObj), true, false);
-                    } else {
-                        CommonDB.getInstance(CommonDB.CACHEDB).getCollection(CollectionEnum.USERLATESTNEWS).remove(new BasicDBObject("userId", userId));
-                    }
-                }
-
-            }*/
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
         } else {
