@@ -672,6 +672,11 @@ public class UserFunctions {
                 || openPlatform == LoginTypeEnum.WEIXIN|| openPlatform == LoginTypeEnum.ALIPAY)
                 && sessionId == null) {
             //老版本qq和微博不传session,过渡:兼容不做验证  2016-1-13 cj
+		    
+		    //兼容下客户端不传sessionId时,unionId传"(null)"
+		    if (openPlatform == LoginTypeEnum.QQ) {
+		        unionid = null;
+		    }
         } else {
 			//Third user login verify
 			if (openPlatform == LoginTypeEnum.DIDA) {
