@@ -11,6 +11,7 @@ import com.melot.opus.domain.TempUserResource;
 import com.melot.opus.domain.UserNews;
 import com.melot.opus.domain.UserNewsFolder;
 import com.melot.opus.service.VideoService;
+import com.melot.sdk.core.util.MelotBeanFactory;
 
 /**
  * 
@@ -34,7 +35,7 @@ public class LiveVideoService {
 	 */
 	public static boolean updateNewsVidewTimes(int newsId) {
 		try {
-			VideoService videoService = (VideoService) ModuleService.getService("VideoService");
+			VideoService videoService = (VideoService) MelotBeanFactory.getBean("videoService");
 			if (videoService == null) {
 				logger.error("NewsService.updateNewsVidewTimes exception(videoService is null), newsId : " + newsId);
 				return false;
@@ -60,7 +61,7 @@ public class LiveVideoService {
 			if (userId <= 0 || appId <= 0 || resType <= 0) {
 				return 0;
 			}
-			VideoService videoService = (VideoService) ModuleService.getService("VideoService");
+			VideoService videoService = (VideoService) MelotBeanFactory.getBean("videoService");
 			return videoService.getUserNewsFolderCount(userId, appId, resType, checkTag);
 		} catch (Exception e) {
 			logger.error("LiveVideoService.getOpusCount exception, userId : " + userId
@@ -88,7 +89,7 @@ public class LiveVideoService {
 			return null;
 		}
 		try {
-			VideoService videoService = (VideoService) ModuleService.getService("VideoService");
+		    VideoService videoService = (VideoService) MelotBeanFactory.getBean("videoService");
 			return videoService.getUserNewsFolderList(userId, appId, resType, pageIndex, countPerPage, checkTag);
 		} catch (Exception e) {
 			logger.error("LiveVideoService.getOpusList exception, userId : " + userId
@@ -108,7 +109,7 @@ public class LiveVideoService {
      */
     public static int addNews(UserNews userNews) {
         try {
-            VideoService videoService = (VideoService) ModuleService.getService("VideoService");
+            VideoService videoService = (VideoService) MelotBeanFactory.getBean("videoService");
             if (videoService != null) {
                 return videoService.addNewsAndGetNewsId(userNews);
             } else {
@@ -132,7 +133,7 @@ public class LiveVideoService {
             return false;
         }
         try {
-            VideoService videoService = (VideoService) ModuleService.getService("VideoService");
+            VideoService videoService = (VideoService) MelotBeanFactory.getBean("videoService");
             if (videoService != null) {
                 return videoService.addNewsToNewsFolder(userNewsFolder);
             } else {
@@ -158,7 +159,7 @@ public class LiveVideoService {
             return 0;
         }
         try {
-            VideoService videoService = (VideoService) ModuleService.getService("VideoService");
+            VideoService videoService = (VideoService) MelotBeanFactory.getBean("videoService");
             if (videoService != null) {
                 return videoService.getUserNewsFolderCount(userId, appId, resType, isSelf);
             } else {
@@ -186,7 +187,7 @@ public class LiveVideoService {
             return 0;
         }
         try {
-            VideoService videoService = (VideoService) ModuleService.getService("VideoService");
+            VideoService videoService = (VideoService) MelotBeanFactory.getBean("videoService");
             if (videoService != null) {
                 return videoService.getCheckedUserNewsFolderCount(userId, appId, resType);
             } else {
@@ -216,7 +217,7 @@ public class LiveVideoService {
             return null;
         }
         try {
-            VideoService videoService = (VideoService) ModuleService.getService("VideoService");
+            VideoService videoService = (VideoService) MelotBeanFactory.getBean("videoService");
             if (videoService != null) {
                 return videoService.getUserNewsFolderListBySortType(userId, appId, resType, pageIndex, countPerPage, isSelf, sortType);
             } else {
@@ -245,7 +246,7 @@ public class LiveVideoService {
             return null;
         }
         try {
-            VideoService videoService = (VideoService) ModuleService.getService("VideoService");
+            VideoService videoService = (VideoService) MelotBeanFactory.getBean("videoService");
             if (videoService != null) {
                 return videoService.getNewsInfoById(newsId);
             } else {
@@ -269,7 +270,7 @@ public class LiveVideoService {
             return null;
         }
         try {
-            VideoService videoService = (VideoService) ModuleService.getService("VideoService");
+            VideoService videoService = (VideoService) MelotBeanFactory.getBean("videoService");
             if (videoService != null) {
                 return videoService.getNewsRewardInfo(newsId, count);
             } else {
@@ -294,7 +295,7 @@ public class LiveVideoService {
             return 0;
         }
         try {
-            VideoService videoService = (VideoService) ModuleService.getService("VideoService");
+            VideoService videoService = (VideoService) MelotBeanFactory.getBean("videoService");
             if (videoService != null) {
                 return videoService.getNewsRewardCount(newsId);
             } else {
@@ -318,7 +319,7 @@ public class LiveVideoService {
             return false;
         }
         try {
-            VideoService videoService = (VideoService) ModuleService.getService("VideoService");
+            VideoService videoService = (VideoService) MelotBeanFactory.getBean("videoService");
             if (videoService != null) {
                 return videoService.updateNewsViewTimes(newsId);
             } else {
@@ -349,7 +350,7 @@ public class LiveVideoService {
             return false;
         }
         try {
-            VideoService videoService = (VideoService) ModuleService.getService("VideoService");
+            VideoService videoService = (VideoService) MelotBeanFactory.getBean("videoService");
             if (videoService != null) {
                 return videoService.delNewsFolder(newsId, userId, appId, resType);
             } else {
@@ -378,7 +379,7 @@ public class LiveVideoService {
             return false;
         }
         try {
-            VideoService videoService = (VideoService) ModuleService.getService("VideoService");
+            VideoService videoService = (VideoService) MelotBeanFactory.getBean("videoService");
             if (videoService != null) {
                 return videoService.updateUserNews(userNews);
             } else {
@@ -405,7 +406,7 @@ public class LiveVideoService {
             return false;
         }
         try {
-            VideoService videoService = (VideoService) ModuleService.getService("VideoService");
+            VideoService videoService = (VideoService) MelotBeanFactory.getBean("videoService");
             if (videoService != null) {
                 return videoService.updateUserNewsFolder(userNewsFolder);
             } else {
@@ -430,7 +431,7 @@ public class LiveVideoService {
         }
         
         try {
-            VideoService videoService = (VideoService) ModuleService.getService("VideoService");
+            VideoService videoService = (VideoService) MelotBeanFactory.getBean("videoService");
             if (videoService != null) {
                 return videoService.getUserAppreciateNewsState(userId, newsId);
             } else {
@@ -457,7 +458,7 @@ public class LiveVideoService {
         }
         
         try {
-            VideoService videoService = (VideoService) ModuleService.getService("VideoService");
+            VideoService videoService = (VideoService) MelotBeanFactory.getBean("videoService");
             if (videoService != null) {
                 return videoService.appreciateUserNews(histUserNewsAppreciate);
             } else {
@@ -483,7 +484,7 @@ public class LiveVideoService {
             return false;
         }
         try {
-            VideoService videoService = (VideoService) ModuleService.getService("VideoService");
+            VideoService videoService = (VideoService) MelotBeanFactory.getBean("videoService");
             if (videoService != null) {
                 return videoService.updateNewsState(userId, newsId, checkId, state);
             } else {
@@ -507,7 +508,7 @@ public class LiveVideoService {
      */
     public static TempUserResource getTempUserResourceById(Integer id, Integer userId, Integer resType, Integer resId, Integer status) {
         try {
-            VideoService videoService = (VideoService) ModuleService.getService("VideoService");
+            VideoService videoService = (VideoService) MelotBeanFactory.getBean("videoService");
             if (videoService != null) {
                 return videoService.getTempUserResourceById(id, userId, resType, resId, status);
             } else {
@@ -529,7 +530,7 @@ public class LiveVideoService {
      */
     public static int addTempUserResource(TempUserResource tempUserResource) {
         try {
-            VideoService videoService = (VideoService) ModuleService.getService("VideoService");
+            VideoService videoService = (VideoService) MelotBeanFactory.getBean("videoService");
             if (videoService != null) {
                return videoService.addTempUserResource(tempUserResource);
             } else {
@@ -551,7 +552,7 @@ public class LiveVideoService {
      */
     public static List<TempUserResource> getTempUserResByUserId(int userId, Integer resType, Integer status) {
         try {
-            VideoService videoService = (VideoService) ModuleService.getService("VideoService");
+            VideoService videoService = (VideoService) MelotBeanFactory.getBean("videoService");
             if (videoService != null) {
                return videoService.getTempUserResByUserId(userId, resType, status);
             } else {
@@ -574,7 +575,7 @@ public class LiveVideoService {
      */
     public static void delTempUserResourceById(Integer id, Integer userId, Integer resType, Integer resId, Integer status) {
         try {
-            VideoService videoService = (VideoService) ModuleService.getService("VideoService");
+            VideoService videoService = (VideoService) MelotBeanFactory.getBean("videoService");
             if (videoService != null) {
                videoService.delTempUserResourceById(id, userId, resType, resId, status);
             } else {
@@ -595,7 +596,7 @@ public class LiveVideoService {
      */
     public static boolean checkingPortrait(int userId) {
         try {
-            VideoService videoService = (VideoService) ModuleService.getService("VideoService");
+            VideoService videoService = (VideoService) MelotBeanFactory.getBean("videoService");
             if (videoService != null) {
                return videoService.checkingPortrait(userId);
             } else {

@@ -1,18 +1,19 @@
 package com.melot.kktv.redis;
 
-import com.google.gson.JsonObject;
-import com.melot.kktv.util.redis.RedisConfigHelper;
-import redis.clients.jedis.Jedis;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.gson.JsonObject;
+import com.melot.kktv.util.redis.RedisConfigHelper;
+
+import redis.clients.jedis.Jedis;
+
 public class MatchSource {
 	
 	private static final String SOURCE_NAME = "Match";
-
+	
     // 最近2场家族擂台赛信息
     private static final String RECENTFAMILYMATCHCACHE_KEY = "recentFamilyMatch";
 	// 家族擂台赛本期本场比赛结果	(familyMatchPlay_period_play)
@@ -805,7 +806,7 @@ public class MatchSource {
 		return null;
 	}
 
-    /**
+	/**
      * 获取最近2场家族擂台赛信息
      * @param period
      * @param play
@@ -826,5 +827,4 @@ public class MatchSource {
         }
         return data;
     }
-	
 }

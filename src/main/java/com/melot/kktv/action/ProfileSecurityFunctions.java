@@ -31,7 +31,6 @@ import com.melot.kktv.util.PlatformEnum;
 import com.melot.kktv.util.SecurityFunctions;
 import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
-import com.melot.module.ModuleService;
 import com.melot.opus.domain.QiNiuTokenConf;
 import com.melot.opus.service.BasicService;
 import com.melot.qiniu.common.QiniuService;
@@ -1186,7 +1185,7 @@ public class ProfileSecurityFunctions {
      * @return
      */
     private static String getQinuUploadToken(QiNiuTokenConf qiNiuTokenConf) {
-        BasicService basicService = (BasicService) ModuleService.getService("BasicService");
+        BasicService basicService = (BasicService) MelotBeanFactory.getBean("basicService");
         if (basicService != null) {
             return basicService.getUpLoadTokenByDomain(qiNiuTokenConf);
         }
