@@ -101,7 +101,6 @@
 	</bean>
   	
   	<bean id="gameApiAction" class="com.melot.kkgame.action.GameApiAction" />
-	<bean id="gameVideoAction" class="com.melot.kkgame.action.GameVideoAction" />
 	<bean id="gameActivityAction" class="com.melot.kkgame.action.GameActivityAction" />
 	
 	<bean id="gameHallAction" class="com.melot.kkgame.action.HallFunction">
@@ -123,11 +122,6 @@
 		<property name="signInTaskSource" ref="signInTaskSource"/>
   	</bean>
   	
-	<bean id="gamblingFunction" class="com.melot.kkgame.action.GamblingFunction">
-		<property name="gamblingSource" ref="gamblingSource" />
-		<property name="userGambleService" ref="userGambleService" />
-		<property name="roomMessageSource" ref="roomMsgSource" />
-	</bean>
 	<bean id="eventFunction" class="com.melot.kkgame.action.sport.EventFunction" />
 	
 	<bean id="eventNewsFunction" class="com.melot.kkgame.action.sport.EventNewsFunction">
@@ -145,15 +139,7 @@
 	<bean id="gameCenterFunction" class="com.melot.kkgame.action.GameCenterFunction" />
 	
 	<!-- 主播信息相关接口 -->
-	<bean id="actorFunction" class="com.melot.kkgame.action.ActorFunction">
-		<property name="actorInfoSource" ref="actorInfoSource" />
-		<property name="gamblingSource" ref="gamblingSource" />
-	</bean>
-	
-	<!-- KK彩票相关接口 -->
-  	<bean id="lotteryFunction" class="com.melot.kkgame.action.LotteryFunction">
-  		<property name="lotteryTaskSource" ref="lotteryTaskSource" />
-  	</bean>
+	<bean id="actorFunction" class="com.melot.kkgame.action.ActorFunction" />
 	
 	<!-- 活动相关接口 -->
 	<bean id="rankFunction" class="com.melot.kkgame.action.RankFunction">

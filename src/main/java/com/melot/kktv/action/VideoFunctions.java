@@ -25,19 +25,18 @@ import com.melot.kktv.service.UserService;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
-import com.melot.kktv.util.db.DB;
-import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.Constant;
 import com.melot.kktv.util.PlatformEnum;
 import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
-import com.melot.module.ModuleService;
+import com.melot.kktv.util.db.DB;
+import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.opus.domain.QiNiuTokenConf;
 import com.melot.opus.domain.UserNews;
 import com.melot.opus.domain.UserNewsFolder;
+import com.melot.opus.driver.enums.NewsOrderTypeEnum;
 import com.melot.opus.service.BasicService;
-import com.melot.opus.util.NewsOrderTypeEnum;
 import com.melot.qiniu.common.QiniuService;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import com.melot.video.driver.domain.VideoInfo;
@@ -890,7 +889,7 @@ public class VideoFunctions {
      * @return
      */
     private static String getQinuUploadToken(QiNiuTokenConf qiNiuTokenConf) {
-        BasicService basicService = (BasicService) ModuleService.getService("BasicService");
+        BasicService basicService = (BasicService) MelotBeanFactory.getBean("basicService");
         if (basicService != null) {
             return basicService.getUpLoadTokenByDomain(qiNiuTokenConf);
         }

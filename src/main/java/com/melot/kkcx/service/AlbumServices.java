@@ -18,7 +18,7 @@ import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.kktv.util.mongodb.CommonDB;
 import com.melot.opus.domain.TempUserResource;
-import com.melot.opus.util.OpusCostantEnum;
+import com.melot.opus.driver.enums.OpusCostantEnum;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.upyun.api.UpYun;

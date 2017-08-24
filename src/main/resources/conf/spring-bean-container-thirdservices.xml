@@ -39,7 +39,6 @@
 	<bean id="qqService" class="com.melot.kktv.third.service.QQService">
 		<property name="thirdName" value="QQ"/>
 		<property name="openPlatform" value="1"/>
-		<property name="serverUrl" value="https://graph.qq.com/user/get_user_info"/>
 		<property name="unionServerUrl" value="https://graph.qq.com/oauth2.0/me"/>
 	</bean>
 	
