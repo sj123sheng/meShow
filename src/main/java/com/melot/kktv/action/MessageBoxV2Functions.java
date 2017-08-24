@@ -94,10 +94,10 @@ public class MessageBoxV2Functions {
      */
     public JsonObject refreshToGetMsgTotal(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
         JsonObject result = new JsonObject();
-        /*if (!checkTag) {
+        if (!checkTag) {
             result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
             return result;
-        }*/
+        }
         
         int userId;
         int platform;
