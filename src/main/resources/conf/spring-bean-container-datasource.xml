@@ -4,19 +4,6 @@
     xsi:schemaLocation="http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-	<bean id="mongoClientAgent" class="com.melot.kktv.util.mongodb.MongoClientAgent" destroy-method="freeInstance" lazy-init="true" >
-	</bean>
-	<bean id="commonDB" class="com.melot.kktv.util.mongodb.MongoDBInstance" destroy-method="destroy" lazy-init="true">
-		<constructor-arg name="mongoClientAgent" ref="mongoClientAgent" />
-		<constructor-arg name="dbName" value="${spring.ds.mongodh.commonDB.dbName}" />
-		<constructor-arg name="commMongoIPPort" value="${spring.ds.mongodh.commonDB.commMongoIPPort}" />
-	</bean>
-	<bean id="cacheDB" class="com.melot.kktv.util.mongodb.MongoDBInstance" destroy-method="destroy" lazy-init="true">
-		<constructor-arg name="mongoClientAgent" ref="mongoClientAgent" />
-		<constructor-arg name="dbName" value="${spring.ds.mongodh.cacheDB.dbName}" />
-		<constructor-arg name="commMongoIPPort" value="${spring.ds.mongodh.cacheDB.commMongoIPPort}" />
-	</bean>
-
 	<!-- DBMS -->
 	<bean id="dataSource_master" class="com.alibaba.druid.pool.DruidDataSource" destroy-method="close" lazy-init="true">
 		<property name="driverClassName" value="${spring.ds.oracle.driverClassName}"/>

@@ -1325,6 +1325,11 @@
 		<constructor-arg name="t" ref="otherFunction"/>
 		<constructor-arg name="methodName" value="getBrokerageFirmInfoList"/>
 	</bean>
+	<!-- IOS递交版本审核接口 -->
+	<bean id="10007005" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="otherFunction" />
+		<constructor-arg name="methodName" value="appleSubmitVersion" />
+	</bean>
 	
 	<!-- 用户档案安全接口类 -->
 	<!-- 安全注册 -->

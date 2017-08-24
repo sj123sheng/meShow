@@ -8,13 +8,9 @@ import org.apache.log4j.Logger;
 import org.apache.struts2.ServletActionContext;
 
 import com.google.gson.JsonObject;
-import com.melot.content.config.version.domain.VersionInfo;
-import com.melot.content.config.version.service.VersionInfoService;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.PlatformEnum;
 import com.melot.kktv.util.TagCodeEnum;
-import com.melot.sdk.core.util.MelotBeanFactory;
 import com.opensymphony.xwork2.ActionSupport;
 
 /**
@@ -44,69 +40,6 @@ public class CommonAction extends ActionSupport {
 	private String resMsg;
 
 	private Integer userId;
-
-	public String uploadApk() {
-		if (versionName == null || versionName.isEmpty()) {
-			resMsg = "请填写正确版本名称!";
-			return SUCCESS;
-		}
-		if (versionDesc == null || versionDesc.isEmpty()) {
-			resMsg = "版本描述不能为空!";
-			return SUCCESS;
-		}
-		if (versionPlatform == null || versionPlatform.intValue() <= 0) {
-			resMsg = "请选择正确平台编号!";
-			return SUCCESS;
-		}
-		if (versionPlatform == PlatformEnum.ANDROID) {
-			if (versionUrl == null || versionUrl.isEmpty()) {
-				resMsg = "请填写正确下载地址!";
-				return SUCCESS;
-			}
-		}
-		if (versionStatus == null || versionStatus.intValue() <= 0) {
-			resMsg = "请选择正确升级方式!";
-			return SUCCESS;
-		}
-		if (versionCode == null || versionCode.intValue() <= 0) {
-			resMsg = "请填写正确版本编号!";
-			return SUCCESS;
-		}
-		if (versionAppId == null || versionAppId.intValue() <= 0) {
-			resMsg = "请选择正确产品编号!";
-			return SUCCESS;
-		}
-		if (versionHullId == null || versionHullId.intValue() <= 0) {
-			versionHullId = 0;
-		}
-		if (versionChannel == null || versionChannel.intValue() <= 0) {
-			versionChannel = 0;
-		}
-		
-		VersionInfo version = new VersionInfo();
-		version.setVersionUrl(versionUrl);
-		version.setVersionCode(versionCode);
-		version.setVersionName(versionName);
-		version.setVersionDesc(versionDesc);
-		version.setVersionPlatform(versionPlatform);
-		version.setVersionStatus(versionStatus);
-		version.setVersionAppId(versionAppId);
-		version.setVersionHullId(versionHullId);
-		version.setVersionChannel(versionChannel);
-		try {
-			VersionInfoService versionInfoService = MelotBeanFactory.getBean("versionInfoService", VersionInfoService.class);
-			Integer versionId = versionInfoService.createVersion(version);
-			if (versionId > 0) {
-				resMsg = "Successful Create version";
-			} else {
-				resMsg = "Fail To Create version";
-			}
-		} catch(Exception e) {
-			logger.error("Fail to call versionService.createVersion, version:" + version.toString(), e);
-			resMsg = e.getMessage();
-		}
-		return SUCCESS;
-	}
 
 	public String uploadCrash() {
 

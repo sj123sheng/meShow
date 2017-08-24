@@ -41,8 +41,6 @@ public class ConfigHelper {
 	private static String cacheMongoIP = "";
 	private static int commonMongoPort = 0;
 	private static int cacheMongoPort = 0;
-	private static String commonDB = "";
-	private static String cacheDB = "";
 	private static int connectionsPerHost = 100;
 	private static int connectTimeout = 120000;
 	private static int threadsAllowedToBlockForConnectionMultiplier = 50;
@@ -224,8 +222,6 @@ public class ConfigHelper {
 			connectionsPerHost = Integer.parseInt(root.getChildText("connectionsPerHost"));
 			connectTimeout = Integer.parseInt(root.getChildText("connectTimeout"));
 			threadsAllowedToBlockForConnectionMultiplier = Integer.parseInt(root.getChildText("threadsAllowedToBlockForConnectionMultiplier"));
-			commonDB = root.getChildText("commonDB");
-			cacheDB = root.getChildText("cacheDB");
 			mfsURL = root.getChildText("mfsURL");
 			mcmURL = root.getChildText("mcmURL");
 			
@@ -542,22 +538,6 @@ public class ConfigHelper {
 		ConfigHelper.threadsAllowedToBlockForConnectionMultiplier = threadsAllowedToBlockForConnectionMultiplier;
 	}
 
-	public static String getCommonDB() {
-		return commonDB;
-	}
-
-	public static void setCommonDB(String commonDB) {
-		ConfigHelper.commonDB = commonDB;
-	}
-
-	public static String getCacheDB() {
-		return cacheDB;
-	}
-
-	public static void setCacheDB(String cacheDB) {
-		ConfigHelper.cacheDB = cacheDB;
-	}
-	
 	@Deprecated
 	public static int getVip0() {
 		return vip0;

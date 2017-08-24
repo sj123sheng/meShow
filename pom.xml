@@ -179,7 +179,7 @@
 		<dependency>
 		  	<groupId>com.melot</groupId>
 		  	<artifactId>melot-api-common</artifactId>
-		  	<version>0.0.37-SNAPSHOT</version>
+		  	<version>0.0.38-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.melot.module.api</groupId>
@@ -413,7 +413,7 @@
 		<dependency>
 		    <groupId>com.melot.module</groupId>
 		    <artifactId>kkcore-account-api</artifactId>
-		    <version>1.0.6-SNAPSHOT</version>
+		    <version>1.0.6</version>
 		</dependency>
 		<dependency>
             <groupId>com.melot</groupId>

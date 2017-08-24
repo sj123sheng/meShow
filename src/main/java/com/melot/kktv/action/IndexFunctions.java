@@ -2923,17 +2923,16 @@ public class IndexFunctions {
 		}
 		//根据上次读取时间查询未读新动态数量和新比赛数量
 		int newsRemindCnt = NewsService.getUnReadNewsNum(userId, lastNewsTime);
-		int matchRemindCnt = NewsService.getUnReadMatchNum(lastMatchTime);
 		//查询结果更新到redis,并更新上次读取发现提醒时间
 		Map<String, String> record = new HashMap<String, String>();
 		record.put("newsCnt", String.valueOf(newsRemindCnt));
-		record.put("matchCnt", String.valueOf(matchRemindCnt));
+		record.put("matchCnt", "0");
 		if (!NewsSource.setDiscoverRecord(String.valueOf(userId), record)) {
 			logger.error("Fail to update USER_REMIND_RECORD ");
 		}
 		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 		result.addProperty("newsRemindCnt", newsRemindCnt);
-		result.addProperty("matchRemindCnt", matchRemindCnt);
+		result.addProperty("matchRemindCnt", 0);
 		return result;
 	}
     

@@ -15,13 +15,11 @@ import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.TextFilter;
 import com.melot.kktv.util.TlsSig;
 import com.melot.kktv.util.WordsFilter;
+import com.melot.kktv.util.cache.EhCache;
 import com.melot.kktv.util.confdynamic.InitConfig;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
-import com.melot.kktv.util.mongodb.CommonDB;
-import com.melot.kktv.util.mongodb.MongoDBInstance;
 import com.melot.kktv.util.redis.RedisConfigHelper;
-import com.melot.kktv.util.cache.EhCache;
 import com.melot.sdk.core.util.MelotBeanFactory;
 
 public class ConfigContextListener implements ServletContextListener {
@@ -34,9 +32,6 @@ public class ConfigContextListener implements ServletContextListener {
 	    // SqlMapClient destroy
         SqlMapClientHelper.destroy();
         
-		// MongoDB destroy
-		CommonDB.close();
-		
 		// Redis destroy
 		RedisConfigHelper.destroy();
 		
@@ -55,8 +50,6 @@ public class ConfigContextListener implements ServletContextListener {
 		MelotBeanFactory.init("classpath*:/conf/spring-bean-container*.xml");
 
 		initSqlMapClientConnections();
-		
-		initMongoConnections();
 		
 		String configLocation = event.getServletContext().getInitParameter("configLocation");
 		if (configLocation != null) {
@@ -128,17 +121,5 @@ public class ConfigContextListener implements ServletContextListener {
 		SqlMapClientHelper.initSqlMapClient(DB.MASTER_PG, MelotBeanFactory.getBean("sqlMapClient_pg_master", SqlMapClient.class));
 		SqlMapClientHelper.initSqlMapClient(DB.SLAVE_PG, MelotBeanFactory.getBean("sqlMapClient_pg_slave", SqlMapClient.class));
 		SqlMapClientHelper.initSqlMapClient(com.melot.kktv.util.DBEnum.KKCX_PG, kkcxSqlMapClient);
-	}
-    
-	/**
-	 * init mongodb connections
-	 */
-	private void initMongoConnections() {
-		
-		MongoDBInstance commonDB = (MongoDBInstance) MelotBeanFactory.getBean("commonDB");
-		MongoDBInstance cacheDB = (MongoDBInstance) MelotBeanFactory.getBean("cacheDB");
-		
-		CommonDB.initInstance(CommonDB.COMMONDB, commonDB.getMongo());
-		CommonDB.initInstance(CommonDB.CACHEDB, cacheDB.getMongo());
 	}
 }
