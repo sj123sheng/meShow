@@ -10,16 +10,12 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.google.common.collect.Lists;
-import com.melot.kk.module.report.dbo.ReportFlowRecord;
-import com.melot.kk.module.report.service.ReportFlowService;
-import com.melot.kk.module.report.util.CommonStateCode;
-import com.melot.kk.module.report.util.Result;
 import org.apache.log4j.Logger;
 
 import com.chinacreator.videoalliance.util.ChinaUnicomEnum;
 import com.chinacreator.videoalliance.util.DesUtil;
 import com.dianping.cat.Cat;
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -39,6 +35,10 @@ import com.melot.content.config.live.upload.impl.YouPaiService;
 import com.melot.content.config.report.service.RecordProcessedRecordService;
 import com.melot.content.config.utils.Constants;
 import com.melot.family.driver.domain.FamilyInfo;
+import com.melot.kk.module.report.dbo.ReportFlowRecord;
+import com.melot.kk.module.report.service.ReportFlowService;
+import com.melot.kk.module.report.util.CommonStateCode;
+import com.melot.kk.module.report.util.Result;
 import com.melot.kkcore.user.api.ShowMoneyHistory;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.api.UserStaticInfo;
@@ -54,6 +54,7 @@ import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.service.ConsumeService;
 import com.melot.kktv.service.GeneralService;
 import com.melot.kktv.service.UserService;
+import com.melot.kktv.util.AppChannelEnum;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
@@ -2621,6 +2622,56 @@ public class OtherFunctions {
                 }
             }
         }
+        return result;
+    }
+    
+    /**
+     * iphone/ipad 递交版本接口(10007005)
+     * 
+     * @param jsonObject 请求对象
+     * @return 标记信息
+     */
+    public JsonObject appleSubmitVersion(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+
+        String version;
+        int platform, appId, channel, hullId;
+        
+        JsonObject result = new JsonObject();
+        try {
+            version = CommonUtil.getJsonParamString(jsonObject, "version", null, null, 1, Integer.MAX_VALUE);
+            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, "07020005", 1, Integer.MAX_VALUE);
+            appId = CommonUtil.getJsonParamInt(jsonObject, "a", 0, null, 1, Integer.MAX_VALUE);
+            if (appId == 0) {
+                appId = StringUtil.parseFromStr(MelotBeanFactory.getBean("appId", String.class), AppIdEnum.AMUSEMENT);
+            }
+            channel = CommonUtil.getJsonParamInt(jsonObject, "c", 0, null, 1, Integer.MAX_VALUE);
+            if (channel == 0) {
+                channel = StringUtil.parseFromStr(MelotBeanFactory.getBean("channelId", String.class), AppChannelEnum.KK);
+            }
+            hullId = CommonUtil.getJsonParamInt(jsonObject, "b", 0, null, 1, Integer.MAX_VALUE);
+        } catch(CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch(Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        try {
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("appId", appId);
+            map.put("channel", channel);
+            map.put("platform", platform);
+            map.put("hullId", hullId);
+            map.put("version", version);
+            version = (String) SqlMapClientHelper.getInstance(DBEnum.KKCX_PG).queryForObject("Other.getAppleSubmitVersion", map);
+        } catch (SQLException e) {
+            result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
+            return result;
+        }
+        
+        result.addProperty("version", version);
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
 }

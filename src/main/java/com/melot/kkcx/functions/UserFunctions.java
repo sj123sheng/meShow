@@ -593,7 +593,6 @@ public class UserFunctions {
 		String clientIp = null;
 		// 快牙数据
 		String phoneNum = null;
-		// parse the parameters
 		try {
 			appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 1, Integer.MAX_VALUE);
 			openPlatform = CommonUtil.getJsonParamInt(jsonObject, "openPlatform", 0, "01060001", 1, Integer.MAX_VALUE);
@@ -669,14 +668,27 @@ public class UserFunctions {
 		// 若为支付宝第三方用户 判断sessionId
 		String alipayUserInfo = null;
 		if ((openPlatform == LoginTypeEnum.QQ || openPlatform == LoginTypeEnum.WEIBO
-                || openPlatform == LoginTypeEnum.WEIXIN|| openPlatform == LoginTypeEnum.ALIPAY)
+                || openPlatform == LoginTypeEnum.WEIXIN|| openPlatform == LoginTypeEnum.ALIPAY
+                || openPlatform == LoginTypeEnum.FACEBOOK)
                 && sessionId == null) {
             //老版本qq和微博不传session,过渡:兼容不做验证  2016-1-13 cj
+
 		    
 		    //兼容下客户端不传sessionId时,unionId传"(null)"
 		    if (openPlatform == LoginTypeEnum.QQ) {
 		        unionid = null;
 		    }
+		    if (openPlatform == LoginTypeEnum.FACEBOOK && unionid != null) {
+                com.melot.kkcore.account.service.AccountService accountService = (com.melot.kkcore.account.service.AccountService) MelotBeanFactory.getBean("kkAccountService");
+                String[] uuidArr = unionid.split(",");
+                for (String uuidStr : uuidArr) {
+                    if (accountService.isUuidValid(uuidStr, openPlatform) > 0) {
+                        result.addProperty("TagCode", "01060103");
+                        return result;
+                    }
+                }
+                unionid = null;
+            }
         } else {
 			//Third user login verify
 			if (openPlatform == LoginTypeEnum.DIDA) {
@@ -1101,6 +1113,15 @@ public class UserFunctions {
 
         com.melot.kkcore.account.service.AccountService accountService = (com.melot.kkcore.account.service.AccountService) MelotBeanFactory.getBean("kkAccountService");
         
+        if (loginType == LoginTypeEnum.FACEBOOK && unionid != null) {
+            String[] uuidArr = unionid.split(",");
+            for (String uuidStr : uuidArr) {
+                if (accountService.isUuidValid(uuidStr, loginType) > 0) {
+                    uuid = uuidStr;
+                    break;
+                }
+            }
+        }
         // 根据登录类型初始化调用参数
         ResLogin resLogin = null;
         Map<String,Object> extendData = new HashMap<String, Object>();

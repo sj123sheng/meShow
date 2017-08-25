@@ -39,7 +39,6 @@ import com.melot.kktv.redis.FamilySource;
 import com.melot.kktv.redis.MedalSource;
 import com.melot.kktv.redis.RedisServiceKey;
 import com.melot.kktv.util.AppIdEnum;
-import com.melot.kktv.util.CollectionEnum;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.Constant;
 import com.melot.kktv.util.FamilyMemberEnum;
@@ -49,9 +48,7 @@ import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
-import com.melot.kktv.util.mongodb.CommonDB;
 import com.melot.sdk.core.util.MelotBeanFactory;
-import com.mongodb.BasicDBObject;
 
 public class FamilyService {
 	
@@ -553,18 +550,6 @@ public class FamilyService {
 	}
 	
 	/**
-	 * 更新mongodb的userList中familyId字段
-	 * @param userId
-	 * @param familyId null/integer
-	 */
-	private static void updateUserFamilyId(int userId, Integer familyId) {
-		CommonDB.getInstance(CommonDB.COMMONDB)
-				.getCollection(CollectionEnum.USERLIST)
-				.update(new BasicDBObject("userId", userId),
-						new BasicDBObject("$set", new BasicDBObject("familyId", familyId)), false, false);
-	}
-	
-	/**
 	 * 用户退出家族
 	 * @param userId
 	 * @param familyId
@@ -589,8 +574,6 @@ public class FamilyService {
 				if (memberCount != null) {
 					updateFamilyMemberCount(familyId, memberCount.intValue());
 				}
-				// 更新mongodb的userList中familyId字段
-				updateUserFamilyId(userId, null);
 				// 删除REDIS用户家族
 				FamilySource.delFamilyMember(String.valueOf(userId));
 				// 家族勋章失效
@@ -772,8 +755,6 @@ public class FamilyService {
 				for (String uid : userIds.split(",")) {
 					Integer i_userId = Integer.valueOf(uid);
 					if (!String.valueOf(userId).equals(uid) && !notPassUseridsList.contains(uid)) {
-						// 更新mongodb的userList
-						updateUserFamilyId(i_userId, null);
 						// 删除REDIS用户家族
                         FamilySource.delFamilyMember(uid);
 						// 家族勋章失效
@@ -785,8 +766,6 @@ public class FamilyService {
 							logger.error("Fail to delete redis user medal Info", e);
 						}
 						noticeIds.add(i_userId);
-					} else {
-						updateUserFamilyId(i_userId, family.getFamilyId());
 					}
 				}
 				
@@ -950,8 +929,6 @@ public class FamilyService {
 				for (String uid : userIds.split(",")) {
 					Integer i_userId = Integer.valueOf(uid);
 					if (!String.valueOf(userId).equals(uid) && !notPassUseridsList.contains(uid)) {
-						// 更新mongodb的userList
-						updateUserFamilyId(i_userId, family.getFamilyId());
 						// 删除REDIS
 						FamilyApplySource.cancelJoinFamily(family.getFamilyId().toString(), String.valueOf(uid));
 						FamilySource.setFamilyMember(family.getFamilyId().toString(), String.valueOf(uid));

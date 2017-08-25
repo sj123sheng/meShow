@@ -62,7 +62,6 @@ import com.melot.kktv.service.UserRelationService;
 import com.melot.kktv.util.AppChannelEnum;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CityUtil;
-import com.melot.kktv.util.CollectionEnum;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.DateUtil;
@@ -73,7 +72,6 @@ import com.melot.kktv.util.TextFilter;
 import com.melot.kktv.util.confdynamic.MedalConfig;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
-import com.melot.kktv.util.mongodb.CommonDB;
 import com.melot.module.api.exceptions.MelotModuleException;
 import com.melot.module.medal.driver.domain.ConfMedal;
 import com.melot.module.medal.driver.domain.UserActivityMedal;
@@ -92,8 +90,6 @@ import com.melot.sdk.core.util.MelotBeanFactory;
 import com.melot.showmoney.driver.domain.PageShowMoneyHistory;
 import com.melot.showmoney.driver.domain.ShowMoneyHistory;
 import com.melot.showmoney.driver.service.ShowMoneyService;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 
 public class ProfileFunctions {
 	
@@ -2429,50 +2425,6 @@ public class ProfileFunctions {
 		}
 	}
 	
-	/**
-	 * 获取用户系统管理员类型 4:官,5:代(改成售),7:巡, 8:技, 9:运 (10005039)
-	 * @param jsonObject 请求对象
-	 * @param checkTag 是否验证token标记
-	 * @return
-	 */
-	public JsonObject getUserAdminType(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-		
-		JsonObject result = new JsonObject();
-		
-		JsonElement userIdje = jsonObject.get("userId");
-		Integer userId = null;
-		if (userIdje != null && !userIdje.isJsonNull() && !userIdje.getAsString().isEmpty()) {
-			try {
-				userId = userIdje.getAsInt();
-			} catch (Exception e) {
-				result.addProperty("TagCode", "05390002");
-				return result;
-			}
-		} else {
-			result.addProperty("TagCode", "05390001");
-			return result;
-		}
-		
-		Integer adminType = 0;
-		DBObject dbObj = CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.SITEADMINLIST)
-				.findOne(new BasicDBObject("userId", userId));
-		if (dbObj!=null && dbObj.containsField("admin")) {
-			if (dbObj.get("admin") instanceof Double) {
-				adminType = Integer.valueOf(((Double) dbObj.get("admin")).intValue());
-			}
-			if (dbObj.get("admin") instanceof Integer) {
-				adminType = (Integer) dbObj.get("admin");
-			}
-			if (dbObj.get("admin") instanceof String) {
-				adminType = Integer.parseInt((String) dbObj.get("admin"));
-			}
-		}
-		result.addProperty("adminType", adminType);
-		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-		return result;
-		
-	}
-
     /**
      * 修改房间主题（10005055）
      * @param paramJsonObject

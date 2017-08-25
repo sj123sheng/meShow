@@ -1,6 +1,22 @@
 package com.melot.kktv.service;
 
-import com.google.gson.*;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
+
+import org.apache.log4j.Logger;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import com.ibatis.sqlmap.client.SqlMapSession;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
@@ -12,25 +28,23 @@ import com.melot.kktv.model.News;
 import com.melot.kktv.model.NewsTagConf;
 import com.melot.kktv.model.NewsTagRes;
 import com.melot.kktv.redis.NewsSource;
-import com.melot.kktv.util.*;
+import com.melot.kktv.util.ConfigHelper;
+import com.melot.kktv.util.Constant;
+import com.melot.kktv.util.DateUtil;
+import com.melot.kktv.util.NewsMediaTypeEnum;
+import com.melot.kktv.util.PlatformEnum;
+import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
-import com.melot.kktv.util.mongodb.CommonDB;
 import com.melot.news.domain.NewsCommentHist;
 import com.melot.news.model.NewsInfo;
 import com.melot.news.model.WhiteUser;
 import com.melot.qiniu.common.QiniuService;
 import com.melot.resource.domain.Resource;
 import com.melot.sdk.core.util.MelotBeanFactory;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 import com.upyun.api.UpYun;
-import org.apache.log4j.Logger;
-import redis.clients.jedis.Tuple;
 
-import java.sql.SQLException;
-import java.util.*;
-import java.util.regex.Pattern;
+import redis.clients.jedis.Tuple;
 
 public class NewsService {
 	
@@ -784,12 +798,6 @@ public class NewsService {
 		return 0;
 	}
     
-	public static int getUnReadMatchNum(long lastMatchTime) {
-		DBObject basicDBObject = new BasicDBObject("startTime", new BasicDBObject("$gt", lastMatchTime));
-		basicDBObject.put("useable", 1);
-		return (int) CommonDB.getInstance(CommonDB.COMMONDB).getCollection(CollectionEnum.MATCHCONFIG).count(basicDBObject);
-	}
-	
 	/**
 	 * (添加、修改)人工推荐动态
 	 * @param index

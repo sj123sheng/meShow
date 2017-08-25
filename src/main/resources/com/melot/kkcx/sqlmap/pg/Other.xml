@@ -19,5 +19,9 @@
 	<select id="getactorNoticeList" parameterClass="java.util.Map" resultMap="actorNoticeMap">
 		select * from kkcx.p_conf_actor_notice_getlistbytype(#type#,#start#,#offset#)
 	</select>
+	
+	<select id="getAppleSubmitVersion" parameterClass="java.util.Map" resultClass="java.lang.String">
+		select * from kkcx.p_auditing_version_update(#appId#, #channel#, #platform#, #hullId#, #version#)
+	</select>
 		
 </sqlMap>
