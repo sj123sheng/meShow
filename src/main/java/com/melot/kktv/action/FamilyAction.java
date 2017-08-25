@@ -23,6 +23,7 @@ import com.melot.kktv.redis.FamilyApplySource;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.MatchSource;
 import com.melot.kktv.redis.MedalSource;
+import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.util.*;
 import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
 import com.melot.kktv.util.db.DB;
@@ -31,6 +32,8 @@ import com.melot.module.medal.driver.domain.ResultByFamilyMedal;
 import com.melot.module.medal.driver.service.FamilyMedalService;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import java.sql.SQLException;
@@ -49,14 +52,25 @@ public class FamilyAction {
 	
 	private static Long EXPIRE_TIME_OF_FAMILY_LIST_CACHE = null;
 	private static List<Integer> FAMILYID_JSON_ARRAY_CACHE = new ArrayList<Integer>();
-	
-	/**
+
+	@Autowired
+	private String httpdir;
+
+	@Autowired
+    ConfigService configService;
+
+    /**
 	 * 获取家族列表(10008001 ok)
 	 * @param jsonObject
 	 * @return
 	 */
 	public JsonObject getFamilyList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-		
+
+	    System.out.println(httpdir + "==============================httpdir");
+	    String httpdirBean = (String) MelotBeanFactory.getBean("httpdir");
+        System.out.println(httpdirBean + "============================httpdirBean");
+        String disconfHttpdir = configService.getDisconfHttpdir();
+        System.out.println(disconfHttpdir + "=============================disconfHttpdir");
 		// 定义使用的参数
 		int platform = 0;
 		int start = 0;
