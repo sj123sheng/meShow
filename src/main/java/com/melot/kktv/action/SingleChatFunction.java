@@ -13,6 +13,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
+import com.melot.api.menu.sdk.service.RoomInfoService;
 import com.melot.singlechat.driver.base.Result;
 import com.melot.singlechat.driver.base.ResultCode;
 import com.melot.singlechat.driver.domain.HistSingleChatInfo;
@@ -27,6 +28,7 @@ import com.melot.singlechat.driver.service.SingleChatServerService;
 import com.melot.singlechat.driver.service.SingleChatService;
 import com.melot.kk.activity.driver.MissionService;
 import com.melot.kkcore.user.api.UserAssets;
+import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.transform.RoomTF;
 import com.melot.kktv.model.transform.SingleChatServerTF;
@@ -561,14 +563,28 @@ public class SingleChatFunction {
                 }
                 
                 result = SingleChatServerTF.serverInfoToJson(singleChatServer);
+
+                // 获取开播状态
+                try {
+                    SingleChatService singleChatService = MelotBeanFactory.getBean("singleChatService", SingleChatService.class);
+                    Result<HistSingleChatInfo> infoResult = singleChatService.getSingleChatInfoByActorId(singleChatServer.getUserId());
+                    if (infoResult == null || infoResult.getData() == null) {
+                        result.addProperty("actorState", 2);
+                    }else {
+                        result.addProperty("actorState", infoResult.getData().getState());
+                    }
+                    
+                } catch (Exception e) {
+                    logger.error("Module Error SingleChatServerService.getDefaultServerPrice(" + typeId + ")", e);
+                    result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                    return result;
+                }
             }
         } catch (Exception e) {
             logger.error("Module Error SingleChatServerService.getDefaultServerPrice(" + typeId + ")", e);
             result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
             return result;
         }
-        // TODO 获取开播状态
-        result.addProperty("actorState", 2);
         
         result.addProperty("mediaPathPrefix", ConfigHelper.getVideoURL());
         result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
@@ -627,13 +643,52 @@ public class SingleChatFunction {
                     serverJson.addProperty("price", singleChatServer.getPrice());
                     serverJson.addProperty("unit", singleChatServer.getUnit());
                     
-                    // TODO 获取主播状态
-                    serverJson.addProperty("actorState", 2);
+                    // 获取开播状态
+                    try {
+                        SingleChatService singleChatService = MelotBeanFactory.getBean("singleChatService", SingleChatService.class);
+                        Result<HistSingleChatInfo> infoResult = singleChatService.getSingleChatInfoByActorId(singleChatServer.getUserId());
+                        if (infoResult == null || infoResult.getData() == null) {
+                            serverJson.addProperty("actorState", 2);
+                        }else {
+                            serverJson.addProperty("actorState", infoResult.getData().getState());
+                        }
+                        
+                    } catch (Exception e) {
+                        logger.error("Module Error SingleChatServerService.getDefaultServerPrice(" + typeId + ")", e);
+                        result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                        return result;
+                    }
                     
-                    // TODO 获取用户信息
-                    serverJson.addProperty("nickname", 2);
-                    serverJson.addProperty("posterPath_256", 2);
+                    // 获取用户昵称信息
+                    try {
+                        KkUserService kkUserService = MelotBeanFactory.getBean("kkUserService", KkUserService.class);
+                        UserProfile userProfile = kkUserService.getUserProfile(singleChatServer.getUserId());
+                        if (userProfile != null && userProfile.getNickName() != null) {
+                            serverJson.addProperty("nickname", userProfile.getNickName());
+                        }else {
+                            serverJson.addProperty("nickname", "");
+                        }
+                    } catch (Exception e) {
+                        logger.error("Module Error KkUserService.getUserProfile(" + singleChatServer.getUserId() + ")", e);
+                        result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                        return result;
+                    }
                     
+                    // 获取用户海报信息
+                    try {
+                        RoomInfoService roomInfoService = MelotBeanFactory.getBean("roomInfoService", RoomInfoService.class);
+                        RoomInfo roomInfo = roomInfoService.getRoomInfoById(singleChatServer.getUserId());
+                        if (roomInfo != null && roomInfo.getPoster() != null) {
+                            serverJson.addProperty("posterPath_256", roomInfo.getPoster() + "!256");
+                        }else {
+                            serverJson.addProperty("posterPath_256", "");
+                        }
+                            
+                    } catch (Exception e) {
+                        logger.error("Module Error KkUserService.getUserProfile(" + singleChatServer.getUserId() + ")", e);
+                        result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                        return result;
+                    }
                     servers.add(serverJson);
                 }
                 
