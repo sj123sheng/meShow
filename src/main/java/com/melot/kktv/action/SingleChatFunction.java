@@ -8,20 +8,28 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.singlechat.driver.base.Result;
 import com.melot.singlechat.driver.base.ResultCode;
 import com.melot.singlechat.driver.domain.HistSingleChatInfo;
+import com.melot.singlechat.driver.domain.PageSingleChatServer;
 import com.melot.singlechat.driver.domain.SingleChatActorInfo;
+import com.melot.singlechat.driver.domain.SingleChatLabel;
 import com.melot.singlechat.driver.domain.SingleChatRoomInfo;
+import com.melot.singlechat.driver.domain.SingleChatServer;
+import com.melot.singlechat.driver.domain.SingleChatServerPrice;
 import com.melot.singlechat.driver.domain.SingleChatUserInfo;
+import com.melot.singlechat.driver.service.SingleChatServerService;
 import com.melot.singlechat.driver.service.SingleChatService;
 import com.melot.kk.activity.driver.MissionService;
 import com.melot.kkcore.user.api.UserAssets;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.transform.RoomTF;
+import com.melot.kktv.model.transform.SingleChatServerTF;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConfigHelper;
@@ -500,6 +508,321 @@ public class SingleChatFunction {
             }
         } catch (Exception e) {
             logger.error(String.format("Module error: MissionService.doActivityService(%s)", json), e);
+        }
+        
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+    
+    /**
+     * 获取主播标签【51060102】
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getServerInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        int typeId;
+        int actorId;
+        
+        try {
+            typeId = CommonUtil.getJsonParamInt(jsonObject, "typeId", 0, "5106010201", Integer.MIN_VALUE, Integer.MAX_VALUE);
+            actorId = CommonUtil.getJsonParamInt(jsonObject, "actorId", 0, "5106010202", Integer.MIN_VALUE, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        try {
+            SingleChatServerService singleChatServerService = MelotBeanFactory.getBean("singleChatServerService", SingleChatServerService.class);
+            Result<SingleChatServer> serverResult = singleChatServerService.getSingleChatServerInfo(typeId, actorId);
+            if (serverResult == null) {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            if (ResultCode.SUCCESS.equals(serverResult.getCode())) {
+                SingleChatServer singleChatServer = serverResult.getData();
+                if (singleChatServer == null) {
+                    result.addProperty("state", -1);
+                    result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                    return result;
+                }
+                
+                if (singleChatServer.getState() == 3) {
+                    result.addProperty("state", 3);
+                    result.addProperty("checkContent", singleChatServer.getCheckContent() == null ? "" : singleChatServer.getCheckContent());
+                    result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                    return result;
+                }
+                
+                result = SingleChatServerTF.serverInfoToJson(singleChatServer);
+            }
+        } catch (Exception e) {
+            logger.error("Module Error SingleChatServerService.getDefaultServerPrice(" + typeId + ")", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            return result;
+        }
+        // TODO 获取开播状态
+        result.addProperty("actorState", 2);
+        
+        result.addProperty("mediaPathPrefix", ConfigHelper.getVideoURL());
+        result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+    
+    /**
+     * 获取主播标签【51060104】
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getSerevrList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        int typeId;
+        int start;
+        int offset;
+        
+        try {
+            typeId = CommonUtil.getJsonParamInt(jsonObject, "typeId", 0, "5106010401", Integer.MIN_VALUE, Integer.MAX_VALUE);
+            start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 20, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        try {
+            SingleChatServerService singleChatServerService = MelotBeanFactory.getBean("singleChatServerService", SingleChatServerService.class);
+            Result<PageSingleChatServer> pageServerListResult = singleChatServerService.getSingleChatServers(typeId, 1, start, offset);
+            if (pageServerListResult == null) {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            if (ResultCode.SUCCESS.equals(pageServerListResult.getCode())) {
+                PageSingleChatServer pageSingleChatServer = pageServerListResult.getData();
+                List<SingleChatServer> serverList = new ArrayList<>();
+                result.addProperty("count", pageSingleChatServer.getCount());
+                
+                if (pageSingleChatServer.getServers() != null) {
+                    serverList = pageSingleChatServer.getServers();
+                }
+                
+                JsonArray servers = new JsonArray();
+                for (SingleChatServer singleChatServer : serverList) {
+                    JsonObject serverJson = new JsonObject();
+                    serverJson.addProperty("serverId", singleChatServer.getServerId());
+                    serverJson.addProperty("typeId", singleChatServer.getTypeId());
+                    serverJson.addProperty("actorId", singleChatServer.getUserId());
+                    serverJson.addProperty("price", singleChatServer.getPrice());
+                    serverJson.addProperty("unit", singleChatServer.getUnit());
+                    
+                    // TODO 获取主播状态
+                    serverJson.addProperty("actorState", 2);
+                    
+                    // TODO 获取用户信息
+                    serverJson.addProperty("nickname", 2);
+                    serverJson.addProperty("posterPath_256", 2);
+                    
+                    servers.add(serverJson);
+                }
+                
+                result.add("servers", servers);
+            }
+        } catch (Exception e) {
+            logger.error("Module Error SingleChatServerService.getDefaultServerPrice(" + typeId + ")", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            return result;
+        }
+        
+        result.addProperty("mediaPathPrefix", ConfigHelper.getVideoURL());
+        result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+    
+    /**
+     * 获取主播标签【51060105】
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getServerLables(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        int typeId;
+        int actorId;
+        
+        try {
+            typeId = CommonUtil.getJsonParamInt(jsonObject, "typeId", 0, "5106010501", Integer.MIN_VALUE, Integer.MAX_VALUE);
+            actorId = CommonUtil.getJsonParamInt(jsonObject, "actorId", 0, "5106010502", Integer.MIN_VALUE, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        try {
+            SingleChatServerService singleChatServerService = MelotBeanFactory.getBean("singleChatServerService", SingleChatServerService.class);
+            Result<SingleChatServer> serverResult = singleChatServerService.getSingleChatServerInfo(typeId, actorId);
+            if (serverResult == null) {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            if (ResultCode.SUCCESS.equals(serverResult.getCode())) {
+                SingleChatServer server = serverResult.getData();
+                List<SingleChatLabel> labelList = new ArrayList<>();
+                if (server != null && server.getLabelInfos() != null) {
+                    labelList = server.getLabelInfos();
+                }
+                String labelStr = new Gson().toJson(labelList);
+                
+                JsonArray labels = new JsonParser().parse(labelStr).getAsJsonArray();
+                result.add("labels", labels);
+            }
+            
+            
+        } catch (Exception e) {
+            logger.error("Module Error SingleChatServerService.getDefaultServerPrice(" + typeId + ")", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            return result;
+        }
+        
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+    
+    /**
+     * 获取主播审核失败的技能服务数量【51060106】
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getInvalidServerCount(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+//        if (!checkTag) {
+//            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+//            return result;
+//        }
+        int typeId;
+        int userId;
+        
+        try {
+            typeId = CommonUtil.getJsonParamInt(jsonObject, "typeId", 0, "5106010601", Integer.MIN_VALUE, Integer.MAX_VALUE);
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "5106010602", Integer.MIN_VALUE, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        // 获取状态
+        try {
+            SingleChatServerService singleChatServerService = MelotBeanFactory.getBean("singleChatServerService", SingleChatServerService.class);
+            Result<SingleChatServer> serverResult = singleChatServerService.getSingleChatServerInfo(typeId, userId);
+            if (serverResult == null) {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            if (ResultCode.SUCCESS.equals(serverResult.getCode())) {
+                SingleChatServer server = serverResult.getData();
+                if (server == null) {
+                    result.addProperty("count", 0);
+                    result.addProperty("checkState", -1);
+                    result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                    return result;
+                }
+                result.addProperty("checkState", server.getState());
+            }
+        } catch (Exception e) {
+            logger.error("Module Error SingleChatServerService.getDefaultServerPrice(" + typeId + ")", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            return result;
+        }
+        
+        // 获取审核失败的数量
+        try {
+            SingleChatServerService singleChatServerService = MelotBeanFactory.getBean("singleChatServerService", SingleChatServerService.class);
+            Result<Integer> countResult = singleChatServerService.countInvalidServer(typeId, userId);
+            if (countResult == null) {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            if (ResultCode.SUCCESS.equals(countResult.getCode())) {
+                result.addProperty("count", countResult.getData());
+            }else {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+        } catch (Exception e) {
+            logger.error("Module Error SingleChatServerService.getDefaultServerPrice(" + typeId + ")", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            return result;
+        }
+        
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+
+    /**
+     * 获取默认服务金额【51060107】
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getDefultPrice(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        int typeId;
+        
+        try {
+            typeId = CommonUtil.getJsonParamInt(jsonObject, "typeId", 0, "5106010701", Integer.MIN_VALUE, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        try {
+            SingleChatServerService singleChatServerService = MelotBeanFactory.getBean("singleChatServerService", SingleChatServerService.class);
+            Result<SingleChatServerPrice> priceResult = singleChatServerService.getDefaultServerPrice(typeId);
+            if (priceResult == null) {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            if (ResultCode.SUCCESS.equals(priceResult.getCode())) {
+                SingleChatServerPrice price = priceResult.getData();
+                result.addProperty("price", price.getPrice());
+                result.addProperty("unit", price.getUnit());
+            }
+            
+            if (ResultCode.ERROR_CONFIG.equals(priceResult.getCode())) {
+                result.addProperty("TagCode", TagCodeEnum.CONFIG_KEY_NOT_EXIST);
+                return result;
+            }
+        } catch (Exception e) {
+            logger.error("Module Error SingleChatServerService.getDefaultServerPrice(" + typeId + ")", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            return result;
         }
         
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
