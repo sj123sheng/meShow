@@ -2446,45 +2446,4 @@
 		<constructor-arg name="methodName" value="getGrammarId" />
 	</bean>
 
-	<!-- 发布技能服务 -->
-	<!-- <bean id="51060101" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="singleChatFunction" />
-		<constructor-arg name="methodName" value="publishServer" />
-	</bean> -->
-	
-	<!-- 获取主播的技能服务详情 -->
-	<bean id="51060102" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="singleChatFunction" />
-		<constructor-arg name="methodName" value="getServerInfo" />
-	</bean>
-	
-	<!-- 主播删除技能服务 -->
-	<!-- <bean id="51060103" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="singleChatFunction" />
-		<constructor-arg name="methodName" value="delServer" />
-	</bean> -->
-	
-	<!-- 获取大厅技能服务列表 -->
-	<bean id="51060104" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="singleChatFunction" />
-		<constructor-arg name="methodName" value="getSerevrList" />
-	</bean>
-	
-	<!-- 获取主播标签  -->
-	<bean id="51060105" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="singleChatFunction" />
-		<constructor-arg name="methodName" value="getServerLables" />
-	</bean>
-	
-	<!-- 获取主播审核失败的技能服务数量 -->
-	<bean id="51060106" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="singleChatFunction" />
-		<constructor-arg name="methodName" value="getInvalidServerCount" />
-	</bean>
-	
-	<!-- 获取主播默认的技能服务价格 -->
-	<bean id="51060107" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="singleChatFunction" />
-		<constructor-arg name="methodName" value="getDefultPrice" />
-	</bean>
 </beans>
