@@ -17,7 +17,7 @@
 	
 	<!-- 通用过期接口 -->
 	<bean id="10006005"
-		name="10001040,10004010,10004011,40000013,20010308,20010502,20010503,20010504,20010506,20010507,20010508,50001015,10002039,10002040,20010403,20010402,10002072,10001042"
+		name="10001040,10004010,10004011,40000013,20010308,20010502,20010503,20010504,20010506,20010507,20010508,50001015,10002039,10002040,20010403,20010402,10002072,10001042,10002009,10002010"
 		class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="otherFunction" />
 		<constructor-arg name="methodName" value="lowVersionExcute" />
@@ -156,16 +156,6 @@
 	<bean id="10002017" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="indexFunction" />
 		<constructor-arg name="methodName" value="getCatalogInfo" />
-	</bean>
-	<!-- 获取本周礼物之星列表 -->
-	<bean id="10002009" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="indexFunction" />
-		<constructor-arg name="methodName" value="getCurrentGiftStarList" />
-	</bean>
-	<!-- 获取上周礼物之星列表 -->
-	<bean id="10002010" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="indexFunction" />
-		<constructor-arg name="methodName" value="getLastGiftStarList" />
 	</bean>
 	<!-- 获取本周礼物消耗排行榜 -->
 	<bean id="10002011" class="com.melot.sdk.core.function.GenericFunction">
@@ -1130,6 +1120,12 @@
 	<bean id="20006029" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="newsV2Function" />
 		<constructor-arg name="methodName" value="getCommentListByTopic" />
+	</bean>
+	
+	<!-- 根据newsType获取动态 -->
+	<bean id="20006030" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="newsV2Function" />
+		<constructor-arg name="methodName" value="getNewsListByNewsType" />
 	</bean>
 	
 	<!-- 获取热门视频动态列表 -->
@@ -2451,7 +2447,23 @@
 		<constructor-arg name="methodName" value="getGrammarId" />
 	</bean>
 
-	<!-- 发布技能服务 -->
+    <!-- 获取主播代言团列表 -->
+    <bean id="51020101" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="actorKKTVFunction" />
+        <constructor-arg name="methodName" value="getRepresentList" />
+    </bean>
+    <!-- 更新H5页面上的 UV 数据 -->
+    <bean id="51020102" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="actorKKTVFunction" />
+        <constructor-arg name="methodName" value="updateUV" />
+    </bean>
+    <!-- 获取h5新注册用户是否领取过新手礼包 -->
+    <bean id="51020103" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="actorKKTVFunction" />
+        <constructor-arg name="methodName" value="getUserReceivedNoviceGift" />
+    </bean>
+
+<!-- 发布技能服务 -->
 	<!-- <bean id="51060101" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="singleChatFunction" />
 		<constructor-arg name="methodName" value="publishServer" />
