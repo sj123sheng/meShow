@@ -71,8 +71,8 @@
 	<kkrpc:reference id="privateLetterService" interface="com.melot.letter.driver.service.PrivateLetterService" version="1.0.0"></kkrpc:reference>
 
 	<!-- 敏感词模块 -->
-	<kkrpc:reference id="chatAnalyzerService" interface="com.melot.chat.service.ChatAnalyzerService" version="1.0.1"></kkrpc:reference>
-	<kkrpc:reference id="privateChatAnalyzerService" interface="com.melot.chat.service.PrivateChatAnalyzerService" version="1.0.1"></kkrpc:reference>
+	<kkrpc:reference id="chatAnalyzerService" interface="com.melot.chat.service.ChatAnalyzerService" version="1.0.0"></kkrpc:reference>
+	<kkrpc:reference id="privateChatAnalyzerService" interface="com.melot.chat.service.PrivateChatAnalyzerService" version="1.0.0"></kkrpc:reference>
 
 	<!-- 轮播房 -->	
 	<kkrpc:reference id="roundRoomService" interface="com.melot.round.driver.service.RoundRoomService"  version="1.0.0"></kkrpc:reference>
@@ -88,8 +88,8 @@
 	<!-- 配置信息 -->
 	<kkrpc:reference id="configInfoService" interface="com.melot.common.driver.service.ConfigInfoService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="friendEmoticonService" interface="com.melot.common.driver.service.FriendEmoticonService" version="1.0.0"></kkrpc:reference>
-
-    <!-- 礼物配置信息 -->
+	
+	<!-- 礼物配置信息 -->
 	<kkrpc:reference id="giftListService" interface="com.melot.room.gift.service.GiftListService" version="1.0.2"></kkrpc:reference>
 	
 	<!-- 动态模块 -->
@@ -98,18 +98,16 @@
 	<kkrpc:reference id="resourceCenter" interface="com.melot.resource.service.ResourceService" version="1.0.0"/>
 	<!-- 1v1视频聊天服务 -->
 	<kkrpc:reference id="singleChatService" interface="com.melot.singlechat.driver.service.SingleChatService" version="1.0.0"/>
-    
+ 	<kkrpc:reference id="singleChatServerService" interface="com.melot.singlechat.driver.service.SingleChatServerService" version="1.0.0"/>
+ 
     <!-- 主播模块 -->
     <kkrpc:reference id="areaNewActorsService" interface="com.melot.common.driver.service.AreaNewActorsService" version="1.0.0" ></kkrpc:reference>
-
-    <!-- 主播代言团服务 -->
-	<kkrpc:reference id="shareActivityService" interface="com.melot.share.driver.service.ShareActivityService" version="1.0.2"/>
 
     <kkrpc:reference id="reportFlowService" interface="com.melot.kk.module.report.service.ReportFlowService" version="1.0.0" />
 	<!-- IM消息服务 -->
 	<kkrpc:reference id="timSystemService" interface="com.melot.client.api.TimSystemService" version="1.0.0"/>
 
-    <!-- 短信服务 -->
-    <kkrpc:reference id="smsService" interface="com.melot.sms.api.service.SmsService" version="1.0.1"/>
+	<!-- 短信服务 -->
+	<kkrpc:reference id="smsService" interface="com.melot.sms.api.service.SmsService" version="1.0.1"/>
 
 </beans>
