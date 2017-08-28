@@ -1,5 +1,6 @@
 package com.melot.kktv.action;
 
+import com.google.common.collect.Sets;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
@@ -23,6 +24,7 @@ import com.melot.kktv.redis.FamilyApplySource;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.MatchSource;
 import com.melot.kktv.redis.MedalSource;
+import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.util.*;
 import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
 import com.melot.kktv.util.db.DB;
@@ -30,9 +32,12 @@ import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.module.medal.driver.domain.ResultByFamilyMedal;
 import com.melot.module.medal.driver.service.FamilyMedalService;
 import com.melot.sdk.core.util.MelotBeanFactory;
+import org.apache.commons.io.Charsets;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -49,15 +54,68 @@ public class FamilyAction {
 	
 	private static Long EXPIRE_TIME_OF_FAMILY_LIST_CACHE = null;
 	private static List<Integer> FAMILYID_JSON_ARRAY_CACHE = new ArrayList<Integer>();
-	
-	/**
+
+	@Autowired
+    private ConfigService configService;
+
+    private static String encode = Charsets.ISO_8859_1.name();
+
+    private static String decode = Charsets.UTF_8.name();
+
+    private static String REGEX = ",";
+
+    public static void main(String[] args) {
+        String testStr = "æä¸»";
+        try {
+            // 得到指定编码的字节数组 字符串--->字节数组
+            byte[] t_iso = testStr.getBytes("ISO-8859-1");
+            byte[] t_gbk = testStr.getBytes("GBK");
+            byte[] t_utf8 = testStr.getBytes("UTF-8");
+            System.out.println("使用ISO解码..." + t_iso.length);
+            System.out.println("使用GBK解码..." + t_gbk.length);
+            System.out.println("使用UTF8解码..." + t_utf8.length);
+            // 解码后在组装
+            String ut_iso = new String(t_iso, "ISO-8859-1");
+            String ut_gbk = new String(t_gbk, "GBK");
+            String ut_utf8 = new String(t_utf8, "UTF-8");
+            System.out.println("使用ISO解码后再用ISO组装..." + ut_iso);
+            System.out.println("使用GBK解码后再用GBK组装..." + ut_gbk);
+            System.out.println("使用UTF8解码后再用UTF8组装..." + ut_utf8);
+            // 有时候要求必须是iso字符编码类型
+            // 可以先用GBK/UTF8编码后，用ISO8859-1组装成字符串，解码时逆向即可获得正确中文字符
+            String t_utf8Toiso = new String(t_utf8, "ISO-8859-1");
+            // 将iso编码的字符串进行还原
+            String ut_utf8Toiso = new String(t_utf8Toiso.getBytes("ISO-8859-1"),"UTF-8");
+            System.out.println("使用ISO组装utf8编码字符..." + t_utf8Toiso);
+            System.out.println("使用ISO解码utf8编码字符..." + ut_utf8Toiso);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+    }
+    /**
 	 * 获取家族列表(10008001 ok)
 	 * @param jsonObject
 	 * @return
 	 */
-	public JsonObject getFamilyList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-		
-		// 定义使用的参数
+	public JsonObject getFamilyList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws UnsupportedEncodingException {
+
+        String[] challengerFamilyArr = configService.getChallengerFamily().trim().split(REGEX);
+        String[] trumpFamilyArr = configService.getTrumpFamily().trim().split(REGEX);
+        String[] trumpFamilyIdsArr = configService.getTrumpFamilyIds().trim().split(REGEX);
+        String[] goldMedalFamilyArr = configService.getGoldMedalFamily().trim().split(REGEX);
+        String[] goldMedalFamilyIdsArr = configService.getGoldMedalFamilyIds().trim().split(REGEX);
+
+        String challengerFamilyName = new String(challengerFamilyArr[0].getBytes(encode), decode);
+        String trumpFamilyName = new String(trumpFamilyArr[0].getBytes(encode), decode);
+        String goldMedalFamilyName = new String(goldMedalFamilyArr[0].getBytes(encode), decode);
+
+        String challengerFamilyBackground = challengerFamilyArr[1];
+        String trumpFamilyBackground = trumpFamilyArr[1];
+        String goldMedalFamilyBackground = goldMedalFamilyArr[1];
+        Set<String> trumpFamilyIds = Sets.newHashSet(trumpFamilyIdsArr);
+        Set<String> goldMedalFamilyIds = Sets.newHashSet(goldMedalFamilyIdsArr);
+
+        // 定义使用的参数
 		int platform = 0;
 		int start = 0;
 		int end = 0;
@@ -155,6 +213,27 @@ public class FamilyAction {
 					             }
 							}
 						}
+
+						//加家族角标
+                        boolean showCorner = false;
+						String cornerName = "";
+						String cornerBackground = "";
+                        if(i == 0) { //擂主
+                            showCorner = true;
+                            cornerName = challengerFamilyName;
+                            cornerBackground = challengerFamilyBackground;
+                        }else if(trumpFamilyIds.contains(familyId + "")){ //王牌
+                            showCorner = true;
+                            cornerName = trumpFamilyName;
+                            cornerBackground = trumpFamilyBackground;
+                        }else if(goldMedalFamilyIds.contains(familyId + "")){ //金牌
+                            showCorner = true;
+                            cornerName = goldMedalFamilyName;
+                            cornerBackground = goldMedalFamilyBackground;
+                        }
+                        familyObj.addProperty("showCorner", showCorner);
+                        familyObj.addProperty("cornerName", cornerName);
+                        familyObj.addProperty("cornerBackground", cornerBackground);
 						
 						// 删除属性不用判断其中是否存在
 						familyObj.remove("familyNotice");
