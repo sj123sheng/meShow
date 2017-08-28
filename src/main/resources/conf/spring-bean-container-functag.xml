@@ -2463,11 +2463,11 @@
         <constructor-arg name="methodName" value="getUserReceivedNoviceGift" />
     </bean>
 
-<!-- 发布技能服务 -->
-	<!-- <bean id="51060101" class="com.melot.sdk.core.function.GenericFunction">
+	<!-- 发布技能服务 -->
+	<bean id="51060101" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="singleChatFunction" />
 		<constructor-arg name="methodName" value="publishServer" />
-	</bean> -->
+	</bean>
 	
 	<!-- 获取主播的技能服务详情 -->
 	<bean id="51060102" class="com.melot.sdk.core.function.GenericFunction">
@@ -2476,10 +2476,10 @@
 	</bean>
 	
 	<!-- 主播删除技能服务 -->
-	<!-- <bean id="51060103" class="com.melot.sdk.core.function.GenericFunction">
+	<bean id="51060103" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="singleChatFunction" />
 		<constructor-arg name="methodName" value="delServer" />
-	</bean> -->
+	</bean>
 	
 	<!-- 获取大厅技能服务列表 -->
 	<bean id="51060104" class="com.melot.sdk.core.function.GenericFunction">
