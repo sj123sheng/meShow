@@ -67,7 +67,6 @@ public class SingleChatServerTF {
         if (server.getImageResources() != null && !server.getImageResources().isEmpty()) {
             for (Resource resource : server.getImageResources()) {
                 JsonObject imageJson = new JsonObject();
-                imageJson.addProperty("audioUrl", resource.getSpecificUrl());
                 imageJson.addProperty("imgUrl", resource.getImageUrl());
                 imageJson.addProperty("imgUrl_1280", resource.getImageUrl() + "!1280");
                 imageJson.addProperty("imgUrl_720", resource.getImageUrl() + "!720");
@@ -99,12 +98,14 @@ public class SingleChatServerTF {
      */
     private static int stateTF(int resourceState) {
         switch (resourceState) {
-        case -1:
-            return resourceState;
-        case 0:
-            return resourceState;
-        case 1:
-            return resourceState;
+        case 0:// 用户删除
+            return -1;
+        case 1:// 通过
+            return 1;
+        case 2:// 不通过
+            return 2;
+        case 3:// 待审核
+            return 0;
 
         default:
             return resourceState;
