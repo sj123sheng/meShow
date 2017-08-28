@@ -158,6 +158,13 @@
 	</pluginRepositories>
 
 	<dependencies>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+            <version>4.3.10.RELEASE</version>
+        </dependency>
+
 		<dependency>
 			<groupId>com.melot.alipay</groupId>
 			<artifactId>alipay-sdk-java</artifactId>

@@ -1,5 +1,6 @@
 package com.melot.kktv.action;
 
+import com.google.common.collect.Sets;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
@@ -23,6 +24,7 @@ import com.melot.kktv.redis.FamilyApplySource;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.MatchSource;
 import com.melot.kktv.redis.MedalSource;
+import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.util.*;
 import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
 import com.melot.kktv.util.db.DB;
@@ -30,9 +32,12 @@ import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.module.medal.driver.domain.ResultByFamilyMedal;
 import com.melot.module.medal.driver.service.FamilyMedalService;
 import com.melot.sdk.core.util.MelotBeanFactory;
+import org.apache.commons.io.Charsets;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -49,15 +54,40 @@ public class FamilyAction {
 	
 	private static Long EXPIRE_TIME_OF_FAMILY_LIST_CACHE = null;
 	private static List<Integer> FAMILYID_JSON_ARRAY_CACHE = new ArrayList<Integer>();
-	
-	/**
+
+	@Autowired
+    private ConfigService configService;
+
+    private static String encode = Charsets.ISO_8859_1.name();
+
+    private static String decode = Charsets.UTF_8.name();
+
+    private static String REGEX = ",";
+    
+    /**
 	 * 获取家族列表(10008001 ok)
 	 * @param jsonObject
 	 * @return
 	 */
-	public JsonObject getFamilyList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-		
-		// 定义使用的参数
+	public JsonObject getFamilyList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws UnsupportedEncodingException {
+
+        String[] challengerFamilyArr = configService.getChallengerFamily().trim().split(REGEX);
+        String[] trumpFamilyArr = configService.getTrumpFamily().trim().split(REGEX);
+        String[] trumpFamilyIdsArr = configService.getTrumpFamilyIds().trim().split(REGEX);
+        String[] goldMedalFamilyArr = configService.getGoldMedalFamily().trim().split(REGEX);
+        String[] goldMedalFamilyIdsArr = configService.getGoldMedalFamilyIds().trim().split(REGEX);
+
+        String challengerFamilyName = new String(challengerFamilyArr[0].getBytes(encode), decode);
+        String trumpFamilyName = new String(trumpFamilyArr[0].getBytes(encode), decode);
+        String goldMedalFamilyName = new String(goldMedalFamilyArr[0].getBytes(encode), decode);
+
+        String challengerFamilyBackground = challengerFamilyArr[1];
+        String trumpFamilyBackground = trumpFamilyArr[1];
+        String goldMedalFamilyBackground = goldMedalFamilyArr[1];
+        Set<String> trumpFamilyIds = Sets.newHashSet(trumpFamilyIdsArr);
+        Set<String> goldMedalFamilyIds = Sets.newHashSet(goldMedalFamilyIdsArr);
+
+        // 定义使用的参数
 		int platform = 0;
 		int start = 0;
 		int end = 0;
@@ -155,6 +185,27 @@ public class FamilyAction {
 					             }
 							}
 						}
+
+						//加家族角标
+                        boolean showCorner = false;
+						String cornerName = "";
+						String cornerBackground = "";
+                        if(i == 0) { //擂主
+                            showCorner = true;
+                            cornerName = challengerFamilyName;
+                            cornerBackground = challengerFamilyBackground;
+                        }else if(trumpFamilyIds.contains(familyId + "")){ //王牌
+                            showCorner = true;
+                            cornerName = trumpFamilyName;
+                            cornerBackground = trumpFamilyBackground;
+                        }else if(goldMedalFamilyIds.contains(familyId + "")){ //金牌
+                            showCorner = true;
+                            cornerName = goldMedalFamilyName;
+                            cornerBackground = goldMedalFamilyBackground;
+                        }
+                        familyObj.addProperty("showCorner", showCorner);
+                        familyObj.addProperty("cornerName", cornerName);
+                        familyObj.addProperty("cornerBackground", cornerBackground);
 						
 						// 删除属性不用判断其中是否存在
 						familyObj.remove("familyNotice");
