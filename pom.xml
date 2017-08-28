@@ -182,7 +182,7 @@
 		<dependency>
 			<groupId>com.melot</groupId>
 			<artifactId>melot-util</artifactId>
-			<version>1.0.34-SNAPSHOT</version>
+			<version>1.0.34</version>
 		</dependency>
 		<dependency>
 		  	<groupId>com.melot</groupId>
