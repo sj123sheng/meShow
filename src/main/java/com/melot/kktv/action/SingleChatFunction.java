@@ -17,6 +17,7 @@ import com.melot.api.menu.sdk.service.RoomInfoService;
 import com.melot.singlechat.driver.base.Result;
 import com.melot.singlechat.driver.base.ResultCode;
 import com.melot.singlechat.driver.domain.HistSingleChatInfo;
+import com.melot.singlechat.driver.domain.PageSingleChatLabel;
 import com.melot.singlechat.driver.domain.PageSingleChatServer;
 import com.melot.singlechat.driver.domain.SingleChatActorInfo;
 import com.melot.singlechat.driver.domain.SingleChatLabel;
@@ -525,10 +526,10 @@ public class SingleChatFunction {
      */
     public JsonObject publishServer(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
-//        if (!checkTag) {
-//            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-//            return result;
-//        }
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
         int userId;
         int serverId;
         int typeId;
@@ -598,16 +599,47 @@ public class SingleChatFunction {
                 result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
                 return result;
             }
+            
+            //SQL异常
+            if (ResultCode.ERROR_SQL.equals(saveResult.getCode())) {
+                result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
+                return result;
+            }
+            
+            // 模块异常
+            if (ResultCode.ERROR_MODULE.equals(saveResult.getCode())) {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+                return result;
+            }
+            
+            // 有敏感字
+            if (ResultCode.ERROR_HAVE_SENSITIVE_WORDS.equals(saveResult.getCode())) {
+                result.addProperty("TagCode", "5106010107");
+                return result;
+            }
+            
+            // 有无效标签
+            if (ResultCode.ERROR_HAVE_INVALID_LABELS.equals(saveResult.getCode())) {
+                result.addProperty("TagCode", "5106010108");
+                return result;
+            }
+            
             if (ResultCode.SUCCESS.equals(saveResult.getCode())) {
                 Integer id = saveResult.getData();
                 if (id == null || id <= 0) {
-                    result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                    result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
                     return result;
                 }
                 result.addProperty("serverId", id);
+            }else {
+                // 模块的异常没有被捕获
+                result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+                logger.error(saveResult);
+                return result;
             }
+            
         } catch (Exception e) {
-            logger.error("Module Error SingleChatServerService.getDefaultServerPrice(" + typeId + ")", e);
+            logger.error("Module Error singleChatServerService.saveSingleChatServer(" + singleChatServer + ")", e);
             result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
             return result;
         }
@@ -675,13 +707,13 @@ public class SingleChatFunction {
                     }
                     
                 } catch (Exception e) {
-                    logger.error("Module Error SingleChatServerService.getDefaultServerPrice(" + typeId + ")", e);
+                    logger.error("Module Error singleChatService.getSingleChatInfoByActorId(" + singleChatServer.getUserId() + ")", e);
                     result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
                     return result;
                 }
             }
         } catch (Exception e) {
-            logger.error("Module Error SingleChatServerService.getDefaultServerPrice(" + typeId + ")", e);
+            logger.error("Module Error SingleChatServerService.getSingleChatServerInfo(" + typeId + "," + actorId + ")", e);
             result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
             return result;
         }
@@ -693,7 +725,7 @@ public class SingleChatFunction {
     }
     
     /**
-     * 获取主播的技能服务详情【51060103】
+     * 删除主播技能服务【51060103】
      * @param jsonObject
      * @param checkTag
      * @param request
@@ -804,7 +836,7 @@ public class SingleChatFunction {
                         }
                         
                     } catch (Exception e) {
-                        logger.error("Module Error SingleChatServerService.getDefaultServerPrice(" + typeId + ")", e);
+                        logger.error("Module Error singleChatService.getSingleChatInfoByActorId(" + typeId + ")", e);
                         result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
                         return result;
                     }
@@ -835,7 +867,7 @@ public class SingleChatFunction {
                         }
                             
                     } catch (Exception e) {
-                        logger.error("Module Error KkUserService.getUserProfile(" + singleChatServer.getUserId() + ")", e);
+                        logger.error("Module Error roomInfoService.getRoomInfoById(" + singleChatServer.getUserId() + ")", e);
                         result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
                         return result;
                     }
@@ -845,7 +877,7 @@ public class SingleChatFunction {
                 result.add("servers", servers);
             }
         } catch (Exception e) {
-            logger.error("Module Error SingleChatServerService.getDefaultServerPrice(" + typeId + ")", e);
+            logger.error("Module Error SingleChatServerService..getSingleChatServers(" + typeId + "," + 1 + "," + start + "," + offset + ")", e);
             result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
             return result;
         }
@@ -901,7 +933,7 @@ public class SingleChatFunction {
             
             
         } catch (Exception e) {
-            logger.error("Module Error SingleChatServerService.getDefaultServerPrice(" + typeId + ")", e);
+            logger.error("Module Error SingleChatServerService.getSingleChatServerInfo(" + typeId + "," + actorId + ")", e);
             result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
             return result;
         }
@@ -956,7 +988,7 @@ public class SingleChatFunction {
                 result.addProperty("checkState", server.getState());
             }
         } catch (Exception e) {
-            logger.error("Module Error SingleChatServerService.getDefaultServerPrice(" + typeId + ")", e);
+            logger.error("Module Error SingleChatServerService.getSingleChatServerInfo(" + typeId + "," + userId + ")", e);
             result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
             return result;
         }
@@ -976,7 +1008,7 @@ public class SingleChatFunction {
                 return result;
             }
         } catch (Exception e) {
-            logger.error("Module Error SingleChatServerService.getDefaultServerPrice(" + typeId + ")", e);
+            logger.error("Module Error SingleChatServerService.countInvalidServer(" + typeId + "," + userId + ")", e);
             result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
             return result;
         }
@@ -1014,14 +1046,74 @@ public class SingleChatFunction {
                 result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
                 return result;
             }
+            
+            if (ResultCode.ERROR_CONFIG.equals(priceResult.getCode())) {
+                result.addProperty("TagCode", TagCodeEnum.CONFIG_KEY_NOT_EXIST);
+                return result;
+            }
+            
             if (ResultCode.SUCCESS.equals(priceResult.getCode())) {
                 SingleChatServerPrice price = priceResult.getData();
                 result.addProperty("price", price.getPrice());
                 result.addProperty("unit", price.getUnit());
+            }else {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+                return result;
+            }
+        } catch (Exception e) {
+            logger.error("Module Error SingleChatServerService.getDefaultServerPrice(" + typeId + ")", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            return result;
+        }
+        
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+    
+    /**
+     * 获取1v1技能服务标签列表【51060108】
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getServerLabels(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        int typeId;
+        
+        try {
+            typeId = CommonUtil.getJsonParamInt(jsonObject, "typeId", 0, "5106010701", Integer.MIN_VALUE, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        try {
+            SingleChatServerService singleChatServerService = MelotBeanFactory.getBean("singleChatServerService", SingleChatServerService.class);
+            Result<PageSingleChatLabel> pageResult = singleChatServerService.getAllSingleChatLabels(typeId, null, null);
+            if (pageResult == null) {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
             }
             
-            if (ResultCode.ERROR_CONFIG.equals(priceResult.getCode())) {
-                result.addProperty("TagCode", TagCodeEnum.CONFIG_KEY_NOT_EXIST);
+            if (ResultCode.SUCCESS.equals(pageResult.getCode())) {
+                ArrayList<SingleChatLabel> labelList = pageResult.getData().getLabels();
+                JsonArray labels = new JsonArray();
+                for (SingleChatLabel label : labelList) {
+                    JsonObject labelJson = new JsonObject();
+                    labelJson.addProperty("id", label.getId());
+                    labelJson.addProperty("name", label.getName());
+                    
+                    labels.add(labelJson);
+                }
+                
+                result.add("labels", labels);
+            }else {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
                 return result;
             }
         } catch (Exception e) {
