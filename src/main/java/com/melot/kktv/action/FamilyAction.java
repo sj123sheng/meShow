@@ -190,7 +190,7 @@ public class FamilyAction {
                         boolean showCorner = false;
 						String cornerName = "";
 						String cornerBackground = "";
-                        if(i == 0) { //擂主
+                        if(start == 0 && i == 0) { //擂主
                             showCorner = true;
                             cornerName = challengerFamilyName;
                             cornerBackground = challengerFamilyBackground;
