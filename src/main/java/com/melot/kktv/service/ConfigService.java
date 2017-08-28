@@ -1,6 +1,7 @@
 package com.melot.kktv.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.baidu.disconf.client.common.annotations.DisconfFile;
+import com.baidu.disconf.client.common.annotations.DisconfFileItem;
 import org.springframework.stereotype.Service;
 
 /**
@@ -16,16 +17,61 @@ import org.springframework.stereotype.Service;
  * 2017/8/25           shengjian     1.0
  */
 @Service
+@DisconfFile(filename = "config.properties")
 public class ConfigService {
 
-    @Autowired
-    private String disconfHttpdir;
+    private String challengerFamily;
 
-    public String getDisconfHttpdir() {
-        return disconfHttpdir;
+    private String trumpFamily;
+
+    private String trumpFamilyIds;
+
+    private String goldMedalFamily;
+
+    private String goldMedalFamilyIds;
+
+    @DisconfFileItem(name = "challenger.family", associateField = "challengerFamily")
+    public String getChallengerFamily() {
+        return challengerFamily;
     }
 
-    public void setDisconfHttpdir(String disconfHttpdir) {
-        this.disconfHttpdir = disconfHttpdir;
+    public void setChallengerFamily(String challengerFamily) {
+        this.challengerFamily = challengerFamily;
+    }
+
+    @DisconfFileItem(name = "trump.family", associateField = "trumpFamily")
+    public String getTrumpFamily() {
+        return trumpFamily;
+    }
+
+    public void setTrumpFamily(String trumpFamily) {
+        this.trumpFamily = trumpFamily;
+    }
+
+    @DisconfFileItem(name = "trump.familyIds", associateField = "trumpFamilyIds")
+    public String getTrumpFamilyIds() {
+        return trumpFamilyIds;
+    }
+
+    public void setTrumpFamilyIds(String trumpFamilyIds) {
+        this.trumpFamilyIds = trumpFamilyIds;
+    }
+
+    @DisconfFileItem(name = "goldMedal.family", associateField = "goldMedalFamily")
+    public String getGoldMedalFamily() {
+        return goldMedalFamily;
+    }
+
+    public void setGoldMedalFamily(String goldMedalFamily) {
+        this.goldMedalFamily = goldMedalFamily;
+    }
+
+    @DisconfFileItem(name = "goldMedal.familyIds", associateField = "goldMedalFamilyIds")
+    public String getGoldMedalFamilyIds() {
+        return goldMedalFamilyIds;
+    }
+
+    public void setGoldMedalFamilyIds(String goldMedalFamilyIds) {
+        this.goldMedalFamilyIds = goldMedalFamilyIds;
     }
 }
