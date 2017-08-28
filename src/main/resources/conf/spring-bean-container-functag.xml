@@ -2504,4 +2504,10 @@
 		<constructor-arg name="t" ref="singleChatFunction" />
 		<constructor-arg name="methodName" value="getDefultPrice" />
 	</bean>
+	
+	<!-- 获取主播默认的技能服务价格 -->
+	<bean id="51060108" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="singleChatFunction" />
+		<constructor-arg name="methodName" value="getServerLabels" />
+	</bean>
 </beans>
