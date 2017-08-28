@@ -2441,7 +2441,7 @@ public class UserFunctions {
                 result.addProperty("portrait_path_128", ConfigHelper.getHttpdir() + userInfoDetail.getProfile().getPortrait() + "!128");
             }
             
-            // 添加勋章信息
+            // 添加家族勋章信息
             t = Cat.getProducer().newTransaction("MRedis", "MedalSource.getUserMedalsAsJson");
             try {
                 result.add("userMedal", MedalSource.getUserMedalsAsJson(userId, platform));
@@ -2454,8 +2454,101 @@ public class UserFunctions {
                 t.complete();
             }
             
+            // 获取爵位勋章
+            try {
+                ActivityMedalService activityMedalService = (ActivityMedalService) MelotBeanFactory.getBean("activityMedalService");
+                //添加充值勋章信息,充值勋章所需要的字段都放到redis中，避免二次查询数据库
+                UserMedalService userMedalService = (UserMedalService) MelotBeanFactory.getBean("userMedalService");
+                com.melot.module.medal.driver.domain.GsonMedalObj medal = null;
+                t = Cat.getProducer().newTransaction("MCall", "userMedalService.getMedalsByUserId");
+                try {
+                    medal = userMedalService.getMedalsByUserId(userId);
+                    t.setStatus(Transaction.SUCCESS);
+                } catch (Exception e) {
+                    Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
+                    t.setStatus(e);
+                } finally {
+                    t.complete();
+                }
+                Date now = new Date();
+                List<ConfMedal> medals = new ArrayList<ConfMedal>();
+                if (medal != null) {
+                    ConfMedal confMedal = null;
+                    if (medal.getEndTime() > now.getTime()) { // 如果没有过期的话，才显示出来
+                        MedalInfo medalInfo = null;
+                        t = Cat.getProducer().newTransaction("MCall", "MedalConfig.getMedal");
+                        try {
+                            medalInfo = MedalConfig.getMedal(medal.getMedalId());
+                            t.setStatus(Transaction.SUCCESS);
+                        } catch (Exception e) {
+                            Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
+                            t.setStatus(e);
+                        } finally {
+                            t.complete();
+                        }
+                        if (medalInfo != null) {
+                            confMedal = new ConfMedal();
+                            
+                            confMedal.setBright(medal.getLightState());
+                            
+                            //提醒单独处理放到if判断中
+                            if (medalInfo.getMedalLevel() == 8) {
+                                confMedal.setMedalLevel(7);
+                                confMedal.setIsTop(1);
+                                confMedal.setMedalDes(medalInfo.getMedalDesc());
+                            }else {
+                                confMedal.setMedalLevel(medalInfo.getMedalLevel() - 1);
+                                confMedal.setIsTop(0);
+                                confMedal.setMedalDes(medalInfo.getMedalDesc());
+                            }
+                            confMedal.setMedalId(medalInfo.getMedalId());
+                            confMedal.setMedalType(medalInfo.getMedalType());
+                            confMedal.setMedalTitle(medalInfo.getMedalTitle());
+                            confMedal.setMedalExpireTime(medal.getEndTime());
+                            confMedal.setMedalMedalUrl(medalInfo.getMedalIcon());
+                            
+                            //点亮的勋章
+                            if (confMedal.getBright() != 0) {
+                                medals.add(confMedal);  
+                            }
+                        }
+                    }
+                }
+                
+                List<UserActivityMedal> wearList = null;
+                t = Cat.getProducer().newTransaction("MCall", "activityMedalService.getUserWearMedals");
+                try {
+                    wearList = activityMedalService.getUserWearMedals(userId);
+                    t.setStatus(Transaction.SUCCESS);
+                } catch (Exception e) {
+                    Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
+                    t.setStatus(e);
+                } finally {
+                    t.complete();
+                }
+                if (wearList != null && wearList.size() > 0) {
+                    for (UserActivityMedal userActivityMedal : wearList) {
+                        ConfMedal confMedal = new ConfMedal();
+                        confMedal.setIsTop(0);
+                        confMedal.setMedalId(userActivityMedal.getMedalId());
+                        confMedal.setBright(userActivityMedal.getLightState());
+                        confMedal.setMedalDes(userActivityMedal.getMedalDesc() != null ? String.valueOf(new JsonParser().parse(userActivityMedal.getMedalDesc()).getAsJsonObject().get("description")) : null);
+                        confMedal.setMedalType(userActivityMedal.getMedalType());
+                        confMedal.setMedalTitle(userActivityMedal.getMedalTitle());
+                        confMedal.setMedalExpireTime(userActivityMedal.getEndTime().getTime());
+                        confMedal.setMedalMedalUrl(userActivityMedal.getMedalIcon());
+                        medals.add(confMedal);
+                    }
+                }
+                
+                // 直播精灵过滤充值勋章信息
+                if (appId != 8) {
+                    result.add("userMedalList",new JsonParser().parse(new Gson().toJson(medals)).getAsJsonArray());
+                }
+            } catch (Exception e) {
+                logger.error("Get user[" + userId + "] medal execute exception.", e);
+            }
             result.addProperty("userId", userId);
-            
             result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
         
         // 返回结果
