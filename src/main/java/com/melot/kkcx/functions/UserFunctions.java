@@ -1,6 +1,7 @@
 package com.melot.kkcx.functions;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -17,11 +18,15 @@ import org.apache.log4j.Logger;
 import com.dianping.cat.Cat;
 import com.dianping.cat.message.Transaction;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.blacklist.service.BlacklistService;
+import com.melot.content.config.apply.service.ApplyActorService;
+import com.melot.content.config.domain.ApplyActor;
+import com.melot.family.driver.domain.FamilyInfo;
 import com.melot.kkcore.account.api.ExtendDataKeys;
 import com.melot.kkcore.account.api.ResLogin;
 import com.melot.kkcore.account.api.ResMobileGuestUser;
@@ -34,17 +39,28 @@ import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.api.UserRegistry;
 import com.melot.kkcore.user.api.UserStaticInfo;
 import com.melot.kkcore.user.service.KkUserService;
+import com.melot.kkcx.model.ActorLevel;
+import com.melot.kkcx.model.RichLevel;
+import com.melot.kkcx.model.StarInfo;
+import com.melot.kkcx.service.FamilyService;
 import com.melot.kkcx.service.GeneralService;
+import com.melot.kkcx.service.MessageBoxServices;
 import com.melot.kkcx.service.ProfileServices;
 import com.melot.kkcx.service.UserAssetServices;
+import com.melot.kkgame.domain.GameUserInfo;
 import com.melot.kktv.action.IndexFunctions;
 import com.melot.kktv.action.UserRelationFunctions;
 import com.melot.kktv.domain.SmsConfig;
+import com.melot.kktv.model.Family;
+import com.melot.kktv.model.MedalInfo;
 import com.melot.kktv.redis.AppStatsSource;
 import com.melot.kktv.redis.HotDataSource;
+import com.melot.kktv.redis.MedalSource;
+import com.melot.kktv.redis.QQVipSource;
 import com.melot.kktv.redis.SmsSource;
 import com.melot.kktv.service.AccountService;
 import com.melot.kktv.service.DataAcqService;
+import com.melot.kktv.service.LiveVideoService;
 import com.melot.kktv.service.UserRelationService;
 import com.melot.kktv.service.UserService;
 import com.melot.kktv.third.ThirdVerifyUtil;
@@ -64,11 +80,20 @@ import com.melot.kktv.util.SmsTypEnum;
 import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.TextFilter;
+import com.melot.kktv.util.confdynamic.MedalConfig;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.module.iprepository.driver.service.IpRepositoryService;
+import com.melot.module.medal.driver.domain.ConfMedal;
+import com.melot.module.medal.driver.domain.UserActivityMedal;
+import com.melot.module.medal.driver.service.ActivityMedalService;
+import com.melot.module.medal.driver.service.UserMedalService;
+import com.melot.module.packagegift.driver.domain.ResUserXman;
+import com.melot.module.packagegift.driver.domain.ResXman;
 import com.melot.module.packagegift.driver.service.VipService;
+import com.melot.module.packagegift.driver.service.XmanService;
 import com.melot.module.task.driver.service.TaskInterfaceService;
+import com.melot.opus.driver.enums.OpusCostantEnum;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import com.melot.sms.api.service.SmsService;
 
@@ -2272,6 +2297,170 @@ public class UserFunctions {
 		return userInfo;
 	}
 	
+	/**
+     * 获取用户基础信息(51010101)
+     * 
+     * @param jsonObject 请求对象
+     * @param checkTag 是否验证token标记
+     * @return 登录结果
+     */
+    public JsonObject getUserBasicInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+        // 获取参数
+        // 定义结果并组装json对象形式的返回结果
+        JsonObject result = new JsonObject();
+        
+        int userId = 0, platform = 0, appId = 0, channel = 0, b = 0, fromLogin = 0;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "05010001", 1, Integer.MAX_VALUE);
+            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.WEB, null, PlatformEnum.WEB, Integer.MAX_VALUE);
+            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 0, Integer.MAX_VALUE);
+            channel = CommonUtil.getJsonParamInt(jsonObject, "c", AppChannelEnum.KK, null, 0, Integer.MAX_VALUE);
+            b = CommonUtil.getJsonParamInt(jsonObject, "b", 0, null, 0, Integer.MAX_VALUE);
+            fromLogin = CommonUtil.getJsonParamInt(jsonObject, "fromLogin", 0, null, 0, 1);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        Transaction t;
+        
+        
+            //获取公有属性
+            UserInfoDetail userInfoDetail = null;
+            t = Cat.getProducer().newTransaction("MCall", "com.melot.kkcore.user.service.KkUserService.getUserDetailInfo");
+            try {
+                KkUserService kkUserService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
+                userInfoDetail = kkUserService.getUserDetailInfo(userId);
+                t.setStatus(Transaction.SUCCESS);
+            } catch (Exception e) {
+                Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
+                t.setStatus(e);
+            } finally {
+                t.complete();
+            }
+            if (userInfoDetail == null || userInfoDetail.getRegisterInfo() == null) {
+                JsonObject reResult = new JsonObject();
+                reResult.addProperty("TagCode", TagCodeEnum.USER_NOT_EXIST);
+                return reResult;
+            }
+            result.addProperty("gender", userInfoDetail.getProfile().getGender());
+            result.addProperty("city", Math.abs(userInfoDetail.getRegisterInfo().getCityId()));
+            
+            Integer area = CityUtil.getParentCityIdNoDefault(userInfoDetail.getRegisterInfo().getCityId());
+            if (area != null) {
+                result.addProperty("area", area);
+            }
+            if (userInfoDetail.getProfile().getNickName() != null) {
+                t = Cat.getProducer().newTransaction("MCall", "GeneralService.replaceSensitiveWords");
+                try {
+                    result.addProperty("nickname", GeneralService.replaceSensitiveWords(userId, userInfoDetail.getProfile().getNickName()));
+                    t.setStatus(Transaction.SUCCESS);
+                } catch (Exception e) {
+                    Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
+                    t.setStatus(e);
+                } finally {
+                    t.complete();
+                }
+            }
+            if (userInfoDetail.getProfile().getBirthday() != null) {
+                result.addProperty("birthday", userInfoDetail.getProfile().getBirthday());
+            }
+            
+            try {
+                long consumeTotal = userInfoDetail.getAssets() == null ? 0 : userInfoDetail.getAssets().getConsumeTotal();
+                long earnTotal = userInfoDetail.getAssets() == null ? 0 : userInfoDetail.getAssets().getEarnTotal();
+
+                // 读取明星等级
+                ActorLevel actorLevel = null;
+                t = Cat.getProducer().newTransaction("MCall", "UserService.getActorLevel");
+                try {
+                    actorLevel = com.melot.kkcx.service.UserService.getActorLevel(earnTotal);
+                    t.setStatus(Transaction.SUCCESS);
+                } catch (Exception e) {
+                    Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
+                    t.setStatus(e);
+                } finally {
+                    t.complete();
+                }
+                if (actorLevel != null) {
+                    result.addProperty("actorLevel", actorLevel.getLevel());
+                }
+                
+                // 读取富豪等级
+                RichLevel richLevel = null;
+                t = Cat.getProducer().newTransaction("MCall", "UserService.getRichLevel");
+                try {
+                    richLevel = com.melot.kkcx.service.UserService.getRichLevel(consumeTotal);
+                    t.setStatus(Transaction.SUCCESS);
+                } catch (Exception e) {
+                    Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
+                    t.setStatus(e);
+                } finally {
+                    t.complete();
+                }
+                if (richLevel != null) {
+                    result.addProperty("richLevel", richLevel.getLevel());
+                }
+                
+            } catch (Exception e) {
+                logger.error("UserService.getUserInfoFromMongo(" + userId + ") execute exception.", e);
+            }
+            
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+            
+            // 获取用户会员信息
+            JsonArray propArray = new JsonArray();
+            try {
+                List<Integer> propList = null;
+                t = Cat.getProducer().newTransaction("MCall", "UserService.getUserProps");
+                try {
+                    propList = com.melot.kkcx.service.UserService.getUserProps(userId);
+                    t.setStatus(Transaction.SUCCESS);
+                } catch (Exception e) {
+                    Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
+                    t.setStatus(e);
+                } finally {
+                    t.complete();
+                }
+                if (propList != null) {
+                    for (Integer propId : propList) {
+                        JsonObject obj = new JsonObject();
+                        obj.addProperty("propId", propId);
+                        propArray.add(obj);
+                    }
+                }
+            } catch (Exception e) {
+                logger.error("UserService.getUserProps(" + userId + ") execute exception.", e);
+            }
+            result.add("props", propArray);
+            
+            if (userInfoDetail.getProfile().getPortrait() != null && !result.has("portrait_path_original")) {
+                result.addProperty("portrait_path_128", ConfigHelper.getHttpdir() + userInfoDetail.getProfile().getPortrait() + "!128");
+            }
+            
+            // 添加勋章信息
+            t = Cat.getProducer().newTransaction("MRedis", "MedalSource.getUserMedalsAsJson");
+            try {
+                result.add("userMedal", MedalSource.getUserMedalsAsJson(userId, platform));
+                t.setStatus(Transaction.SUCCESS);
+            } catch (Exception e) {
+                logger.error("MedalSource.getUserMedalsAsJson(" + userId + ") execute exception.", e);
+                Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
+                t.setStatus(e);
+            } finally {
+                t.complete();
+            }
+            
+            result.addProperty("userId", userId);
+            
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+        
+        // 返回结果
+        return result;
+    }
 	private static JsonObject checkLogin(JsonObject result, ResLogin resLogin, int loginType, JsonObject jsonObject) {
 		if (loginType != -1 && resLogin != null && resLogin.getTagCode() != null) {
         	String TagCode = resLogin.getTagCode();
