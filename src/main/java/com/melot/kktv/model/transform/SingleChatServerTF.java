@@ -79,7 +79,7 @@ public class SingleChatServerTF {
         result.add("resImages", resImages);
         
         JsonArray labels = new JsonArray();
-        if (!server.getLabelInfos().isEmpty()) {
+        if (server.getLabelInfos() !=null && !server.getLabelInfos().isEmpty()) {
             for (SingleChatLabel label : server.getLabelInfos()) {
                 JsonObject labelJson = new JsonObject();
                 labelJson.addProperty("id", label.getId());
