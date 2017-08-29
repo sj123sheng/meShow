@@ -80,7 +80,7 @@ public class SingleChatServerTF {
                 imageJson.addProperty("imgUrl", resource.getImageUrl());
                 imageJson.addProperty("imgUrl_1280", resource.getImageUrl() + "!1280");
                 imageJson.addProperty("imgUrl_720", resource.getImageUrl() + "!720");
-                imageJson.addProperty("imgUrl_480", resource.getImageUrl() + "!480");
+                imageJson.addProperty("imgUrl_640", resource.getImageUrl() + "!640");
                 imageJson.addProperty("checkState", stateTF(resource.getState()));
                 
                 resImages.add(imageJson);
