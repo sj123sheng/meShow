@@ -1007,6 +1007,7 @@ public class SingleChatFunction {
                     return result;
                 }
                 result.addProperty("checkState", server.getState());
+                result.addProperty("checkContent", server.getCheckContent());
             }else {
                 // 模块的异常没有被捕获
                 result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
