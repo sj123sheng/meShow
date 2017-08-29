@@ -592,6 +592,7 @@ public class SingleChatFunction {
         singleChatServer.setResVideo(resVideo);
         singleChatServer.setResAudio(resAudio);
         singleChatServer.setResImage(resImage);
+        
         try {
             SingleChatServerService singleChatServerService = MelotBeanFactory.getBean("singleChatServerService", SingleChatServerService.class);
             Result<Integer> saveResult = singleChatServerService.saveSingleChatServer(singleChatServer);
@@ -711,6 +712,11 @@ public class SingleChatFunction {
                     result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
                     return result;
                 }
+            }else {
+                // 模块的异常没有被捕获
+                result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+                logger.error(serverResult);
+                return result;
             }
         } catch (Exception e) {
             logger.error("Module Error SingleChatServerService.getSingleChatServerInfo(" + typeId + "," + actorId + ")", e);
@@ -764,6 +770,11 @@ public class SingleChatFunction {
                     result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
                     return result;
                 }
+            }else {
+                // 模块的异常没有被捕获
+                result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+                logger.error(delResult);
+                return result;
             }
         } catch (Exception e) {
             logger.error("Module Error SingleChatServerService.delSingleChatServer(" + userId + "," + serverId + ")", e);
@@ -875,6 +886,11 @@ public class SingleChatFunction {
                 }
                 
                 result.add("servers", servers);
+            }else {
+                // 模块的异常没有被捕获
+                result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+                logger.error(pageServerListResult);
+                return result;
             }
         } catch (Exception e) {
             logger.error("Module Error SingleChatServerService..getSingleChatServers(" + typeId + "," + 1 + "," + start + "," + offset + ")", e);
@@ -929,6 +945,11 @@ public class SingleChatFunction {
                 
                 JsonArray labels = new JsonParser().parse(labelStr).getAsJsonArray();
                 result.add("labels", labels);
+            }else {
+                // 模块的异常没有被捕获
+                result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+                logger.error(serverResult);
+                return result;
             }
             
             
@@ -986,6 +1007,11 @@ public class SingleChatFunction {
                     return result;
                 }
                 result.addProperty("checkState", server.getState());
+            }else {
+                // 模块的异常没有被捕获
+                result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+                logger.error(serverResult);
+                return result;
             }
         } catch (Exception e) {
             logger.error("Module Error SingleChatServerService.getSingleChatServerInfo(" + typeId + "," + userId + ")", e);
@@ -1004,7 +1030,9 @@ public class SingleChatFunction {
             if (ResultCode.SUCCESS.equals(countResult.getCode())) {
                 result.addProperty("count", countResult.getData());
             }else {
-                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                // 模块的异常没有被捕获
+                result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+                logger.error(countResult);
                 return result;
             }
         } catch (Exception e) {
@@ -1058,6 +1086,7 @@ public class SingleChatFunction {
                 result.addProperty("unit", price.getUnit());
             }else {
                 result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+                logger.error(priceResult);
                 return result;
             }
         } catch (Exception e) {
@@ -1114,6 +1143,7 @@ public class SingleChatFunction {
                 result.add("labels", labels);
             }else {
                 result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+                logger.error(pageResult);
                 return result;
             }
         } catch (Exception e) {
