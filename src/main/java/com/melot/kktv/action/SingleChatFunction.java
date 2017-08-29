@@ -792,7 +792,7 @@ public class SingleChatFunction {
      * @param request
      * @return
      */
-    public JsonObject getSerevrList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+    public JsonObject getServerList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
         
         int typeId;

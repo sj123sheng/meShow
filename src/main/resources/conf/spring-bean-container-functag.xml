@@ -2484,7 +2484,7 @@
 	<!-- 获取大厅技能服务列表 -->
 	<bean id="51060104" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="singleChatFunction" />
-		<constructor-arg name="methodName" value="getSerevrList" />
+		<constructor-arg name="methodName" value="getServerList" />
 	</bean>
 	
 	<!-- 获取主播标签  -->
