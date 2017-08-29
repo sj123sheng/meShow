@@ -2,6 +2,7 @@ package com.melot.kktv.model.transform;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.melot.kktv.util.StringUtil;
 import com.melot.resource.domain.Resource;
 import com.melot.singlechat.driver.domain.SingleChatLabel;
 import com.melot.singlechat.driver.domain.SingleChatServer;
@@ -36,6 +37,9 @@ public class SingleChatServerTF {
         JsonArray resVideos = new JsonArray();
         if (server.getVideoResources() != null && !server.getVideoResources().isEmpty()) {
             for (Resource resource : server.getVideoResources()) {
+                if (StringUtil.strIsNull(resource.getSpecificUrl())) {
+                    continue;
+                }
                 JsonObject videoJson = new JsonObject();
                 videoJson.addProperty("videoUrl", resource.getSpecificUrl());
                 videoJson.addProperty("videoDur", resource.getDuration());
@@ -53,6 +57,9 @@ public class SingleChatServerTF {
         JsonArray resAudios = new JsonArray();
         if (server.getAudioResources() != null && !server.getAudioResources().isEmpty()) {
             for (Resource resource : server.getAudioResources()) {
+                if (StringUtil.strIsNull(resource.getSpecificUrl())) {
+                    continue;
+                }
                 JsonObject audioJson = new JsonObject();
                 audioJson.addProperty("audioUrl", resource.getSpecificUrl());
                 audioJson.addProperty("imgUrl_400", resource.getImageUrl() + "!400");
@@ -66,6 +73,9 @@ public class SingleChatServerTF {
         JsonArray resImages = new JsonArray();
         if (server.getImageResources() != null && !server.getImageResources().isEmpty()) {
             for (Resource resource : server.getImageResources()) {
+                if (StringUtil.strIsNull(resource.getImageUrl())) {
+                    continue;
+                }
                 JsonObject imageJson = new JsonObject();
                 imageJson.addProperty("imgUrl", resource.getImageUrl());
                 imageJson.addProperty("imgUrl_1280", resource.getImageUrl() + "!1280");
@@ -96,7 +106,10 @@ public class SingleChatServerTF {
      * @param resourceState
      * @return
      */
-    private static int stateTF(int resourceState) {
+    private static int stateTF(Integer resourceState) {
+        if (resourceState == null) {
+            return -1;
+        }
         switch (resourceState) {
         case 0:// 用户删除
             return -1;
