@@ -2623,4 +2623,33 @@ public class OtherFunctions {
         }
         return result;
     }
+    
+    /**
+     * 校验敏感词模块【51090201】
+     * 
+     * @param jsonObject 请求对象
+     * @return 标记信息
+     */
+    public JsonObject checkPhrase(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+        String content;
+        int userId;
+        
+        JsonObject result = new JsonObject();
+        try {
+            content = CommonUtil.getJsonParamString(jsonObject, "content", null, null, 0, Integer.MAX_VALUE);
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 0, Integer.MAX_VALUE);
+        } catch(CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch(Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        if (com.melot.kkcx.service.GeneralService.hasSensitiveWords(userId, content)) {
+            result.addProperty("TagCode", "5109020101");
+            return result;
+        }
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
 }
