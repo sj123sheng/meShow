@@ -74,8 +74,6 @@ import com.melot.module.packagegift.driver.service.VipService;
 import com.melot.module.packagegift.util.GiftPackageEnum;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import com.melot.stream.driver.service.LiveStreamConfigService;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 
 /**
  * 其他相关的接口类
@@ -2658,12 +2656,6 @@ public class OtherFunctions {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-        
-        DBObject queryDbObject = new BasicDBObject();
-        queryDbObject.put("appId", appId);
-        queryDbObject.put("channel", channel);
-        queryDbObject.put("platform", platform);
-        queryDbObject.put("hullId", hullId);
         
         try {
             Map<String, Object> map = new HashMap<String, Object>();

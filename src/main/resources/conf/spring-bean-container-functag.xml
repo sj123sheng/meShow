@@ -435,11 +435,6 @@
 		<constructor-arg name="t" ref="profileFunction" />
 		<constructor-arg name="methodName" value="getUserWinLotteryList" />
 	</bean>
-	<!-- 获取用户系统管理员类型 -->
-	<bean id="10005039" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="profileFunction" />
-		<constructor-arg name="methodName" value="getUserAdminType" />
-	</bean>
 	<!-- 修改房间主题 -->
 	<bean id="10005055" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="profileFunction" />
