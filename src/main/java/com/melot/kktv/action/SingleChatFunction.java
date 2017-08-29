@@ -712,6 +712,22 @@ public class SingleChatFunction {
                     result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
                     return result;
                 }
+                
+                // 获取用户海报信息
+                try {
+                    RoomInfoService roomInfoService = MelotBeanFactory.getBean("roomInfoService", RoomInfoService.class);
+                    RoomInfo roomInfo = roomInfoService.getRoomInfoById(singleChatServer.getUserId());
+                    if (roomInfo != null && roomInfo.getPoster() != null) {
+                        result.addProperty("posterPath_256", roomInfo.getPoster() + "!256");
+                    }else {
+                        result.addProperty("posterPath_256", "");
+                    }
+                        
+                } catch (Exception e) {
+                    logger.error("Module Error roomInfoService.getRoomInfoById(" + singleChatServer.getUserId() + ")", e);
+                    result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                    return result;
+                }
             }else {
                 // 模块的异常没有被捕获
                 result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
