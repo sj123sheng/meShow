@@ -2308,7 +2308,7 @@ public class UserFunctions {
         // 获取参数
         // 定义结果并组装json对象形式的返回结果
         JsonObject result = new JsonObject();
-        
+
         int userId = 0, platform = 0, appId = 0, channel = 0, b = 0, fromLogin = 0;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "05010001", 1, Integer.MAX_VALUE);
@@ -2324,236 +2324,236 @@ public class UserFunctions {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-        
-        Transaction t;
-        
-        
-            //获取公有属性
-            UserInfoDetail userInfoDetail = null;
-            t = Cat.getProducer().newTransaction("MCall", "com.melot.kkcore.user.service.KkUserService.getUserDetailInfo");
-            try {
-                KkUserService kkUserService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
-                userInfoDetail = kkUserService.getUserDetailInfo(userId);
-                t.setStatus(Transaction.SUCCESS);
-            } catch (Exception e) {
-                Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
-                t.setStatus(e);
-            } finally {
-                t.complete();
-            }
-            if (userInfoDetail == null || userInfoDetail.getRegisterInfo() == null) {
-                JsonObject reResult = new JsonObject();
-                reResult.addProperty("TagCode", TagCodeEnum.USER_NOT_EXIST);
-                return reResult;
-            }
-            result.addProperty("gender", userInfoDetail.getProfile().getGender());
-            result.addProperty("city", Math.abs(userInfoDetail.getRegisterInfo().getCityId()));
-            
-            Integer area = CityUtil.getParentCityIdNoDefault(userInfoDetail.getRegisterInfo().getCityId());
-            if (area != null) {
-                result.addProperty("area", area);
-            }
-            if (userInfoDetail.getProfile().getNickName() != null) {
-                t = Cat.getProducer().newTransaction("MCall", "GeneralService.replaceSensitiveWords");
-                try {
-                    result.addProperty("nickname", GeneralService.replaceSensitiveWords(userId, userInfoDetail.getProfile().getNickName()));
-                    t.setStatus(Transaction.SUCCESS);
-                } catch (Exception e) {
-                    Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
-                    t.setStatus(e);
-                } finally {
-                    t.complete();
-                }
-            }
-            if (userInfoDetail.getProfile().getBirthday() != null) {
-                result.addProperty("birthday", userInfoDetail.getProfile().getBirthday());
-            }
-            
-            try {
-                long consumeTotal = userInfoDetail.getAssets() == null ? 0 : userInfoDetail.getAssets().getConsumeTotal();
-                long earnTotal = userInfoDetail.getAssets() == null ? 0 : userInfoDetail.getAssets().getEarnTotal();
 
-                // 读取明星等级
-                ActorLevel actorLevel = null;
-                t = Cat.getProducer().newTransaction("MCall", "UserService.getActorLevel");
-                try {
-                    actorLevel = com.melot.kkcx.service.UserService.getActorLevel(earnTotal);
-                    t.setStatus(Transaction.SUCCESS);
-                } catch (Exception e) {
-                    Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
-                    t.setStatus(e);
-                } finally {
-                    t.complete();
-                }
-                if (actorLevel != null) {
-                    result.addProperty("actorLevel", actorLevel.getLevel());
-                }
-                
-                // 读取富豪等级
-                RichLevel richLevel = null;
-                t = Cat.getProducer().newTransaction("MCall", "UserService.getRichLevel");
-                try {
-                    richLevel = com.melot.kkcx.service.UserService.getRichLevel(consumeTotal);
-                    t.setStatus(Transaction.SUCCESS);
-                } catch (Exception e) {
-                    Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
-                    t.setStatus(e);
-                } finally {
-                    t.complete();
-                }
-                if (richLevel != null) {
-                    result.addProperty("richLevel", richLevel.getLevel());
-                }
-                
-            } catch (Exception e) {
-                logger.error("UserService.getUserInfoFromMongo(" + userId + ") execute exception.", e);
-            }
-            
-            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
-            
-            // 获取用户会员信息
-            JsonArray propArray = new JsonArray();
+        Transaction t;
+
+        // 获取公有属性
+        UserInfoDetail userInfoDetail = null;
+        t = Cat.getProducer().newTransaction("MCall", "com.melot.kkcore.user.service.KkUserService.getUserDetailInfo");
+        try {
+            KkUserService kkUserService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
+            userInfoDetail = kkUserService.getUserDetailInfo(userId);
+            t.setStatus(Transaction.SUCCESS);
+        } catch (Exception e) {
+            Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
+            t.setStatus(e);
+        } finally {
+            t.complete();
+        }
+        if (userInfoDetail == null || userInfoDetail.getRegisterInfo() == null) {
+            JsonObject reResult = new JsonObject();
+            reResult.addProperty("TagCode", TagCodeEnum.USER_NOT_EXIST);
+            return reResult;
+        }
+        result.addProperty("gender", userInfoDetail.getProfile().getGender());
+        result.addProperty("city", Math.abs(userInfoDetail.getRegisterInfo().getCityId()));
+
+        Integer area = CityUtil.getParentCityIdNoDefault(userInfoDetail.getRegisterInfo().getCityId());
+        if (area != null) {
+            result.addProperty("area", area);
+        }
+        if (userInfoDetail.getProfile().getNickName() != null) {
+            t = Cat.getProducer().newTransaction("MCall", "GeneralService.replaceSensitiveWords");
             try {
-                List<Integer> propList = null;
-                t = Cat.getProducer().newTransaction("MCall", "UserService.getUserProps");
-                try {
-                    propList = com.melot.kkcx.service.UserService.getUserProps(userId);
-                    t.setStatus(Transaction.SUCCESS);
-                } catch (Exception e) {
-                    Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
-                    t.setStatus(e);
-                } finally {
-                    t.complete();
-                }
-                if (propList != null) {
-                    for (Integer propId : propList) {
-                        JsonObject obj = new JsonObject();
-                        obj.addProperty("propId", propId);
-                        propArray.add(obj);
-                    }
-                }
-            } catch (Exception e) {
-                logger.error("UserService.getUserProps(" + userId + ") execute exception.", e);
-            }
-            result.add("props", propArray);
-            
-            if (userInfoDetail.getProfile().getPortrait() != null && !result.has("portrait_path_original")) {
-                result.addProperty("portrait_path_128", ConfigHelper.getHttpdir() + userInfoDetail.getProfile().getPortrait() + "!128");
-            }
-            
-            // 添加家族勋章信息
-            t = Cat.getProducer().newTransaction("MRedis", "MedalSource.getUserMedalsAsJson");
-            try {
-                result.add("userMedal", MedalSource.getUserMedalsAsJson(userId, platform));
+                result.addProperty("nickname", GeneralService.replaceSensitiveWords(userId, userInfoDetail.getProfile().getNickName()));
                 t.setStatus(Transaction.SUCCESS);
             } catch (Exception e) {
-                logger.error("MedalSource.getUserMedalsAsJson(" + userId + ") execute exception.", e);
                 Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
                 t.setStatus(e);
             } finally {
                 t.complete();
             }
-            
-            // 获取爵位勋章
+        }
+        if (userInfoDetail.getProfile().getBirthday() != null) {
+            result.addProperty("birthday", userInfoDetail.getProfile().getBirthday());
+        }
+
+        try {
+            long consumeTotal = userInfoDetail.getAssets() == null ? 0 : userInfoDetail.getAssets().getConsumeTotal();
+            long earnTotal = userInfoDetail.getAssets() == null ? 0 : userInfoDetail.getAssets().getEarnTotal();
+
+            // 读取明星等级
+            ActorLevel actorLevel = null;
+            t = Cat.getProducer().newTransaction("MCall", "UserService.getActorLevel");
             try {
-                ActivityMedalService activityMedalService = (ActivityMedalService) MelotBeanFactory.getBean("activityMedalService");
-                //添加充值勋章信息,充值勋章所需要的字段都放到redis中，避免二次查询数据库
-                UserMedalService userMedalService = (UserMedalService) MelotBeanFactory.getBean("userMedalService");
-                com.melot.module.medal.driver.domain.GsonMedalObj medal = null;
-                t = Cat.getProducer().newTransaction("MCall", "userMedalService.getMedalsByUserId");
-                try {
-                    medal = userMedalService.getMedalsByUserId(userId);
-                    t.setStatus(Transaction.SUCCESS);
-                } catch (Exception e) {
-                    Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
-                    t.setStatus(e);
-                } finally {
-                    t.complete();
-                }
-                Date now = new Date();
-                List<ConfMedal> medals = new ArrayList<ConfMedal>();
-                if (medal != null) {
-                    ConfMedal confMedal = null;
-                    if (medal.getEndTime() > now.getTime()) { // 如果没有过期的话，才显示出来
-                        MedalInfo medalInfo = null;
-                        t = Cat.getProducer().newTransaction("MCall", "MedalConfig.getMedal");
-                        try {
-                            medalInfo = MedalConfig.getMedal(medal.getMedalId());
-                            t.setStatus(Transaction.SUCCESS);
-                        } catch (Exception e) {
-                            Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
-                            t.setStatus(e);
-                        } finally {
-                            t.complete();
-                        }
-                        if (medalInfo != null) {
-                            confMedal = new ConfMedal();
-                            
-                            confMedal.setBright(medal.getLightState());
-                            
-                            //提醒单独处理放到if判断中
-                            if (medalInfo.getMedalLevel() == 8) {
-                                confMedal.setMedalLevel(7);
-                                confMedal.setIsTop(1);
-                                confMedal.setMedalDes(medalInfo.getMedalDesc());
-                            }else {
-                                confMedal.setMedalLevel(medalInfo.getMedalLevel() - 1);
-                                confMedal.setIsTop(0);
-                                confMedal.setMedalDes(medalInfo.getMedalDesc());
-                            }
-                            confMedal.setMedalId(medalInfo.getMedalId());
-                            confMedal.setMedalType(medalInfo.getMedalType());
-                            confMedal.setMedalTitle(medalInfo.getMedalTitle());
-                            confMedal.setMedalExpireTime(medal.getEndTime());
-                            confMedal.setMedalMedalUrl(medalInfo.getMedalIcon());
-                            
-                            //点亮的勋章
-                            if (confMedal.getBright() != 0) {
-                                medals.add(confMedal);  
-                            }
-                        }
-                    }
-                }
-                
-                List<UserActivityMedal> wearList = null;
-                t = Cat.getProducer().newTransaction("MCall", "activityMedalService.getUserWearMedals");
-                try {
-                    wearList = activityMedalService.getUserWearMedals(userId);
-                    t.setStatus(Transaction.SUCCESS);
-                } catch (Exception e) {
-                    Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
-                    t.setStatus(e);
-                } finally {
-                    t.complete();
-                }
-                if (wearList != null && wearList.size() > 0) {
-                    for (UserActivityMedal userActivityMedal : wearList) {
-                        ConfMedal confMedal = new ConfMedal();
-                        confMedal.setIsTop(0);
-                        confMedal.setMedalId(userActivityMedal.getMedalId());
-                        confMedal.setBright(userActivityMedal.getLightState());
-                        confMedal.setMedalDes(userActivityMedal.getMedalDesc() != null ? String.valueOf(new JsonParser().parse(userActivityMedal.getMedalDesc()).getAsJsonObject().get("description")) : null);
-                        confMedal.setMedalType(userActivityMedal.getMedalType());
-                        confMedal.setMedalTitle(userActivityMedal.getMedalTitle());
-                        confMedal.setMedalExpireTime(userActivityMedal.getEndTime().getTime());
-                        confMedal.setMedalMedalUrl(userActivityMedal.getMedalIcon());
-                        medals.add(confMedal);
-                    }
-                }
-                
-                // 直播精灵过滤充值勋章信息
-                if (appId != 8) {
-                    result.add("userMedalList",new JsonParser().parse(new Gson().toJson(medals)).getAsJsonArray());
-                }
+                actorLevel = com.melot.kkcx.service.UserService.getActorLevel(earnTotal);
+                t.setStatus(Transaction.SUCCESS);
             } catch (Exception e) {
-                logger.error("Get user[" + userId + "] medal execute exception.", e);
+                Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
+                t.setStatus(e);
+            } finally {
+                t.complete();
             }
-            result.addProperty("userId", userId);
-            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
-        
+            if (actorLevel != null) {
+                result.addProperty("actorLevel", actorLevel.getLevel());
+            }
+
+            // 读取富豪等级
+            RichLevel richLevel = null;
+            t = Cat.getProducer().newTransaction("MCall", "UserService.getRichLevel");
+            try {
+                richLevel = com.melot.kkcx.service.UserService.getRichLevel(consumeTotal);
+                t.setStatus(Transaction.SUCCESS);
+            } catch (Exception e) {
+                Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
+                t.setStatus(e);
+            } finally {
+                t.complete();
+            }
+            if (richLevel != null) {
+                result.addProperty("richLevel", richLevel.getLevel());
+            }
+
+        } catch (Exception e) {
+            logger.error("UserService.getUserInfoFromMongo(" + userId + ") execute exception.", e);
+        }
+
+        result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+
+        // 获取用户会员信息
+        JsonArray propArray = new JsonArray();
+        try {
+            List<Integer> propList = null;
+            t = Cat.getProducer().newTransaction("MCall", "UserService.getUserProps");
+            try {
+                propList = com.melot.kkcx.service.UserService.getUserProps(userId);
+                t.setStatus(Transaction.SUCCESS);
+            } catch (Exception e) {
+                Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
+                t.setStatus(e);
+            } finally {
+                t.complete();
+            }
+            if (propList != null) {
+                for (Integer propId : propList) {
+                    JsonObject obj = new JsonObject();
+                    obj.addProperty("propId", propId);
+                    propArray.add(obj);
+                }
+            }
+        } catch (Exception e) {
+            logger.error("UserService.getUserProps(" + userId + ") execute exception.", e);
+        }
+        result.add("props", propArray);
+
+        if (userInfoDetail.getProfile().getPortrait() != null && !result.has("portrait_path_original")) {
+            result.addProperty("portrait_path_128", ConfigHelper.getHttpdir() + userInfoDetail.getProfile().getPortrait() + "!128");
+        }
+
+        // 添加家族勋章信息
+        t = Cat.getProducer().newTransaction("MRedis", "MedalSource.getUserMedalsAsJson");
+        try {
+            result.add("userMedal", MedalSource.getUserMedalsAsJson(userId, platform));
+            t.setStatus(Transaction.SUCCESS);
+        } catch (Exception e) {
+            logger.error("MedalSource.getUserMedalsAsJson(" + userId + ") execute exception.", e);
+            Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
+            t.setStatus(e);
+        } finally {
+            t.complete();
+        }
+
+        // 获取爵位勋章
+        try {
+            ActivityMedalService activityMedalService = (ActivityMedalService) MelotBeanFactory.getBean("activityMedalService");
+            // 添加充值勋章信息,充值勋章所需要的字段都放到redis中，避免二次查询数据库
+            UserMedalService userMedalService = (UserMedalService) MelotBeanFactory.getBean("userMedalService");
+            com.melot.module.medal.driver.domain.GsonMedalObj medal = null;
+            t = Cat.getProducer().newTransaction("MCall", "userMedalService.getMedalsByUserId");
+            try {
+                medal = userMedalService.getMedalsByUserId(userId);
+                t.setStatus(Transaction.SUCCESS);
+            } catch (Exception e) {
+                Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
+                t.setStatus(e);
+            } finally {
+                t.complete();
+            }
+            Date now = new Date();
+            List<ConfMedal> medals = new ArrayList<ConfMedal>();
+            if (medal != null) {
+                ConfMedal confMedal = null;
+                if (medal.getEndTime() > now.getTime()) { // 如果没有过期的话，才显示出来
+                    MedalInfo medalInfo = null;
+                    t = Cat.getProducer().newTransaction("MCall", "MedalConfig.getMedal");
+                    try {
+                        medalInfo = MedalConfig.getMedal(medal.getMedalId());
+                        t.setStatus(Transaction.SUCCESS);
+                    } catch (Exception e) {
+                        Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
+                        t.setStatus(e);
+                    } finally {
+                        t.complete();
+                    }
+                    if (medalInfo != null) {
+                        confMedal = new ConfMedal();
+
+                        confMedal.setBright(medal.getLightState());
+
+                        // 提醒单独处理放到if判断中
+                        if (medalInfo.getMedalLevel() == 8) {
+                            confMedal.setMedalLevel(7);
+                            confMedal.setIsTop(1);
+                            confMedal.setMedalDes(medalInfo.getMedalDesc());
+                        } else {
+                            confMedal.setMedalLevel(medalInfo.getMedalLevel() - 1);
+                            confMedal.setIsTop(0);
+                            confMedal.setMedalDes(medalInfo.getMedalDesc());
+                        }
+                        confMedal.setMedalId(medalInfo.getMedalId());
+                        confMedal.setMedalType(medalInfo.getMedalType());
+                        confMedal.setMedalTitle(medalInfo.getMedalTitle());
+                        confMedal.setMedalExpireTime(medal.getEndTime());
+                        confMedal.setMedalMedalUrl(medalInfo.getMedalIcon());
+
+                        // 点亮的勋章
+                        if (confMedal.getBright() != 0) {
+                            medals.add(confMedal);
+                        }
+                    }
+                }
+            }
+
+            List<UserActivityMedal> wearList = null;
+            t = Cat.getProducer().newTransaction("MCall", "activityMedalService.getUserWearMedals");
+            try {
+                wearList = activityMedalService.getUserWearMedals(userId);
+                t.setStatus(Transaction.SUCCESS);
+            } catch (Exception e) {
+                Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
+                t.setStatus(e);
+            } finally {
+                t.complete();
+            }
+            if (wearList != null && wearList.size() > 0) {
+                for (UserActivityMedal userActivityMedal : wearList) {
+                    ConfMedal confMedal = new ConfMedal();
+                    confMedal.setIsTop(0);
+                    confMedal.setMedalId(userActivityMedal.getMedalId());
+                    confMedal.setBright(userActivityMedal.getLightState());
+                    confMedal.setMedalDes(userActivityMedal.getMedalDesc() != null ? String
+                            .valueOf(new JsonParser().parse(userActivityMedal.getMedalDesc()).getAsJsonObject().get("description")) : null);
+                    confMedal.setMedalType(userActivityMedal.getMedalType());
+                    confMedal.setMedalTitle(userActivityMedal.getMedalTitle());
+                    confMedal.setMedalExpireTime(userActivityMedal.getEndTime().getTime());
+                    confMedal.setMedalMedalUrl(userActivityMedal.getMedalIcon());
+                    medals.add(confMedal);
+                }
+            }
+            // 直播精灵过滤充值勋章信息
+            if (appId != 8) {
+                result.add("userMedalList", new JsonParser().parse(new Gson().toJson(medals)).getAsJsonArray());
+            }
+        } catch (Exception e) {
+            logger.error("Get user[" + userId + "] medal execute exception.", e);
+        }
+        result.addProperty("userId", userId);
+        result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         // 返回结果
         return result;
     }
+    
 	private static JsonObject checkLogin(JsonObject result, ResLogin resLogin, int loginType, JsonObject jsonObject) {
 		if (loginType != -1 && resLogin != null && resLogin.getTagCode() != null) {
         	String TagCode = resLogin.getTagCode();
