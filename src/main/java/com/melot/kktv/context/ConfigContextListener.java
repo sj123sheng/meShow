@@ -15,6 +15,7 @@ import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.TextFilter;
 import com.melot.kktv.util.TlsSig;
 import com.melot.kktv.util.WordsFilter;
+import com.melot.kktv.util.cache.EhCache;
 import com.melot.kktv.util.confdynamic.InitConfig;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
@@ -38,6 +39,9 @@ public class ConfigContextListener implements ServletContextListener {
 		
 		// 销毁Spring容器
 		MelotBeanFactory.close();
+		
+		// 销毁缓存
+		EhCache.destroy();
 	}
 
 	@Override
@@ -82,6 +86,9 @@ public class ConfigContextListener implements ServletContextListener {
 		if (tlsPemLocation != null && tlsSoLocation != null) {
 			TlsSig.init(event.getServletContext().getRealPath("/") + tlsPemLocation, event.getServletContext().getRealPath("/") + tlsSoLocation);
 		}
+		
+		// 初始化ehcache缓存
+		EhCache.init();
 		
 		//init config
 		String path = event.getServletContext().getRealPath("/") + configLocation;

@@ -1077,7 +1077,7 @@ public class UserFunctions {
                 psword = CommonUtil.getJsonParamString(jsonObject, "psword", null, "01130004", 0, 512);
             } else {
                 uuid = CommonUtil.getJsonParamString(jsonObject, "uuid", null, "01130008", 0, 512);
-                if (loginType == LoginTypeEnum.WEIXIN) {
+                if (loginType == LoginTypeEnum.WEIXIN || loginType == LoginTypeEnum.FACEBOOK) {
                     unionid = CommonUtil.getJsonParamString(jsonObject, "unionid", null, null, 0, 512);
                 }
                 if (loginType == LoginTypeEnum.QQ) {

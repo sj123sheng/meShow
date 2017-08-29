@@ -10,7 +10,7 @@
 	
 	<artifactId>meShow</artifactId>
 	<packaging>war</packaging>
-	<version>2.2.11.56</version>
+	<version>2.2.11.57</version>
 	
 	<name>meShow</name>
 	<url>http://maven.apache.org</url>
@@ -170,6 +170,7 @@
 		<dependency>
 			<groupId>com.melot</groupId>
 			<artifactId>melot-sdk</artifactId>
+			<version>2.2.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.melot</groupId>
