@@ -471,65 +471,47 @@ public class UserRelationFunctions {
 		
 		String fanIdsStr = UserRelationService.getFanIdsString(userId, start, end);
 		if (fanIdsStr != null) {
-			// 调用存储过程得到结果
-			Map<Object, Object> map = new HashMap<Object, Object>();
-			map.put("userId", Integer.valueOf(userId));
-			map.put("fanIds", fanIdsStr);
-			map.put("selfTag", selfTag);
-			try {
-				SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("UserRelation.getUserFansList", map);
-			} catch (SQLException e) {
-				logger.error("未能正常调用存储过程", e);
-			}
-			String TagCode = (String) map.get("TagCode");
-			if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-				// 取出列表
-				@SuppressWarnings("unchecked")
-				List<Room> roomList = (ArrayList<Room>) map.get("roomList");
-				List<RoomInfo> roomInfoList = null;
-				if (roomList != null && roomList.size() > 0) {
-					roomList = UserService.addUserExtra(roomList);
-	                List<Integer> actorIds = new ArrayList<Integer>();
-	                StringBuffer actorIds2 = new StringBuffer();
-	                for (Room room : roomList) {
-	                    if (room.getActorTag() != null && room.getActorTag().intValue() == 1) {
-	                        actorIds.add(room.getUserId());
-	                        actorIds2.append(room.getUserId());
-	                        actorIds2.append(",");
-	                    }
-	                }
-	                if (actorIds2.length() > 0) {
-	                    roomInfoList = com.melot.kktv.service.RoomService.getRoomListByRoomIds(actorIds2.substring(0, actorIds2.length() - 1));
-	                }
-	                for (Room room : roomList) {
-	                	int roomId = room.getUserId();
-	                	JsonObject roomJson = new JsonObject();
-	                	if (room.getActorTag() != null && room.getActorTag().intValue() == 1
-	                			&& roomInfoList != null && roomInfoList.size() > 0) {
-	                		boolean flag = false;
-	                		for (RoomInfo rinfo : roomInfoList) {
-	                			if (rinfo.getActorId() != null && rinfo.getActorId().intValue() == roomId) {
-	                				roomJson = RoomTF.roomInfoToJson(rinfo, platform, true);
-	                				roomJson.addProperty("actorTag", 1);
-	                				flag = true;
-	                			}
-	                		}
-	                		if (!flag) {
-	                			roomJson = room.toJsonObject(platform, null);
-	                			roomJson.addProperty("actorTag", 0);
-	                		}
-	                	} else {
-	                		roomJson = room.toJsonObject(platform, null);
-	                		roomJson.addProperty("actorTag", 0);
-	                	}
-	                	
-	                	jRoomList.add(roomJson);
-	                }   
-	            }
-			} else {
-				// 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
-				logger.error("调用存储过程(UserRelation.getUserFansList)未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
-			}
+		    List<Room> roomList = getFansRoomList(fanIdsStr);
+            List<RoomInfo> roomInfoList = null;
+            if (roomList != null && roomList.size() > 0) {
+                roomList = UserService.addUserExtra(roomList);
+                List<Integer> actorIds = new ArrayList<Integer>();
+                StringBuffer actorIds2 = new StringBuffer();
+                for (Room room : roomList) {
+                    if (room.getActorTag() != null && room.getActorTag().intValue() == 1) {
+                        actorIds.add(room.getUserId());
+                        actorIds2.append(room.getUserId());
+                        actorIds2.append(",");
+                    }
+                }
+                if (actorIds2.length() > 0) {
+                    roomInfoList = com.melot.kktv.service.RoomService.getRoomListByRoomIds(actorIds2.substring(0, actorIds2.length() - 1));
+                }
+                for (Room room : roomList) {
+                    int roomId = room.getUserId();
+                    JsonObject roomJson = new JsonObject();
+                    if (room.getActorTag() != null && room.getActorTag().intValue() == 1
+                            && roomInfoList != null && roomInfoList.size() > 0) {
+                        boolean flag = false;
+                        for (RoomInfo rinfo : roomInfoList) {
+                            if (rinfo.getActorId() != null && rinfo.getActorId().intValue() == roomId) {
+                                roomJson = RoomTF.roomInfoToJson(rinfo, platform, true);
+                                roomJson.addProperty("actorTag", 1);
+                                flag = true;
+                            }
+                        }
+                        if (!flag) {
+                            roomJson = room.toJsonObject(platform, null);
+                            roomJson.addProperty("actorTag", 0);
+                        }
+                    } else {
+                        roomJson = room.toJsonObject(platform, null);
+                        roomJson.addProperty("actorTag", 0);
+                    }
+                    
+                    jRoomList.add(roomJson);
+                }   
+            }
 		}
 		
 		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
@@ -538,6 +520,21 @@ public class UserRelationFunctions {
 		
 		// 返回结果
 		return result;
+	}
+	
+	private static List<Room> getFansRoomList(String fanIdsStr) {
+	    List<Room> roomList = new ArrayList<>();
+	    if (fanIdsStr != null) {
+	        String[] fanIdsArr = fanIdsStr.split(",");
+            for (String fanId : fanIdsArr) {
+                Room room = new Room();
+                room.setUserId(Integer.valueOf(fanId));
+                room.setMaxCount(0);
+                room.setEnterConditionType("0");
+                roomList.add(room);
+            }
+	    }
+        return roomList;
 	}
 	
 	/**
