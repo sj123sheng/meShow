@@ -859,23 +859,9 @@ public class SingleChatFunction {
                     serverJson.addProperty("actorId", singleChatServer.getUserId());
                     serverJson.addProperty("price", singleChatServer.getPrice());
                     serverJson.addProperty("unit", singleChatServer.getUnit());
-                    
-                    // 获取开播状态
-                    try {
-                        SingleChatService singleChatService = MelotBeanFactory.getBean("singleChatService", SingleChatService.class);
-                        Result<HistSingleChatInfo> infoResult = singleChatService.getSingleChatInfoByActorId(singleChatServer.getUserId());
-                        if (infoResult == null || infoResult.getData() == null) {
-                            serverJson.addProperty("actorState", 2);
-                        }else {
-                            serverJson.addProperty("actorState", infoResult.getData().getState());
-                        }
-                        
-                    } catch (Exception e) {
-                        logger.error("Module Error singleChatService.getSingleChatInfoByActorId(" + typeId + ")", e);
-                        result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
-                        return result;
-                    }
-                    
+                    serverJson.addProperty("state", singleChatServer.getState());
+                    serverJson.addProperty("actorState", singleChatServer.getActorState());
+
                     // 获取用户昵称信息
                     try {
                         KkUserService kkUserService = MelotBeanFactory.getBean("kkUserService", KkUserService.class);
