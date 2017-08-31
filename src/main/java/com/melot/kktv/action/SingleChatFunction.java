@@ -661,10 +661,12 @@ public class SingleChatFunction {
         
         int typeId;
         int actorId;
+        int userId;
         
         try {
             typeId = CommonUtil.getJsonParamInt(jsonObject, "typeId", 0, "5106010201", Integer.MIN_VALUE, Integer.MAX_VALUE);
             actorId = CommonUtil.getJsonParamInt(jsonObject, "actorId", 0, "5106010202", Integer.MIN_VALUE, Integer.MAX_VALUE);
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -685,6 +687,12 @@ public class SingleChatFunction {
                 if (singleChatServer == null) {
                     result.addProperty("state", -1);
                     result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                    return result;
+                }
+                
+                // 非用户自己，不允许获取用户审核未通过的服务
+                if (1 != singleChatServer.getState() && (userId != actorId || !checkTag)) {
+                    result.addProperty("TagCode", "5106010203");
                     return result;
                 }
                 
