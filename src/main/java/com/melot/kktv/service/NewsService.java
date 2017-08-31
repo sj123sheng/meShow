@@ -1188,16 +1188,19 @@ public class NewsService {
 					String path_1280 = null;
 					String path_720 = null;
 					String path_400 = null;
+					String path_300 = null;
 					String path_272 = null;
 					String path_128 = null;
 					path_1280 = path_original + "!1280";
 					path_720 = path_original + "!720";
 					path_400 = path_original + "!400";
+					path_300 = path_original + "!300";
 					path_272 = path_original + "!272";
 					path_128 = path_original + "!128x96";
 					mediaSourceJson.addProperty("imageUrl_1280", path_1280);
 					mediaSourceJson.addProperty("imageUrl_720", path_720);
 					mediaSourceJson.addProperty("imageUrl_400", path_400);
+					mediaSourceJson.addProperty("imageUrl_300", path_300);
 					mediaSourceJson.addProperty("imageUrl_272", path_272);
 					mediaSourceJson.addProperty("imageUrl_128", path_128);
 					mediaSourceJson.addProperty("imageUrl", path_400);
@@ -1209,6 +1212,7 @@ public class NewsService {
 					String path_272 = null;
 					String path_128 = null;
 					String path_400 = null;
+					String path_300 = null;
 					Integer high = resVideo.getFileHeight();
 					Integer width = resVideo.getFileWidth();
 					if (high != null && width != null && high > 0 && width > 0) {
@@ -1220,11 +1224,13 @@ public class NewsService {
 					path_1280 = path_original;
 					path_720 = path_original;
 					path_400 = path_original + "?imageView2/1/w/400/h/300";
+					path_300 = path_original + "?imageView2/1/w/300/h/300";
 					path_272 = path_original;
 					path_128 = path_original;
 					mediaSourceJson.addProperty("imageUrl_1280", path_1280);
 					mediaSourceJson.addProperty("imageUrl_720", path_720);
 					mediaSourceJson.addProperty("imageUrl_400", path_400);
+					mediaSourceJson.addProperty("imageUrl_300", path_300);
 					mediaSourceJson.addProperty("imageUrl_272", path_272);
 					mediaSourceJson.addProperty("imageUrl_128", path_128);
 					//mediaSourceJson.remove("imageUrl");
@@ -1458,5 +1464,19 @@ public class NewsService {
 		return null;
 	}
 
+	public static List<NewsInfo> getNewsListByResType(int userId, int newsType, int start, int offset) {
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
+		if (newsService != null) {
+			return newsService.getNewsListByNewsType(userId, newsType, start, offset);
+		}
+		return null;
+	}
 	
+	public static int getNewsCountByResType(int userId, int newsType, int state) {
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
+		if (newsService != null) {
+			return newsService.getNewsInfoCount(userId, newsType, null, state);
+		}
+		return 0;
+	}
 }

@@ -1,44 +1,22 @@
 package com.melot.kktv.action;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.log4j.Logger;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcx.service.MessageBoxServices;
 import com.melot.kkcx.service.UserService;
-import com.melot.kktv.model.EffectiveActivity;
-import com.melot.kktv.model.KkSystemNotice;
-import com.melot.kktv.model.NewsComment;
-import com.melot.kktv.model.NewsPraise;
-import com.melot.kktv.model.RecommendedMsg;
+import com.melot.kktv.model.*;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.UserMessageSource;
-import com.melot.kktv.util.AppIdEnum;
-import com.melot.kktv.util.CommonUtil;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.DBEnum;
-import com.melot.kktv.util.PlatformEnum;
-import com.melot.kktv.util.TagCodeEnum;
+import com.melot.kktv.util.*;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.kktv.util.message.Message;
-
+import org.apache.log4j.Logger;
 import redis.clients.jedis.Jedis;
+
+import javax.servlet.http.HttpServletRequest;
+import java.sql.SQLException;
+import java.util.*;
 
 public class MessageBoxV2Functions {
 
@@ -1086,7 +1064,7 @@ public class MessageBoxV2Functions {
                     String idListRead = jedis.get(String.format(REDISKEY_EFFACTREADIDS, userId));
                     if (idListRead == null) {
                         msgMap.put("count", String.valueOf(idListArray.length));
-                        MessageBoxV2Functions.setUserMessages(jedis, userId, msgMap, idListArray.length, Message.MSGTYPE_ACTIVE);
+                        MessageBoxV2Functions.setUserMessages(jedis, userId, msgMap, 0, Message.MSGTYPE_ACTIVE);
                         return;
                     }
                     

@@ -1050,7 +1050,116 @@ public class NewsV2Functions {
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
+    
+    /**
+     * 根据newsType获取动态(20006030)
+     * 
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     * @throws Exception
+     */
+    public JsonObject getNewsListByNewsType(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+        JsonObject result = new JsonObject();
 
+        // 定义所需参数
+        int userId, newsType, start, offset, state, platform = 0;
+        // 解析参数
+        try {
+        	userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "06300001", 0, Integer.MAX_VALUE);
+        	newsType = CommonUtil.getJsonParamInt(jsonObject, "newsType", 10, null, 0, Integer.MAX_VALUE);
+        	start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, null, 0, Integer.MAX_VALUE);
+        	offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 20, null, 1, Integer.MAX_VALUE);
+        	state = CommonUtil.getJsonParamInt(jsonObject, "state", 1, null, 0, Integer.MAX_VALUE);
+            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        } catch (ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+        
+        int count = NewsService.getNewsCountByResType(userId, newsType, state);
+        if (count > 0) {
+            List<NewsInfo> newsList = NewsService.getNewsListByResType(userId, newsType, start, offset);
+            if (newsList != null && newsList.size() > 0) {
+            	JsonArray jNewsList = new JsonArray();
+            	for (NewsInfo newsInfo : newsList) {
+            		JsonObject json = NewsService.getNewResourceJson(newsInfo, platform, false);
+                    jNewsList.add(json);
+                }
+            	
+            	
+            	result.add("newsList", jNewsList);
+                
+            }
+        } 
+        
+        RoomInfo actorInfo = RoomService.getRoomInfo(userId);
+        if (actorInfo != null) {
+            result.addProperty("nickname", actorInfo.getNickname());
+            if (actorInfo.getGender() != null) {
+                result.addProperty("gender", actorInfo.getGender());
+            }
+            if (actorInfo.getPortrait() != null) {
+                if (platform == PlatformEnum.WEB) {
+                    result.addProperty("portrait_path_256", actorInfo.getPortrait() + "!256");
+                } else if (platform == PlatformEnum.ANDROID) {
+                    result.addProperty("portrait_path_48", actorInfo.getPortrait() + "!48");
+                    result.addProperty("portrait_path_128", actorInfo.getPortrait() + "!128");
+                } else if (platform == PlatformEnum.IPHONE) {
+                    result.addProperty("portrait_path_128", actorInfo.getPortrait() + "!128");
+                } else if (platform == PlatformEnum.IPAD) {
+                    result.addProperty("portrait_path_128", actorInfo.getPortrait() + "!128");
+                } else {
+                    result.addProperty("portrait_path_1280", actorInfo.getPortrait() + "!1280");
+                    result.addProperty("portrait_path_256", actorInfo.getPortrait() + "!256");
+                    result.addProperty("portrait_path_128", actorInfo.getPortrait() + "!128");
+                    result.addProperty("portrait_path_48", actorInfo.getPortrait() + "!48");
+                }
+            }
+            result.addProperty("actorLevel", actorInfo.getActorLevel());
+            result.addProperty("richLevel", actorInfo.getRichLevel());
+            // 直播状态
+            result.addProperty("isLive", actorInfo.getLiveStarttime() != null && actorInfo.getLiveEndtime() == null ? 1 : 0);
+            result.addProperty("roomSource", actorInfo.getRoomSource());
+            result.addProperty("screenType", actorInfo.getScreenType());
+            result.addProperty("actorTag", 1);
+        } else {
+            UserProfile userInfo = com.melot.kktv.service.UserService.getUserInfoV2(userId);
+            if (userInfo != null) {
+                result.addProperty("nickname", userInfo.getNickName());
+                result.addProperty("gender", userInfo.getGender());
+                result.addProperty("actorLevel", userInfo.getActorLevel());
+                result.addProperty("richLevel", userInfo.getUserLevel());
+                result.addProperty("actorTag", 0);
+                if (userInfo.getPortrait() != null) {
+                    if (platform == PlatformEnum.WEB) {
+                        result.addProperty("portrait_path_256", userInfo.getPortrait() + "!256");
+                    } else if (platform == PlatformEnum.ANDROID) {
+                        result.addProperty("portrait_path_48", userInfo.getPortrait() + "!48");
+                        result.addProperty("portrait_path_128", userInfo.getPortrait() + "!128");
+                    } else if (platform == PlatformEnum.IPHONE) {
+                        result.addProperty("portrait_path_128", userInfo.getPortrait() + "!128");
+                    } else if (platform == PlatformEnum.IPAD) {
+                        result.addProperty("portrait_path_128", userInfo.getPortrait() + "!128");
+                    } else {
+                        result.addProperty("portrait_path_1280", userInfo.getPortrait() + "!1280");
+                        result.addProperty("portrait_path_256", userInfo.getPortrait() + "!256");
+                        result.addProperty("portrait_path_128", userInfo.getPortrait() + "!128");
+                        result.addProperty("portrait_path_48", userInfo.getPortrait() + "!48");
+                    }
+                }
+            }
+        }
+        
+        result.addProperty("pathPrefix", ConfigHelper.getHttpdir()); // 图片前缀
+        result.addProperty("mediaPathPrefix", ConfigHelper.getMediahttpdir()); // 多媒体前缀
+        result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());// 七牛前缀
+        result.addProperty("countTotal", count);
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+    
     /**
      * 删除评论(20006006)
      * 

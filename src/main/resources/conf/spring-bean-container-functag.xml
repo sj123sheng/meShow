@@ -1117,6 +1117,12 @@
 		<constructor-arg name="methodName" value="getCommentListByTopic" />
 	</bean>
 	
+	<!-- 根据newsType获取动态 -->
+	<bean id="20006030" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="newsV2Function" />
+		<constructor-arg name="methodName" value="getNewsListByNewsType" />
+	</bean>
+	
 	<!-- 获取热门视频动态列表 -->
 	<bean id="20000402" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="newsV2Function" />
@@ -2436,4 +2442,20 @@
 		<constructor-arg name="methodName" value="getGrammarId" />
 	</bean>
 
+    <!-- 获取主播代言团列表 -->
+    <bean id="51020101" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="actorKKTVFunction" />
+        <constructor-arg name="methodName" value="getRepresentList" />
+    </bean>
+    <!-- 更新H5页面上的 UV 数据 -->
+    <bean id="51020102" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="actorKKTVFunction" />
+        <constructor-arg name="methodName" value="updateUV" />
+    </bean>
+    <!-- 获取h5新注册用户是否领取过新手礼包 -->
+    <bean id="51020103" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="actorKKTVFunction" />
+        <constructor-arg name="methodName" value="getUserReceivedNoviceGift" />
+    </bean>
+	
 </beans>
