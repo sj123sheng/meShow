@@ -625,21 +625,16 @@ public class SingleChatFunction {
                 return result;
             }
             
-            // 用户非主播，不允许发布技能
-            if (ResultCode.ERROR_NOT_ACTOR.equals(saveResult.getCode())) {
-                result.addProperty("TagCode", "5106010110");
-                return result;
-            }
-            
-            // 用户被封号
-            if (ResultCode.ERROR_ACTOR_FORBIDEN.equals(saveResult.getCode())) {
-                result.addProperty("TagCode", "5106010111");
+            // 用户非主播，不允许发布技能||用户被封号
+            if (ResultCode.ERROR_NOT_ACTOR.equals(saveResult.getCode()) 
+                    || ResultCode.ERROR_ACTOR_FORBIDEN.equals(saveResult.getCode())) {
+                result.addProperty("TagCode", TagCodeEnum.SINGLE_CHAT_NOT_ACTOR);
                 return result;
             }
             
             // 用户被巡管禁播
             if (ResultCode.ERROR_FORBIDEN_BY_INSPECTION.equals(saveResult.getCode())) {
-                result.addProperty("TagCode", "5106010112");
+                result.addProperty("TagCode", "05110806");
                 return result;
             }
             
