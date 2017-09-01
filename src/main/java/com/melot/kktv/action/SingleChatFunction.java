@@ -837,7 +837,7 @@ public class SingleChatFunction {
         
         try {
             SingleChatServerService singleChatServerService = MelotBeanFactory.getBean("singleChatServerService", SingleChatServerService.class);
-            Result<PageSingleChatServer> pageServerListResult = singleChatServerService.getSingleChatServers(typeId, 1, start, offset);
+            Result<PageSingleChatServer> pageServerListResult = singleChatServerService.getSingleChatServers(typeId, start, offset);
             if (pageServerListResult == null) {
                 result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
                 return result;
