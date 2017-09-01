@@ -607,12 +607,6 @@ public class SingleChatFunction {
                 return result;
             }
             
-            // 模块异常
-            if (ResultCode.ERROR_MODULE.equals(saveResult.getCode())) {
-                result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
-                return result;
-            }
-            
             // 有敏感字
             if (ResultCode.ERROR_HAVE_SENSITIVE_WORDS.equals(saveResult.getCode())) {
                 result.addProperty("TagCode", "5106010107");
@@ -625,6 +619,11 @@ public class SingleChatFunction {
                 return result;
             }
             
+            // 模块异常
+            if (ResultCode.ERROR_MODULE.equals(saveResult.getCode())) {
+                result.addProperty("TagCode", "5106010109");
+                return result;
+            }
             if (ResultCode.SUCCESS.equals(saveResult.getCode())) {
                 Integer id = saveResult.getData();
                 if (id == null || id <= 0) {
