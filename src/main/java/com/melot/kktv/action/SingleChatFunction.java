@@ -689,6 +689,12 @@ public class SingleChatFunction {
                     return result;
                 }
                 
+                if (singleChatServer.getState() == -2) {
+                    result.addProperty("state", -2);
+                    result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                    return result;
+                }
+                
                 // 非用户自己，不允许获取用户审核未通过的服务
                 if (1 != singleChatServer.getState() && (userId != actorId || !checkTag)) {
                     result.addProperty("TagCode", "5106010203");
