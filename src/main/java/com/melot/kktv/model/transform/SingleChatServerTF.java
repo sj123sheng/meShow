@@ -46,7 +46,14 @@ public class SingleChatServerTF {
                 videoJson.addProperty("videoFrom", resource.getTitle());
                 videoJson.addProperty("videoWidth", resource.getFileWidth());
                 videoJson.addProperty("videoHeight", resource.getFileHeight());
-                videoJson.addProperty("imgUrl_400", resource.getImageUrl() + "?imageView2/1/w/400/h/225");
+                if (!StringUtil.strIsNull(resource.getImageUrl())) {
+                    videoJson.addProperty("imgUrl_400", resource.getImageUrl() + "?imageView2/1/w/400/h/225");
+                    videoJson.addProperty("imgUrl", resource.getImageUrl());
+                }else {
+                    videoJson.addProperty("imgUrl_400", "");
+                    videoJson.addProperty("imgUrl", "");
+                }
+                
                 videoJson.addProperty("checkState", stateTF(resource.getState()));
                 
                 resVideos.add(videoJson);
