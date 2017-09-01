@@ -624,6 +624,25 @@ public class SingleChatFunction {
                 result.addProperty("TagCode", "5106010109");
                 return result;
             }
+            
+            // 用户非主播，不允许发布技能
+            if (ResultCode.ERROR_NOT_ACTOR.equals(saveResult.getCode())) {
+                result.addProperty("TagCode", "5106010110");
+                return result;
+            }
+            
+            // 用户被封号
+            if (ResultCode.ERROR_ACTOR_FORBIDEN.equals(saveResult.getCode())) {
+                result.addProperty("TagCode", "5106010111");
+                return result;
+            }
+            
+            // 用户被巡管禁播
+            if (ResultCode.ERROR_FORBIDEN_BY_INSPECTION.equals(saveResult.getCode())) {
+                result.addProperty("TagCode", "5106010112");
+                return result;
+            }
+            
             if (ResultCode.SUCCESS.equals(saveResult.getCode())) {
                 Integer id = saveResult.getData();
                 if (id == null || id <= 0) {
