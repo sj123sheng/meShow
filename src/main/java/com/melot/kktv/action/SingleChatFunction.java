@@ -967,7 +967,9 @@ public class SingleChatFunction {
             if (ResultCode.SUCCESS.equals(serverResult.getCode())) {
                 SingleChatServer server = serverResult.getData();
                 List<SingleChatLabel> labelList = new ArrayList<>();
-                if (server != null && server.getLabelInfos() != null) {
+                
+                // 审核通过且有标签
+                if (server != null && server.getLabelInfos() != null && server.getState() == 1) {
                     labelList = server.getLabelInfos();
                 }
                 String labelStr = new Gson().toJson(labelList);
