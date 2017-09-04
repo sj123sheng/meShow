@@ -1479,4 +1479,13 @@ public class NewsService {
 		}
 		return 0;
 	}
+	
+	public static List<NewsInfo> getNewsListAndPraiseByResType(int actorId, int userId, int newsType, int start, int offset) {
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
+		if (newsService != null) {
+			newsService.getNewsListAndPraiseByNewsType(actorId, userId, newsType, start, offset);
+		}
+		return null;
+	}
+	
 }

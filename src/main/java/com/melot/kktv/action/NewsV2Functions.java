@@ -1064,10 +1064,11 @@ public class NewsV2Functions {
         JsonObject result = new JsonObject();
 
         // 定义所需参数
-        int userId, newsType, start, offset, state, platform = 0;
+        int userId, newsType, start, offset, state, platform, actorId = 0;
         // 解析参数
         try {
-        	userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "06300001", 0, Integer.MAX_VALUE);
+        	userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 0, Integer.MAX_VALUE);
+        	actorId = CommonUtil.getJsonParamInt(jsonObject, "actorId", 0, null, 0, Integer.MAX_VALUE);
         	newsType = CommonUtil.getJsonParamInt(jsonObject, "newsType", 10, null, 0, Integer.MAX_VALUE);
         	start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, null, 0, Integer.MAX_VALUE);
         	offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 20, null, 1, Integer.MAX_VALUE);
@@ -1078,9 +1079,24 @@ public class NewsV2Functions {
             return result;
         }
         
-        int count = NewsService.getNewsCountByResType(userId, newsType, state);
+        if (userId == 0 && actorId == 0) {
+        	result.addProperty("TagCode", "06300001");
+        	return result;
+        }
+        
+        if (actorId == 0) {
+        	//老版参数兼容,之前userId作为actorId使用,且不传actorId
+        	actorId = userId;
+        }
+        
+        int count = NewsService.getNewsCountByResType(actorId, newsType, state);
         if (count > 0) {
-            List<NewsInfo> newsList = NewsService.getNewsListByResType(userId, newsType, start, offset);
+        	List<NewsInfo> newsList;
+        	if (checkTag) {
+        		newsList = NewsService.getNewsListAndPraiseByResType(actorId, userId, newsType, start, offset);
+        	} else {
+            	newsList = NewsService.getNewsListByResType(actorId, newsType, start, offset);
+        	}
             if (newsList != null && newsList.size() > 0) {
             	JsonArray jNewsList = new JsonArray();
             	for (NewsInfo newsInfo : newsList) {
