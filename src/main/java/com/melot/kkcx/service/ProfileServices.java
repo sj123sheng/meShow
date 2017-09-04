@@ -146,14 +146,6 @@ public class ProfileServices {
 				}
 				newHotData.put("time", String.valueOf(System.currentTimeMillis()));
 				
-				// 获取用户家族勋章列表
-				try {
-				    result.addProperty("userMedal", MedalSource.getUserMedalsAsJson(userId, null).toString());
-				    newHotData.put("userMedal", MedalSource.getUserMedalsAsJson(userId, null).toString());
-                } catch (Exception e) {
-                    logger.error("UserService.getUserMedalList(" + userId + ") execute exception.", e);
-                }
-				
 				// 获取用户标签
 				try {
 				    String tags = TagService.getUserTags(userId);
