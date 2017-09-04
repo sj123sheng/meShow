@@ -174,7 +174,7 @@
 		<dependency>
 			<groupId>com.melot</groupId>
 			<artifactId>melot-util</artifactId>
-			<version>1.0.34-SNAPSHOT</version>
+			<version>1.0.34</version>
 		</dependency>
 		<dependency>
 		  	<groupId>com.melot</groupId>
@@ -529,7 +529,7 @@
 		<dependency>
 		  <groupId>com.melot.module.driver.msgbuilder</groupId>
 		  <artifactId>single-chat-api</artifactId>
-		  <version>1.0.2-SNAPSHOT</version>
+		  <version>1.0.2</version>
 		</dependency>
 
 	    <dependency>
