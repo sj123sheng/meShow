@@ -195,6 +195,8 @@ public class UserRelationService {
 	    }
 	    if (roomInfo.getRichLevel() != null) {
 	        jObject.addProperty("richLevel", roomInfo.getRichLevel());
+	    } else {
+	        jObject.addProperty("richLevel", 0);
 	    }
 		if (roomInfo.getPeopleInRoom() != null) {
             jObject.addProperty("onlineCount", roomInfo.getPeopleInRoom());
