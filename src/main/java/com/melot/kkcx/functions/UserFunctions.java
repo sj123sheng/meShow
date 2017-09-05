@@ -2331,7 +2331,7 @@ public class UserFunctions {
             return reResult;
         }
         result.addProperty("gender", userInfoDetail.getProfile().getGender());
-        result.addProperty("city", Math.abs(userInfoDetail.getRegisterInfo().getCityId()));
+        result.addProperty("cityId", Math.abs(userInfoDetail.getRegisterInfo().getCityId()));
 
         Integer area = CityUtil.getParentCityIdNoDefault(userInfoDetail.getRegisterInfo().getCityId());
         if (area != null) {
