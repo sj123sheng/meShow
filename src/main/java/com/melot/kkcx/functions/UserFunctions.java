@@ -2422,7 +2422,7 @@ public class UserFunctions {
         result.add("props", propArray);
 
         if (userInfoDetail.getProfile().getPortrait() != null && !result.has("portrait_path_original")) {
-            result.addProperty("portrait_path_128", ConfigHelper.getHttpdir() + userInfoDetail.getProfile().getPortrait() + "!128");
+            result.addProperty("portrait_path_128", userInfoDetail.getProfile().getPortrait() + "!128");
         }
 
         // 添加家族勋章信息
