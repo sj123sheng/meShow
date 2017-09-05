@@ -1110,7 +1110,7 @@ public class NewsV2Functions {
             }
         } 
         
-        RoomInfo actorInfo = RoomService.getRoomInfo(userId);
+        RoomInfo actorInfo = RoomService.getRoomInfo(actorId);
         if (actorInfo != null) {
             result.addProperty("nickname", actorInfo.getNickname());
             if (actorInfo.getGender() != null) {
@@ -1141,7 +1141,7 @@ public class NewsV2Functions {
             result.addProperty("screenType", actorInfo.getScreenType());
             result.addProperty("actorTag", 1);
         } else {
-            UserProfile userInfo = com.melot.kktv.service.UserService.getUserInfoV2(userId);
+            UserProfile userInfo = com.melot.kktv.service.UserService.getUserInfoV2(actorId);
             if (userInfo != null) {
                 result.addProperty("nickname", userInfo.getNickName());
                 result.addProperty("gender", userInfo.getGender());
