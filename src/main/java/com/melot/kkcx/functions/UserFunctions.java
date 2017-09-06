@@ -781,7 +781,7 @@ public class UserFunctions {
 				
 				// 返回结果
 				return result;
-			} else if (TagCode.equals("02") || TagCode.equals("03") || TagCode.equals("04") || TagCode.equals("05") || TagCode.equals("06") || TagCode.equals("07")
+			} else if (TagCode.equals("02") || TagCode.equals("04") || TagCode.equals("05") || TagCode.equals("06") || TagCode.equals("07")
 					|| TagCode.equals("08") || TagCode.equals("09")) {
 				// '02': uuid长度不能小于16
 				// '03': uuid已存在
@@ -790,8 +790,39 @@ public class UserFunctions {
 				// '07': 到达单IP,一小时内注册上限
 				// '08': 到达单IP,一天内注册上限
 				// '09': 封号处理
-				result.addProperty("TagCode", "010601" + TagCode + "");
+				result.addProperty("TagCode", "010601" + TagCode);
 				return result;
+			} else if (TagCode.equals("03")) {
+			    if (openPlatform == LoginTypeEnum.WEIXIN && unionid != null) {
+			        // 隐藏的登陆操作,调用login_new得到结果
+	                JsonObject params = new JsonObject();
+	                params.addProperty("loginType", openPlatform);
+	                params.addProperty("uuid", uuid);
+	                params.addProperty("unionid", unionid);
+	                params.addProperty("platform", platform);
+	                params.addProperty("clientIp", clientIp);
+	                params.addProperty("isSafe", isSafe);
+	                params.addProperty("city", gpsCityId);
+	                params.addProperty("a", appId);
+	                JsonObject loginResult = login_new(params, true, request);
+	                result.add("loginResult", loginResult);
+	                
+	                try {
+	                    if (loginResult != null && loginResult.has("TagCode")) {
+	                        String loginTagCode = loginResult.get("TagCode").getAsString();
+	                        if (!StringUtil.strIsNull(loginTagCode) && !TagCodeEnum.SUCCESS.equals(loginTagCode)) {
+	                            result.addProperty("TagCode", loginTagCode);
+	                        } else {
+	                            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+	                            result.add("userId", loginResult.get("userId"));
+	                            return result;
+	                        }
+	                    }
+	                } catch (Exception e) {
+	                }
+			    }
+			    result.addProperty("TagCode", "010601" + TagCode);
+                return result;
 			} else {
 				// 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
 				logger.error("调用存储过程(AccountService.registerViaOpenPlatform(" + openPlatform + ", " + uuid + ", " + unionid + ", " + nickname + ", " + gender + ", " + userId + ", " + platform + ", " + referrerId + ", " + channelId + ", " + deviceUId + ", " + ipAddr + ", " + appId + ", " + alipayUserInfo + ", " + port + "))未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
