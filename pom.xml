@@ -158,8 +158,12 @@
 	</pluginRepositories>
 
 	<dependencies>
-
-        <dependency>
+	    <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+            <version>4.3.10.RELEASE</version>
+        </dependency>
+		<dependency>
 			<groupId>com.melot.alipay</groupId>
 			<artifactId>alipay-sdk-java</artifactId>
 		</dependency>
@@ -176,6 +180,7 @@
 		<dependency>
 			<groupId>com.melot</groupId>
 			<artifactId>melot-util</artifactId>
+			<version>1.0.34</version>
 		</dependency>
 		<dependency>
 		  	<groupId>com.melot</groupId>

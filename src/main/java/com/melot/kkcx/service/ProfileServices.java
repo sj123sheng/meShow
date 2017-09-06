@@ -16,7 +16,6 @@ import com.google.gson.reflect.TypeToken;
 import com.melot.kkcx.model.CommonDevice;
 import com.melot.kktv.domain.UserInfo;
 import com.melot.kktv.redis.HotDataSource;
-import com.melot.kktv.redis.MedalSource;
 import com.melot.kktv.redis.QQVipSource;
 import com.melot.kktv.service.TagService;
 import com.melot.kktv.util.ConfigHelper;
