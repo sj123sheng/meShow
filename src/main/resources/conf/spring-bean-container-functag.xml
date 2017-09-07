@@ -2464,6 +2464,11 @@
         <constructor-arg name="t" ref="actorKKTVFunction" />
         <constructor-arg name="methodName" value="getUserReceivedNoviceGift" />
     </bean>
+    <!-- 申请成为主播 （接入芝麻认证-芝麻认证初始化接口） -->
+    <bean id="52020101" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="actorKKTVFunction" />
+        <constructor-arg name="methodName" value="applyForActor" />
+    </bean>
 
 	<!-- 发布技能服务 -->
 	<bean id="51060101" class="com.melot.sdk.core.function.GenericFunction">
