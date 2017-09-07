@@ -742,6 +742,7 @@ public class MatchSource {
 	 * 获取房间粉丝榜单缓存数据
 	 * @param slotType 榜单类型 1:周榜 2:月榜 3:总榜
 	 * @param roomId 房间编号
+	 * @param roomSource 房间来源
 	 * @return
 	 */
 	public static String getRoomFansRankCache(String slotType, String roomId, String roomSource) {
