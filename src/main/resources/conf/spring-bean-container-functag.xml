@@ -169,7 +169,6 @@
 		<constructor-arg name="t" ref="indexFunction" />
 		<constructor-arg name="methodName" value="getUserInGiftRankingList" />
 		<constructor-arg name="cacheType" value="60" />
-		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
 	</bean>
 	<!-- 获取推荐节目列表接口 -->
 	<bean id="10002030" class="com.melot.sdk.core.function.GenericFunction">
@@ -970,7 +969,6 @@
 		<constructor-arg name="t" ref="userAssetFunction" />
 		<constructor-arg name="methodName" value="getRoomHonorWall" />
 		<constructor-arg name="cacheType" value="300" />
-		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
 	</bean>
 	<!-- 根据虚拟号id获取靓号详细信息 -->
 	<bean id="10005067" class="com.melot.sdk.core.function.GenericFunction">
@@ -1787,7 +1785,6 @@
 		<constructor-arg name="t" ref="guardFunction" />
 		<constructor-arg name="methodName" value="getActorGuardInfos" />
 		<constructor-arg name="cacheType" value="60" />
-		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
 	</bean>
 	<!-- 获取黄金赛周榜 -->
 	<bean id="20031004" class="com.melot.sdk.core.function.GenericFunction">
@@ -2190,14 +2187,12 @@
 		<constructor-arg name="t" ref="gameCenterFunction" />
 		<constructor-arg name="methodName" value="getVersion" />
 		<constructor-arg name="cacheType" value="60" />
-		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
 	</bean>
 	<!-- 游戏中心列表查询 -->
 	<bean id="80001001" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="gameCenterFunction" />
 		<constructor-arg name="methodName" value="getGameList" />
 		<constructor-arg name="cacheType" value="60" />
-		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
 	</bean>
 	
 	<!-- 主播个性礼物 -->
@@ -2318,7 +2313,6 @@
 		<constructor-arg name="t" ref="activityCenterFunctions" />
 		<constructor-arg name="methodName" value="getKeywordEmoticonList" />
 		<constructor-arg name="cacheType" value="60" />
-		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
 	</bean>
 	
 	<!-- 获取主播活动提醒 -->
@@ -2393,7 +2387,6 @@
 		<constructor-arg name="t" ref="configFunctions" />
 		<constructor-arg name="methodName" value="getConfigInfoByKey" />
 		<constructor-arg name="cacheType" value="60" />
-		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
 	</bean>
 	
 	<!-- 根据KEY获取对应的版本信息 -->
@@ -2407,7 +2400,6 @@
 		<constructor-arg name="t" ref="configFunctions" />
 		<constructor-arg name="methodName" value="getGiftConfigInfo" />
 		<constructor-arg name="cacheType" value="300" />
-		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
 	</bean>
 	
 	<!-- 获取交友房表情配置信息 -->
