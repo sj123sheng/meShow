@@ -1,8 +1,11 @@
 package com.melot.kktv.action;
 
+import com.antgroup.zmxy.openplatform.api.response.ZhimaCustomerCertificationInitializeResponse;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.melot.game.config.sdk.utils.StringUtils;
 import com.melot.kktv.redis.GiftRecordSource;
+import com.melot.kktv.third.service.ZmxyService;
 import com.melot.kktv.util.*;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import com.melot.share.driver.domain.RankData;
@@ -217,6 +220,76 @@ public class ActorFunction {
 
         } catch (Exception e) {
             logger.error("Module Error ActorFunction.getUserReceivedNoviceGift(" + userId + ")", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 申请成为主播（接入芝麻认证-芝麻认证初始化接口）
+     * @param jsonObject
+     * @param request
+     * @return
+     */
+    public JsonObject applyForActor(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        // 定义返回结果
+        JsonObject result = new JsonObject();
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int bizCode, userId;
+        String certName, certNo, returnUrl;
+        try {
+            bizCode = CommonUtil.getJsonParamInt(jsonObject, "bizCode", BizCodeEnum.FACE.getId(), null, 1, Integer.MAX_VALUE);
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
+            certName = CommonUtil.getJsonParamString(jsonObject, "certName", "", null, 1, Integer.MAX_VALUE);
+            certNo = CommonUtil.getJsonParamString(jsonObject, "certNo", "", null, 1, Integer.MAX_VALUE);
+            returnUrl = CommonUtil.getJsonParamString(jsonObject, "returnUrl", "", null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        if(userId == 0) {
+            result.addProperty("TagCode", TagCodeEnum.USERID_MISSING);
+            return result;
+        }
+
+        // 芝麻认证
+        try {
+            ZhimaCustomerCertificationInitializeResponse response =  ZmxyService.getBizNo(userId, bizCode, certName, certNo);
+            if(response.isSuccess()) {
+                String bizNo = response.getBizNo();
+
+                if(StringUtils.isEmpty(bizNo)) {
+                    result.addProperty("TagCode", response.getErrorCode());
+                    result.addProperty("errorMessage", response.getErrorMessage());
+                    return result;
+                } else if(bizCode == 1) {
+                    String verifyUrl = ZmxyService.getUrl(bizNo, returnUrl);
+                    result.addProperty("verifyUrl", verifyUrl);
+                } else if(bizCode == 2) {
+                    result.addProperty("appId", ZmxyService.APP_ID);
+                }
+                result.addProperty("bizNo", bizNo);
+            }else {
+                result.addProperty("TagCode", response.getErrorCode());
+                result.addProperty("errorMessage", response.getErrorMessage());
+                return result;
+            }
+
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+
+            return result;
+
+        } catch (Exception e) {
+            logger.error("API Error ActorFunction.applyForActor userId:" + userId, e);
             result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             return result;
         }

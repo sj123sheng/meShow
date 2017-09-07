@@ -551,6 +551,12 @@
 		    <version>1.0.2</version>
 	    </dependency>
 
+        <dependency>
+            <groupId>com.zmxy</groupId>
+            <artifactId>zmxy-sdk-java</artifactId>
+            <version>20170824171455</version>
+        </dependency>
+
 	</dependencies>
  	
 </project>
