@@ -168,7 +168,6 @@
 	<bean id="10005025" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="indexFunction" />
 		<constructor-arg name="methodName" value="getUserInGiftRankingList" />
-		<constructor-arg name="cacheType" value="60" />
 	</bean>
 	<!-- 获取推荐节目列表接口 -->
 	<bean id="10002030" class="com.melot.sdk.core.function.GenericFunction">
