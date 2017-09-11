@@ -232,7 +232,7 @@
 		<dependency>
   			<groupId>com.melot</groupId>
   			<artifactId>melot-site-content-config</artifactId>
-  			<version>1.1.14</version><!--$NO-MVN-MAN-VER$-->
+  			<version>1.1.16</version><!--$NO-MVN-MAN-VER$-->
 		</dependency>
 		<dependency>
 			<groupId>com.sun.jersey</groupId>
