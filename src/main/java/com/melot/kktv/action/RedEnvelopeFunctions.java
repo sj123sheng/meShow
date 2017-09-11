@@ -146,6 +146,9 @@ public class RedEnvelopeFunctions {
         if (amount < count) {
             result.addProperty("TagCode", "31060009");
             return result;
+        } else if (amount < 1000) {
+            result.addProperty("TagCode", TagCodeEnum.LOW_VERSION_EXCEPTION);
+            return result;
         }
         
         //调用模块方法
