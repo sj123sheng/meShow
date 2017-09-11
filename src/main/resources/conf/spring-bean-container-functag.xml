@@ -2469,6 +2469,11 @@
         <constructor-arg name="t" ref="actorKKTVFunction" />
         <constructor-arg name="methodName" value="applyForActor" />
     </bean>
+    <!-- 校验芝麻认证结果 （认证成功：如果申请的是自由主播直接变成主播，如果是家族主播等待家族审核通过后变成主播） -->
+    <bean id="52020102" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="actorKKTVFunction" />
+        <constructor-arg name="methodName" value="verifyAuthResult" />
+    </bean>
 
 	<!-- 发布技能服务 -->
 	<bean id="51060101" class="com.melot.sdk.core.function.GenericFunction">

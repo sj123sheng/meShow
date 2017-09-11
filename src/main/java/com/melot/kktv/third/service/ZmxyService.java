@@ -144,16 +144,19 @@ public class ZmxyService extends BaseService {
      * @param bizNo
      * @return
      */
-    public static void getResult(String bizNo) {
+    public static ZhimaCustomerCertificationQueryResponse getResult(String bizNo) {
         ZhimaCustomerCertificationQueryRequest req = new ZhimaCustomerCertificationQueryRequest();
+        ZhimaCustomerCertificationQueryResponse response = null;
         req.setBizNo(bizNo);// 必要参数
         try {
-            ZhimaCustomerCertificationQueryResponse response = getZhimaClient().execute(req);
+            response = getZhimaClient().execute(req);
             System.out.println(new Gson().toJson(response));
             logger.error("zmrz result: " + new Gson().toJson(response));
         } catch (ZhimaApiException e) {
             e.printStackTrace();
         }
+
+        return response;
     }
 
     @Override
