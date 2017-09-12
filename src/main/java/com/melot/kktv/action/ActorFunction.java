@@ -288,7 +288,7 @@ public class ActorFunction {
                     String verifyUrl = ZmxyService.getUrl(bizNo, returnUrl);
                     result.addProperty("verifyUrl", verifyUrl);
                 } else if(bizCode == 2) {
-                    result.addProperty("appId", ZmxyService.APP_ID);
+                    result.addProperty("merchantId", ZmxyService.MERCHANT_ID);
                 }
                 result.addProperty("bizNo", bizNo);
             }else {

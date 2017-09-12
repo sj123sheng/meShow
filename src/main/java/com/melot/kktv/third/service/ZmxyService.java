@@ -47,6 +47,9 @@ public class ZmxyService extends BaseService {
     // 芝麻认证产品码
     private static final String PRODUCT_CODE = "w1010100000000002978";
 
+    // 芝麻认证商户ID
+    public static final String MERCHANT_ID = "268821000000367101014";
+
     // 芝麻认证前缀
     private static final String PREFIX = "KKZMRZ";
 
