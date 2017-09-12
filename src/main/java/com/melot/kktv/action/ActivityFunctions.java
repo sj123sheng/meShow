@@ -1699,7 +1699,7 @@ public class ActivityFunctions {
      * @param request
      * @return
      */
-    public JsonObject getGameList(JsonObject jsonObject) {
+    public JsonObject getGameList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
         
         int platform;
@@ -1737,7 +1737,7 @@ public class ActivityFunctions {
      * @param request
      * @return
      */
-    public JsonObject getGameGiftList(JsonObject jsonObject) {
+    public JsonObject getGameGiftList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
         
         int gameId;
