@@ -363,7 +363,7 @@ public class ActorFunction {
             return result;
         }
 
-        if(!applyForActor(result, userId, certName, certNo, familyId, appId)) {
+        if(!verifyAndApplyForActor(result, userId, certName, certNo, familyId, appId)) {
             return result;
         }
 
@@ -388,7 +388,7 @@ public class ActorFunction {
         }
     }
 
-    private Boolean applyForActor(JsonObject result,int userId, String certName, String identityId, int familyId, int appId) {
+    private Boolean verifyAndApplyForActor(JsonObject result,int userId, String certName, String identityId, int familyId, int appId) {
 
         // 身份证黑名单不得申请
         BlacklistService blacklistService = (BlacklistService) MelotBeanFactory.getBean("blacklistService");
