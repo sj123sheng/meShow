@@ -1,6 +1,7 @@
 package com.melot.kktv.action;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,13 +11,18 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.melot.common.driver.service.ShareService;
 import com.melot.feedback.driver.domain.Award;
 import com.melot.feedback.driver.service.FeedbackService;
 import com.melot.kk.activity.driver.MissionService;
 import com.melot.kk.activity.driver.domain.ShareInfo;
+import com.melot.kkactivity.driver.domain.GameConfig;
+import com.melot.kkactivity.driver.domain.GameGift;
+import com.melot.kkactivity.driver.service.GameConfigService;
 import com.melot.kktv.domain.RechargerPackage;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
@@ -1679,6 +1685,83 @@ public class ActivityFunctions {
         } catch (Exception e) {
             logger.error("call ShareService getShareCoffersByRoomId catched exception, roomId : " + roomId, e);
             result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+        
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+    
+    /**
+     * 获取平台可用游戏列表【51050101】
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getGameList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        int platform;
+        int v;
+        try {
+            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, 1, Integer.MAX_VALUE);
+            v = CommonUtil.getJsonParamInt(jsonObject, "v", 0, null, 1, Integer.MAX_VALUE);
+        } catch(CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch(Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        try {
+            GameConfigService gameConfigService = MelotBeanFactory.getBean("gameConfigService", GameConfigService.class);
+            List<GameConfig> gameConfigs = gameConfigService.getGameList(platform, v);
+            JsonArray games = new JsonParser().parse(new Gson().toJson(gameConfigs)).getAsJsonArray();
+            result.add("games", games);
+        } catch (Exception e) {
+            logger.error(String.format("Module Error gameConfigService.getGameList(%s, %s)", platform, v), e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            return result;
+        }
+        
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+    
+    /**
+     * 获取游戏对应礼物列表【51050102】
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getGameGiftList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        int gameId;
+        try {
+            gameId = CommonUtil.getJsonParamInt(jsonObject, "gameId", 0, "5105010201", 1, Integer.MAX_VALUE);
+        } catch(CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch(Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        try {
+            GameConfigService gameConfigService = MelotBeanFactory.getBean("gameConfigService", GameConfigService.class);
+            List<GameGift> gameConfigs = gameConfigService.getGameGiftList(gameId);
+            List<Integer> giftIds = new ArrayList<>();
+            for (GameGift gameGift : gameConfigs) {
+                giftIds.add(gameGift.getGiftId());
+            }
+            result.add("giftIds", new JsonParser().parse(new Gson().toJson(giftIds)));
+        } catch (Exception e) {
+            logger.error(String.format("Module Error gameConfigService.getGameGiftList(%s)", gameId), e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
             return result;
         }
         

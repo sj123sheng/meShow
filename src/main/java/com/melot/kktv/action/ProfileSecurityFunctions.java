@@ -1163,6 +1163,7 @@ public class ProfileSecurityFunctions {
             }
         } else { // 1.直播海报(弃用) 2.照片 3.资源图片
             try {
+                // 10的时候是技能服务接口，不添加到个人秀中
                 if (pictureType == 3 || pictureType == 10) {
                     // 动态图片不保存在user_picture中
                     result.addProperty("TagCode", TagCodeEnum.SUCCESS);
