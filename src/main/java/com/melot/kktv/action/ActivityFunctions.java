@@ -1718,7 +1718,19 @@ public class ActivityFunctions {
         try {
             GameConfigService gameConfigService = MelotBeanFactory.getBean("gameConfigService", GameConfigService.class);
             List<GameConfig> gameConfigs = gameConfigService.getGameList(platform, v);
-            JsonArray games = new JsonParser().parse(new Gson().toJson(gameConfigs)).getAsJsonArray();
+            JsonArray games = new JsonArray();
+            for (GameConfig gameConfig : gameConfigs) {
+                JsonObject gameJson = new JsonObject();
+                gameJson.addProperty("gameId", gameConfig.getGameId());
+                gameJson.addProperty("gameName", gameConfig.getGameName());
+                gameJson.addProperty("type", gameConfig.getType());
+                gameJson.addProperty("gameIcon", gameConfig.getGameIcon());
+                gameJson.addProperty("gameUrl", gameConfig.getGameUrl());
+                gameJson.addProperty("helpIcon", gameConfig.getHelpIcon());
+                gameJson.addProperty("helpUrl", gameConfig.getHelpUrl());
+                
+                games.add(gameJson);
+            }
             result.add("games", games);
         } catch (Exception e) {
             logger.error(String.format("Module Error gameConfigService.getGameList(%s, %s)", platform, v), e);
