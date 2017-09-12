@@ -387,7 +387,7 @@ public class ActorFunction {
         }
     }
 
-    public Boolean applyForActor(JsonObject result,int userId, String certName, String identityId, int familyId, int appId) {
+    private Boolean applyForActor(JsonObject result,int userId, String certName, String identityId, int familyId, int appId) {
 
         // 身份证黑名单不得申请
         BlacklistService blacklistService = (BlacklistService) MelotBeanFactory.getBean("blacklistService");
