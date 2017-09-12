@@ -2538,4 +2538,16 @@
 		<constructor-arg name="methodName" value="getVideoBgmList" />
 	</bean>
 
+	<!-- 获取平台可用游戏列表 -->
+	<bean id="51050101" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="activityFunction" />
+		<constructor-arg name="methodName" value="getGameList" />
+	</bean>
+	
+	<!-- 获取游戏对应礼物列表 -->
+	<bean id="51050102" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="activityFunction" />
+		<constructor-arg name="methodName" value="getGameGiftList" />
+	</bean>
+	
 </beans>
