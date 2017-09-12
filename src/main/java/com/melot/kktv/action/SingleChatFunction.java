@@ -1164,6 +1164,7 @@ public class SingleChatFunction {
             if (ResultCode.SUCCESS.equals(pageResult.getCode())) {
                 ArrayList<SingleChatLabel> labelList = pageResult.getData().getLabels();
                 JsonArray labels = new JsonArray();
+
                 if (labelList != null) {
                     for (SingleChatLabel label : labelList) {
                         JsonObject labelJson = new JsonObject();
