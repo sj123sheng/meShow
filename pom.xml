@@ -504,7 +504,7 @@
         <dependency>
             <groupId>com.melot.module.driver.msgbuilder</groupId>
             <artifactId>kk-module-msgbuilder</artifactId>
-            <version>1.2.0</version>
+            <version>1.2.2-SNAPSHOT</version>
 		</dependency>
 		<dependency>
             <groupId>com.melot</groupId>
@@ -535,7 +535,7 @@
 		<dependency>
 		  <groupId>com.melot.module.driver.msgbuilder</groupId>
 		  <artifactId>single-chat-api</artifactId>
-		  <version>1.0.2</version>
+		  <version>1.0.3</version>
 		</dependency>
 
         <!-- 代言团 -->

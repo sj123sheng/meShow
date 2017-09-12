@@ -1164,14 +1164,16 @@ public class SingleChatFunction {
             if (ResultCode.SUCCESS.equals(pageResult.getCode())) {
                 ArrayList<SingleChatLabel> labelList = pageResult.getData().getLabels();
                 JsonArray labels = new JsonArray();
-                for (SingleChatLabel label : labelList) {
-                    JsonObject labelJson = new JsonObject();
-                    labelJson.addProperty("id", label.getId());
-                    labelJson.addProperty("name", label.getName());
-                    
-                    labels.add(labelJson);
+
+                if (labelList != null) {
+                    for (SingleChatLabel label : labelList) {
+                        JsonObject labelJson = new JsonObject();
+                        labelJson.addProperty("id", label.getId());
+                        labelJson.addProperty("name", label.getName());
+                        
+                        labels.add(labelJson);
+                    }
                 }
-                
                 result.add("labels", labels);
             }else {
                 result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
@@ -1179,7 +1181,7 @@ public class SingleChatFunction {
                 return result;
             }
         } catch (Exception e) {
-            logger.error("Module Error SingleChatServerService.getDefaultServerPrice(" + typeId + ")", e);
+            logger.error("Module Error SingleChatServerService.getServerLabels(" + typeId + ")", e);
             result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
             return result;
         }

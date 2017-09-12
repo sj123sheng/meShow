@@ -113,4 +113,6 @@
     <!-- 短信服务 -->
     <kkrpc:reference id="smsService" interface="com.melot.sms.api.service.SmsService" version="1.0.1"/>
 
+	<kkrpc:reference id="videoBgmService" interface="com.melot.common.driver.service.VideoBgmService" version="1.0.0" />
+
 </beans>
