@@ -160,5 +160,7 @@
 
     <!-- 主播代言团相关接口 -->
     <bean id="actorKKTVFunction" class="com.melot.kktv.action.ActorFunction" />
-	
+
+	<bean id="videoBgmFunction" class="com.melot.kkcx.functions.VideoBgmFunctions" />
+
 </beans>
