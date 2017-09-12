@@ -349,7 +349,11 @@ public class ActorFunction {
             certName = identityInfo.get("cert_name").getAsString();
             if(!StringUtils.isEmpty(verifyCertNo) && certNo.equals(verifyCertNo)) {
                 verifyResult = true;
+            }else {
+                result.addProperty("errorMessage", "身份证号码不一致");
             }
+        }else {
+            result.addProperty("errorMessage", response.getErrorMessage());
         }
 
         result.addProperty("verifyResult", verifyResult);
@@ -384,7 +388,7 @@ public class ActorFunction {
         }
     }
 
-    public Boolean applyForActor(JsonObject result,int userId, String certName, String identityId, int familyId, int appId) {
+    private Boolean applyForActor(JsonObject result,int userId, String certName, String identityId, int familyId, int appId) {
 
         // 身份证黑名单不得申请
         BlacklistService blacklistService = (BlacklistService) MelotBeanFactory.getBean("blacklistService");
