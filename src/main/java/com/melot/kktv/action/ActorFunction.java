@@ -10,6 +10,8 @@ import com.melot.content.config.apply.service.ApplyActorService;
 import com.melot.content.config.domain.ApplyActor;
 import com.melot.content.config.domain.ZmrzApply;
 import com.melot.content.config.utils.Constants;
+import com.melot.content.config.utils.IdPicStatusEnum;
+import com.melot.content.config.utils.VerifyTypeEnum;
 import com.melot.content.config.utils.ZmrzStatusEnum;
 import com.melot.family.driver.domain.FamilyInfo;
 import com.melot.game.config.sdk.utils.StringUtils;
@@ -391,11 +393,11 @@ public class ActorFunction {
             return result;
         }
 
-        //自由主播
-        if(familyId == 0) {
+        if(familyId == 0) { // 自由主播
             try {
                 //自动变为终审通过
                 if (FamilyService.checkBecomeFamilyMember(userId, Constants.APPLY_ACTOR_OFFICIAL_CHECK_SUCCESS, appId)) {
+                    result.addProperty("status", Constants.APPLY_ACTOR_OFFICIAL_CHECK_SUCCESS);
                     result.addProperty("TagCode", TagCodeEnum.SUCCESS);
                 } else {
                     result.addProperty("TagCode", TagCodeEnum.FAIL_TO_UPDATE);
@@ -406,7 +408,10 @@ public class ActorFunction {
                 result.addProperty("TagCode", TagCodeEnum.FAIL_TO_CALL_API_CONTENT_MODULE);
                 return result;
             }
-        } else {
+        } else {  // 家族主播
+            FamilyInfo familyInfo = FamilyService.getFamilyInfoByFamilyId(familyId);
+            result.addProperty("status", Constants.APPLY_TEST_ACTOR_IN_FAMILY_PLAYING);
+            result.addProperty("familyName", familyInfo.getFamilyName());
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
         }
@@ -531,6 +536,8 @@ public class ActorFunction {
         applyActor.setIdentityNumber(identityId);
         applyActor.setMobile(userProfile.getIdentifyPhone());
         applyActor.setGender(StringUtil.parseFromStr(identityId.substring(16, 17), 0) % 2);
+        applyActor.setIdPicStatus(IdPicStatusEnum.UNLOAD.getId());
+        applyActor.setVerifyType(VerifyTypeEnum.ZM_VERIFY.getId());
         if (familyId > 0) {
             applyActor.setApplyFamilyId(familyId);
             applyActor.setStatus(Constants.APPLY_TEST_ACTOR_IN_FAMILY_PLAYING);
