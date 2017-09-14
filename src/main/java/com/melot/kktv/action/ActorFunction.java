@@ -265,7 +265,7 @@ public class ActorFunction {
             certName = CommonUtil.getJsonParamString(jsonObject, "certName", "", null, 1, Integer.MAX_VALUE);
             certNo = CommonUtil.getJsonParamString(jsonObject, "certNo", "", null, 1, Integer.MAX_VALUE);
             returnUrl = CommonUtil.getJsonParamString(jsonObject, "returnUrl", "", null, 1, Integer.MAX_VALUE);
-            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, TagCodeEnum.PARAMETER_NOTCONTAINED_FUNCTAG, 1, Integer.MAX_VALUE);
+            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 1, Integer.MAX_VALUE);
             familyId = CommonUtil.getJsonParamInt(jsonObject, "familyId", 0, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
@@ -280,33 +280,37 @@ public class ActorFunction {
             return result;
         }
 
-        // 芝麻认证
         try {
-            ZhimaCustomerCertificationInitializeResponse response =  ZmxyService.getBizNo(userId, bizCode, certName, certNo);
-            String bizNo = "";
-            if(response.isSuccess()) {
-                bizNo = response.getBizNo();
+            // 校验是否能成为主播
+            boolean verifyResult = verifyApplyForActor(result, userId, certNo, familyId, appId);
 
-                if(StringUtils.isEmpty(bizNo)) {
+            // 芝麻认证
+            String bizNo = "";
+            ZhimaCustomerCertificationInitializeResponse response = null;
+            if(verifyResult) {
+
+                response = ZmxyService.getBizNo(userId, bizCode, certName, certNo);
+
+                if (response.isSuccess()) {
+                    bizNo = response.getBizNo();
+                    if (StringUtils.isEmpty(bizNo)) {
+                        result.addProperty("TagCode", response.getErrorCode());
+                        result.addProperty("errorMessage", response.getErrorMessage());
+                        return result;
+                    } else if (bizCode == 1) {
+                        String verifyUrl = ZmxyService.getUrl(bizNo, returnUrl);
+                        result.addProperty("verifyUrl", verifyUrl);
+                    } else if (bizCode == 2) {
+                        result.addProperty("merchantId", ZmxyService.MERCHANT_ID);
+                    }
+                    result.addProperty("bizNo", bizNo);
+                } else {
                     result.addProperty("TagCode", response.getErrorCode());
                     result.addProperty("errorMessage", response.getErrorMessage());
                     return result;
-                } else if(bizCode == 1) {
-                    String verifyUrl = ZmxyService.getUrl(bizNo, returnUrl);
-                    result.addProperty("verifyUrl", verifyUrl);
-                } else if(bizCode == 2) {
-                    result.addProperty("merchantId", ZmxyService.MERCHANT_ID);
                 }
-                result.addProperty("bizNo", bizNo);
-            }else {
-                result.addProperty("TagCode", response.getErrorCode());
-                result.addProperty("errorMessage", response.getErrorMessage());
-                return result;
-            }
 
-            // 校验成功 插入一条芝麻认证记录
-            boolean verifyResult = verifyApplyForActor(result, userId, certNo, familyId, appId);
-            if(verifyResult) {
+                // 插入一条芝麻认证记录
                 ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
                 ZmrzApply zmrzApply = new ZmrzApply();
                 zmrzApply.setBizNo(bizNo);
@@ -372,8 +376,10 @@ public class ActorFunction {
             }else {
                 result.addProperty("errorMessage", "身份证号码不一致");
             }
-        }else {
+        }else if(!response.isSuccess()) {
             result.addProperty("errorMessage", response.getErrorMessage());
+        }else {
+            result.addProperty("errorMessage", response.getFailedReason());
         }
 
         result.addProperty("verifyResult", verifyResult);
