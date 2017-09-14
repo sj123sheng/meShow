@@ -8,7 +8,11 @@ import com.google.gson.JsonParser;
 import com.melot.blacklist.service.BlacklistService;
 import com.melot.content.config.apply.service.ApplyActorService;
 import com.melot.content.config.domain.ApplyActor;
+import com.melot.content.config.domain.ZmrzApply;
 import com.melot.content.config.utils.Constants;
+import com.melot.content.config.utils.IdPicStatusEnum;
+import com.melot.content.config.utils.VerifyTypeEnum;
+import com.melot.content.config.utils.ZmrzStatusEnum;
 import com.melot.family.driver.domain.FamilyInfo;
 import com.melot.game.config.sdk.utils.StringUtils;
 import com.melot.kkcore.user.api.UserProfile;
@@ -18,7 +22,6 @@ import com.melot.kkcx.service.FamilyService;
 import com.melot.kktv.redis.GiftRecordSource;
 import com.melot.kktv.service.UserService;
 import com.melot.kktv.third.service.ZmxyService;
-
 import com.melot.kktv.util.*;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import com.melot.share.driver.domain.RankData;
@@ -26,6 +29,7 @@ import com.melot.share.driver.service.ShareActivityService;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -253,7 +257,7 @@ public class ActorFunction {
             return result;
         }
 
-        int bizCode, userId;
+        int bizCode, userId, appId, familyId;
         String certName, certNo, returnUrl;
         try {
             bizCode = CommonUtil.getJsonParamInt(jsonObject, "bizCode", BizCodeEnum.FACE.getId(), null, 1, Integer.MAX_VALUE);
@@ -261,6 +265,8 @@ public class ActorFunction {
             certName = CommonUtil.getJsonParamString(jsonObject, "certName", "", null, 1, Integer.MAX_VALUE);
             certNo = CommonUtil.getJsonParamString(jsonObject, "certNo", "", null, 1, Integer.MAX_VALUE);
             returnUrl = CommonUtil.getJsonParamString(jsonObject, "returnUrl", "", null, 1, Integer.MAX_VALUE);
+            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 1, Integer.MAX_VALUE);
+            familyId = CommonUtil.getJsonParamInt(jsonObject, "familyId", 0, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -274,30 +280,48 @@ public class ActorFunction {
             return result;
         }
 
-        // 芝麻认证
         try {
-            ZhimaCustomerCertificationInitializeResponse response =  ZmxyService.getBizNo(userId, bizCode, certName, certNo);
-            if(response.isSuccess()) {
-                String bizNo = response.getBizNo();
+            // 校验是否能成为主播
+            boolean verifyResult = verifyApplyForActor(result, userId, certNo, familyId, appId);
 
-                if(StringUtils.isEmpty(bizNo)) {
+            // 芝麻认证
+            String bizNo = "";
+            ZhimaCustomerCertificationInitializeResponse response = null;
+            if(verifyResult) {
+
+                response = ZmxyService.getBizNo(userId, bizCode, certName, certNo);
+
+                if (response.isSuccess()) {
+                    bizNo = response.getBizNo();
+                    if (StringUtils.isEmpty(bizNo)) {
+                        result.addProperty("TagCode", response.getErrorCode());
+                        result.addProperty("errorMessage", response.getErrorMessage());
+                        return result;
+                    } else if (bizCode == 1) {
+                        String verifyUrl = ZmxyService.getUrl(bizNo, returnUrl);
+                        result.addProperty("verifyUrl", verifyUrl);
+                    } else if (bizCode == 2) {
+                        result.addProperty("merchantId", ZmxyService.MERCHANT_ID);
+                    }
+                    result.addProperty("bizNo", bizNo);
+                } else {
                     result.addProperty("TagCode", response.getErrorCode());
                     result.addProperty("errorMessage", response.getErrorMessage());
                     return result;
-                } else if(bizCode == 1) {
-                    String verifyUrl = ZmxyService.getUrl(bizNo, returnUrl);
-                    result.addProperty("verifyUrl", verifyUrl);
-                } else if(bizCode == 2) {
-                    result.addProperty("merchantId", ZmxyService.MERCHANT_ID);
                 }
-                result.addProperty("bizNo", bizNo);
-            }else {
-                result.addProperty("TagCode", response.getErrorCode());
-                result.addProperty("errorMessage", response.getErrorMessage());
-                return result;
-            }
 
-            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                // 插入一条芝麻认证记录
+                ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
+                ZmrzApply zmrzApply = new ZmrzApply();
+                zmrzApply.setBizNo(bizNo);
+                zmrzApply.setUserId(userId);
+                zmrzApply.setTransactionId(response.getBody());
+                zmrzApply.setAppId(appId);
+                zmrzApply.setStatus(ZmrzStatusEnum.WAIT_VERIFY.getId());
+                zmrzApply.setCreateTime(new Date());
+                applyActorService.saveZmrzApply(zmrzApply);
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            }
 
             return result;
 
@@ -352,26 +376,34 @@ public class ActorFunction {
             }else {
                 result.addProperty("errorMessage", "身份证号码不一致");
             }
-        }else {
+        }else if(!response.isSuccess()) {
             result.addProperty("errorMessage", response.getErrorMessage());
+        }else {
+            result.addProperty("errorMessage", response.getFailedReason());
         }
 
         result.addProperty("verifyResult", verifyResult);
+
+        // 更新芝麻认证记录的状态
+        ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
+        int verifyStatus = verifyResult ? ZmrzStatusEnum.VERIFY_PASS.getId() : ZmrzStatusEnum.VERIFY_FAIL.getId();
+        applyActorService.updateZmrzApplyStatus(bizNo, verifyStatus);
 
         if (!verifyResult) {
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
         }
 
+        // 插入主播申请记录
         if(!verifyAndApplyForActor(result, userId, certName, certNo, familyId, appId)) {
             return result;
         }
 
-        //自由主播
-        if(familyId == 0) {
+        if(familyId == 0) { // 自由主播
             try {
                 //自动变为终审通过
                 if (FamilyService.checkBecomeFamilyMember(userId, Constants.APPLY_ACTOR_OFFICIAL_CHECK_SUCCESS, appId)) {
+                    result.addProperty("status", Constants.APPLY_ACTOR_OFFICIAL_CHECK_SUCCESS);
                     result.addProperty("TagCode", TagCodeEnum.SUCCESS);
                 } else {
                     result.addProperty("TagCode", TagCodeEnum.FAIL_TO_UPDATE);
@@ -382,18 +414,20 @@ public class ActorFunction {
                 result.addProperty("TagCode", TagCodeEnum.FAIL_TO_CALL_API_CONTENT_MODULE);
                 return result;
             }
-        } else {
+        } else {  // 家族主播
+            FamilyInfo familyInfo = FamilyService.getFamilyInfoByFamilyId(familyId);
+            result.addProperty("status", Constants.APPLY_TEST_ACTOR_IN_FAMILY_PLAYING);
+            result.addProperty("familyName", familyInfo.getFamilyName());
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
         }
     }
 
-    private Boolean verifyAndApplyForActor(JsonObject result,int userId, String certName, String identityId, int familyId, int appId) {
+    private Boolean verifyApplyForActor(JsonObject result,int userId, String identityId, int familyId, int appId) {
 
         // 身份证黑名单不得申请
         BlacklistService blacklistService = (BlacklistService) MelotBeanFactory.getBean("blacklistService");
-        boolean flag = blacklistService.isIdentityBlacklist(identityId);
-        if (flag) {
+        if (blacklistService.isIdentityBlacklist(identityId)) {
             result.addProperty("TagCode", TagCodeEnum.IDENTITY_BLACK_LIST);
             return false;
         }
@@ -424,7 +458,6 @@ public class ActorFunction {
         }
 
         // 未绑定手机的用户不能申请
-        String mobile = "";
         try {
             KkUserService userService = MelotBeanFactory.getBean("kkUserService", KkUserService.class);
             UserProfile userProfile = userService.getUserProfile(userId);
@@ -432,7 +465,6 @@ public class ActorFunction {
                 result.addProperty("TagCode", "01200002");
                 return false;
             }
-            mobile = userProfile.getIdentifyPhone();
         } catch (Exception e) {
             logger.error("Fail to get KkUserService.getUserProfile. userId: " + userId, e);
         }
@@ -496,13 +528,22 @@ public class ActorFunction {
             }
         }
 
+        return true;
+    }
+
+    private Boolean verifyAndApplyForActor(JsonObject result,int userId, String certName, String identityId, int familyId, int appId) {
+        
+        KkUserService userService = MelotBeanFactory.getBean("kkUserService", KkUserService.class);
+        UserProfile userProfile = userService.getUserProfile(userId);
         ApplyActor applyActor = new ApplyActor();
         applyActor.setActorId(userId);
         applyActor.setAppId(appId);
         applyActor.setRealName(certName);
         applyActor.setIdentityNumber(identityId);
-        applyActor.setMobile(mobile);
+        applyActor.setMobile(userProfile.getIdentifyPhone());
         applyActor.setGender(StringUtil.parseFromStr(identityId.substring(16, 17), 0) % 2);
+        applyActor.setIdPicStatus(IdPicStatusEnum.UNLOAD.getId());
+        applyActor.setVerifyType(VerifyTypeEnum.ZM_VERIFY.getId());
         if (familyId > 0) {
             applyActor.setApplyFamilyId(familyId);
             applyActor.setStatus(Constants.APPLY_TEST_ACTOR_IN_FAMILY_PLAYING);
@@ -512,6 +553,7 @@ public class ActorFunction {
             applyActor.setStatus(Constants.APPLY_ACTOR_INFO_CHECK_SUCCESS);
         }
 
+        ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
         boolean saveResult = applyActorService.saveApplyActorV2(applyActor);
         if (saveResult) {
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);

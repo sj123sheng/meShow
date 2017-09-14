@@ -90,7 +90,8 @@ public class ZmxyService extends BaseService {
         ZhimaCustomerCertificationInitializeResponse result = null;
         
         ZhimaCustomerCertificationInitializeRequest request = new ZhimaCustomerCertificationInitializeRequest();
-        request.setTransactionId(generateTransactionId(userId));// 必要参数
+        String transactionId = generateTransactionId(userId);
+        request.setTransactionId(transactionId);// 必要参数
         request.setProductCode(PRODUCT_CODE);// 必要参数
         request.setBizCode(BizCodeEnum.parseId(bizCode).getValue());// 必要参数
         request.setIdentityParam(getIdentityParam(certName, certNo));// 必要参数
@@ -100,6 +101,7 @@ public class ZmxyService extends BaseService {
             logger.error("zmrz bizNo: " + response.getBizNo());
             System.out.println("zmrz bizNo: " + response.getBizNo());
             result = response;
+            result.setBody(transactionId);
         } catch (ZhimaApiException e) {
             e.printStackTrace();
         }
