@@ -313,12 +313,14 @@ public class ActorFunction {
                 // 插入一条芝麻认证记录
                 ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
                 ZmrzApply zmrzApply = new ZmrzApply();
+                Date now = new Date();
                 zmrzApply.setBizNo(bizNo);
                 zmrzApply.setUserId(userId);
                 zmrzApply.setTransactionId(response.getBody());
                 zmrzApply.setAppId(appId);
                 zmrzApply.setStatus(ZmrzStatusEnum.WAIT_VERIFY.getId());
-                zmrzApply.setCreateTime(new Date());
+                zmrzApply.setCreateTime(now);
+                zmrzApply.setUpdateTime(now);
                 applyActorService.saveZmrzApply(zmrzApply);
                 result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             }
@@ -539,37 +541,43 @@ public class ActorFunction {
     }
 
     private Boolean verifyAndApplyForActor(JsonObject result,int userId, String certName, String identityId, int familyId, int appId) {
-        
-        KkUserService userService = MelotBeanFactory.getBean("kkUserService", KkUserService.class);
-        UserProfile userProfile = userService.getUserProfile(userId);
-        ApplyActor applyActor = new ApplyActor();
-        applyActor.setActorId(userId);
-        applyActor.setAppId(appId);
-        applyActor.setRealName(certName);
-        applyActor.setIdentityNumber(identityId);
-        applyActor.setMobile(userProfile.getIdentifyPhone());
-        applyActor.setGender(StringUtil.parseFromStr(identityId.substring(16, 17), 0) % 2);
-        applyActor.setIdPicStatus(IdPicStatusEnum.UNLOAD.getId());
-        applyActor.setVerifyType(VerifyTypeEnum.ZM_VERIFY.getId());
-        if (familyId > 0) {
-            applyActor.setApplyFamilyId(familyId);
-            applyActor.setStatus(Constants.APPLY_TEST_ACTOR_IN_FAMILY_PLAYING);
-        } else {
-            //自由主播
-            applyActor.setApplyFamilyId(11222);
-            applyActor.setStatus(Constants.APPLY_ACTOR_INFO_CHECK_SUCCESS);
-        }
 
-        ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
-        boolean saveResult = applyActorService.saveApplyActorV2(applyActor);
-        if (saveResult) {
-            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        } else {
-            result.addProperty("TagCode", TagCodeEnum.FAIL_SAVE_APPLY);
+        // 如果校验成功
+        if(verifyApplyForActor(result, userId, identityId, familyId, appId)) {
+            KkUserService userService = MelotBeanFactory.getBean("kkUserService", KkUserService.class);
+            UserProfile userProfile = userService.getUserProfile(userId);
+            ApplyActor applyActor = new ApplyActor();
+            applyActor.setActorId(userId);
+            applyActor.setAppId(appId);
+            applyActor.setRealName(certName);
+            applyActor.setIdentityNumber(identityId);
+            applyActor.setMobile(userProfile.getIdentifyPhone());
+            applyActor.setGender(StringUtil.parseFromStr(identityId.substring(16, 17), 0) % 2);
+            applyActor.setIdPicStatus(IdPicStatusEnum.UNLOAD.getId());
+            applyActor.setVerifyType(VerifyTypeEnum.ZM_VERIFY.getId());
+            if (familyId > 0) {
+                applyActor.setApplyFamilyId(familyId);
+                applyActor.setStatus(Constants.APPLY_TEST_ACTOR_IN_FAMILY_PLAYING);
+            } else {
+                //自由主播
+                applyActor.setApplyFamilyId(11222);
+                applyActor.setStatus(Constants.APPLY_ACTOR_INFO_CHECK_SUCCESS);
+            }
+
+            ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
+            boolean saveResult = applyActorService.saveApplyActorV2(applyActor);
+            if (saveResult) {
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            } else {
+                result.addProperty("TagCode", TagCodeEnum.FAIL_SAVE_APPLY);
+                return false;
+            }
+
+            return true;
+        }else {
             return false;
         }
 
-        return true;
     }
 
 }
