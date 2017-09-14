@@ -458,6 +458,7 @@ public class ActorFunction {
         }
 
         // 未绑定手机的用户不能申请
+        String mobileNum = "";
         try {
             KkUserService userService = MelotBeanFactory.getBean("kkUserService", KkUserService.class);
             UserProfile userProfile = userService.getUserProfile(userId);
@@ -465,6 +466,7 @@ public class ActorFunction {
                 result.addProperty("TagCode", "01200002");
                 return false;
             }
+            mobileNum = userProfile.getIdentifyPhone();
         } catch (Exception e) {
             logger.error("Fail to get KkUserService.getUserProfile. userId: " + userId, e);
         }
@@ -481,7 +483,7 @@ public class ActorFunction {
         }
 
         // 判断该身份证是否已经申请过主播 驳回状态可以重新申请
-        List<ApplyActor> applies = applyActorService.getApplyActorsByParameter(identityId, null, null);
+        List<ApplyActor> applies = applyActorService.getApplyActorsByParameter(identityId, mobileNum, null);
         if (applies != null && applies.size() > 0) {
             for (ApplyActor apply : applies) {
                 //巡管审核驳回 或 家族驳回
@@ -500,6 +502,11 @@ public class ActorFunction {
                     // 身份证已经存在
                     if (apply.getIdentityNumber() != null && apply.getIdentityNumber().equals(identityId)) {
                         result.addProperty("TagCode", TagCodeEnum.APPLY_IDNUM_EXISTS);
+                        return false;
+                    }
+                    // 手机号已经存在
+                    if (apply.getMobile() != null && apply.getMobile().equals(mobileNum)) {
+                        result.addProperty("TagCode", TagCodeEnum.APPLY_MOBILE_EXISTS);
                         return false;
                     }
                 }
