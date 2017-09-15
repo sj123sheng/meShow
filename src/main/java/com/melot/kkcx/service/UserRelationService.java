@@ -149,6 +149,13 @@ public class UserRelationService {
         return true;
 	}
 	
+    public static boolean removeManageResultList(int userId) {
+        if (UserRelationSource.isKeyExist("manage_list_" + userId)) {
+            return UserRelationSource.removeKey("manage_list_" + userId);
+        }
+        return true;
+    }
+	
 	public static JsonObject roomInfoTF(Integer platform, RoomInfo roomInfo) {
 		
 		if (roomInfo == null) {

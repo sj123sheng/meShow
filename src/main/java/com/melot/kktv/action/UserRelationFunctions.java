@@ -838,6 +838,9 @@ public class UserRelationFunctions {
 				result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
 				return result;
 			}
+			
+			//取消管理时删除缓存
+			com.melot.kkcx.service.UserRelationService.removeManageResultList(userId);
 		} catch (Exception e) {
 			result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
 			logger.error("fail to get ActorRelationService.delRelation(userId : " + userId + ", roomId : " + roomId + ")", e);
