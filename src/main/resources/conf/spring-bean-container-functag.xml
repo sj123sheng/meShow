@@ -2523,4 +2523,35 @@
 		<constructor-arg name="methodName" value="checkPhrase" />
 	</bean>
 	
+    <!-- KK 奖励金相关接口 -->
+	<bean id="52050201" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="bountyFunctions" />
+		<constructor-arg name="methodName" value="getRedPacketCount" />
+	</bean>
+	<bean id="52050202" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="bountyFunctions" />
+		<constructor-arg name="methodName" value="getNonDailyRedPacketList" />
+	</bean>
+	<bean id="52050203" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="bountyFunctions" />
+		<constructor-arg name="methodName" value="getDailyRedPacketList" />
+	</bean>
+	<bean id="52050204" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="bountyFunctions" />
+		<constructor-arg name="methodName" value="openNonDailyRedPacket" />
+	</bean>
+	<bean id="52050205" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="bountyFunctions" />
+		<constructor-arg name="methodName" value="openDailyRedPacket" />
+	</bean>
+	<bean id="52050206" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="bountyFunctions" />
+		<constructor-arg name="methodName" value="getBountyInfo" />
+	</bean>
+	<bean id="51050207" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="bountyFunctions" />
+		<constructor-arg name="methodName" value="getBountyHistList" />
+	</bean>
+    <!-- KK 奖励金相关接口 -->
+	
 </beans>
