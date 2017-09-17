@@ -2,23 +2,17 @@ package com.melot.kkcx.functions;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.melot.api.menu.sdk.dao.domain.HDRoomPoster;
-import com.melot.api.menu.sdk.dao.domain.HomePage;
-import com.melot.api.menu.sdk.dao.domain.RoomInfo;
-import com.melot.api.menu.sdk.dao.domain.SysMenu;
-import com.melot.api.menu.sdk.handler.FirstPageHandler;
-import com.melot.api.menu.sdk.redis.KKHallSource;
-import com.melot.api.menu.sdk.service.RoomInfoService;
-import com.melot.kkcore.relation.api.ActorRelation;
-import com.melot.kkcore.relation.api.RelationType;
-import com.melot.kkcore.relation.service.ActorRelationService;
-import com.melot.kkcx.service.RoomService;
-import com.melot.kkcx.transform.RoomTF;
-import com.melot.kktv.service.UserRelationService;
+import com.melot.kk.bounty.api.domain.DailyRedPacket;
+import com.melot.kk.bounty.api.domain.NonDailyRedPacket;
+import com.melot.kk.bounty.api.domain.UserBounty;
+import com.melot.kk.bounty.api.domain.UserBountyHist;
+import com.melot.kk.bounty.api.domain.base.BountyResultCode;
+import com.melot.kk.bounty.api.domain.base.Page;
+import com.melot.kk.bounty.api.domain.base.Result;
+import com.melot.kk.bounty.api.service.BountyService;
+import com.melot.kkcore.user.api.UserProfile;
+import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kktv.util.*;
-import com.melot.kktv.util.db.DB;
-import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import org.apache.log4j.Logger;
 
@@ -49,18 +43,18 @@ public class BountyFunctions {
      */
     public JsonObject getRedPacketCount(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
         // 安全校验
-        JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
-        if(rtJO != null) {
-            return rtJO;
-        }
+//        JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
+//        if(rtJO != null) {
+//            return rtJO;
+//        }
         
         JsonObject result = new JsonObject();
         
         // Token 校验
-        if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-            return result;
-        }
+//        if (!checkTag) {
+//            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+//            return result;
+//        }
 
         int userId;
         try {
@@ -73,15 +67,27 @@ public class BountyFunctions {
             return result;
         }
         
-        /*
-         * TODO 
-         * 调用奖励金模块获取用户当前可领红包数 
-         * 参数：
-         *   userId 用户ID 
-         */
-
-        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        return result;
+        try {
+            BountyService bountyService = (BountyService) MelotBeanFactory.getBean("bountyService");
+            Result<Integer> countResult = bountyService.getRedPacketCount(userId);
+            if (countResult == null) {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            
+            if (countResult.getCode().equals(BountyResultCode.SUCCESS)) {
+                result.addProperty("count", countResult.getData());
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                return result;
+            }else {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+        } catch (Exception e) {
+            LOGGER.error(String.format("Module error bountyService.getRedPacketCount(%s)", userId), e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            return result;
+        }
     }
 
     /**
@@ -94,18 +100,18 @@ public class BountyFunctions {
      */
     public JsonObject getNonDailyRedPacketList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
         // 安全校验
-        JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
-        if(rtJO != null) {
-            return rtJO;
-        }
+//        JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
+//        if(rtJO != null) {
+//            return rtJO;
+//        }
         
         JsonObject result = new JsonObject();
         
         // Token 校验
-        if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-            return result;
-        }
+//        if (!checkTag) {
+//            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+//            return result;
+//        }
 
         int userId;
         int num;
@@ -123,17 +129,55 @@ public class BountyFunctions {
             return result;
         }
         
-        /*
-         * TODO 
-         * 调用奖励金模块获取非日常红包列表
-         * 参数：
-         *   userId 用户ID 
-         *   maxRedPacketId 客户端已获取的最大红包ID
-         *   num 需要返回的数量
-         */
-
-        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        return result;
+        try {
+            BountyService bountyService = (BountyService) MelotBeanFactory.getBean("bountyService");
+            Result<Page<NonDailyRedPacket>> pageResult = bountyService.getNonDailyRedPackets(userId, maxRedPacketId, num);
+            if (pageResult == null) {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            
+            if (BountyResultCode.ERROR_SQL.equals(pageResult.getCode())) {
+                result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
+                return result;
+            }
+            
+            if (pageResult.getCode().equals(BountyResultCode.SUCCESS)) {
+                Page<NonDailyRedPacket> page = pageResult.getData();
+                result.addProperty("count", page.getCount());
+                result.addProperty("maxRedPacket", (Long) page.getCommonInfo().get("maxRedPacket"));
+                JsonArray redPackets = new JsonArray();
+                for (NonDailyRedPacket packet : page.getList()) {
+                    JsonObject packetJson = new JsonObject();
+                    packetJson.addProperty("redPacketId", packet.getRedPacketId());
+                    packetJson.addProperty("type", packet.getRedPacketType());
+                    packetJson.addProperty("amount", packet.getRedPacketAmount());
+                    packetJson.addProperty("userId", packet.getFriendUserId());
+                    
+                    // 获取朋友用户的昵称
+                    try {
+                        KkUserService kkUserService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
+                        UserProfile friend = kkUserService.getUserProfile(packet.getFriendUserId());
+                        packetJson.addProperty("nickname", (friend == null ? "" : friend.getNickName()));
+                    } catch (Exception e) {
+                        LOGGER.error(String.format("Module error kkUserService.getUserProfile(%s)", packet.getFriendUserId()), e);
+                        packetJson.addProperty("nickname", "");
+                    }
+                    
+                    redPackets.add(packetJson);
+                }
+                result.add("redPackets", redPackets);
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                return result;
+            }else {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+        } catch (Exception e) {
+            LOGGER.error(String.format("Module error bountyService.getNonDailyRedPackets(%s, %s, %s)", userId, maxRedPacketId, num), e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            return result;
+        }
     }
 
     /**
@@ -146,18 +190,18 @@ public class BountyFunctions {
      */
     public JsonObject getDailyRedPacketList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
         // 安全校验
-        JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
-        if(rtJO != null) {
-            return rtJO;
-        }
+//        JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
+//        if(rtJO != null) {
+//            return rtJO;
+//        }
         
         JsonObject result = new JsonObject();
         
         // Token 校验
-        if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-            return result;
-        }
+//        if (!checkTag) {
+//            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+//            return result;
+//        }
 
         int userId;
         try {
@@ -170,15 +214,50 @@ public class BountyFunctions {
             return result;
         }
         
-        /*
-         * TODO 
-         * 调用奖励金模块获取用户日常红包列表
-         * 参数：
-         *   userId 用户ID 
-         */
-
-        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        return result;
+        try {
+            BountyService bountyService = (BountyService) MelotBeanFactory.getBean("bountyService");
+            Result<Page<DailyRedPacket>> pageResult = bountyService.getDailyRedPackets(userId);
+            if (pageResult == null) {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            
+            if (BountyResultCode.ERROR_SQL.equals(pageResult.getCode())) {
+                result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
+                return result;
+            }
+            
+            if (pageResult.getCode().equals(BountyResultCode.SUCCESS)) {
+                Page<DailyRedPacket> page = pageResult.getData();
+                JsonArray redPackets = new JsonArray();
+                result.addProperty("richLevel", (Integer)page.getCommonInfo().get("richLevel"));
+                result.addProperty("newUserCount", (Integer)page.getCommonInfo().get("newUserCount"));
+                result.addProperty("redPacketDate", (String)page.getCommonInfo().get("redPacketDate"));
+                
+                for (DailyRedPacket packet : page.getList()) {
+                    JsonObject packetJson = new JsonObject();
+                    packetJson.addProperty("redPacketLevel", packet.getMinRichLevel());
+                    packetJson.addProperty("redPacketName", packet.getRedPacketName());
+                    packetJson.addProperty("maxAmount", packet.getMaxAmount());
+                    packetJson.addProperty("minRichLevel", packet.getMinRichLevel());
+                    packetJson.addProperty("minNewUserCount", packet.getMinNewUserCount());
+                    packetJson.addProperty("state", packet.getState());
+                    packetJson.addProperty("remainingTime", packet.getRemainingTime());
+                    
+                    redPackets.add(packetJson);
+                }
+                result.add("redPackets", redPackets);
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                return result;
+            }else {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+        } catch (Exception e) {
+            LOGGER.error(String.format("Module error bountyService.getDailyRedPackets(%s)", userId), e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            return result;
+        }
     }
 
     /**
@@ -191,18 +270,18 @@ public class BountyFunctions {
      */
     public JsonObject openNonDailyRedPacket(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
         // 安全校验
-        JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
-        if(rtJO != null) {
-            return rtJO;
-        }
+//        JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
+//        if(rtJO != null) {
+//            return rtJO;
+//        }
         
         JsonObject result = new JsonObject();
         
         // Token 校验
-        if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-            return result;
-        }
+//        if (!checkTag) {
+//            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+//            return result;
+//        }
 
         int userId;
         int redPacketId;
@@ -218,16 +297,37 @@ public class BountyFunctions {
             return result;
         }
         
-        /*
-         * TODO 
-         * 调用奖励金模块开启日常红包
-         * 参数：
-         *   userId 用户ID 
-         *   redPacketId 红包ID
-         */
-
-        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        return result;
+        try {
+            BountyService bountyService = (BountyService) MelotBeanFactory.getBean("bountyService");
+            Result<Boolean> pageResult = bountyService.openNonDailyRedPacket(userId, redPacketId);
+            if (pageResult == null) {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            
+            if (BountyResultCode.ERROR_SQL.equals(pageResult.getCode())) {
+                result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
+                return result;
+            }
+            
+            if (pageResult.getCode().equals(BountyResultCode.SUCCESS)) {
+                boolean isSuccess = pageResult.getData();
+                if (isSuccess) {
+                    result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                    return result;
+                }else {
+                    result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+                    return result;
+                }
+            }else {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+        } catch (Exception e) {
+            LOGGER.error(String.format("Module error bountyService.getRedPacketCount(%s)", userId), e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            return result;
+        }
     }
 
     /**
@@ -240,18 +340,18 @@ public class BountyFunctions {
      */
     public JsonObject openDailyRedPacket(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
         // 安全校验
-        JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
-        if(rtJO != null) {
-            return rtJO;
-        }
+//        JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
+//        if(rtJO != null) {
+//            return rtJO;
+//        }
         
         JsonObject result = new JsonObject();
         
         // Token 校验
-        if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-            return result;
-        }
+//        if (!checkTag) {
+//            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+//            return result;
+//        }
 
         int userId;
         int redPacketLevel;
@@ -270,17 +370,36 @@ public class BountyFunctions {
             return result;
         }
         
-        /*
-         * TODO 
-         * 调用奖励金模块开启日常红包 
-         * 参数：
-         *   userId 用户ID 
-         *   redPacketLevel 要开启的红包等级
-         *   redPacketDate 红包所属日期，字符串格式 yyyy-mm-dd
-         */
-
-        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        return result;
+        try {
+            BountyService bountyService = (BountyService) MelotBeanFactory.getBean("bountyService");
+            Result<DailyRedPacket> pageResult = bountyService.openDailyRedPacket(userId, redPacketLevel, DateUtil.parseDateStringToDate(redPacketDate, null));
+            if (pageResult == null) {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            
+            if (BountyResultCode.ERROR_SQL.equals(pageResult.getCode())) {
+                result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
+                return result;
+            }
+            
+            if (pageResult.getCode().equals(BountyResultCode.SUCCESS)) {
+                DailyRedPacket packet = pageResult.getData();
+                result.addProperty("amount", packet.getAmount());
+                if (packet.getRemainingTime() != null) {
+                    result.addProperty("remainingTime", packet.getRemainingTime());
+                }
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                return result;
+            }else {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+        } catch (Exception e) {
+            LOGGER.error(String.format("Module error bountyService.openDailyRedPacket(%s, %s, %s)", userId, redPacketLevel, redPacketDate), e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            return result;
+        }
     }
 
     /**
@@ -293,18 +412,18 @@ public class BountyFunctions {
      */
     public JsonObject getBountyInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
         // 安全校验
-        JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
-        if(rtJO != null) {
-            return rtJO;
-        }
+//        JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
+//        if(rtJO != null) {
+//            return rtJO;
+//        }
         
         JsonObject result = new JsonObject();
         
         // Token 校验
-        if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-            return result;
-        }
+//        if (!checkTag) {
+//            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+//            return result;
+//        }
 
         int userId;
         try {
@@ -317,15 +436,36 @@ public class BountyFunctions {
             return result;
         }
         
-        /*
-         * TODO 
-         * 调用奖励金模块获取用户奖励金信息 
-         * 参数：
-         *   userId 用户ID 
-         */
-
-        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        return result;
+        try {
+            BountyService bountyService = (BountyService) MelotBeanFactory.getBean("bountyService");
+            Result<UserBounty> pageResult = bountyService.getUserBounty(userId);
+            if (pageResult == null) {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            
+            if (BountyResultCode.ERROR_SQL.equals(pageResult.getCode())) {
+                result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
+                return result;
+            }
+            
+            if (pageResult.getCode().equals(BountyResultCode.SUCCESS)) {
+                UserBounty packet = pageResult.getData();
+                result.addProperty("bountyAmount", packet.getAmount());
+                result.addProperty("totalBountyAmount", packet.getTotalAmount());
+                result.addProperty("newUserCount", packet.getNewUserCount());
+                result.addProperty("cashUserCount", packet.getRechargeCount());
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                return result;
+            }else {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+        } catch (Exception e) {
+            LOGGER.error(String.format("Module error bountyService.getUserBounty(%s)", userId), e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            return result;
+        }
     }
 
     /**
@@ -341,10 +481,10 @@ public class BountyFunctions {
         JsonObject result = new JsonObject();
         
         // Token 校验
-        if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-            return result;
-        }
+//        if (!checkTag) {
+//            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+//            return result;
+//        }
 
         int userId;
         int start;
@@ -365,18 +505,42 @@ public class BountyFunctions {
             return result;
         }
         
-        /*
-         * TODO 
-         * 调用奖励金模块获取用户奖励金流水  
-         * 参数：
-         *   userId 用户ID 
-         *   dataMonth 数据月份 
-         *   start 起始值 
-         *   offset 列表数量 
-         */
-
-        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        return result;
+        try {
+            BountyService bountyService = (BountyService) MelotBeanFactory.getBean("bountyService");
+            Result<Page<UserBountyHist>> pageResult = bountyService.getUserBountyHists(userId, dataMonth, start, offset);
+            if (pageResult == null) {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            
+            if (BountyResultCode.ERROR_SQL.equals(pageResult.getCode())) {
+                result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
+                return result;
+            }
+            
+            if (pageResult.getCode().equals(BountyResultCode.SUCCESS)) {
+                Page<UserBountyHist> packet = pageResult.getData();
+                result.addProperty("count", packet.getCount());
+                JsonArray bountyHists = new JsonArray();
+                
+                for (UserBountyHist userBountyHist : packet.getList()) {
+                    result.addProperty("amount", userBountyHist.getAmount());
+                    result.addProperty("type", userBountyHist.getBountyType());
+                    result.addProperty("addTime", DateUtil.formatDateTime(userBountyHist.getOpenTime(), null));
+                }
+                
+                result.add("bountyHists", bountyHists);
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                return result;
+            }else {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+        } catch (Exception e) {
+            LOGGER.error(String.format("Module error bountyService.getUserBounty(%s)", userId), e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            return result;
+        }
     }
 
 }
