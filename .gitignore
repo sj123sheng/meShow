@@ -1,4 +1,7 @@
 /*.settings
+#disconf配置文件过滤
+/disconf
+.DS_Store
 ### Java template
 # Compiled class file
 /target
@@ -6,6 +9,8 @@
 
 # Log file
 *.log
+*.log.*
+/logs
 
 # BlueJ files
 *.ctxt
@@ -31,3 +36,7 @@ hs_err_pid*
 *.iml
 out
 gen
+/.project
+/.classpath
+/.settings/org.eclipse.wst.common.project.facet.core.xml
+/.settings/org.eclipse.jdt.core.prefs

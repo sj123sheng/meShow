@@ -163,5 +163,6 @@
 
     <!-- KK 奖励金相关接口 -->
     <bean id="bountyFunctions" class="com.melot.kkcx.functions.BountyFunctions" />
-	
+
+	<bean id="videoBgmFunction" class="com.melot.kkcx.functions.VideoBgmFunctions" />
 </beans>
