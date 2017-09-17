@@ -383,6 +383,30 @@ public class BountyFunctions {
                 return result;
             }
             
+            // 过期
+            if (BountyResultCode.ERROR_DAILY_EXPIRE.equals(pageResult.getCode())) {
+                result.addProperty("TagCode", "5205020502");
+                return result;
+            }
+            
+            // 达到上限20元
+            if (BountyResultCode.ERROR_DAILY_UPPER_LIMIT.equals(pageResult.getCode())) {
+                result.addProperty("TagCode", "5205020503");
+                return result;
+            }
+            
+            // 没有该等级红包
+            if (BountyResultCode.ERROR_DAILY_NO_LEVEL.equals(pageResult.getCode())) {
+                result.addProperty("TagCode", "5205020504");
+                return result;
+            }
+            
+            // 正在倒计时，不允许开启红包
+            if (BountyResultCode.ERROR_DAILY_TIMING.equals(pageResult.getCode())) {
+                result.addProperty("TagCode", "5205020505");
+                return result;
+            }
+            
             if (pageResult.getCode().equals(BountyResultCode.SUCCESS)) {
                 DailyRedPacket packet = pageResult.getData();
                 result.addProperty("amount", packet.getAmount());
