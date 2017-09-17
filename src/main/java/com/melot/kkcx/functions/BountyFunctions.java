@@ -524,9 +524,12 @@ public class BountyFunctions {
                 JsonArray bountyHists = new JsonArray();
                 
                 for (UserBountyHist userBountyHist : packet.getList()) {
-                    result.addProperty("amount", userBountyHist.getAmount());
-                    result.addProperty("type", userBountyHist.getBountyType());
-                    result.addProperty("addTime", DateUtil.formatDateTime(userBountyHist.getOpenTime(), null));
+                    JsonObject histJson = new JsonObject();
+                    histJson.addProperty("amount", userBountyHist.getAmount());
+                    histJson.addProperty("type", userBountyHist.getBountyType());
+                    histJson.addProperty("addTime", DateUtil.formatDateTime(userBountyHist.getOpenTime(), null));
+                    
+                    bountyHists.add(histJson);
                 }
                 
                 result.add("bountyHists", bountyHists);
