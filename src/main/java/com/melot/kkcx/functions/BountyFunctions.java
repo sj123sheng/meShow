@@ -43,18 +43,18 @@ public class BountyFunctions {
      */
     public JsonObject getRedPacketCount(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
         // 安全校验
-//        JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
-//        if(rtJO != null) {
-//            return rtJO;
-//        }
+        JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
+        if(rtJO != null) {
+            return rtJO;
+        }
         
         JsonObject result = new JsonObject();
         
         // Token 校验
-//        if (!checkTag) {
-//            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-//            return result;
-//        }
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
 
         int userId;
         try {
@@ -100,18 +100,18 @@ public class BountyFunctions {
      */
     public JsonObject getNonDailyRedPacketList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
         // 安全校验
-//        JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
-//        if(rtJO != null) {
-//            return rtJO;
-//        }
+        JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
+        if(rtJO != null) {
+            return rtJO;
+        }
         
         JsonObject result = new JsonObject();
         
         // Token 校验
-//        if (!checkTag) {
-//            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-//            return result;
-//        }
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
 
         int userId;
         int num;
@@ -192,18 +192,18 @@ public class BountyFunctions {
      */
     public JsonObject getDailyRedPacketList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
         // 安全校验
-//        JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
-//        if(rtJO != null) {
-//            return rtJO;
-//        }
+        JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
+        if(rtJO != null) {
+            return rtJO;
+        }
         
         JsonObject result = new JsonObject();
         
         // Token 校验
-//        if (!checkTag) {
-//            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-//            return result;
-//        }
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
 
         int userId;
         try {
@@ -274,18 +274,18 @@ public class BountyFunctions {
      */
     public JsonObject openNonDailyRedPacket(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
         // 安全校验
-//        JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
-//        if(rtJO != null) {
-//            return rtJO;
-//        }
+        JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
+        if(rtJO != null) {
+            return rtJO;
+        }
         
         JsonObject result = new JsonObject();
         
         // Token 校验
-//        if (!checkTag) {
-//            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-//            return result;
-//        }
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
 
         int userId;
         int redPacketId;
@@ -303,19 +303,19 @@ public class BountyFunctions {
         
         try {
             BountyService bountyService = (BountyService) MelotBeanFactory.getBean("bountyService");
-            Result<Boolean> pageResult = bountyService.openNonDailyRedPacket(userId, redPacketId);
-            if (pageResult == null) {
+            Result<Boolean> successResult = bountyService.openNonDailyRedPacket(userId, redPacketId);
+            if (successResult == null) {
                 result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
                 return result;
             }
             
-            if (BountyResultCode.ERROR_SQL.equals(pageResult.getCode())) {
+            if (BountyResultCode.ERROR_SQL.equals(successResult.getCode())) {
                 result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
                 return result;
             }
             
-            if (pageResult.getCode().equals(BountyResultCode.SUCCESS)) {
-                boolean isSuccess = pageResult.getData();
+            if (successResult.getCode().equals(BountyResultCode.SUCCESS)) {
+                boolean isSuccess = successResult.getData();
                 if (isSuccess) {
                     result.addProperty("TagCode", TagCodeEnum.SUCCESS);
                     return result;
@@ -344,18 +344,18 @@ public class BountyFunctions {
      */
     public JsonObject openDailyRedPacket(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
         // 安全校验
-//        JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
-//        if(rtJO != null) {
-//            return rtJO;
-//        }
+        JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
+        if(rtJO != null) {
+            return rtJO;
+        }
         
         JsonObject result = new JsonObject();
         
         // Token 校验
-//        if (!checkTag) {
-//            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-//            return result;
-//        }
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
 
         int userId;
         int redPacketLevel;
@@ -376,43 +376,43 @@ public class BountyFunctions {
         
         try {
             BountyService bountyService = (BountyService) MelotBeanFactory.getBean("bountyService");
-            Result<DailyRedPacket> pageResult = bountyService.openDailyRedPacket(userId, redPacketLevel, DateUtil.parseDateStringToDate(redPacketDate, null));
-            if (pageResult == null) {
+            Result<DailyRedPacket> packetResult = bountyService.openDailyRedPacket(userId, redPacketLevel, DateUtil.parseDateStringToDate(redPacketDate, null));
+            if (packetResult == null) {
                 result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
                 return result;
             }
             
-            if (BountyResultCode.ERROR_SQL.equals(pageResult.getCode())) {
+            if (BountyResultCode.ERROR_SQL.equals(packetResult.getCode())) {
                 result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
                 return result;
             }
             
             // 过期
-            if (BountyResultCode.ERROR_DAILY_EXPIRE.equals(pageResult.getCode())) {
+            if (BountyResultCode.ERROR_DAILY_EXPIRE.equals(packetResult.getCode())) {
                 result.addProperty("TagCode", "5205020502");
                 return result;
             }
             
             // 达到上限20元
-            if (BountyResultCode.ERROR_DAILY_UPPER_LIMIT.equals(pageResult.getCode())) {
+            if (BountyResultCode.ERROR_DAILY_UPPER_LIMIT.equals(packetResult.getCode())) {
                 result.addProperty("TagCode", "5205020503");
                 return result;
             }
             
             // 没有该等级红包
-            if (BountyResultCode.ERROR_DAILY_NO_LEVEL.equals(pageResult.getCode())) {
+            if (BountyResultCode.ERROR_DAILY_NO_LEVEL.equals(packetResult.getCode())) {
                 result.addProperty("TagCode", "5205020504");
                 return result;
             }
             
             // 正在倒计时，不允许开启红包
-            if (BountyResultCode.ERROR_DAILY_TIMING.equals(pageResult.getCode())) {
+            if (BountyResultCode.ERROR_DAILY_TIMING.equals(packetResult.getCode())) {
                 result.addProperty("TagCode", "5205020505");
                 return result;
             }
             
-            if (pageResult.getCode().equals(BountyResultCode.SUCCESS)) {
-                DailyRedPacket packet = pageResult.getData();
+            if (packetResult.getCode().equals(BountyResultCode.SUCCESS)) {
+                DailyRedPacket packet = packetResult.getData();
                 result.addProperty("amount", packet.getAmount());
                 if (packet.getRemainingTime() != null) {
                     result.addProperty("remainingTime", packet.getRemainingTime());
@@ -440,18 +440,18 @@ public class BountyFunctions {
      */
     public JsonObject getBountyInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
         // 安全校验
-//        JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
-//        if(rtJO != null) {
-//            return rtJO;
-//        }
+        JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
+        if(rtJO != null) {
+            return rtJO;
+        }
         
         JsonObject result = new JsonObject();
         
         // Token 校验
-//        if (!checkTag) {
-//            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-//            return result;
-//        }
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
 
         int userId;
         try {
@@ -478,11 +478,11 @@ public class BountyFunctions {
             }
             
             if (pageResult.getCode().equals(BountyResultCode.SUCCESS)) {
-                UserBounty packet = pageResult.getData();
-                result.addProperty("bountyAmount", packet.getAmount());
-                result.addProperty("totalBountyAmount", packet.getTotalAmount());
-                result.addProperty("newUserCount", packet.getNewUserCount());
-                result.addProperty("cashUserCount", packet.getRechargeCount());
+                UserBounty userBounty = pageResult.getData();
+                result.addProperty("bountyAmount", userBounty.getAmount());
+                result.addProperty("totalBountyAmount", userBounty.getTotalAmount());
+                result.addProperty("newUserCount", userBounty.getNewUserCount());
+                result.addProperty("cashUserCount", userBounty.getRechargeCount());
                 result.addProperty("TagCode", TagCodeEnum.SUCCESS);
                 return result;
             }else {
@@ -509,10 +509,10 @@ public class BountyFunctions {
         JsonObject result = new JsonObject();
         
         // Token 校验
-//        if (!checkTag) {
-//            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-//            return result;
-//        }
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
 
         int userId;
         int start;
@@ -547,11 +547,11 @@ public class BountyFunctions {
             }
             
             if (pageResult.getCode().equals(BountyResultCode.SUCCESS)) {
-                Page<UserBountyHist> packet = pageResult.getData();
-                result.addProperty("count", packet.getCount());
+                Page<UserBountyHist> page = pageResult.getData();
+                result.addProperty("count", page.getCount());
                 JsonArray bountyHists = new JsonArray();
-                if (packet.getList() != null) {
-                    for (UserBountyHist userBountyHist : packet.getList()) {
+                if (page.getList() != null) {
+                    for (UserBountyHist userBountyHist : page.getList()) {
                         JsonObject histJson = new JsonObject();
                         histJson.addProperty("amount", userBountyHist.getAmount());
                         histJson.addProperty("type", userBountyHist.getBountyType());
