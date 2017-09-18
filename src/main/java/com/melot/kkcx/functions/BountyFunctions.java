@@ -147,24 +147,26 @@ public class BountyFunctions {
                 result.addProperty("count", page.getCount());
                 result.addProperty("maxRedPacket", (Long) page.getCommonInfo().get("maxRedPacket"));
                 JsonArray redPackets = new JsonArray();
-                for (NonDailyRedPacket packet : page.getList()) {
-                    JsonObject packetJson = new JsonObject();
-                    packetJson.addProperty("redPacketId", packet.getRedPacketId());
-                    packetJson.addProperty("type", packet.getRedPacketType());
-                    packetJson.addProperty("amount", packet.getRedPacketAmount());
-                    packetJson.addProperty("userId", packet.getFriendUserId());
-                    
-                    // 获取朋友用户的昵称
-                    try {
-                        KkUserService kkUserService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
-                        UserProfile friend = kkUserService.getUserProfile(packet.getFriendUserId());
-                        packetJson.addProperty("nickname", (friend == null ? "" : friend.getNickName()));
-                    } catch (Exception e) {
-                        LOGGER.error(String.format("Module error kkUserService.getUserProfile(%s)", packet.getFriendUserId()), e);
-                        packetJson.addProperty("nickname", "");
+                if (page.getList() != null) {
+                    for (NonDailyRedPacket packet : page.getList()) {
+                        JsonObject packetJson = new JsonObject();
+                        packetJson.addProperty("redPacketId", packet.getRedPacketId());
+                        packetJson.addProperty("type", packet.getRedPacketType());
+                        packetJson.addProperty("amount", packet.getRedPacketAmount());
+                        packetJson.addProperty("userId", packet.getFriendUserId());
+                        
+                        // 获取朋友用户的昵称
+                        try {
+                            KkUserService kkUserService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
+                            UserProfile friend = kkUserService.getUserProfile(packet.getFriendUserId());
+                            packetJson.addProperty("nickname", (friend == null ? "" : friend.getNickName()));
+                        } catch (Exception e) {
+                            LOGGER.error(String.format("Module error kkUserService.getUserProfile(%s)", packet.getFriendUserId()), e);
+                            packetJson.addProperty("nickname", "");
+                        }
+                        
+                        redPackets.add(packetJson);
                     }
-                    
-                    redPackets.add(packetJson);
                 }
                 result.add("redPackets", redPackets);
                 result.addProperty("TagCode", TagCodeEnum.SUCCESS);
@@ -234,17 +236,19 @@ public class BountyFunctions {
                 result.addProperty("newUserCount", (Integer)page.getCommonInfo().get("newUserCount"));
                 result.addProperty("redPacketDate", (String)page.getCommonInfo().get("redPacketDate"));
                 
-                for (DailyRedPacket packet : page.getList()) {
-                    JsonObject packetJson = new JsonObject();
-                    packetJson.addProperty("redPacketLevel", packet.getRedPacketLevel());
-                    packetJson.addProperty("redPacketName", packet.getRedPacketName());
-                    packetJson.addProperty("maxAmount", packet.getMaxAmount());
-                    packetJson.addProperty("minRichLevel", packet.getMinRichLevel());
-                    packetJson.addProperty("minNewUserCount", packet.getMinNewUserCount());
-                    packetJson.addProperty("state", packet.getState());
-                    packetJson.addProperty("remainingTime", packet.getRemainingTime());
-                    
-                    redPackets.add(packetJson);
+                if (page.getList() != null) {
+                    for (DailyRedPacket packet : page.getList()) {
+                        JsonObject packetJson = new JsonObject();
+                        packetJson.addProperty("redPacketLevel", packet.getRedPacketLevel());
+                        packetJson.addProperty("redPacketName", packet.getRedPacketName());
+                        packetJson.addProperty("maxAmount", packet.getMaxAmount());
+                        packetJson.addProperty("minRichLevel", packet.getMinRichLevel());
+                        packetJson.addProperty("minNewUserCount", packet.getMinNewUserCount());
+                        packetJson.addProperty("state", packet.getState());
+                        packetJson.addProperty("remainingTime", packet.getRemainingTime());
+                        
+                        redPackets.add(packetJson);
+                    }
                 }
                 result.add("redPackets", redPackets);
                 result.addProperty("TagCode", TagCodeEnum.SUCCESS);
@@ -546,14 +550,15 @@ public class BountyFunctions {
                 Page<UserBountyHist> packet = pageResult.getData();
                 result.addProperty("count", packet.getCount());
                 JsonArray bountyHists = new JsonArray();
-                
-                for (UserBountyHist userBountyHist : packet.getList()) {
-                    JsonObject histJson = new JsonObject();
-                    histJson.addProperty("amount", userBountyHist.getAmount());
-                    histJson.addProperty("type", userBountyHist.getBountyType());
-                    histJson.addProperty("addTime", DateUtil.formatDateTime(userBountyHist.getOpenTime(), null));
-                    
-                    bountyHists.add(histJson);
+                if (packet.getList() != null) {
+                    for (UserBountyHist userBountyHist : packet.getList()) {
+                        JsonObject histJson = new JsonObject();
+                        histJson.addProperty("amount", userBountyHist.getAmount());
+                        histJson.addProperty("type", userBountyHist.getBountyType());
+                        histJson.addProperty("addTime", DateUtil.formatDateTime(userBountyHist.getOpenTime(), null));
+                        
+                        bountyHists.add(histJson);
+                    }
                 }
                 
                 result.add("bountyHists", bountyHists);
