@@ -236,7 +236,7 @@ public class BountyFunctions {
                 
                 for (DailyRedPacket packet : page.getList()) {
                     JsonObject packetJson = new JsonObject();
-                    packetJson.addProperty("redPacketLevel", packet.getMinRichLevel());
+                    packetJson.addProperty("redPacketLevel", packet.getRedPacketLevel());
                     packetJson.addProperty("redPacketName", packet.getRedPacketName());
                     packetJson.addProperty("maxAmount", packet.getMaxAmount());
                     packetJson.addProperty("minRichLevel", packet.getMinRichLevel());
