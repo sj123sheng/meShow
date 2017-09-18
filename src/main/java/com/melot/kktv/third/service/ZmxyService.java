@@ -42,7 +42,7 @@ public class ZmxyService extends BaseService {
     private static Logger logger = Logger.getLogger(ZmxyService.class);
 
     // 芝麻信用网关地址
-    public static final String serverUrl = "https://zmopenapi.zmxy.com.cn/openapi.do";
+    public static final String SERVER_URL = "https://zmopenapi.zmxy.com.cn/openapi.do";
 
     // 芝麻认证产品码
     private static final String PRODUCT_CODE = "w1010100000000002978";
@@ -60,7 +60,7 @@ public class ZmxyService extends BaseService {
     private static final String PUBLIC_KEY = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCQEjlFUI0wt2lY9BTo46GXOiR8ls7FpNVVNCXZSHp+WKApsPJzBJ3L+ZN9u7aC3Vv00FeXtcWEYIXE7mkL2nKLtr3E5D7LZY6MTDrVMSGCl+xyp93kkh8bKiO7cI6yk0Qi/5Ob44IYWrlDQV0FVqvAZBWYeZYDeoHNIQgiigEnfQIDAQAB";
 
     private static DefaultZhimaClient getZhimaClient() {
-        return new DefaultZhimaClient(serverUrl, APP_ID, PRIVATE_KEY, PUBLIC_KEY);
+        return new DefaultZhimaClient(SERVER_URL, APP_ID, PRIVATE_KEY, PUBLIC_KEY);
     }
     
     /** 
@@ -103,7 +103,8 @@ public class ZmxyService extends BaseService {
             result = response;
             result.setBody(transactionId);
         } catch (ZhimaApiException e) {
-            e.printStackTrace();
+            logger.error("获取本次认证的标识失败 getBizNo(userId:" + userId +
+                    ",bizCode:" + bizCode + ",certName:" + certName + ",certNo:" + certNo + ")", e);
         }
         
         return result;
@@ -138,14 +139,14 @@ public class ZmxyService extends BaseService {
             logger.error("zmrz return_url: " + url);
             result = url;
         } catch (ZhimaApiException e) {
-            e.printStackTrace();
+            logger.error("支付宝端内认证生成认证请求URL失败 getUrl(bizNo:" + bizNo + ",returnUrl:" + returnUrl + ")", e);
         }
         
         return result;
     }
     
     /**
-     * 
+     * 通过bizNo获取本次认证结果
      * @param bizNo
      * @return
      */
@@ -158,7 +159,7 @@ public class ZmxyService extends BaseService {
             System.out.println(new Gson().toJson(response));
             logger.error("zmrz result: " + new Gson().toJson(response));
         } catch (ZhimaApiException e) {
-            e.printStackTrace();
+            logger.error("通过bizNo获取本次认证结果失败 getResult(bizNo:" + bizNo + ")", e);
         }
 
         return response;
