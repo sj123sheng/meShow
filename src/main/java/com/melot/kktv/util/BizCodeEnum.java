@@ -38,10 +38,6 @@ public enum BizCodeEnum {
         this.value = value;
     }
 
-    public static void main(String[] args) {
-        System.out.println(BizCodeEnum.parseId(1).getValue());
-    }
-
     private static Map<Integer, BizCodeEnum> bizCodeEnumIdMap = Maps.newHashMap();
     private static Map<String, BizCodeEnum> bizCodeEnumNameMap = Maps.newHashMap();
 
