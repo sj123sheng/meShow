@@ -1728,7 +1728,7 @@ public class ActivityFunctions {
                 gameJson.addProperty("gameUrl", gameConfig.getGameUrl());
                 gameJson.addProperty("helpIcon", gameConfig.getHelpIcon());
                 gameJson.addProperty("helpUrl", gameConfig.getHelpUrl());
-                
+                gameJson.addProperty("helpTitle", gameConfig.getHelpTitle());
                 games.add(gameJson);
             }
             result.add("games", games);
