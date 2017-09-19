@@ -314,6 +314,11 @@ public class BountyFunctions {
                 return result;
             }
             
+            if (BountyResultCode.ERROR_NON_DAILY_INVALID.equals(successResult.getCode())) {
+                result.addProperty("TagCode", "5205020402");
+                return result;
+            }
+            
             if (successResult.getCode().equals(BountyResultCode.SUCCESS)) {
                 boolean isSuccess = successResult.getData();
                 if (isSuccess) {
