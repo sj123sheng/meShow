@@ -1538,12 +1538,12 @@ public class IndexFunctions {
 					finalJson = entry.getValue();
 					finalJson.add("actor", RoomTF.roomInfoToJson(RoomService.getRoomInfo(entry.getKey()), platform, true));
 					rankList.add(finalJson);
-					if (rankList.size() >= 5) {
+					if (rankList.size() >= 6) {
 						break;
 					}
 				}
 			}
-			if (rankList.size() < 5) {
+			if (rankList.size() < 6) {
 				List<Map.Entry<Integer, JsonObject>> allActorSortList = new ArrayList<>(allGiftMap.entrySet());
 				Collections.sort(allActorSortList, new Comparator<Map.Entry<Integer, JsonObject>>() {
 					@Override
@@ -1556,7 +1556,7 @@ public class IndexFunctions {
 					if (!filterGiftList.contains(finalJson.get("giftId").getAsInt())) {
 						finalJson.add("actor", RoomTF.roomInfoToJson(RoomService.getRoomInfo(entry.getKey()), platform, true));
 						rankList.add(finalJson);
-						if (rankList.size() >= 5) {
+						if (rankList.size() >= 6) {
 							break;
 						}
 					}
