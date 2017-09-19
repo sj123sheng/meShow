@@ -372,7 +372,7 @@
 		<dependency>
   		    <groupId>com.melot.module.driver.msgbuilder</groupId>
 		    <artifactId>notice-module-msgbuilder</artifactId>
-		    <version>1.0.2</version><!--$NO-MVN-MAN-VER$-->
+		    <version>1.0.4-SNAPSHOT</version><!--$NO-MVN-MAN-VER$-->
 		</dependency>
 		<dependency> 
 			<groupId>com.melot.module</groupId> 
