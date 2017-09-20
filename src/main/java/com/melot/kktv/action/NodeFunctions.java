@@ -21,6 +21,7 @@ import com.google.gson.JsonParser;
 import com.melot.api.menu.sdk.dao.domain.RoomExtraInfo;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.api.menu.sdk.service.RoomInfoService;
+import com.melot.api.menu.sdk.utils.RoomInfoUtils;
 import com.melot.common.driver.domain.CharmUserInfo;
 import com.melot.common.driver.service.RoomExtendConfService;
 import com.melot.common.driver.service.ShareService;
@@ -1036,7 +1037,7 @@ public class NodeFunctions {
 	        RoomInfo roomInfo = null;
         	t = Cat.getProducer().newTransaction("MCall", "RoomService.getRoomInfo");
 			try {
-				roomInfo = RoomService.getRoomInfoByIdInDb(userId);
+				roomInfo = RoomInfoUtils.getInitialRoomInfoByActorid(userId);
 				t.setStatus(Transaction.SUCCESS);
 			} catch (Exception e) {
 				Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
@@ -1046,9 +1047,9 @@ public class NodeFunctions {
 			}
 		    if (roomInfo != null) {
 		    	// 轮播房添加roomId字段，非正在直播默认等于userId
-		    	if (roomInfo.getRoomId() != null) {
-		    		roomId = roomInfo.getRoomId();
-				}
+//		    	if (roomInfo.getRoomId() != null) {
+//		    		roomId = roomInfo.getRoomId();
+//				}
 		        if (roomInfo.getScreenType() != null) {
 		            result.addProperty("screenType", roomInfo.getScreenType());
 		        } else {
