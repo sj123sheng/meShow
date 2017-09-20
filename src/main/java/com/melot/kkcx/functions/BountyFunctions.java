@@ -52,18 +52,18 @@ public class BountyFunctions {
         
         // Token 校验
         if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_NOT_CHECKED);
             return result;
         }
 
         int userId;
         try {
-            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
             return result;
         } catch (Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
         
@@ -71,21 +71,21 @@ public class BountyFunctions {
             BountyService bountyService = (BountyService) MelotBeanFactory.getBean("bountyService");
             Result<Integer> countResult = bountyService.getRedPacketCount(userId);
             if (countResult == null) {
-                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
                 return result;
             }
             
             if (countResult.getCode().equals(BountyResultCode.SUCCESS)) {
                 result.addProperty("count", countResult.getData());
-                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
                 return result;
             }else {
-                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
                 return result;
             }
         } catch (Exception e) {
             LOGGER.error(String.format("Module error bountyService.getRedPacketCount(%s)", userId), e);
-            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
             return result;
         }
     }
@@ -109,7 +109,7 @@ public class BountyFunctions {
         
         // Token 校验
         if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_NOT_CHECKED);
             return result;
         }
 
@@ -118,14 +118,14 @@ public class BountyFunctions {
         int maxRedPacketId;
         
         try {
-            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-            num = CommonUtil.getJsonParamInt(jsonObject, "num", 20, null, 1, 30);
-            maxRedPacketId = CommonUtil.getJsonParamInt(jsonObject, "maxRedPacketId", 0, null, 1, Integer.MAX_VALUE);
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            num = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.NUM, 20, null, 1, 30);
+            maxRedPacketId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.MAX_RED_PACKET_ID, 0, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
             return result;
         } catch (Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
         
@@ -133,51 +133,51 @@ public class BountyFunctions {
             BountyService bountyService = (BountyService) MelotBeanFactory.getBean("bountyService");
             Result<Page<NonDailyRedPacket>> pageResult = bountyService.getNonDailyRedPackets(userId, maxRedPacketId, num);
             if (pageResult == null) {
-                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
                 return result;
             }
             
             if (BountyResultCode.ERROR_SQL.equals(pageResult.getCode())) {
-                result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.EXECSQL_EXCEPTION);
                 return result;
             }
             
             if (pageResult.getCode().equals(BountyResultCode.SUCCESS)) {
                 Page<NonDailyRedPacket> page = pageResult.getData();
-                result.addProperty("count", page.getCount());
+                result.addProperty(ParameterKeys.COUNT, page.getCount());
                 result.addProperty("maxRedPacket", (Long) page.getCommonInfo().get("maxRedPacket"));
                 JsonArray redPackets = new JsonArray();
                 if (page.getList() != null) {
                     for (NonDailyRedPacket packet : page.getList()) {
                         JsonObject packetJson = new JsonObject();
-                        packetJson.addProperty("redPacketId", packet.getRedPacketId());
-                        packetJson.addProperty("type", packet.getRedPacketType());
-                        packetJson.addProperty("amount", packet.getRedPacketAmount());
-                        packetJson.addProperty("userId", packet.getFriendUserId());
+                        packetJson.addProperty(ParameterKeys.RED_PACKET_ID, packet.getRedPacketId());
+                        packetJson.addProperty(ParameterKeys.TYPE, packet.getRedPacketType());
+                        packetJson.addProperty(ParameterKeys.AMOUNT, packet.getRedPacketAmount());
+                        packetJson.addProperty(ParameterKeys.USER_ID, packet.getFriendUserId());
                         
                         // 获取朋友用户的昵称
                         try {
                             KkUserService kkUserService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
                             UserProfile friend = kkUserService.getUserProfile(packet.getFriendUserId());
-                            packetJson.addProperty("nickname", (friend == null ? "" : friend.getNickName()));
+                            packetJson.addProperty(ParameterKeys.NICKNAME, (friend == null ? "" : friend.getNickName()));
                         } catch (Exception e) {
                             LOGGER.error(String.format("Module error kkUserService.getUserProfile(%s)", packet.getFriendUserId()), e);
-                            packetJson.addProperty("nickname", "");
+                            packetJson.addProperty(ParameterKeys.NICKNAME, "");
                         }
                         
                         redPackets.add(packetJson);
                     }
                 }
                 result.add("redPackets", redPackets);
-                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
                 return result;
             }else {
-                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
                 return result;
             }
         } catch (Exception e) {
             LOGGER.error(String.format("Module error bountyService.getNonDailyRedPackets(%s, %s, %s)", userId, maxRedPacketId, num), e);
-            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
             return result;
         }
     }
@@ -201,18 +201,18 @@ public class BountyFunctions {
         
         // Token 校验
         if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_NOT_CHECKED);
             return result;
         }
 
         int userId;
         try {
-            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
             return result;
         } catch (Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
         
@@ -220,12 +220,12 @@ public class BountyFunctions {
             BountyService bountyService = (BountyService) MelotBeanFactory.getBean("bountyService");
             Result<Page<DailyRedPacket>> pageResult = bountyService.getDailyRedPackets(userId);
             if (pageResult == null) {
-                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
                 return result;
             }
             
             if (BountyResultCode.ERROR_SQL.equals(pageResult.getCode())) {
-                result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.EXECSQL_EXCEPTION);
                 return result;
             }
             
@@ -251,15 +251,15 @@ public class BountyFunctions {
                     }
                 }
                 result.add("redPackets", redPackets);
-                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
                 return result;
             }else {
-                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
                 return result;
             }
         } catch (Exception e) {
             LOGGER.error(String.format("Module error bountyService.getDailyRedPackets(%s)", userId), e);
-            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
             return result;
         }
     }
@@ -283,7 +283,7 @@ public class BountyFunctions {
         
         // Token 校验
         if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_NOT_CHECKED);
             return result;
         }
 
@@ -291,50 +291,51 @@ public class BountyFunctions {
         int redPacketId;
         
         try {
-            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
             redPacketId = CommonUtil.getJsonParamInt(jsonObject, "redPacketId", 0, "5205020401", 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
             return result;
         } catch (Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
         
         try {
             BountyService bountyService = (BountyService) MelotBeanFactory.getBean("bountyService");
-            Result<Boolean> successResult = bountyService.openNonDailyRedPacket(userId, redPacketId);
-            if (successResult == null) {
-                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+
+            Result<Boolean> pageResult = bountyService.openNonDailyRedPacket(userId, redPacketId);
+            if (pageResult == null) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
                 return result;
             }
             
-            if (BountyResultCode.ERROR_SQL.equals(successResult.getCode())) {
-                result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
+            if (BountyResultCode.ERROR_SQL.equals(pageResult.getCode())) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.EXECSQL_EXCEPTION);
                 return result;
             }
             
             if (BountyResultCode.ERROR_NON_DAILY_INVALID.equals(successResult.getCode())) {
-                result.addProperty("TagCode", "5205020402");
+                result.addProperty(ParameterKeys.TAG_CODE, "5205020402");
                 return result;
             }
             
             if (successResult.getCode().equals(BountyResultCode.SUCCESS)) {
                 boolean isSuccess = successResult.getData();
                 if (isSuccess) {
-                    result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                    result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
                     return result;
                 }else {
-                    result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+                    result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
                     return result;
                 }
             }else {
-                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
                 return result;
             }
         } catch (Exception e) {
             LOGGER.error(String.format("Module error bountyService.getRedPacketCount(%s)", userId), e);
-            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
             return result;
         }
     }
@@ -358,7 +359,7 @@ public class BountyFunctions {
         
         // Token 校验
         if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_NOT_CHECKED);
             return result;
         }
 
@@ -368,51 +369,52 @@ public class BountyFunctions {
         String redPacketDate;
         
         try {
-            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
             redPacketLevel = CommonUtil.getJsonParamInt(jsonObject, "redPacketLevel", 0, "5205020501", 1, Integer.MAX_VALUE);
             redPacketDate = CommonUtil.getJsonParamString(jsonObject, "redPacketDate", DateUtil.formatDate(new Date(), "yyyy-MM-dd"), null, 10, 10);
         } catch (CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
             return result;
         } catch (Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
         
         try {
             BountyService bountyService = (BountyService) MelotBeanFactory.getBean("bountyService");
-            Result<DailyRedPacket> packetResult = bountyService.openDailyRedPacket(userId, redPacketLevel, DateUtil.parseDateStringToDate(redPacketDate, null));
-            if (packetResult == null) {
-                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+
+            Result<DailyRedPacket> pageResult = bountyService.openDailyRedPacket(userId, redPacketLevel, DateUtil.parseDateStringToDate(redPacketDate, null));
+            if (pageResult == null) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
                 return result;
             }
             
-            if (BountyResultCode.ERROR_SQL.equals(packetResult.getCode())) {
-                result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
+            if (BountyResultCode.ERROR_SQL.equals(pageResult.getCode())) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.EXECSQL_EXCEPTION);
                 return result;
             }
             
             // 过期
-            if (BountyResultCode.ERROR_DAILY_EXPIRE.equals(packetResult.getCode())) {
-                result.addProperty("TagCode", "5205020502");
+            if (BountyResultCode.ERROR_DAILY_EXPIRE.equals(pageResult.getCode())) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5205020502");
                 return result;
             }
             
             // 达到上限20元
-            if (BountyResultCode.ERROR_DAILY_UPPER_LIMIT.equals(packetResult.getCode())) {
-                result.addProperty("TagCode", "5205020503");
+            if (BountyResultCode.ERROR_DAILY_UPPER_LIMIT.equals(pageResult.getCode())) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5205020503");
                 return result;
             }
             
             // 没有该等级红包
-            if (BountyResultCode.ERROR_DAILY_NO_LEVEL.equals(packetResult.getCode())) {
-                result.addProperty("TagCode", "5205020504");
+            if (BountyResultCode.ERROR_DAILY_NO_LEVEL.equals(pageResult.getCode())) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5205020504");
                 return result;
             }
             
             // 正在倒计时，不允许开启红包
-            if (BountyResultCode.ERROR_DAILY_TIMING.equals(packetResult.getCode())) {
-                result.addProperty("TagCode", "5205020505");
+            if (BountyResultCode.ERROR_DAILY_TIMING.equals(pageResult.getCode())) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5205020505");
                 return result;
             }
             
@@ -422,15 +424,15 @@ public class BountyFunctions {
                 if (packet.getRemainingTime() != null) {
                     result.addProperty("remainingTime", packet.getRemainingTime());
                 }
-                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
                 return result;
             }else {
-                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
                 return result;
             }
         } catch (Exception e) {
             LOGGER.error(String.format("Module error bountyService.openDailyRedPacket(%s, %s, %s)", userId, redPacketLevel, redPacketDate), e);
-            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
             return result;
         }
     }
@@ -454,18 +456,18 @@ public class BountyFunctions {
         
         // Token 校验
         if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_NOT_CHECKED);
             return result;
         }
 
         int userId;
         try {
-            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
             return result;
         } catch (Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
         
@@ -473,30 +475,32 @@ public class BountyFunctions {
             BountyService bountyService = (BountyService) MelotBeanFactory.getBean("bountyService");
             Result<UserBounty> pageResult = bountyService.getUserBounty(userId);
             if (pageResult == null) {
-                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
                 return result;
             }
             
             if (BountyResultCode.ERROR_SQL.equals(pageResult.getCode())) {
-                result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.EXECSQL_EXCEPTION);
                 return result;
             }
             
             if (pageResult.getCode().equals(BountyResultCode.SUCCESS)) {
+
                 UserBounty userBounty = pageResult.getData();
                 result.addProperty("bountyAmount", userBounty.getAmount());
                 result.addProperty("totalBountyAmount", userBounty.getTotalAmount());
                 result.addProperty("newUserCount", userBounty.getNewUserCount());
                 result.addProperty("cashUserCount", userBounty.getRechargeCount());
                 result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+
                 return result;
             }else {
-                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
                 return result;
             }
         } catch (Exception e) {
             LOGGER.error(String.format("Module error bountyService.getUserBounty(%s)", userId), e);
-            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
             return result;
         }
     }
@@ -515,7 +519,7 @@ public class BountyFunctions {
         
         // Token 校验
         if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_NOT_CHECKED);
             return result;
         }
 
@@ -526,15 +530,15 @@ public class BountyFunctions {
         String dataMonth;
         
         try {
-            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
             dataMonth = CommonUtil.getJsonParamString(jsonObject, "dataMonth", DateUtil.formatDate(new Date(), "yyyy-MM"), null, 7, 7);
-            start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, null, 0, Integer.MAX_VALUE);
-            offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 20, null, 1, 30);
+            start = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.START, 0, null, 0, Integer.MAX_VALUE);
+            offset = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.OFFSET, 20, null, 1, 30);
         } catch (CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
             return result;
         } catch (Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
         
@@ -542,24 +546,25 @@ public class BountyFunctions {
             BountyService bountyService = (BountyService) MelotBeanFactory.getBean("bountyService");
             Result<Page<UserBountyHist>> pageResult = bountyService.getUserBountyHists(userId, dataMonth, start, offset);
             if (pageResult == null) {
-                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
                 return result;
             }
             
             if (BountyResultCode.ERROR_SQL.equals(pageResult.getCode())) {
-                result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.EXECSQL_EXCEPTION);
                 return result;
             }
             
             if (pageResult.getCode().equals(BountyResultCode.SUCCESS)) {
                 Page<UserBountyHist> page = pageResult.getData();
-                result.addProperty("count", page.getCount());
+                result.addProperty(ParameterKeys.COUNT, packet.getCount());
+
                 JsonArray bountyHists = new JsonArray();
                 if (page.getList() != null) {
                     for (UserBountyHist userBountyHist : page.getList()) {
                         JsonObject histJson = new JsonObject();
-                        histJson.addProperty("amount", userBountyHist.getAmount());
-                        histJson.addProperty("type", userBountyHist.getBountyType());
+                        histJson.addProperty(ParameterKeys.AMOUNT, userBountyHist.getAmount());
+                        histJson.addProperty(ParameterKeys.TYPE, userBountyHist.getBountyType());
                         histJson.addProperty("addTime", DateUtil.formatDateTime(userBountyHist.getOpenTime(), null));
                         
                         bountyHists.add(histJson);
@@ -567,15 +572,15 @@ public class BountyFunctions {
                 }
                 
                 result.add("bountyHists", bountyHists);
-                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
                 return result;
             }else {
-                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
                 return result;
             }
         } catch (Exception e) {
             LOGGER.error(String.format("Module error bountyService.getUserBounty(%s)", userId), e);
-            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
             return result;
         }
     }
