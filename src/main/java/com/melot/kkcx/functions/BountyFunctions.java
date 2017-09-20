@@ -304,13 +304,13 @@ public class BountyFunctions {
         try {
             BountyService bountyService = (BountyService) MelotBeanFactory.getBean("bountyService");
 
-            Result<Boolean> pageResult = bountyService.openNonDailyRedPacket(userId, redPacketId);
-            if (pageResult == null) {
+            Result<Boolean> successResult = bountyService.openNonDailyRedPacket(userId, redPacketId);
+            if (successResult == null) {
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
                 return result;
             }
             
-            if (BountyResultCode.ERROR_SQL.equals(pageResult.getCode())) {
+            if (BountyResultCode.ERROR_SQL.equals(successResult.getCode())) {
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.EXECSQL_EXCEPTION);
                 return result;
             }
@@ -383,37 +383,37 @@ public class BountyFunctions {
         try {
             BountyService bountyService = (BountyService) MelotBeanFactory.getBean("bountyService");
 
-            Result<DailyRedPacket> pageResult = bountyService.openDailyRedPacket(userId, redPacketLevel, DateUtil.parseDateStringToDate(redPacketDate, null));
-            if (pageResult == null) {
+            Result<DailyRedPacket> packetResult = bountyService.openDailyRedPacket(userId, redPacketLevel, DateUtil.parseDateStringToDate(redPacketDate, null));
+            if (packetResult == null) {
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
                 return result;
             }
             
-            if (BountyResultCode.ERROR_SQL.equals(pageResult.getCode())) {
+            if (BountyResultCode.ERROR_SQL.equals(packetResult.getCode())) {
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.EXECSQL_EXCEPTION);
                 return result;
             }
             
             // 过期
-            if (BountyResultCode.ERROR_DAILY_EXPIRE.equals(pageResult.getCode())) {
+            if (BountyResultCode.ERROR_DAILY_EXPIRE.equals(packetResult.getCode())) {
                 result.addProperty(ParameterKeys.TAG_CODE, "5205020502");
                 return result;
             }
             
             // 达到上限20元
-            if (BountyResultCode.ERROR_DAILY_UPPER_LIMIT.equals(pageResult.getCode())) {
+            if (BountyResultCode.ERROR_DAILY_UPPER_LIMIT.equals(packetResult.getCode())) {
                 result.addProperty(ParameterKeys.TAG_CODE, "5205020503");
                 return result;
             }
             
             // 没有该等级红包
-            if (BountyResultCode.ERROR_DAILY_NO_LEVEL.equals(pageResult.getCode())) {
+            if (BountyResultCode.ERROR_DAILY_NO_LEVEL.equals(packetResult.getCode())) {
                 result.addProperty(ParameterKeys.TAG_CODE, "5205020504");
                 return result;
             }
             
             // 正在倒计时，不允许开启红包
-            if (BountyResultCode.ERROR_DAILY_TIMING.equals(pageResult.getCode())) {
+            if (BountyResultCode.ERROR_DAILY_TIMING.equals(packetResult.getCode())) {
                 result.addProperty(ParameterKeys.TAG_CODE, "5205020505");
                 return result;
             }
@@ -473,20 +473,20 @@ public class BountyFunctions {
         
         try {
             BountyService bountyService = (BountyService) MelotBeanFactory.getBean("bountyService");
-            Result<UserBounty> pageResult = bountyService.getUserBounty(userId);
-            if (pageResult == null) {
+            Result<UserBounty> bountyResult = bountyService.getUserBounty(userId);
+            if (bountyResult == null) {
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
                 return result;
             }
             
-            if (BountyResultCode.ERROR_SQL.equals(pageResult.getCode())) {
+            if (BountyResultCode.ERROR_SQL.equals(bountyResult.getCode())) {
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.EXECSQL_EXCEPTION);
                 return result;
             }
             
-            if (pageResult.getCode().equals(BountyResultCode.SUCCESS)) {
+            if (bountyResult.getCode().equals(BountyResultCode.SUCCESS)) {
 
-                UserBounty userBounty = pageResult.getData();
+                UserBounty userBounty = bountyResult.getData();
                 result.addProperty("bountyAmount", userBounty.getAmount());
                 result.addProperty("totalBountyAmount", userBounty.getTotalAmount());
                 result.addProperty("newUserCount", userBounty.getNewUserCount());
@@ -557,7 +557,7 @@ public class BountyFunctions {
             
             if (pageResult.getCode().equals(BountyResultCode.SUCCESS)) {
                 Page<UserBountyHist> page = pageResult.getData();
-                result.addProperty(ParameterKeys.COUNT, packet.getCount());
+                result.addProperty(ParameterKeys.COUNT, page.getCount());
 
                 JsonArray bountyHists = new JsonArray();
                 if (page.getList() != null) {
