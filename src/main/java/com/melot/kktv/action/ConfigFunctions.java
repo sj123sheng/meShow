@@ -24,7 +24,9 @@ import com.melot.sdk.core.util.MelotBeanFactory;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Title: ConfigFunctions
@@ -41,6 +43,8 @@ public class ConfigFunctions {
     private static Logger logger = Logger.getLogger(ConfigFunctions.class);
     
     private static final String KEY = "YdsSH&@#Uyh";
+
+    private static final String SPLIT = ",";
 
     /**
      * 50001101
@@ -416,6 +420,68 @@ public class ConfigFunctions {
     }
     
     /**
+     * 获取声网相关信息V2【50001112】
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getAgoraInfoV2(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        String roomIds;
+        int roomSource;
+        String sign;
+        try {
+            roomIds = CommonUtil.getJsonParamString(jsonObject, "roomIds", null, TagCodeEnum.PARAMETER_PARSE_ERROR, 0, Integer.MAX_VALUE);
+            roomSource = CommonUtil.getJsonParamInt(jsonObject, "roomSource", 0, TagCodeEnum.PARAMETER_PARSE_ERROR, 1, Integer.MAX_VALUE);
+            sign = CommonUtil.getJsonParamString(jsonObject, "sign", null, TagCodeEnum.PARAMETER_PARSE_ERROR, 0, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        // 校验参数
+        if (!checkSign(roomIds, roomSource, sign)) {
+            result.addProperty("TagCode", "5110901");
+            return result;
+        }
+        try {
+            ConfigInfoService configInfoService = MelotBeanFactory.getBean("configInfoService", ConfigInfoService.class);
+            Set<Integer> roomIdSets = StringToInt(roomIds.trim().split(SPLIT));
+            Result<AgoraInfo> agoraInfoResult = configInfoService.getAgoraInfoV2(roomIdSets, roomSource);
+            if (agoraInfoResult == null || agoraInfoResult.getCode() == null) {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            if (ResultCode.SUCCESS.equals(agoraInfoResult.getCode())) {
+                AgoraInfo info = agoraInfoResult.getData();
+                result.addProperty("appId", info.getAppId());
+                result.addProperty("channelId", info.getChannelId());
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                return result;
+            }else {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+        } catch (Exception e) {
+            logger.error("Module Error ConfigInfoService.getAgoraInfo()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            return result;
+        }
+    }
+
+    public Set<Integer> StringToInt(String[] arrs){
+        Set<Integer> sets = new HashSet<>();
+        for(int i=0;i<arrs.length;i++){
+            sets.add(Integer.parseInt(arrs[i]));
+        }
+        return sets;
+    }
+    
+    /**
      * VR主播获取grammarId信息(50001111)
      * @param jsonObject
      * @param checkTag
@@ -466,6 +532,27 @@ public class ConfigFunctions {
         builder.append(KEY);
         builder.append("roomId=");
         builder.append(roomId);
+        builder.append("&roomSource=");
+        builder.append(roomSource);
+        builder.append(KEY);
+        
+        String param = builder.toString();
+        String signTemp = CommonUtil.md5(param);
+        if (signTemp.equals(sign)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 校验参数
+     * @return
+     */
+    private boolean checkSign(String roomIds, int roomSource, String sign) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(KEY);
+        builder.append("roomIds=");
+        builder.append(roomIds);
         builder.append("&roomSource=");
         builder.append(roomSource);
         builder.append(KEY);
