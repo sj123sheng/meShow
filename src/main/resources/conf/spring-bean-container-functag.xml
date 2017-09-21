@@ -2112,6 +2112,11 @@
 		<constructor-arg name="t" ref="kkHallFunction" />
 		<constructor-arg name="methodName" value="getHDRoomList" />
 	</bean>
+	<!-- 获取新版KK大厅高清房接口 -->
+	<bean id="51070101" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kkHallFunction" />
+		<constructor-arg name="methodName" value="getV2HDRoomList" />
+	</bean>
 	<!-- 获取王牌主播 -->
 	<bean id="55000006" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="kkHallFunction" />
