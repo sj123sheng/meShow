@@ -479,25 +479,4 @@ public class ConfigFunctions {
         }
         return false;
     }
-
-    /**
-     * 校验参数
-     * @return
-     */
-    private boolean checkSign(String roomIds, int roomSource, String sign) {
-        StringBuilder builder = new StringBuilder();
-        builder.append(KEY);
-        builder.append("roomIds=");
-        builder.append(roomIds);
-        builder.append("&roomSource=");
-        builder.append(roomSource);
-        builder.append(KEY);
-        
-        String param = builder.toString();
-        String signTemp = CommonUtil.md5(param);
-        if (signTemp.equals(sign)) {
-            return true;
-        }
-        return false;
-    }
 }
