@@ -24,9 +24,8 @@ import com.melot.sdk.core.util.MelotBeanFactory;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Title: ConfigFunctions
@@ -450,7 +449,7 @@ public class ConfigFunctions {
         }
         try {
             ConfigInfoService configInfoService = MelotBeanFactory.getBean("configInfoService", ConfigInfoService.class);
-            Set<Integer> roomIdSets = StringToInt(roomIds.trim().split(SPLIT));
+            TreeSet<Integer> roomIdSets = StringToInt(roomIds.trim().split(SPLIT));
             Result<AgoraInfo> agoraInfoResult = configInfoService.getAgoraInfoV2(roomIdSets, roomSource);
             if (agoraInfoResult == null || agoraInfoResult.getCode() == null) {
                 result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
@@ -473,8 +472,8 @@ public class ConfigFunctions {
         }
     }
 
-    public Set<Integer> StringToInt(String[] arrs){
-        Set<Integer> sets = new HashSet<>();
+    public TreeSet<Integer> StringToInt(String[] arrs){
+        TreeSet<Integer> sets = new TreeSet<>();
         for(int i=0;i<arrs.length;i++){
             sets.add(Integer.parseInt(arrs[i]));
         }
