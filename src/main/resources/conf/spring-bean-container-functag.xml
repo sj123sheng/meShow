@@ -2436,12 +2436,6 @@
 		<constructor-arg name="t" ref="configFunctions" />
 		<constructor-arg name="methodName" value="getAgoraInfo" />
 	</bean>
-
-    <!-- 获取声网相关信息V2 多个房间获取同一个声网appId以及channelId-->
-    <bean id="50001112" class="com.melot.sdk.core.function.GenericFunction">
-        <constructor-arg name="t" ref="configFunctions" />
-        <constructor-arg name="methodName" value="getAgoraInfoV2" />
-    </bean>
 	
 	<!-- 校验1v1视频大厅是否显示活动bar -->
 	<bean id="50001110" class="com.melot.sdk.core.function.GenericFunction">
