@@ -163,6 +163,42 @@ public class TagCodeEnum {
 
     /** 同一身份证 直播主播和唱响主播不能共存 */
     public static final String USER_IN_GAME_KKCX_FORBID = "30001034";
+
+    /** 参数 uuid 缺失 */
+    public static final String UUID_MISSING = "30001035";
+
+    /** 参数 unionid 缺失 */
+    public static final String UNIONID_MISSING = "30001036";
+
+    /** 参数 unionid 错误 */
+    public static final String UNIONID_ERROR = "30001037";
+
+    /** 未认证手机号 */
+    public static final String NON_IDENTITY_PHONE = "30001038";
+
+    /** 未绑定微信 */
+    public static final String NON_BIND_WECHAT = "30001039";
+
+    /** 参数 amount 缺失 */
+    public static final String AMOUNT_MISSING = "30001040";
+
+    /** 微信公众号支付通信标识错误 */
+    public static final String WECAHTPUBLIC_RETURN_ERR = "30001041";
+    
+    /** 微信公众号支付交易标识错误 */
+    public static final String WECAHTPUBLIC_RESULT_ERR = "30001042";
+    
+    /** 微信公众号余额不足 */
+    public static final String WECAHTPUBLIC_NOTENOUGH_ERR = "30001043";
+    
+    /** 发放失败，此请求可能存在风险，已被微信拦截 */
+    public static final String WECAHTPUBLIC_NO_AUTH_ERR = "30001044";
+    
+    /** 该用户今日操作次数超过限制 */
+    public static final String WECAHTPUBLIC_SENDNUM_LIMIT_ERR = "30001045";
+    
+    /** 微信提现接口关闭 */
+    public static final String WECAHTPUBLIC_CLOSED = "30001046";
 	
 	/** 模块服务返回空数据 */
 	public static final String MODULE_RETURN_NULL = "10000000";

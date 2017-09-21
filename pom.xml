@@ -557,10 +557,11 @@
             <version>20170824171455</version>
         </dependency>
 
+		<!-- 奖励金模块 -->
         <dependency>
 		  <groupId>com.melot.kk.module</groupId>
 		  <artifactId>kk-bounty-api</artifactId>
-		  <version>0.0.1-SNAPSHOT</version>
+		  <version>0.0.1</version>
 		</dependency>
 	</dependencies>
  	
