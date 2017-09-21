@@ -504,7 +504,7 @@
         <dependency>
             <groupId>com.melot.module.driver.msgbuilder</groupId>
             <artifactId>kk-module-msgbuilder</artifactId>
-            <version>1.2.4-SNAPSHOT</version>
+            <version>1.2.2-SNAPSHOT</version>
 		</dependency>
 		<dependency>
             <groupId>com.melot</groupId>
@@ -557,10 +557,11 @@
             <version>20170824171455</version>
         </dependency>
 
+		<!-- 奖励金模块 -->
         <dependency>
 		  <groupId>com.melot.kk.module</groupId>
 		  <artifactId>kk-bounty-api</artifactId>
-		  <version>0.0.1-SNAPSHOT</version>
+		  <version>0.0.1</version>
 		</dependency>
 	</dependencies>
  	
