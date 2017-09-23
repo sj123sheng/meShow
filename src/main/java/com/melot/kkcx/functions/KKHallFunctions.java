@@ -1,5 +1,19 @@
 package com.melot.kkcx.functions;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.log4j.Logger;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -16,14 +30,16 @@ import com.melot.kkcore.relation.service.ActorRelationService;
 import com.melot.kkcx.service.RoomService;
 import com.melot.kkcx.transform.RoomTF;
 import com.melot.kktv.service.UserRelationService;
-import com.melot.kktv.util.*;
+import com.melot.kktv.util.AppIdEnum;
+import com.melot.kktv.util.CityUtil;
+import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.ConfigHelper;
+import com.melot.kktv.util.PlatformEnum;
+import com.melot.kktv.util.StringUtil;
+import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.sdk.core.util.MelotBeanFactory;
-import org.apache.log4j.Logger;
-
-import javax.servlet.http.HttpServletRequest;
-import java.util.*;
 
 /**
  * Title: HallFunctions
@@ -641,6 +657,94 @@ public class KKHallFunctions {
                     }
                 }
                 result.add("posterList", posterArray);
+            }
+
+            result.add("roomList", roomArray);
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+        } else {
+            result.addProperty("TagCode", TagCodeEnum.FAIL_TO_CALL_API_MENU_MODULE);
+        }
+
+        return result;
+    }
+    
+    /**
+     * 获取新版高清房（51070101）
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getV2HDRoomList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        @SuppressWarnings("unused")
+        int platform, appId;
+        try {
+            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, TagCodeEnum.PLATFORM_MISSING, 1, Integer.MAX_VALUE);
+            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        // 获取HD主播
+        SysMenu sysMenu = null;
+        FirstPageHandler firstPageHandler = null;
+        try {
+            firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
+            sysMenu = firstPageHandler.getPartList(486, null, null, 0, 9);
+        } catch (Exception e) {
+            logger.error("Fail to call firstPageHandler.getPartList, cataId: 486", e);
+        }
+
+        if (sysMenu != null) {
+            if (sysMenu.getTitleName() != null) {
+                result.addProperty("titleName", sysMenu.getTitleName());
+            }
+            String subTitle = sysMenu.getSubTitle();
+            int roomTotal = 0;
+            if (sysMenu.getLiveTotal() != null) {
+                result.addProperty("liveTotal", sysMenu.getLiveTotal());
+            }
+            if (sysMenu.getRoomCount() != null) {
+                roomTotal = sysMenu.getRoomCount().intValue();
+            } else {
+                roomTotal = 0;
+            }
+            if (subTitle != null) {
+                result.addProperty("subTitle", subTitle);
+            }
+            result.addProperty("roomTotal", roomTotal);
+
+            JsonArray roomArray = new JsonArray();
+            List<RoomInfo> roomList = sysMenu.getRooms();
+            List<Integer> hdRoomIdList = new ArrayList<>();
+            if (roomList != null) {
+                for (RoomInfo roomInfo : roomList) {
+                    roomArray.add(RoomTF.roomInfoToJson(roomInfo, platform));
+                    hdRoomIdList.add(roomInfo.getRoomId());
+                }
+            }
+
+            // 高清房数据不足9条，则用热门主播补充
+            if (roomArray.size() < 9) {
+                roomList = firstPageHandler.getHotRooms(1, -1, 0, 9);
+                if (roomList != null) {
+                    for (RoomInfo roomInfo : roomList) {
+                        if (hdRoomIdList.size() > 0 && hdRoomIdList.contains(roomInfo.getRoomId())) {
+                            continue;
+                        }
+                        roomArray.add(RoomTF.roomInfoToJson(roomInfo, platform));
+                        if (roomArray.size() >= 9) {
+                            break;
+                        }
+                    }
+                }
             }
 
             result.add("roomList", roomArray);

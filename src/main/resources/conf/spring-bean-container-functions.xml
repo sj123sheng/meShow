@@ -160,5 +160,10 @@
 
     <!-- 主播代言团相关接口 -->
     <bean id="actorKKTVFunction" class="com.melot.kktv.action.ActorFunction" />
-	
+
+    <!-- KK 奖励金相关接口 -->
+    <bean id="bountyFunctions" class="com.melot.kkcx.functions.BountyFunctions" />
+    
+    <!-- 微信提现相关接口 -->
+    <bean id="wechatCashFunctions" class="com.melot.kkcx.functions.WechatCashFunctions" />
 </beans>

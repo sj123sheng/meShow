@@ -1,17 +1,5 @@
 package com.melot.kktv.action;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.log4j.Logger;
-
 import com.chinacreator.videoalliance.util.ChinaUnicomEnum;
 import com.chinacreator.videoalliance.util.DesUtil;
 import com.dianping.cat.Cat;
@@ -24,16 +12,13 @@ import com.google.gson.reflect.TypeToken;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.blacklist.service.BlacklistService;
 import com.melot.content.config.apply.service.ApplyActorService;
-import com.melot.content.config.domain.ApplyActor;
-import com.melot.content.config.domain.BrokerageFirmInfo;
-import com.melot.content.config.domain.GalleryInfo;
-import com.melot.content.config.domain.GalleryOrderRecord;
-import com.melot.content.config.domain.RecordProcessedRecord;
+import com.melot.content.config.domain.*;
 import com.melot.content.config.facepack.service.GalleryInfoService;
 import com.melot.content.config.facepack.service.GalleryOrderRecordService;
 import com.melot.content.config.live.upload.impl.YouPaiService;
 import com.melot.content.config.report.service.RecordProcessedRecordService;
 import com.melot.content.config.utils.Constants;
+import com.melot.content.config.utils.VerifyTypeEnum;
 import com.melot.family.driver.domain.FamilyInfo;
 import com.melot.kk.module.report.dbo.ReportFlowRecord;
 import com.melot.kk.module.report.service.ReportFlowService;
@@ -54,18 +39,8 @@ import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.service.ConsumeService;
 import com.melot.kktv.service.GeneralService;
 import com.melot.kktv.service.UserService;
-import com.melot.kktv.util.AppChannelEnum;
-import com.melot.kktv.util.AppIdEnum;
-import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.*;
 import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.Constant;
-import com.melot.kktv.util.DBEnum;
-import com.melot.kktv.util.DateUtil;
-import com.melot.kktv.util.PlatformEnum;
-import com.melot.kktv.util.SecurityFunctions;
-import com.melot.kktv.util.StringUtil;
-import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.confdynamic.SystemConfig;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
@@ -74,6 +49,11 @@ import com.melot.module.packagegift.driver.service.VipService;
 import com.melot.module.packagegift.util.GiftPackageEnum;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import com.melot.stream.driver.service.LiveStreamConfigService;
+import org.apache.log4j.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+import java.sql.SQLException;
+import java.util.*;
 
 /**
  * 其他相关的接口类
@@ -912,7 +892,7 @@ public class OtherFunctions {
 		ApplyActor applyActor = null;
 		try {
 			ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
-			applyActor = applyActorService.getApplyActorByActorId(userId);
+			applyActor = applyActorService.getApplyActorByActorIdV2(userId);
 		} catch (Exception e) {
 			logger.error("Fail to call ApplyActorService.getApplyActorByActorId ", e);
 			result.addProperty("TagCode", TagCodeEnum.FAIL_TO_CALL_API_CONTENT_MODULE);
@@ -1062,6 +1042,9 @@ public class OtherFunctions {
 			if (applyActor.getUpdateTime() != null) {
 				result.addProperty("updateTime", applyActor.getUpdateTime().getTime());
 			}
+
+			// 实名认证方式返回 默认 1-巡管认证
+            result.addProperty("verifyType", applyActor.getVerifyType() == null ? VerifyTypeEnum.XG_VERIFY.getId() : applyActor.getVerifyType());
 			
 			result.addProperty("status", status);
 			result.addProperty("TagCode", TagCodeEnum.SUCCESS);

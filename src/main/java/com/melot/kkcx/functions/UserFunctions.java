@@ -697,12 +697,11 @@ public class UserFunctions {
                 || openPlatform == LoginTypeEnum.FACEBOOK)
                 && sessionId == null) {
             //老版本qq和微博不传session,过渡:兼容不做验证  2016-1-13 cj test
-
-		    
 		    //兼容下客户端不传sessionId时,unionId传"(null)"
 		    if (openPlatform == LoginTypeEnum.QQ) {
 		        unionid = null;
 		    }
+
 		    if (openPlatform == LoginTypeEnum.FACEBOOK && unionid != null) {
                 com.melot.kkcore.account.service.AccountService accountService = (com.melot.kkcore.account.service.AccountService) MelotBeanFactory.getBean("kkAccountService");
                 String[] uuidArr = unionid.split(",");

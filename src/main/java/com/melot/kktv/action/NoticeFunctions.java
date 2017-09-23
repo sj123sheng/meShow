@@ -134,7 +134,7 @@ public class NoticeFunctions {
                 }
             } else {
                 // 返回公告列表
-                PageNoticeInfo pageNoticeInfo = noticeService.getNoticeInfoByCataId(cataId, appId, pageNum, pageCount);
+                PageNoticeInfo pageNoticeInfo = noticeService.getNoticeInfoByCataId(cataId, appId, null, pageNum, pageCount);
                 JsonArray jsonArray = new JsonArray();
                 if (pageNoticeInfo != null && pageNoticeInfo.getList() != null && pageNoticeInfo.getList().size() > 0) {
                     for (NoticeInfo temp : pageNoticeInfo.getList()) {
@@ -175,11 +175,12 @@ public class NoticeFunctions {
     public JsonObject getNoticeList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
         
-        int cataId, pageNum, pageCount;
+        int cataId, pageNum, pageCount, locationType;
         String appId;
         try {
             cataId = CommonUtil.getJsonParamInt(jsonObject, "cataId", 0, TagCodeEnum.CATAID_MISSING, 1, Integer.MAX_VALUE);
             appId = CommonUtil.getJsonParamString(jsonObject, "a", null, TagCodeEnum.APPID_MISSING, 0, 32);
+            locationType = CommonUtil.getJsonParamInt(jsonObject, "locationType", 0, null, 1, Integer.MAX_VALUE);
             pageNum = CommonUtil.getJsonParamInt(jsonObject, "pageNum", 1, null, 1, Integer.MAX_VALUE);
             pageCount = CommonUtil.getJsonParamInt(jsonObject, "pageCount", 10, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
@@ -193,7 +194,7 @@ public class NoticeFunctions {
         JsonArray jsonArray = new JsonArray();
         try {
             NoticeService noticeService = (NoticeService) MelotBeanFactory.getBean("noticeService");
-            PageNoticeInfo pageNoticeInfo = noticeService.getNoticeInfoByCataId(cataId, appId, pageNum, pageCount);
+            PageNoticeInfo pageNoticeInfo = noticeService.getNoticeInfoByCataId(cataId, appId, locationType == 0 ? null : locationType, pageNum, pageCount);
             ResNoticeCatalog resNoticeCatalog = noticeService.getNoticeCatalogAndParent(cataId);
             if (resNoticeCatalog != null) {
                 result.addProperty("cataName", resNoticeCatalog.getCataName());
