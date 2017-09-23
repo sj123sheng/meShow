@@ -2584,6 +2584,9 @@
 		<constructor-arg name="t" ref="bountyFunctions" />
 		<constructor-arg name="methodName" value="getBountyHistList" />
 	</bean>
-    <!-- KK 奖励金相关接口 -->
+    <bean id="52050208" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="wechatCashFunctions" />
+		<constructor-arg name="methodName" value="cashBounty" />
+	</bean>
 	
 </beans>
