@@ -129,7 +129,7 @@ public class WechatCashFunctions {
             userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
             unionId = CommonUtil.getJsonParamString(jsonObject, ParameterKeys.UNIONID, null, TagCodeEnum.UNIONID_MISSING, 1, Integer.MAX_VALUE);
             uuid = CommonUtil.getJsonParamString(jsonObject, ParameterKeys.UUID, null, TagCodeEnum.UUID_MISSING, 1, Integer.MAX_VALUE);
-            amount = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.AMOUNT, 0, TagCodeEnum.AMOUNT_MISSING, 1, 200);
+            amount = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.AMOUNT, 0, TagCodeEnum.AMOUNT_MISSING, 1, 20000);
             platform = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.PLATFORM, 0, TagCodeEnum.PLATFORM_MISSING, 1, Integer.MAX_VALUE);
             
             // 判断是否满足最低提现要求
