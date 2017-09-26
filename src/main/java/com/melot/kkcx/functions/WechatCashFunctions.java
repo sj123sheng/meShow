@@ -25,6 +25,7 @@ import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kktv.service.GeneralService;
 import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.LoginTypeEnum;
 import com.melot.kktv.util.ParameterKeys;
 import com.melot.kktv.util.SecurityFunctions;
 import com.melot.kktv.util.TagCodeEnum;
@@ -141,8 +142,20 @@ public class WechatCashFunctions {
             return result;
         }
         
-        // TODO 判断 unionId 是否正确
-
+        // 判断 unionId 是否正确
+        try {
+            AccountService accountService = (AccountService)MelotBeanFactory.getBean("kkAccountService");
+            int tempUserId = accountService.isUnionIdValid(unionId, LoginTypeEnum.WEIXIN);
+            if (tempUserId != userId) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.UNIONID_ERROR);
+                return result;
+            }
+        } catch (Exception e) {
+            logger.error(String.format("Module Error: accountService.isUnionIdValid(%s, %s)", unionId, LoginTypeEnum.WEIXIN), e);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
+            return result;
+        }
+        
         // 调用奖励金模块提现发红包
         String clientIP = GeneralService.getIpAddr(request, 1, platform, null);
         try {
@@ -153,27 +166,10 @@ public class WechatCashFunctions {
                 return result;
             }
             
-            // 提现金额低于底线
-            if (BountyResultCode.ERROE_BOUNTY_BLL.equals(wechatWithdrawCash.getCode())) {
-                result.addProperty(ParameterKeys.TAG_CODE, "5205020801");
-                return result;
-            }
-            
-            // 提现超过日常额度限制
-            if (BountyResultCode.ERROE_BOUNTY_DAY_ABOVE_LIMIT.equals(wechatWithdrawCash.getCode())) {
-                result.addProperty(ParameterKeys.TAG_CODE, "5205020802");
-                return result;
-            }
-            
-            // 提现超过月额度限制
-            if (BountyResultCode.ERROE_BOUNTY_MONTH_ABOVE_LIMIT.equals(wechatWithdrawCash.getCode())) {
-                result.addProperty(ParameterKeys.TAG_CODE, "5205020803");
-                return result;
-            }
-            
-            // 奖励金金额不够
-            if (BountyResultCode.ERROE_BOUNTY_NOT_ENOUGH.equals(wechatWithdrawCash.getCode())) {
-                result.addProperty(ParameterKeys.TAG_CODE, "5205020804");
+            // 转换错误码
+            String apiErrorCode = moduleCodeToAPICode(wechatWithdrawCash.getCode());
+            if (apiErrorCode != null) {
+                result.addProperty(ParameterKeys.TAG_CODE, apiErrorCode);
                 return result;
             }
             
@@ -193,5 +189,59 @@ public class WechatCashFunctions {
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
             return result;
         }
+    }
+
+    /**
+     * 模块错误码转API错误码
+     * @param code
+     * @return
+     */
+    private String moduleCodeToAPICode(String code) {
+        // 提现金额低于底线
+        if (BountyResultCode.ERROE_BOUNTY_BLL.equals(code)) {
+            return "5205020801";
+        }
+        
+        // 提现超过日常额度限制
+        if (BountyResultCode.ERROE_BOUNTY_DAY_ABOVE_LIMIT.equals(code)) {
+            return "5205020802";
+        }
+        
+        // 提现超过月额度限制
+        if (BountyResultCode.ERROE_BOUNTY_MONTH_ABOVE_LIMIT.equals(code)) {
+            return "5205020803";
+        }
+        
+        // 奖励金金额不够
+        if (BountyResultCode.ERROE_BOUNTY_NOT_ENOUGH.equals(code)) {
+            return "5205020804";
+        }
+        
+        // 微信公众号余额不足 
+        if (BountyResultCode.ERROE_BOUNTY_WECHAT_NOTENOUGH.equals(code)) {
+            return TagCodeEnum.WECAHTPUBLIC_NOTENOUGH_ERR;
+        }
+        
+        // 发放失败，此请求可能存在风险，已被微信拦截
+        if (BountyResultCode.ERROE_BOUNTY_WECHAT_NO_AUTH.equals(code)) {
+            return TagCodeEnum.WECAHTPUBLIC_NO_AUTH_ERR;
+        }
+        
+        // 该用户今日操作次数超过限制 
+        if (BountyResultCode.ERROE_BOUNTY_WECHAT_SENDNUM_LIMIT.equals(code)) {
+            return TagCodeEnum.WECAHTPUBLIC_SENDNUM_LIMIT_ERR;
+        }
+        
+        // 与微信通信失败
+        if (BountyResultCode.ERROE_BOUNTY_SEND_FAILE.equals(code)) {
+            return TagCodeEnum.WECAHTPUBLIC_RESULT_ERR;
+        }
+        
+        // 与微信通信失败
+        if (BountyResultCode.ERROE_BOUNTY_SEND_FAILE.equals(code)) {
+            return TagCodeEnum.WECAHTPUBLIC_RESULT_ERR;
+        }
+        
+        return null;
     }
 }
