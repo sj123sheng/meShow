@@ -37,17 +37,8 @@ public class ConfigHelper {
 	private static String zkServices = "";
 	
 	private static String mediahttpdir = "";
-	private static String commonMongoIP = "";
-	private static String cacheMongoIP = "";
-	private static int commonMongoPort = 0;
-	private static int cacheMongoPort = 0;
-	private static int connectionsPerHost = 100;
-	private static int connectTimeout = 120000;
-	private static int threadsAllowedToBlockForConnectionMultiplier = 50;
 	private static String mfsURL = "";
 	private static String mcmURL = "";
-	private static String commonMongoIPPort = "";
-	private static String cacheMongoIPPort = "";
 
 	private static int vip0 = 0;
 	private static int vip0kickout = 0;
@@ -211,23 +202,9 @@ public class ConfigHelper {
 			
 			zkServices = root.getChildText("zkServices");
 			
-			commonMongoIP = root.getChildText("commonMongoIP");
-			cacheMongoIP = root.getChildText("cacheMongoIP");
-			String temp = root.getChildText("commonMongoPort");
-			if(temp != null && !temp.isEmpty())
-				commonMongoPort = Integer.parseInt(temp);
-			temp = root.getChildText("cacheMongoPort");
-			if(temp != null && !temp.isEmpty())
-				cacheMongoPort = Integer.parseInt(temp);			
-			connectionsPerHost = Integer.parseInt(root.getChildText("connectionsPerHost"));
-			connectTimeout = Integer.parseInt(root.getChildText("connectTimeout"));
-			threadsAllowedToBlockForConnectionMultiplier = Integer.parseInt(root.getChildText("threadsAllowedToBlockForConnectionMultiplier"));
 			mfsURL = root.getChildText("mfsURL");
 			mcmURL = root.getChildText("mcmURL");
 			
-			commonMongoIPPort = root.getChildText("commonMongoIPPort");
-			cacheMongoIPPort = root.getChildText("cacheMongoIPPort");
-
 			vip0 = Integer.parseInt(root.getChildText("vip0"));
 			vip0kickout = Integer.parseInt(root.getChildText("vip0kickout"));
 			vip0shutup = Integer.parseInt(root.getChildText("vip0shutup"));
@@ -418,14 +395,6 @@ public class ConfigHelper {
         ConfigHelper.appId = appId;
     }
 
-	public static String getCommonMongoIPPort() {
-		return commonMongoIPPort;
-	}
-
-	public static String getCacheMongoIPPort() {
-		return cacheMongoIPPort;
-	}
-
 	public static long getInitLastReadTime() {
 		return initLastReadTime;
 	}
@@ -480,62 +449,6 @@ public class ConfigHelper {
 
 	public static void setZkServices(String zkServices) {
 		ConfigHelper.zkServices = zkServices;
-	}
-
-	public static String getCommonMongoIP() {
-		return commonMongoIP;
-	}
-
-	public static void setCommonMongoIP(String commonMongoIP) {
-		ConfigHelper.commonMongoIP = commonMongoIP;
-	}
-
-	public static String getCacheMongoIP() {
-		return cacheMongoIP;
-	}
-
-	public static void setCacheMongoIP(String cacheMongoIP) {
-		ConfigHelper.cacheMongoIP = cacheMongoIP;
-	}
-	
-	public static int getCommonMongoPort() {
-		return commonMongoPort;
-	}
-
-	public static void setCommonMongoPort(int commonMongoPort) {
-		ConfigHelper.commonMongoPort = commonMongoPort;
-	}
-	
-	public static int getCacheMongoPort() {
-		return cacheMongoPort;
-	}
-
-	public static void setCacheMongoPort(int cacheMongoPort) {
-		ConfigHelper.cacheMongoPort = cacheMongoPort;
-	}
-
-	public static int getConnectionsPerHost() {
-		return connectionsPerHost;
-	}
-
-	public static void setConnectionsPerHost(int connectionsPerHost) {
-		ConfigHelper.connectionsPerHost = connectionsPerHost;
-	}
-
-	public static int getConnectTimeout() {
-		return connectTimeout;
-	}
-
-	public static void setConnectTimeout(int connectTimeout) {
-		ConfigHelper.connectTimeout = connectTimeout;
-	}
-
-	public static int getThreadsAllowedToBlockForConnectionMultiplier() {
-		return threadsAllowedToBlockForConnectionMultiplier;
-	}
-
-	public static void setThreadsAllowedToBlockForConnectionMultiplier(int threadsAllowedToBlockForConnectionMultiplier) {
-		ConfigHelper.threadsAllowedToBlockForConnectionMultiplier = threadsAllowedToBlockForConnectionMultiplier;
 	}
 
 	@Deprecated
@@ -1054,10 +967,6 @@ public class ConfigHelper {
 
 	public static void setChinaUnicomPortalid(String chinaUnicomPortalid) {
 		ConfigHelper.chinaUnicomPortalid = chinaUnicomPortalid;
-	}
-
-	public static void setCacheMongoIPPort(String cacheMongoIPPort) {
-		ConfigHelper.cacheMongoIPPort = cacheMongoIPPort;
 	}
 
 	public static String getVideoURL() {
