@@ -15,7 +15,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Logger;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.melot.kk.bounty.api.domain.base.BountyResultCode;
 import com.melot.kk.bounty.api.domain.base.Result;
@@ -23,7 +22,6 @@ import com.melot.kk.bounty.api.service.BountyService;
 import com.melot.kkcore.account.api.ResUserBoundAccount;
 import com.melot.kkcore.account.service.AccountService;
 import com.melot.kkcore.user.api.UserProfile;
-import com.melot.kkcore.user.api.UserRegistry;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kktv.service.GeneralService;
 import com.melot.kktv.util.CommonUtil;
@@ -93,7 +91,7 @@ public class WechatCashFunctions {
         }
 
         // 判断是否绑定微信
-        AccountService accountService = MelotBeanFactory.getBean("accountService", AccountService.class);
+        AccountService accountService = (AccountService)MelotBeanFactory.getBean("kkAccountService");
         ResUserBoundAccount resUserBoundAccount = accountService.getUserBoundAccount(userId);
         if (resUserBoundAccount == null || resUserBoundAccount.getWechatNickname() == null) {
             throw new CommonUtil.ErrorGetParameterException(TagCodeEnum.NON_BIND_WECHAT);
@@ -138,6 +136,7 @@ public class WechatCashFunctions {
             result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
             return result;
         } catch (Exception e) {
+            logger.error("param error:", e);
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
