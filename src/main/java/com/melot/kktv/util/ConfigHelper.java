@@ -104,7 +104,6 @@ public class ConfigHelper {
 	
 	private static int periodGiftRankingExpireTime = 0;
 
-	private static int periodFamilyMemberUpdateTime = 0;
 	private static int periodFamilyRoomRefreshExpireTime = 0;
 	private static int familyMatchCacheRefreshExpireTime = 0;
 	
@@ -302,7 +301,6 @@ public class ConfigHelper {
 			
 			periodGiftRankingExpireTime = Integer.parseInt(root.getChildText("periodGiftRankingExpireTime"));
 
-			periodFamilyMemberUpdateTime = Integer.parseInt(root.getChildText("periodFamilyMemberUpdateTime"));
 			periodFamilyRoomRefreshExpireTime = Integer.parseInt(root.getChildText("periodFamilyRoomRefreshExpireTime"));
 
 			webSecKey0 = root.getChildText("webseckey0").toCharArray();
@@ -831,14 +829,6 @@ public class ConfigHelper {
 
 	public static void setPeriodFamilyRoomRefreshExpireTime(int periodFamilyRoomRefreshExpireTime) {
 		ConfigHelper.periodFamilyRoomRefreshExpireTime = periodFamilyRoomRefreshExpireTime;
-	}
-
-	public static int getPeriodFamilyMemberUpdateTime() {
-		return periodFamilyMemberUpdateTime;
-	}
-
-	public static void setPeriodFamilyMemberUpdateTime(int periodFamilyMemberUpdateTime) {
-		ConfigHelper.periodFamilyMemberUpdateTime = periodFamilyMemberUpdateTime;
 	}
 
 	public static Set<String> getAllowedRegisterClientIp() {
