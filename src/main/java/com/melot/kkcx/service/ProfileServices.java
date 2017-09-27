@@ -389,6 +389,20 @@ public class ProfileServices {
         }
         return false;
     }
+    
+    public static int insertChangeUserName(int userId, String nickName, int state) {
+        int result = 0;
+        try {
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("userId", userId);
+            map.put("newName", nickName);
+            map.put("state", state);
+            result = (Integer) SqlMapClientHelper.getInstance(DB.MASTER).insert("Profile.insertChangeUserName", map);
+        } catch(Exception e) {
+            logger.error("ProfileServices.insertChangeUserName(userId:" + userId + "nickName:" + nickName + ") return exception.", e);
+        }
+        return result;
+    }
 	
 	public static int getPasswordSafetyRank(String ps) {
 		if (ps == null) {

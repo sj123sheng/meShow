@@ -10,6 +10,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.dianping.cat.Cat;
 import com.dianping.cat.message.Transaction;
@@ -57,6 +58,7 @@ import com.melot.kktv.model.WinLotteryRecord;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.MedalSource;
 import com.melot.kktv.redis.QQVipSource;
+import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.LiveVideoService;
 import com.melot.kktv.service.UserRelationService;
 import com.melot.kktv.util.AppChannelEnum;
@@ -95,6 +97,9 @@ public class ProfileFunctions {
 	
 	/** 日志记录对象 */
 	private static Logger logger = Logger.getLogger(ProfileFunctions.class);
+	
+	@Autowired
+    private ConfigService configService;
 
 	private LiveTypeSource liveTypeSource;
 
@@ -1088,13 +1093,14 @@ public class ProfileFunctions {
 	 * @return 更新结果
 	 */
 	public JsonObject updateUserInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+	    JsonObject result = new JsonObject();
+	    
 		// 该接口需要验证token,未验证的返回错误码
 		if (!checkTag) {
-			JsonObject result = new JsonObject();
 			result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
 			return result;
 		}
-
+		
 		// 获取参数
 		JsonElement userIdje = jsonObject.get("userId");
 		JsonElement nicknameje = jsonObject.get("nickname");
@@ -1111,12 +1117,10 @@ public class ProfileFunctions {
 			try {
 				userId = userIdje.getAsInt();
 			} catch (Exception e) {
-				JsonObject result = new JsonObject();
 				result.addProperty("TagCode", "05020002");
 				return result;
 			}
 		} else {
-			JsonObject result = new JsonObject();
 			result.addProperty("TagCode", "05020001");
 			return result;
 		}
@@ -1131,13 +1135,13 @@ public class ProfileFunctions {
 		String nickname = null;
 		Integer gender = null;
 		String introduce = null;
+		String tagCode = TagCodeEnum.SUCCESS;
 		if (nicknameje != null && !nicknameje.isJsonNull() && !nicknameje.getAsString().trim().isEmpty()) {
 			nickname = nicknameje.getAsString().trim();
 			// filter matchXSSTag,sensitive word,short url
 			if (CommonUtil.matchXSSTag(nickname)
 					||TextFilter.isShortUrl(nickname)
 					|| !TextFilter.checkSpecialUnicode(nickname) || GeneralService.hasSensitiveWords(userId, nickname)) {
-				JsonObject result = new JsonObject();
 				result.addProperty("TagCode", "05020004");
 				return result;
 			}
@@ -1160,13 +1164,11 @@ public class ProfileFunctions {
 		    }
 		    nickname = sb.toString();
 			mRoom.setNickname(nickname);
-			userMap.put(ProfileKeys.NICKNAME.key(), nickname);
 		}
 		if (genderje != null && !(genderje.isJsonNull() || genderje.getAsString().equals(""))) {
 			try {
 			    gender = genderje.getAsInt();
 			} catch (Exception e) {
-			    JsonObject result = new JsonObject();
 			    result.addProperty("TagCode", "05020003");
 			    return result;
 			}
@@ -1185,12 +1187,10 @@ public class ProfileFunctions {
 			    city = cityje.getAsInt();
 			    //无效的city信息
 			    if (!GeneralService.isValidCity(city)) {
-			    	JsonObject result = new JsonObject();
 				    result.addProperty("TagCode", "05020007");
 				    return result;
 				}
 			} catch (Exception e) {
-			    JsonObject result = new JsonObject();
 			    result.addProperty("TagCode", "05020007");
 			    return result;
 			}
@@ -1203,7 +1203,6 @@ public class ProfileFunctions {
 		if (signatureje != null && !signatureje.isJsonNull()) {
 			// matchXSSTag
 			if (CommonUtil.matchXSSTag(signatureje.getAsString())) {
-			    JsonObject result = new JsonObject();
 			    result.addProperty("TagCode", "05020008");
 			    return result;
 			}
@@ -1212,25 +1211,30 @@ public class ProfileFunctions {
 			userMap.put(ProfileKeys.SIGNATURE.key(), signature);
 			flag++;
 		}
-		if (introduceje != null && !introduceje.isJsonNull()) {
+		if (introduceje != null && !introduceje.isJsonNull() && !configService.getIsSpecialTime()) {
 			introduce = introduceje.getAsString();
 			introduce = GeneralService.replaceSensitiveWords(userId, introduce);
 			userMap.put("introduce", introduce);
 			flag++;
 		}
-		
-		JsonObject result = new JsonObject();
-		
 		if (nickname != null) {
-			if (UserService.checkNicknameRepeat(nickname, userId)) {
-				// 昵称重复
-				result.addProperty("TagCode", "05020102");
-				return result;
-			}
-			flag++;
-		}
-		
-		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            if (UserService.checkNicknameRepeat(nickname, userId)) {
+                // 昵称重复
+                result.addProperty("TagCode", "05020102");
+                return result;
+            } else {
+                if (configService.getIsSpecialTime()) {
+                    //特殊时期昵称修改需前置审核
+                    ProfileServices.insertChangeUserName(userId, nickname, 3);
+                    tagCode = TagCodeEnum.NICKNAME_PENDINGAUDIT;
+                } else {
+                    userMap.put(ProfileKeys.NICKNAME.key(), nickname);
+                    flag++;
+                }
+            }
+         }
+         
+		result.addProperty("TagCode", tagCode);
 		if (flag > 0) {
 		    int TagCode = com.melot.kktv.service.UserService.updateUserInfoV2(userId, userMap);
             if (TagCode != 0) {
@@ -1239,6 +1243,10 @@ public class ProfileFunctions {
                 return result;
             }
             
+            //非特殊时期插入昵称后置审核记录
+            if (!configService.getIsSpecialTime()) {
+                ProfileServices.insertChangeUserName(userId, nickname, 0);
+            }
             // 删除HotData缓存
             HotDataSource.del(userId + "");
             ProfileServices.updateRedisUserInfo(userId, null);
@@ -2439,6 +2447,12 @@ public class ProfileFunctions {
             result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
             return result;
         }
+    	
+    	//特殊时期接口暂停使用
+    	if (configService.getIsSpecialTime()) {
+    	    result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+            return result;
+    	}
         
         int userId = 0;
         String roomTheme = null;

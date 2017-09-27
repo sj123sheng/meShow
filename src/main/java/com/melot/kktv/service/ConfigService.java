@@ -30,6 +30,9 @@ public class ConfigService {
 
     private String goldMedalFamilyIds;
 
+    //是否特殊时期 
+    private boolean isSpecialTime;
+
     @DisconfFileItem(name = "challenger.family", associateField = "challengerFamily")
     public String getChallengerFamily() {
         return challengerFamily;
@@ -73,5 +76,14 @@ public class ConfigService {
 
     public void setGoldMedalFamilyIds(String goldMedalFamilyIds) {
         this.goldMedalFamilyIds = goldMedalFamilyIds;
+    }
+
+    @DisconfFileItem(name = "global.isSpecialTime", associateField = "isSpecialTime")
+    public boolean getIsSpecialTime() {
+        return isSpecialTime;
+    }
+
+    public void setIsSpecialTime(boolean isSpecialTime) {
+        this.isSpecialTime = isSpecialTime;
     }
 }

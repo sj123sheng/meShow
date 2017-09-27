@@ -714,6 +714,12 @@ public class FamilyAction {
 			return result;
 		}
 		
+		//特殊时期接口暂停使用
+        if (configService.getIsSpecialTime()) {
+            result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+            return result;
+        }
+		
 		// 定义使用的参数
 		int userId = 0;
 		int familyId = 0;
