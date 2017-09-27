@@ -340,4 +340,13 @@
 	{call
 		p_getUserBuyPropertiesList(?,?,?,?,?,?,?)}
 	</procedure>
+	
+	<!-- 插入修改昵称信息 -->
+    <insert id="insertChangeUserName" parameterClass="java.util.Map" >
+    	<selectKey keyProperty="histId" resultClass="java.lang.Integer">
+			select SEQ_RES_CHANGEUSERNAME.nextval as histid from dual
+		</selectKey>
+		insert into RES_CHANGEUSERNAME(histid, userid, newname, dtime, introduce, state)
+		values(#histId#, #userId#, #newName#, sysdate, #introduce#, #state#)
+    </insert>
 </sqlMap>

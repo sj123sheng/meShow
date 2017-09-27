@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.dianping.cat.Cat;
 import com.dianping.cat.message.Transaction;
@@ -24,9 +25,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.blacklist.service.BlacklistService;
-import com.melot.content.config.apply.service.ApplyActorService;
-import com.melot.content.config.domain.ApplyActor;
-import com.melot.family.driver.domain.FamilyInfo;
 import com.melot.kkcore.account.api.ExtendDataKeys;
 import com.melot.kkcore.account.api.ResLogin;
 import com.melot.kkcore.account.api.ResMobileGuestUser;
@@ -41,26 +39,20 @@ import com.melot.kkcore.user.api.UserStaticInfo;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.model.ActorLevel;
 import com.melot.kkcx.model.RichLevel;
-import com.melot.kkcx.model.StarInfo;
-import com.melot.kkcx.service.FamilyService;
 import com.melot.kkcx.service.GeneralService;
-import com.melot.kkcx.service.MessageBoxServices;
 import com.melot.kkcx.service.ProfileServices;
 import com.melot.kkcx.service.UserAssetServices;
-import com.melot.kkgame.domain.GameUserInfo;
 import com.melot.kktv.action.IndexFunctions;
 import com.melot.kktv.action.UserRelationFunctions;
 import com.melot.kktv.domain.SmsConfig;
-import com.melot.kktv.model.Family;
 import com.melot.kktv.model.MedalInfo;
 import com.melot.kktv.redis.AppStatsSource;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.MedalSource;
-import com.melot.kktv.redis.QQVipSource;
 import com.melot.kktv.redis.SmsSource;
 import com.melot.kktv.service.AccountService;
+import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.DataAcqService;
-import com.melot.kktv.service.LiveVideoService;
 import com.melot.kktv.service.UserRelationService;
 import com.melot.kktv.service.UserService;
 import com.melot.kktv.third.ThirdVerifyUtil;
@@ -88,12 +80,8 @@ import com.melot.module.medal.driver.domain.ConfMedal;
 import com.melot.module.medal.driver.domain.UserActivityMedal;
 import com.melot.module.medal.driver.service.ActivityMedalService;
 import com.melot.module.medal.driver.service.UserMedalService;
-import com.melot.module.packagegift.driver.domain.ResUserXman;
-import com.melot.module.packagegift.driver.domain.ResXman;
 import com.melot.module.packagegift.driver.service.VipService;
-import com.melot.module.packagegift.driver.service.XmanService;
 import com.melot.module.task.driver.service.TaskInterfaceService;
-import com.melot.opus.driver.enums.OpusCostantEnum;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import com.melot.sms.api.service.SmsService;
 
@@ -104,6 +92,9 @@ public class UserFunctions {
 	
 	/** 日志记录对象 */
 	private static Logger logger = Logger.getLogger(UserFunctions.class);
+	
+	@Autowired
+    private ConfigService configService;
 	
 	/**
 	 * 用户注册(10001002)
@@ -155,6 +146,10 @@ public class UserFunctions {
 					|| !TextFilter.checkSpecialUnicode(nickname)) {
 				result.addProperty("TagCode", "01020001");
 				return result;
+			}
+			//特殊时期，注册不传昵称
+			if (!StringUtil.strIsNull(nickname) && configService.getIsSpecialTime()) {
+			    nickname = null;
 			}
             platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, "01020003", PlatformEnum.ANDROID, PlatformEnum.IPAD);
             isSafe = CommonUtil.getJsonParamString(jsonObject, "isSafe", null, null, 0, Integer.MAX_VALUE);
@@ -641,6 +636,10 @@ public class UserFunctions {
 			roomFrom = CommonUtil.getJsonParamInt(jsonObject, "roomFrom", 0, null, 0, Integer.MAX_VALUE);
 			refRoomId = CommonUtil.getJsonParamInt(jsonObject, "refRoomId", 0, null, 0, Integer.MAX_VALUE);
 			gpsCityId = CommonUtil.getJsonParamInt(jsonObject, "city", 0, null, 0, Integer.MAX_VALUE);
+			//特殊时期注册不传昵称
+			if (configService.getIsSpecialTime()) {
+			    nickname = null;
+			}
 			if (!StringUtil.strIsNull(nickname)) {
 				nickname = nickname.trim();
 				// matchXSSTag

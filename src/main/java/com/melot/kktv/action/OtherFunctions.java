@@ -1,5 +1,18 @@
 package com.melot.kktv.action;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.chinacreator.videoalliance.util.ChinaUnicomEnum;
 import com.chinacreator.videoalliance.util.DesUtil;
 import com.dianping.cat.Cat;
@@ -12,7 +25,11 @@ import com.google.gson.reflect.TypeToken;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.blacklist.service.BlacklistService;
 import com.melot.content.config.apply.service.ApplyActorService;
-import com.melot.content.config.domain.*;
+import com.melot.content.config.domain.ApplyActor;
+import com.melot.content.config.domain.BrokerageFirmInfo;
+import com.melot.content.config.domain.GalleryInfo;
+import com.melot.content.config.domain.GalleryOrderRecord;
+import com.melot.content.config.domain.RecordProcessedRecord;
 import com.melot.content.config.facepack.service.GalleryInfoService;
 import com.melot.content.config.facepack.service.GalleryOrderRecordService;
 import com.melot.content.config.live.upload.impl.YouPaiService;
@@ -36,11 +53,22 @@ import com.melot.kkcx.service.RoomService;
 import com.melot.kkgame.redis.ActorInfoSource;
 import com.melot.kktv.model.ResCuSpOrder;
 import com.melot.kktv.redis.HotDataSource;
+import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.ConsumeService;
 import com.melot.kktv.service.GeneralService;
 import com.melot.kktv.service.UserService;
-import com.melot.kktv.util.*;
+import com.melot.kktv.util.AppChannelEnum;
+import com.melot.kktv.util.AppIdEnum;
+import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
+import com.melot.kktv.util.ConfigHelper;
+import com.melot.kktv.util.Constant;
+import com.melot.kktv.util.DBEnum;
+import com.melot.kktv.util.DateUtil;
+import com.melot.kktv.util.PlatformEnum;
+import com.melot.kktv.util.SecurityFunctions;
+import com.melot.kktv.util.StringUtil;
+import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.confdynamic.SystemConfig;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
@@ -49,11 +77,6 @@ import com.melot.module.packagegift.driver.service.VipService;
 import com.melot.module.packagegift.util.GiftPackageEnum;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import com.melot.stream.driver.service.LiveStreamConfigService;
-import org.apache.log4j.Logger;
-
-import javax.servlet.http.HttpServletRequest;
-import java.sql.SQLException;
-import java.util.*;
 
 /**
  * 其他相关的接口类
@@ -72,6 +95,9 @@ public class OtherFunctions {
     private static final int SPEAK_STATE_AUTO_COMMIT = 1;
     
     private static final int SEND_LOUDER_SPEAKER_COST = 10 * 1000;
+    
+    @Autowired
+    private ConfigService configService;
     
     @SuppressWarnings("unused")
     private ActorInfoSource actorInfoSource;
@@ -2026,6 +2052,11 @@ public class OtherFunctions {
             idPicBack =  CommonUtil.getJsonParamString(jsonObject, "identityPictureBack", null, null, 1, 200);
             operatorId = CommonUtil.getJsonParamInt(jsonObject, "operatorId", 0, null, 1, Integer.MAX_VALUE);
             familyId = CommonUtil.getJsonParamInt(jsonObject, "familyId", 0, null, 1, Integer.MAX_VALUE);
+            //特殊时期自由主播暂停申请
+            if (familyId == 11222 && configService.getIsSpecialTime()) {
+                result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+                return result;
+            }
             isOk = CommonUtil.getJsonParamInt(jsonObject, "isOk", 0, TagCodeEnum.ISOK_MISSIING, 0, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());

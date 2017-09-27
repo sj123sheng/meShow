@@ -20,6 +20,7 @@ import com.melot.kkcore.user.api.UserStaticInfo;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.service.FamilyService;
 import com.melot.kktv.redis.GiftRecordSource;
+import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.UserService;
 import com.melot.kktv.third.service.ZmxyService;
 import com.melot.kktv.util.*;
@@ -27,6 +28,7 @@ import com.melot.sdk.core.util.MelotBeanFactory;
 import com.melot.share.driver.domain.RankData;
 import com.melot.share.driver.service.ShareActivityService;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
@@ -45,6 +47,9 @@ import java.util.List;
 public class ActorFunction {
 
     private static Logger logger = Logger.getLogger(ActorFunction.class);
+    
+    @Autowired
+    private ConfigService configService;
 
     /**
      * 获取主播代言团列表【51020101】
@@ -267,6 +272,9 @@ public class ActorFunction {
             returnUrl = CommonUtil.getJsonParamString(jsonObject, "returnUrl", "", null, 1, Integer.MAX_VALUE);
             appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 1, Integer.MAX_VALUE);
             familyId = CommonUtil.getJsonParamInt(jsonObject, "familyId", 0, null, 1, Integer.MAX_VALUE);
+            if (familyId == 11222 && configService.getIsSpecialTime()) {
+                result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+            }
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;

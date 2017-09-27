@@ -199,6 +199,9 @@ public class TagCodeEnum {
     
     /** 微信提现接口关闭 */
     public static final String WECAHTPUBLIC_CLOSED = "30001046";
+    
+    /** 用户昵称待审 */
+    public static final String NICKNAME_PENDINGAUDIT = "30001047";
 	
 	/** 模块服务返回空数据 */
 	public static final String MODULE_RETURN_NULL = "10000000";
