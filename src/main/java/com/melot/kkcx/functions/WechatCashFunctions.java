@@ -84,13 +84,6 @@ public class WechatCashFunctions {
     }
 
     private static void checkCashCompetence(int userId) throws CommonUtil.ErrorGetParameterException {
-        // 判断是否绑定手机
-        KkUserService userService = MelotBeanFactory.getBean("kkUserService", KkUserService.class);
-        UserProfile userProfile = userService.getUserProfile(userId);
-        if (userProfile == null || userProfile.getIdentifyPhone() == null) {
-            throw new CommonUtil.ErrorGetParameterException(TagCodeEnum.NON_IDENTITY_PHONE);
-        }
-
         // 判断是否绑定微信
         AccountService accountService = (AccountService)MelotBeanFactory.getBean("kkAccountService");
         ResUserBoundAccount resUserBoundAccount = accountService.getUserBoundAccount(userId);
