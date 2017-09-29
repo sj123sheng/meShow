@@ -743,6 +743,7 @@ public class AlbumFunctions {
             if (pictureType == PictureTypeEnum.family_poster) {
                 //特殊时期接口暂停使用
                 if (configService.getIsSpecialTime()) {
+                    result.addProperty("message", "系统维护中，本功能暂时停用");
                     result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
                     return result;
                 }
