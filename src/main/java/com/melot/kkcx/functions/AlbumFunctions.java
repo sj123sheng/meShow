@@ -10,6 +10,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -21,6 +22,7 @@ import com.melot.kktv.action.FamilyAction;
 import com.melot.kktv.model.FamilyPoster;
 import com.melot.kktv.model.Photo;
 import com.melot.kktv.model.PhotoComment;
+import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.LiveVideoService;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
@@ -44,6 +46,9 @@ import com.upyun.api.UpYun;
 public class AlbumFunctions {
 	
 	private static UpYun upyun = new UpYun(Constant.YOUPAI_BUCKET, Constant.YOUPAI_USER_NAME, Constant.YOUPAI_USER_PWD);
+	
+	@Autowired
+    private ConfigService configService;
 	
 	/** 日志记录对象 */
 	private static Logger logger = Logger.getLogger(AlbumFunctions.class);
@@ -736,6 +741,13 @@ public class AlbumFunctions {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
             pictureType = CommonUtil.getJsonParamInt(jsonObject, "pictureType", 0, "04010004", -10, Integer.MAX_VALUE);
             if (pictureType == PictureTypeEnum.family_poster) {
+                //特殊时期接口暂停使用
+                if (configService.getIsSpecialTime()) {
+                    result.addProperty("message", "系统维护中，本功能暂时停用");
+                    result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+                    return result;
+                }
+                
                 familyId = CommonUtil.getJsonParamInt(jsonObject, "familyId", 0, "04010016", 1, Integer.MAX_VALUE);
             }
             
