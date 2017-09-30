@@ -269,11 +269,26 @@ public class ActorFunction {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
             certName = CommonUtil.getJsonParamString(jsonObject, "certName", "", null, 1, Integer.MAX_VALUE);
             certNo = CommonUtil.getJsonParamString(jsonObject, "certNo", "", null, 1, Integer.MAX_VALUE);
+            if (!StringUtil.strIsNull(certNo) && (certNo.length() == 15 || certNo.length() == 18)) {
+                certNo = certNo.toUpperCase();
+                String birthStr;
+                if (certNo.length() == 15) {
+                    birthStr = 19 + certNo.substring(6, 12);
+                } else {
+                    birthStr = certNo.substring(6, 14);
+                }
+                Date birthDate = DateUtil.parseDateTimeStringToDate(birthStr, "yyyyMMdd");
+                if (birthDate.after(DateUtil.addOnField(new Date(), 1, -18))) {
+                    result.addProperty("TagCode", "5202010101");
+                    return result;
+                }
+            }
             returnUrl = CommonUtil.getJsonParamString(jsonObject, "returnUrl", "", null, 1, Integer.MAX_VALUE);
             appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 1, Integer.MAX_VALUE);
             familyId = CommonUtil.getJsonParamInt(jsonObject, "familyId", 0, null, 1, Integer.MAX_VALUE);
             if (familyId == 11222 && configService.getIsSpecialTime()) {
                 result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+                return result;
             }
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
