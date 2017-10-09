@@ -490,6 +490,30 @@ public class UserService {
         
         return true;
     }
+    
+    
+    /**
+     * 检查用户昵称是否修改
+     * @param nickname
+     * @return
+     */
+    public static boolean checkNicknameChange(String nickname, int userId) {
+        if (StringUtil.strIsNull(nickname)) {
+            return false;
+        }
+        
+        try {
+            KkUserService userService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
+            UserProfile userProfile = userService.getUserProfile(userId);
+            if (userProfile != null && userProfile.getNickName() != null && !nickname.equals(userProfile.getNickName())) {
+                return true;
+            }
+        } catch (Exception e) {
+            logger.error("Fail to execute UserService.checkNicknameChange, nickname " + nickname, e);
+        }
+        
+        return false;
+    }
 	
 	/**
 	 * 从内存数据库中读出用户richLevel
