@@ -1136,6 +1136,7 @@ public class ProfileFunctions {
 		Integer gender = null;
 		String introduce = null;
 		String tagCode = TagCodeEnum.SUCCESS;
+		boolean isNickNameChange = false;
 		if (nicknameje != null && !nicknameje.isJsonNull() && !nicknameje.getAsString().trim().isEmpty()) {
 			nickname = nicknameje.getAsString().trim();
 			// filter matchXSSTag,sensitive word,short url
@@ -1218,18 +1219,21 @@ public class ProfileFunctions {
 			flag++;
 		}
 		if (nickname != null) {
+		    isNickNameChange = UserService.checkNicknameChange(nickname, userId);
             if (UserService.checkNicknameRepeat(nickname, userId)) {
                 // 昵称重复
                 result.addProperty("TagCode", "05020102");
                 return result;
             } else {
-                if (configService.getIsSpecialTime()) {
-                    //特殊时期昵称修改需前置审核
-                    ProfileServices.insertChangeUserName(userId, nickname, 3);
-                    tagCode = TagCodeEnum.NICKNAME_PENDINGAUDIT;
-                } else {
-                    userMap.put(ProfileKeys.NICKNAME.key(), nickname);
-                    flag++;
+                if (isNickNameChange) {
+                    if (configService.getIsSpecialTime()) {
+                        //特殊时期昵称修改需前置审核
+                        ProfileServices.insertChangeUserName(userId, nickname, 3);
+                        tagCode = TagCodeEnum.NICKNAME_PENDINGAUDIT;
+                    } else {
+                        userMap.put(ProfileKeys.NICKNAME.key(), nickname);
+                        flag++;
+                    }
                 }
             }
          }
@@ -1244,7 +1248,7 @@ public class ProfileFunctions {
             }
             
             //非特殊时期插入昵称后置审核记录
-            if (!configService.getIsSpecialTime()) {
+            if (!configService.getIsSpecialTime() && isNickNameChange) {
                 ProfileServices.insertChangeUserName(userId, nickname, 0);
             }
             // 删除HotData缓存
