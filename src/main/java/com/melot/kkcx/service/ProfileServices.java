@@ -314,11 +314,14 @@ public class ProfileServices {
         }
     }
     
-    public static String checkUserUpdateProfileByType(int userId, String type) {
-        String result = null;
+    public static boolean checkUserUpdateProfileByType(int userId, String type) {
+        boolean result = false;
         try {
             String key = String.format(USER_UPDATEPROFILE_KEY, userId, type);
-            result = HotDataSource.getTempDataString(key);
+            String isUpdate = HotDataSource.getTempDataString(key);
+            if ("1".equals(isUpdate)) {
+                return true;
+            }
         } catch(Exception e) {
             logger.error("ProfileServices.checkUserUpdateProfileByType(" + userId + "," + type + ") return exception.", e);
         }

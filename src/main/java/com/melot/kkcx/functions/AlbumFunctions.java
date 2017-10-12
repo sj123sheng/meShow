@@ -776,7 +776,7 @@ public class AlbumFunctions {
 		    if (configService.getIsSpecialTime()) {
 		        UserRegistry userRegistry = UserService.getUserRegistryInfo(userId);
 		        if (userRegistry != null && userRegistry.getRegisterTime() > 1506700800000l &&
-		             !"1".equals(ProfileServices.checkUserUpdateProfileByType(userId, "portrait"))) {
+		             !ProfileServices.checkUserUpdateProfileByType(userId, "portrait")) {
 		            ProfileServices.setUserUpdateProfileByType(userId, "portrait");
 		        } else {
 		            result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
