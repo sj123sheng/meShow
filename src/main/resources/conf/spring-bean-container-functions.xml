@@ -168,4 +168,6 @@
     <bean id="wechatCashFunctions" class="com.melot.kkcx.functions.WechatCashFunctions" />
 
 	<bean id="videoBgmFunction" class="com.melot.kkcx.functions.VideoBgmFunctions" />
+
+    <bean id="catchDollFunction" class="com.melot.kktv.action.CatchDollFunction" />
 </beans>
