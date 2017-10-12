@@ -41,7 +41,7 @@ public class CatchDollFunction {
         int dollMachineId, pushFlowStatus;
         String sign;
         try {
-            dollMachineId = CommonUtil.getJsonParamInt(jsonObject, "dollMachineId", 0, null, PlatformEnum.WEB, PlatformEnum.IPAD);
+            dollMachineId = CommonUtil.getJsonParamInt(jsonObject, "dollMachineId", 0, null, 1, Integer.MAX_VALUE);
             pushFlowStatus = CommonUtil.getJsonParamInt(jsonObject, "pushFlowStatus", 1, null, PlatformEnum.WEB, PlatformEnum.IPAD);
             sign = CommonUtil.getJsonParamString(jsonObject, "sign", null, "05110101", 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
@@ -83,7 +83,7 @@ public class CatchDollFunction {
         int dollMachineId;
         String sign;
         try {
-            dollMachineId = CommonUtil.getJsonParamInt(jsonObject, "dollMachineId", 0, null, PlatformEnum.WEB, PlatformEnum.IPAD);
+            dollMachineId = CommonUtil.getJsonParamInt(jsonObject, "dollMachineId", 0, null, 1, Integer.MAX_VALUE);
             sign = CommonUtil.getJsonParamString(jsonObject, "sign", null, "05110101", 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
