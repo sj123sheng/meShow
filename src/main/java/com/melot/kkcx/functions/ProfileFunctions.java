@@ -1227,8 +1227,14 @@ public class ProfileFunctions {
             } else {
                 if (isNickNameChange) {
                     if (configService.getIsSpecialTime()) {
-                        //特殊时期昵称修改需前置审核
-                        ProfileServices.insertChangeUserName(userId, nickname, 3);
+                        UserRegistry userRegistry = UserService.getUserRegistryInfo(userId);
+                        if (userRegistry != null && userRegistry.getRegisterTime() > 1506700800000l) {
+                            if (!"1".equals(ProfileServices.checkUserUpdateProfileByType(userId, "nickName"))) {
+                                 //特殊时期昵称修改需前置审核
+                                 ProfileServices.insertChangeUserName(userId, nickname, 3);
+                                 ProfileServices.setUserUpdateProfileByType(userId, "nickName");
+                             }
+                        }
                         tagCode = TagCodeEnum.NICKNAME_PENDINGAUDIT;
                     } else {
                         userMap.put(ProfileKeys.NICKNAME.key(), nickname);

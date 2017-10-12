@@ -16,8 +16,10 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.melot.kkcore.user.api.UserRegistry;
 import com.melot.kkcx.service.AlbumServices;
 import com.melot.kkcx.service.ProfileServices;
+import com.melot.kkcx.service.UserService;
 import com.melot.kktv.action.FamilyAction;
 import com.melot.kktv.model.FamilyPoster;
 import com.melot.kktv.model.Photo;
@@ -771,6 +773,17 @@ public class AlbumFunctions {
 		
 		// 0.头像 1.直播海报(弃用) 2.照片3.资源图片4.背景图
 		if (pictureType == PictureTypeEnum.portrait) { // 0 : 头像
+		    if (configService.getIsSpecialTime()) {
+		        UserRegistry userRegistry = UserService.getUserRegistryInfo(userId);
+		        if (userRegistry != null && userRegistry.getRegisterTime() > 1506700800000l &&
+		             !"1".equals(ProfileServices.checkUserUpdateProfileByType(userId, "portrait"))) {
+		            ProfileServices.setUserUpdateProfileByType(userId, "portrait");
+		        } else {
+		            result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+                    return result; 
+		        }
+		    }
+		    
 			try {
 				result = AlbumServices.addPortraitNew(userId, url, pictureName);
 			} catch (Exception e) {
