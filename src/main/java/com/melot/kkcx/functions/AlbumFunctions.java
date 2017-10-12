@@ -751,6 +751,16 @@ public class AlbumFunctions {
                 }
                 
                 familyId = CommonUtil.getJsonParamInt(jsonObject, "familyId", 0, "04010016", 1, Integer.MAX_VALUE);
+            } else if (pictureType == PictureTypeEnum.portrait && configService.getIsSpecialTime()) {
+                UserRegistry userRegistry = UserService.getUserRegistryInfo(userId);
+                if (userRegistry != null && userRegistry.getRegisterTime() > 1506700800000l &&
+                     !ProfileServices.checkUserUpdateProfileByType(userId, "portrait")) {
+                    ProfileServices.setUserUpdateProfileByType(userId, "portrait");
+                } else {
+                    result.addProperty("message", "系统维护中，本功能暂时停用");
+                    result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+                    return result; 
+                }
             }
             
             url = CommonUtil.getJsonParamString(jsonObject, "url", null, "04010024", 1, Integer.MAX_VALUE);
@@ -773,17 +783,6 @@ public class AlbumFunctions {
 		
 		// 0.头像 1.直播海报(弃用) 2.照片3.资源图片4.背景图
 		if (pictureType == PictureTypeEnum.portrait) { // 0 : 头像
-		    if (configService.getIsSpecialTime()) {
-		        UserRegistry userRegistry = UserService.getUserRegistryInfo(userId);
-		        if (userRegistry != null && userRegistry.getRegisterTime() > 1506700800000l &&
-		             !ProfileServices.checkUserUpdateProfileByType(userId, "portrait")) {
-		            ProfileServices.setUserUpdateProfileByType(userId, "portrait");
-		        } else {
-		            result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
-                    return result; 
-		        }
-		    }
-		    
 			try {
 				result = AlbumServices.addPortraitNew(userId, url, pictureName);
 			} catch (Exception e) {
