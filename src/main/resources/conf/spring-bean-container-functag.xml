@@ -2589,4 +2589,14 @@
 		<constructor-arg name="methodName" value="cashBounty" />
 	</bean>
 	
+    <!-- 直播抓娃娃接口 -->
+    <bean id="51060201" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="catchDollFunction" />
+        <constructor-arg name="methodName" value="monitorPushFlow" />
+    </bean>
+    <bean id="51060202" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="catchDollFunction" />
+        <constructor-arg name="methodName" value="getDollMachineRoomInfo" />
+    </bean>
+
 </beans>
