@@ -35,6 +35,8 @@ public class ProfileServices {
     private static final String ROOMSOURCE_ACTOR_KEY = "%s_roomSourceActor";
     
     private static final String USER_COMMONDEVICE_KEY = "%s_commonDevice";
+    
+    private static final String USER_UPDATEPROFILE_KEY = "%s_%s_updateprofile";
 	
 	/**
 	 * 更新私有redis
@@ -301,6 +303,29 @@ public class ProfileServices {
             return false;
         }
         return true;
+    }
+    
+    public static void setUserUpdateProfileByType(int userId, String type) {
+        try {
+            String key = String.format(USER_UPDATEPROFILE_KEY, userId, type);
+            HotDataSource.setTempDataString(key, "1", 30*24*3600);
+        } catch(Exception e) {
+            logger.error("ProfileServices.setUserUpdateProfileByType(" + userId + "," + type + ") return exception.", e);
+        }
+    }
+    
+    public static boolean checkUserUpdateProfileByType(int userId, String type) {
+        boolean result = false;
+        try {
+            String key = String.format(USER_UPDATEPROFILE_KEY, userId, type);
+            String isUpdate = HotDataSource.getTempDataString(key);
+            if ("1".equals(isUpdate)) {
+                return true;
+            }
+        } catch(Exception e) {
+            logger.error("ProfileServices.checkUserUpdateProfileByType(" + userId + "," + type + ") return exception.", e);
+        }
+        return result;
     }
     
     @SuppressWarnings("unchecked")

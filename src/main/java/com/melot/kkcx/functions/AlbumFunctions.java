@@ -16,8 +16,10 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.melot.kkcore.user.api.UserRegistry;
 import com.melot.kkcx.service.AlbumServices;
 import com.melot.kkcx.service.ProfileServices;
+import com.melot.kkcx.service.UserService;
 import com.melot.kktv.action.FamilyAction;
 import com.melot.kktv.model.FamilyPoster;
 import com.melot.kktv.model.Photo;
@@ -749,6 +751,16 @@ public class AlbumFunctions {
                 }
                 
                 familyId = CommonUtil.getJsonParamInt(jsonObject, "familyId", 0, "04010016", 1, Integer.MAX_VALUE);
+            } else if (pictureType == PictureTypeEnum.portrait && configService.getIsSpecialTime()) {
+                UserRegistry userRegistry = UserService.getUserRegistryInfo(userId);
+                if (userRegistry != null && userRegistry.getRegisterTime() > 1506700800000l &&
+                     !ProfileServices.checkUserUpdateProfileByType(userId, "portrait")) {
+                    ProfileServices.setUserUpdateProfileByType(userId, "portrait");
+                } else {
+                    result.addProperty("message", "系统维护中，本功能暂时停用");
+                    result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+                    return result; 
+                }
             }
             
             url = CommonUtil.getJsonParamString(jsonObject, "url", null, "04010024", 1, Integer.MAX_VALUE);
