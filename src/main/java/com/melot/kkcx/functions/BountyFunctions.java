@@ -154,6 +154,7 @@ public class BountyFunctions {
                         packetJson.addProperty(ParameterKeys.TYPE, packet.getRedPacketType());
                         packetJson.addProperty(ParameterKeys.AMOUNT, packet.getRedPacketAmount());
                         packetJson.addProperty(ParameterKeys.USER_ID, packet.getFriendUserId());
+                        packetJson.addProperty("desc", packet.getDesc());
                         
                         // 获取朋友用户的昵称
                         try {
