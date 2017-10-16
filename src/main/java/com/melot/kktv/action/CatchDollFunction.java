@@ -6,10 +6,8 @@ import com.melot.common.driver.base.ResultCode;
 import com.melot.common.driver.domain.AgoraInfo;
 import com.melot.common.driver.service.ConfigInfoService;
 import com.melot.kktv.util.CommonUtil;
-import com.melot.kktv.util.PlatformEnum;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.sdk.core.util.MelotBeanFactory;
-import com.melot.stream.driver.service.LiveStreamConfigService;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -179,6 +177,6 @@ public class CatchDollFunction {
         String param = builder.toString();
         String signTemp = CommonUtil.md5(param);
         System.out.println(signTemp);
-        System.out.println(checkSign(1, null,signTemp));
+        System.out.println(checkSign(1, 0,null,signTemp));
     }
 }
