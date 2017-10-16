@@ -58,7 +58,7 @@ public class CatchDollFunction {
         }
 
         // 校验参数
-        if (!checkSign(dollMachineId, pushFlowStatus, sign)) {
+        if (!checkSign(dollMachineId, 0 , pushFlowStatus, sign)) {
             result.addProperty("TagCode", "5110901");
             return result;
         }
@@ -80,10 +80,11 @@ public class CatchDollFunction {
 
         JsonObject result = new JsonObject();
 
-        int dollMachineId;
+        int dollMachineId, roomId;
         String sign;
         try {
             dollMachineId = CommonUtil.getJsonParamInt(jsonObject, "dollMachineId", 0, null, 1, Integer.MAX_VALUE);
+            roomId = CommonUtil.getJsonParamInt(jsonObject, "roomId", 0, null, 1, Integer.MAX_VALUE);
             sign = CommonUtil.getJsonParamString(jsonObject, "sign", null, "05110101", 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
@@ -93,20 +94,22 @@ public class CatchDollFunction {
             return result;
         }
 
-        if(dollMachineId == 0) {
+        if(dollMachineId == 0 && roomId == 0) {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_MISSING);
             return result;
         }
 
         // 校验参数
-        if (!checkSign(dollMachineId, null, sign)) {
+        if (!checkSign(dollMachineId, roomId, null, sign)) {
             result.addProperty("TagCode", "5110901");
             return result;
         }
 
         try {
 
-            int roomId = 10002720;
+            if(dollMachineId > 0) {
+                roomId = 10002720;
+            }
             ConfigInfoService configInfoService = MelotBeanFactory.getBean("configInfoService", ConfigInfoService.class);
             Result<AgoraInfo> agoraInfoResult = configInfoService.getAgoraInfo(roomId, 16);
             if (agoraInfoResult == null || agoraInfoResult.getCode() == null) {
@@ -125,8 +128,6 @@ public class CatchDollFunction {
             result.addProperty("roomId", roomId);
             result.addProperty("primaryCameraId", roomId+1);
             result.addProperty("secondaryCameraId", roomId+2);
-            LiveStreamConfigService liveStreamConfigService = (LiveStreamConfigService) MelotBeanFactory.getBean("liveStreamConfigService");
-            result.addProperty("pushFlowUrl", "rtmp://push.kktv8.com/livekktv");
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
         } catch (Exception e) {
@@ -140,14 +141,19 @@ public class CatchDollFunction {
      * 校验参数
      * @return
      */
-    private static boolean checkSign(int dollMachineId, Integer pushFlowStatus, String sign) {
+    private static boolean checkSign(int dollMachineId, int roomId, Integer pushFlowStatus, String sign) {
         StringBuilder builder = new StringBuilder();
         builder.append(KEY);
-        builder.append("dollMachineId=");
-        builder.append(dollMachineId);
-        if(pushFlowStatus != null) {
-            builder.append("&pushFlowStatus=");
-            builder.append(pushFlowStatus);
+        if(dollMachineId == 0) {
+            builder.append("roomId=");
+            builder.append(roomId);
+        }else {
+            builder.append("dollMachineId=");
+            builder.append(dollMachineId);
+            if (pushFlowStatus != null) {
+                builder.append("&pushFlowStatus=");
+                builder.append(pushFlowStatus);
+            }
         }
         builder.append(KEY);
         
