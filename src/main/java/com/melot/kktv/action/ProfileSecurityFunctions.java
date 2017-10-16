@@ -1,6 +1,5 @@
 package com.melot.kktv.action;
 
-import java.io.File;
 import java.net.URLDecoder;
 
 import javax.servlet.http.HttpServletRequest;
@@ -14,9 +13,7 @@ import com.melot.blacklist.service.BlacklistService;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcx.functions.ProfileFunctions;
 import com.melot.kkcx.functions.UserFunctions;
-import com.melot.kkcx.service.AlbumServices;
 import com.melot.kkcx.service.GeneralService;
-import com.melot.kktv.model.FamilyPoster;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.SmsSource;
 import com.melot.kktv.service.AccountService;
@@ -25,8 +22,6 @@ import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
 import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.LoginTypeEnum;
-import com.melot.kktv.util.PictureTypeEnum;
-import com.melot.kktv.util.PictureTypeExtendEnum;
 import com.melot.kktv.util.PlatformEnum;
 import com.melot.kktv.util.SecurityFunctions;
 import com.melot.kktv.util.StringUtil;
@@ -1090,94 +1085,8 @@ public class ProfileSecurityFunctions {
             return rtJO;
         }
         
-        JsonObject result = new JsonObject();
-        // 验证参数
-        int userId, familyId = 0, pictureType, appId;
-        String url = null;
-        String pictureName = null;
-        
-        try {
-            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 0, Integer.MAX_VALUE);
-            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-            pictureType = CommonUtil.getJsonParamInt(jsonObject, "pictureType", 0, "04010004", -10, Integer.MAX_VALUE);
-            if (pictureType == PictureTypeEnum.family_poster) {
-                familyId = CommonUtil.getJsonParamInt(jsonObject, "familyId", 0, "04010016", 1, Integer.MAX_VALUE);
-            }
-            
-            url = CommonUtil.getJsonParamString(jsonObject, "url", null, "04010024", 1, Integer.MAX_VALUE);
-            url = url.replaceFirst(ConfigHelper.getHttpdir(), "");
-            url = url.replaceFirst("/kktv", "");
-            File tempFile = new File(url);
-            pictureName = tempFile.getName();
-        } catch(CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
-            return result;
-        } catch(Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-            return result;
-        }
-        
-        if (appId == AppIdEnum.GAME) {
-            com.melot.kktv.action.AlbumFunctions publicAlbumFunction = (com.melot.kktv.action.AlbumFunctions) MelotBeanFactory.getBean("publicAlbumFunction");
-            return publicAlbumFunction.insertToDB(jsonObject, checkTag, request);
-        }
-        
-        // 0.头像 1.直播海报(弃用) 2.照片3.资源图片4.背景图
-        if (pictureType == PictureTypeEnum.portrait) { // 0 : 头像
-            try {
-                result = AlbumServices.addPortraitNew(userId, url, pictureName);
-            } catch (Exception e) {
-                loginLogger.error("Failed to insert to DB.", e);
-                result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
-            }
-        } else if (pictureType == PictureTypeEnum.background) { // 4 : 背景图
-            try {
-                result = AlbumServices.addBackgroundNew(userId , url, pictureName);
-            } catch (Exception e) {
-                loginLogger.error("Failed to insert to DB." + e);
-                result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
-            }
-        } else if (pictureType == PictureTypeEnum.family_poster) { // 5:家族海报
-            FamilyPoster familyPoster = new FamilyPoster();
-            try {
-                familyPoster.setPath_original(url);
-                FamilyAction familyAction = MelotBeanFactory.getBean("familyFunction", FamilyAction.class);
-                result = familyAction.setFamilyPoster(userId, familyId, familyPoster);
-            } catch (Exception e) {
-                loginLogger.debug("Failed to insert to DB." + e);
-                result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
-            }
-        } else if (pictureType == PictureTypeEnum.imchat) { // 6:群聊
-            try {
-                result = AlbumServices.addIMChatImage(userId, pictureType, url, pictureName);
-            } catch (Exception e) {
-                loginLogger.error("Failed to insert to DB." + e);
-                result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
-            }
-        }else if (pictureType == PictureTypeExtendEnum.video_tape) {// 9:录屏分享视频
-            try {
-                result = AlbumServices.addVideoTape(userId, url, pictureName);
-            } catch (Exception e) {
-                loginLogger.error("Failed to insert to DB." + e);
-                result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
-            }
-        } else { // 1.直播海报(弃用) 2.照片 3.资源图片
-            try {
-                // 10的时候是技能服务接口，不添加到个人秀中
-                if (pictureType == 3 || pictureType == 10) {
-                    // 动态图片不保存在user_picture中
-                    result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-                    result.addProperty("pictureId", 1); // 必须返回一个值否则客户端会报错
-                } else {
-                    result = AlbumServices.addPictureNew(userId, pictureType, url, pictureName);
-                }
-            } catch (Exception e) {
-                loginLogger.debug("Failed to insert to DB." + e);
-                result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
-            }
-        }
-        
-        return result;
+        com.melot.kkcx.functions.AlbumFunctions albumFunctions = MelotBeanFactory.getBean("albumFunction", com.melot.kkcx.functions.AlbumFunctions.class);
+        return albumFunctions.insertToDB(jsonObject, true, request);
     }
     
     /**

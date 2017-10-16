@@ -93,7 +93,9 @@ public class RoomTF {
             } else {
                 String livePoster = roomInfo.getLivePoster();
                 String poster = roomInfo.getPoster();
-                if (roomInfo.getRoomSource() != null && roomInfo.getLiveEndtime() == null && (roomInfo.getRoomSource().equals(2) || roomInfo.getRoomSource().equals(7) || roomInfo.getRoomSource().equals(8))) {
+                if (roomInfo.getRoomSource() != null && roomInfo.getLiveEndtime() == null 
+                        && (roomInfo.getRoomSource().equals(2) || roomInfo.getRoomSource().equals(7) || roomInfo.getRoomSource().equals(8))
+                        && (roomInfo.getRoomId() == null || roomInfo.getRoomId().equals(roomInfo.getActorId()))) {
                     // 直播主播有动态海报,采用动态海报
                     livePoster = livePoster == null ? poster : livePoster;
                     poster = livePoster;
