@@ -1086,7 +1086,7 @@ public class ProfileSecurityFunctions {
         }
         
         com.melot.kkcx.functions.AlbumFunctions albumFunctions = MelotBeanFactory.getBean("albumFunction", com.melot.kkcx.functions.AlbumFunctions.class);
-        return albumFunctions.insertToDB(jsonObject, checkTag, request);
+        return albumFunctions.insertToDB(jsonObject, true, request);
     }
     
     /**
