@@ -106,7 +106,7 @@ public class CatchDollFunction {
         try {
 
             if(dollMachineId > 0) {
-                roomId = 10002720;
+                roomId = 10000000 + dollMachineId;
             }
             ConfigInfoService configInfoService = MelotBeanFactory.getBean("configInfoService", ConfigInfoService.class);
             Result<AgoraInfo> agoraInfoResult = configInfoService.getAgoraInfo(roomId, 16);
