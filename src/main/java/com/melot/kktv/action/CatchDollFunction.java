@@ -189,7 +189,7 @@ public class CatchDollFunction {
 
             Result<DollMachineDO> dollMachineDOResult = dollMachineService.getDollMachineDOByRoomId(roomId);
             DollMachineDO dollMachineDO;
-            if(dollMachineDOResult.getCode() == CommonStateCode.SUCCESS && dollMachineDOResult.getData() != null) {
+            if(dollMachineDOResult.getCode().equals(CommonStateCode.SUCCESS)  && dollMachineDOResult.getData() != null) {
                 dollMachineDO = dollMachineDOResult.getData();
             }else {
                 result.addProperty("TagCode", "5110902");
