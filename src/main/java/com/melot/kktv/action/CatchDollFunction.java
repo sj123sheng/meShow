@@ -119,7 +119,7 @@ public class CatchDollFunction {
             }else {
                 dollMachineDOResult = dollMachineService.getDollMachineDOByRoomId(roomId);
             }
-            if(dollMachineDOResult.getCode() == CommonStateCode.SUCCESS && dollMachineDOResult.getData() != null) {
+            if(dollMachineDOResult.getCode().equals(CommonStateCode.SUCCESS) && dollMachineDOResult.getData() != null) {
                 dollMachineDO = dollMachineDOResult.getData();
             }else {
                 result.addProperty("TagCode", "5110902");
@@ -198,7 +198,7 @@ public class CatchDollFunction {
 
             Result<RedisDollMachineDO> redisDollMachineDOResult = dollMachineService.getRedisDollMachineDO(roomId);
             RedisDollMachineDO redisDollMachineDO;
-            if(redisDollMachineDOResult.getCode() == CommonStateCode.SUCCESS) {
+            if(redisDollMachineDOResult.getCode().equals(CommonStateCode.SUCCESS)) {
                 redisDollMachineDO = redisDollMachineDOResult.getData();
             }else {
                 result.addProperty("TagCode", "5110903");
@@ -264,7 +264,7 @@ public class CatchDollFunction {
 
             Result<StartGameDO> startGameDOResult = dollMachineService.startGame(roomId, userId);
             StartGameDO startGameDO = new StartGameDO();
-            if(startGameDOResult.getCode() == CommonStateCode.SUCCESS && startGameDOResult.getData() != null) {
+            if(startGameDOResult.getCode().equals(CommonStateCode.SUCCESS) && startGameDOResult.getData() != null) {
                 startGameDO = startGameDOResult.getData();
             }else if(startGameDOResult.getData() != null){
                 result.addProperty("TagCode", startGameDOResult.getData().getTagCode());
