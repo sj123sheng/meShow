@@ -2598,5 +2598,13 @@
         <constructor-arg name="t" ref="catchDollFunction" />
         <constructor-arg name="methodName" value="getDollMachineRoomInfo" />
     </bean>
+    <bean id="51060203" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="catchDollFunction" />
+        <constructor-arg name="methodName" value="getDollMachineRoomDetail" />
+    </bean>
+    <bean id="51060211" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="catchDollFunction" />
+        <constructor-arg name="methodName" value="play" />
+    </bean>
 
 </beans>
