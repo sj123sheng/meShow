@@ -180,7 +180,7 @@
 		<dependency>
 			<groupId>com.melot</groupId>
 			<artifactId>melot-util</artifactId>
-			<version>1.0.34</version>
+			<version>1.0.36</version>
 		</dependency>
 		<dependency>
 		  	<groupId>com.melot</groupId>
@@ -563,6 +563,12 @@
 		  <artifactId>kk-bounty-api</artifactId>
 		  <version>0.0.4-SNAPSHOT</version>
 		</dependency>
+
+        <dependency>
+            <groupId>com.melot.module</groupId>
+            <artifactId>kk-doll-api</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
 	</dependencies>
  	
 </project>
