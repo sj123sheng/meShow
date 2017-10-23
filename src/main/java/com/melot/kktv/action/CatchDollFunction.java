@@ -328,7 +328,7 @@ public class CatchDollFunction {
 
         try {
 
-            CatchDollRecordService catchDollRecordService = (CatchDollRecordService) MelotBeanFactory.getBean("dollMachineService");
+            CatchDollRecordService catchDollRecordService = (CatchDollRecordService) MelotBeanFactory.getBean("catchDollRecordService");
 
             Result<List<CatchDollRecordDO>> recentRecordsResult = catchDollRecordService.getRecentRecordsByRoomId(roomId);
             if(!recentRecordsResult.getCode().equals(CommonStateCode.SUCCESS)){
@@ -591,7 +591,7 @@ public class CatchDollFunction {
 
         try {
 
-            CatchDollRecordService catchDollRecordService = (CatchDollRecordService) MelotBeanFactory.getBean("dollMachineService");
+            CatchDollRecordService catchDollRecordService = (CatchDollRecordService) MelotBeanFactory.getBean("catchDollRecordService");
 
             Result<CatchDollRecordDO> recentDeliveryDOResult = catchDollRecordService.getRecentDeliverDOByUserId(userId);
             CatchDollRecordDO catchDollRecordDO = new CatchDollRecordDO();
