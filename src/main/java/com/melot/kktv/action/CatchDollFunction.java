@@ -625,7 +625,7 @@ public class CatchDollFunction {
      * @param request
      * @return
      */
-    public JsonObject getMyRecentDeliveryInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+    public JsonObject gameOver(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 
         JsonObject result = new JsonObject();
 
