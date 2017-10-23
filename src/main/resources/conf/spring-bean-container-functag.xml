@@ -2602,9 +2602,25 @@
         <constructor-arg name="t" ref="catchDollFunction" />
         <constructor-arg name="methodName" value="getDollMachineRoomDetail" />
     </bean>
+    <bean id="51060204" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="catchDollFunction" />
+        <constructor-arg name="methodName" value="getRoomCatchRecords" />
+    </bean>
+    <bean id="51060210" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="catchDollFunction" />
+        <constructor-arg name="methodName" value="coinFailed" />
+    </bean>
     <bean id="51060211" class="com.melot.sdk.core.function.GenericFunction">
         <constructor-arg name="t" ref="catchDollFunction" />
         <constructor-arg name="methodName" value="play" />
+    </bean>
+    <bean id="51060212" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="catchDollFunction" />
+        <constructor-arg name="methodName" value="giveUp" />
+    </bean>
+    <bean id="51060213" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="catchDollFunction" />
+        <constructor-arg name="methodName" value="getMyRecentDeliveryInfo" />
     </bean>
 
 </beans>

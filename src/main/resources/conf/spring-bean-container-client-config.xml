@@ -119,6 +119,10 @@
 	
 	<kkrpc:reference id="bountyService" interface="com.melot.kk.bounty.api.service.BountyService" version="1.0.0" />
 
-    <!-- 抓娃娃服务 -->
+    <!-- 抓娃娃模块 -->
     <kkrpc:reference id="dollMachineService" interface="com.melot.kk.doll.api.service.DollMachineService" version="1.0.0" />
+    <kkrpc:reference id="catchDollRecordService" interface="com.melot.kk.doll.api.service.CatchDollRecordService" version="1.0.0" />
+
+    <!-- 主播模块 -->
+    <kkrpc:reference id="actorService" interface="com.melot.kkcore.actor.service.ActorService" version="1.0.7" />
 </beans>
