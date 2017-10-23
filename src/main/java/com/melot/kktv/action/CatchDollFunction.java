@@ -19,6 +19,7 @@ import com.melot.kkcore.actor.service.ActorService;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.DateUtils;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.sdk.core.util.MelotBeanFactory;
@@ -351,6 +352,7 @@ public class CatchDollFunction {
             }
 
             result.add("catchRecords", recentRecordList);
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
         } catch (Exception e) {
