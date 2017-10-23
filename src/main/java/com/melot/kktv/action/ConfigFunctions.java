@@ -42,6 +42,8 @@ public class ConfigFunctions {
     
     private static final String KEY = "YdsSH&@#Uyh";
 
+    private static final String SPLIT = ",";
+
     /**
      * 50001101
      * 根据KEY获取相关配置信息
@@ -414,7 +416,7 @@ public class ConfigFunctions {
             return result;
         }        
     }
-    
+
     /**
      * VR主播获取grammarId信息(50001111)
      * @param jsonObject

@@ -784,7 +784,7 @@ public class OtherFunctions {
 			result.addProperty("TagCode", e.getErrCode());
 			return result;
 		} catch (Exception e) {
-			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+			result.addProperty("TagCode", tagCode_prefix + "08");
 			return result;
 		}
 	}

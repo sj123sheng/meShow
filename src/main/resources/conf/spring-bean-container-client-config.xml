@@ -32,7 +32,7 @@
 	<kkrpc:reference id="userMedalService" interface="com.melot.module.medal.driver.service.UserMedalService" version="1.0.1"></kkrpc:reference>
 	<kkrpc:reference id="familyMedalService" interface="com.melot.module.medal.driver.service.FamilyMedalService" version="1.0.1"></kkrpc:reference>
 	<kkrpc:reference id="kkUserService" interface="com.melot.kkcore.user.service.KkUserService" version="1.1.7"></kkrpc:reference>
-	<kkrpc:reference id="kkAccountService" interface="com.melot.kkcore.account.service.AccountService" version="1.0.6"></kkrpc:reference>
+	<kkrpc:reference id="kkAccountService" interface="com.melot.kkcore.account.service.AccountService" version="1.0.7"></kkrpc:reference>
 	<kkrpc:reference id="kkUserRelationService" interface="com.melot.kkcore.relation.service.UserRelationService" version="1.0.1"></kkrpc:reference>
 	<kkrpc:reference id="kkActorRelationService" interface="com.melot.kkcore.relation.service.ActorRelationService" version="1.0.1"></kkrpc:reference>
 	<kkrpc:reference id="showMoneyService" interface="com.melot.showmoney.driver.service.ShowMoneyService" version="1.0.2"></kkrpc:reference>
