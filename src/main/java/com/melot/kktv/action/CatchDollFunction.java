@@ -1,21 +1,33 @@
 package com.melot.kktv.action;
 
+import com.google.common.collect.Maps;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.melot.common.driver.base.ResultCode;
 import com.melot.common.driver.domain.AgoraInfo;
 import com.melot.common.driver.service.ConfigInfoService;
+import com.melot.kk.doll.api.constant.CatchDollRecordStatusEnum;
+import com.melot.kk.doll.api.constant.DollMachineStatusEnum;
+import com.melot.kk.doll.api.domain.DO.CatchDollRecordDO;
 import com.melot.kk.doll.api.domain.DO.DollMachineDO;
 import com.melot.kk.doll.api.domain.DO.RedisDollMachineDO;
 import com.melot.kk.doll.api.domain.DO.StartGameDO;
+import com.melot.kk.doll.api.service.CatchDollRecordService;
 import com.melot.kk.doll.api.service.DollMachineService;
+import com.melot.kkcore.actor.api.RoomInfo;
+import com.melot.kkcore.actor.service.ActorService;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.DateUtils;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Title: CatchDollFunction
@@ -34,6 +46,26 @@ public class CatchDollFunction {
     private static final String KEY = "YdsSH&@#Uyh";
 
     /**
+     * 秒 1s = 1000ms
+     */
+    private static final long SECOND = 1 * 1000L;
+
+    /**
+     * 分钟
+     */
+    private static final long MINUTE = 60 * SECOND;
+
+    /**
+     * 小时
+     */
+    private static final long HOUR = 60 * MINUTE;
+
+    /**
+     * 天数
+     */
+    private static final long DAY = 24 * HOUR;
+
+    /**
      * 51060201
      * 监听直播精灵是否正常推流(直播精灵定时发送心跳请求)
      */
@@ -45,7 +77,7 @@ public class CatchDollFunction {
         String sign;
         try {
             dollMachineId = CommonUtil.getJsonParamInt(jsonObject, "dollMachineId", 0, null, 1, Integer.MAX_VALUE);
-            pushFlowStatus = CommonUtil.getJsonParamInt(jsonObject, "pushFlowStatus", 1, null, 1, Integer.MAX_VALUE);
+            pushFlowStatus = CommonUtil.getJsonParamInt(jsonObject, "pushFlowStatus", 0, null, 1, Integer.MAX_VALUE);
             sign = CommonUtil.getJsonParamString(jsonObject, "sign", null, "05110101", 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
@@ -55,7 +87,7 @@ public class CatchDollFunction {
             return result;
         }
 
-        if(dollMachineId == 0) {
+        if(dollMachineId == 0 || pushFlowStatus == 0) {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_MISSING);
             return result;
         }
@@ -65,11 +97,55 @@ public class CatchDollFunction {
             result.addProperty("TagCode", "5110901");
             return result;
         }
-        
-        //添加返回信息
-        result.addProperty("result", true);
-        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        return result;
+
+        try {
+
+            DollMachineService dollMachineService = (DollMachineService) MelotBeanFactory.getBean("dollMachineService");
+
+            Result<Boolean> updateResult = dollMachineService.updateRecentHeartbeatTime(dollMachineId);
+
+            if(!updateResult.getCode().equals(CommonStateCode.SUCCESS)) {
+                result.addProperty("TagCode", TagCodeEnum.REDIS_ERROR);
+                return result;
+            }
+
+            Result<DollMachineDO> dollMachineDOResult = dollMachineService.getDollMachineDOByDollMachineId(dollMachineId);
+            Integer roomId;
+            if(dollMachineDOResult.getCode().equals(CommonStateCode.SUCCESS) && dollMachineDOResult.getData() != null) {
+                roomId = dollMachineDOResult.getData().getRoomId();
+            }else {
+                result.addProperty("TagCode", "5110902");
+                return result;
+            }
+
+            ActorService actorService = (ActorService) MelotBeanFactory.getBean("actorService");
+            RoomInfo roomInfo = actorService.getRoomInfoById(roomId);
+            Integer roomSource = 1;
+            if(roomInfo != null)
+                roomSource = roomInfo.getRoomSource();
+
+            if(pushFlowStatus == 1 && roomSource != 16) {
+                Map<String,Object> param = Maps.newHashMap();
+                param.put("roomSource", 16);
+                actorService.updateRoomInfoById(roomId, param);
+            }else if(pushFlowStatus == 2 && roomSource == 16) {
+                Map<String,Object> param = Maps.newHashMap();
+                param.put("roomSource", 1);
+                actorService.updateRoomInfoById(roomId, param);
+            }
+
+            // 同步第三方娃娃机状态到系统表中
+            dollMachineService.synchronizesDollMachineStatus(dollMachineId);
+
+            //添加返回信息
+            result.addProperty("result", true);
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error monitorPushFlow()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
     }
 
     /**
@@ -82,8 +158,6 @@ public class CatchDollFunction {
     public JsonObject getDollMachineRoomInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 
         JsonObject result = new JsonObject();
-
-        DollMachineService dollMachineService = (DollMachineService) MelotBeanFactory.getBean("dollMachineService");
 
         int dollMachineId, roomId;
         String sign;
@@ -112,6 +186,8 @@ public class CatchDollFunction {
 
         try {
 
+            DollMachineService dollMachineService = (DollMachineService) MelotBeanFactory.getBean("dollMachineService");
+
             Result<DollMachineDO> dollMachineDOResult;
             DollMachineDO dollMachineDO;
             if(dollMachineId > 0) {
@@ -126,8 +202,7 @@ public class CatchDollFunction {
                 return result;
             }
 
-            if(roomId == 0)
-                roomId = dollMachineDO.getRoomId();
+            roomId = dollMachineDO.getRoomId();
 
             ConfigInfoService configInfoService = MelotBeanFactory.getBean("configInfoService", ConfigInfoService.class);
             com.melot.common.driver.base.Result<AgoraInfo> agoraInfoResult = configInfoService.getAgoraInfo(roomId, 16);
@@ -150,8 +225,8 @@ public class CatchDollFunction {
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
         } catch (Exception e) {
-            logger.error("Module Error ConfigInfoService.getAgoraInfo()", e);
-            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            logger.error("Error getDollMachineRoomInfo()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             return result;
         }
     }
@@ -167,8 +242,6 @@ public class CatchDollFunction {
 
         JsonObject result = new JsonObject();
 
-        DollMachineService dollMachineService = (DollMachineService) MelotBeanFactory.getBean("dollMachineService");
-
         int roomId;
         try {
             roomId = CommonUtil.getJsonParamInt(jsonObject, "roomId", 0, null, 1, Integer.MAX_VALUE);
@@ -181,11 +254,13 @@ public class CatchDollFunction {
         }
 
         if(roomId == 0) {
-            result.addProperty("TagCode", TagCodeEnum.USERID_MISSING);
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_MISSING);
             return result;
         }
 
         try {
+
+            DollMachineService dollMachineService = (DollMachineService) MelotBeanFactory.getBean("dollMachineService");
 
             Result<DollMachineDO> dollMachineDOResult = dollMachineService.getDollMachineDOByRoomId(roomId);
             DollMachineDO dollMachineDO;
@@ -218,8 +293,154 @@ public class CatchDollFunction {
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
         } catch (Exception e) {
-            logger.error("Module Error ConfigInfoService.getAgoraInfo()", e);
+            logger.error("Error getDollMachineRoomDetail()", e);
             result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            return result;
+        }
+    }
+
+    /**
+     * 获取娃娃机直播间最近抓中记录列表(不分页 取最近10条记录)【51060204】
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getRoomCatchRecords(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        int roomId;
+        try {
+            roomId = CommonUtil.getJsonParamInt(jsonObject, "roomId", 0, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        if(roomId == 0) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_MISSING);
+            return result;
+        }
+
+        try {
+
+            CatchDollRecordService catchDollRecordService = (CatchDollRecordService) MelotBeanFactory.getBean("dollMachineService");
+
+            Result<List<CatchDollRecordDO>> recentRecordsResult = catchDollRecordService.getRecentRecordsByRoomId(roomId);
+            if(!recentRecordsResult.getCode().equals(CommonStateCode.SUCCESS)){
+                result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+                return result;
+            }
+
+            List<CatchDollRecordDO> catchDollRecordDOs = recentRecordsResult.getData();
+
+            JsonArray recentRecordList = new JsonArray();
+            if(catchDollRecordDOs != null) {
+                for(CatchDollRecordDO catchDollRecordDO : catchDollRecordDOs) {
+                    JsonObject recentRecordJson = new JsonObject();
+                    recentRecordJson.addProperty("portrait", catchDollRecordDO.getPortrait());
+                    recentRecordJson.addProperty("nickname", catchDollRecordDO.getNickName());
+                    String catchEndTime = getCatchEndTime(catchDollRecordDO);
+                    recentRecordJson.addProperty("catchEndTime", catchEndTime);
+                    recentRecordList.add(recentRecordJson);
+                }
+            }
+
+            result.add("catchRecords", recentRecordList);
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error getRoomCatchRecords()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            return result;
+        }
+    }
+
+    private String getCatchEndTime(CatchDollRecordDO catchDollRecordDO) {
+        String catchEndTime = "";
+        Date now = DateUtils.getCurrentDate();
+        Date endTime = catchDollRecordDO.getEndTime();
+        long headway = now.getTime() - endTime.getTime();
+        if(headway < 60 * SECOND) {
+            catchEndTime = "刚刚";
+        }else if (headway < 60 * MINUTE) {
+            catchEndTime = headway / MINUTE  + "分钟前";
+        }else if (headway < 24 * HOUR) {
+            catchEndTime = headway / HOUR  + "小时前";
+        }else if (headway < 2 * DAY) {
+            catchEndTime = "昨天";
+        }else if (headway <= 7 * DAY) {
+            catchEndTime = headway / DAY  + "天前";
+        }else if (DateUtils.getYear(now) == DateUtils.getYear(endTime)){
+            catchEndTime = DateUtils.format(endTime, "MM/dd");
+        }else {
+            catchEndTime = DateUtils.format(endTime, DateUtils.DATE_FMT_1);
+        }
+        return catchEndTime;
+    }
+
+    /**
+     * 51060210
+     * 投币失败
+     */
+    public JsonObject coinFailed(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int catchDollRecordId;
+        try {
+            catchDollRecordId = CommonUtil.getJsonParamInt(jsonObject, "roomId", 0, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        if(catchDollRecordId == 0) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_MISSING);
+            return result;
+        }
+
+        try {
+
+            DollMachineService dollMachineService = (DollMachineService) MelotBeanFactory.getBean("dollMachineService");
+            CatchDollRecordService catchDollRecordService = (CatchDollRecordService) MelotBeanFactory.getBean("catchDollRecordService");
+
+            Result<CatchDollRecordDO> catchDollRecordDOResult = catchDollRecordService.getCatchDollRecordDO(catchDollRecordId);
+            if(catchDollRecordDOResult.getData() == null) {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            CatchDollRecordDO catchDollRecordDO = catchDollRecordDOResult.getData();
+            int roomId = catchDollRecordDO.getRoomId();
+
+            catchDollRecordService.updateRecordStatus(catchDollRecordId, CatchDollRecordStatusEnum.Coin_Fail);
+            Result<Boolean> updateResult = dollMachineService.updateRedisDollMachineStatus(roomId, DollMachineStatusEnum.Ready);
+
+            if(!updateResult.getCode().equals(CommonStateCode.SUCCESS)) {
+                result.addProperty("TagCode", TagCodeEnum.REDIS_ERROR);
+                return result;
+            }
+
+            //添加返回信息
+            result.addProperty("result", updateResult.getData());
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error coinFailed()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             return result;
         }
     }
@@ -241,7 +462,61 @@ public class CatchDollFunction {
             return result;
         }
 
-        DollMachineService dollMachineService = (DollMachineService) MelotBeanFactory.getBean("dollMachineService");
+        int roomId, userId, platform;
+        try {
+            roomId = CommonUtil.getJsonParamInt(jsonObject, "roomId", 0, null, 1, Integer.MAX_VALUE);
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
+            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        if(roomId == 0 || userId == 0) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_MISSING);
+            return result;
+        }
+
+        try {
+
+            DollMachineService dollMachineService = (DollMachineService) MelotBeanFactory.getBean("dollMachineService");
+
+            Result<StartGameDO> startGameDOResult = dollMachineService.startGame(roomId, userId, platform);
+            StartGameDO startGameDO = new StartGameDO();
+            if(startGameDOResult.getCode().equals(CommonStateCode.SUCCESS) && startGameDOResult.getData() != null) {
+                startGameDO = startGameDOResult.getData();
+            }else if(startGameDOResult.getData() != null){
+                result.addProperty("TagCode", startGameDOResult.getData().getTagCode());
+                return result;
+            }
+
+            result.addProperty("wsUrl", startGameDO.getWsUrl());
+            result.addProperty("catchDollRecordId", startGameDO.getCatchDollRecordId());
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error play()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            return result;
+        }
+    }
+
+    /**
+     * 51060212
+     * 不想再抓(放弃再来一次)
+     */
+    public JsonObject giveUp(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
 
         int roomId, userId;
         try {
@@ -262,21 +537,140 @@ public class CatchDollFunction {
 
         try {
 
-            Result<StartGameDO> startGameDOResult = dollMachineService.startGame(roomId, userId);
-            StartGameDO startGameDO = new StartGameDO();
-            if(startGameDOResult.getCode().equals(CommonStateCode.SUCCESS) && startGameDOResult.getData() != null) {
-                startGameDO = startGameDOResult.getData();
-            }else if(startGameDOResult.getData() != null){
-                result.addProperty("TagCode", startGameDOResult.getData().getTagCode());
+            DollMachineService dollMachineService = (DollMachineService) MelotBeanFactory.getBean("dollMachineService");
+
+            Result<Boolean> updateResult = dollMachineService.updateRedisDollMachineStatus(roomId, DollMachineStatusEnum.Ready);
+
+            if(!updateResult.getCode().equals(CommonStateCode.SUCCESS)) {
+                result.addProperty("TagCode", TagCodeEnum.REDIS_ERROR);
                 return result;
             }
 
-            result.addProperty("wsUrl", startGameDO.getWsUrl());
-            result.addProperty("catchDollRecordId", startGameDO.getCatchDollRecordId());
+            // TODO 向房间发通知
+
+            //添加返回信息
+            result.addProperty("result", updateResult.getData());
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
         } catch (Exception e) {
-            logger.error("Module Error ConfigInfoService.getAgoraInfo()", e);
+            logger.error("Error giveUp()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 获取我的最近一次发货信息【51060213】
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getMyRecentDeliveryInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        if(userId == 0) {
+            result.addProperty("TagCode", TagCodeEnum.USERID_MISSING);
+            return result;
+        }
+
+        try {
+
+            CatchDollRecordService catchDollRecordService = (CatchDollRecordService) MelotBeanFactory.getBean("dollMachineService");
+
+            Result<CatchDollRecordDO> recentDeliveryDOResult = catchDollRecordService.getRecentDeliverDOByUserId(userId);
+            CatchDollRecordDO catchDollRecordDO = new CatchDollRecordDO();
+            if(recentDeliveryDOResult.getCode().equals(CommonStateCode.SUCCESS)  && recentDeliveryDOResult.getData() != null) {
+                catchDollRecordDO = recentDeliveryDOResult.getData();
+            }else {
+                result.addProperty("TagCode", "5110902");
+                return result;
+            }
+
+            result.addProperty("consignee", catchDollRecordDO.getConsignee());
+            result.addProperty("mobile", catchDollRecordDO.getMobile());
+            result.addProperty("address", catchDollRecordDO.getAddress());
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error getMyRecentDeliveryInfo()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            return result;
+        }
+    }
+
+    /**
+     * 游戏结束 【51060214】
+     * 更新娃娃机状态为游戏结束等待投币 返回游戏结果
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getMyRecentDeliveryInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        if(userId == 0) {
+            result.addProperty("TagCode", TagCodeEnum.USERID_MISSING);
+            return result;
+        }
+
+        try {
+
+            CatchDollRecordService catchDollRecordService = (CatchDollRecordService) MelotBeanFactory.getBean("dollMachineService");
+
+            Result<CatchDollRecordDO> recentDeliveryDOResult = catchDollRecordService.getRecentDeliverDOByUserId(userId);
+            CatchDollRecordDO catchDollRecordDO = new CatchDollRecordDO();
+            if(recentDeliveryDOResult.getCode().equals(CommonStateCode.SUCCESS)  && recentDeliveryDOResult.getData() != null) {
+                catchDollRecordDO = recentDeliveryDOResult.getData();
+            }else {
+                result.addProperty("TagCode", "5110902");
+                return result;
+            }
+
+            result.addProperty("consignee", catchDollRecordDO.getConsignee());
+            result.addProperty("mobile", catchDollRecordDO.getMobile());
+            result.addProperty("address", catchDollRecordDO.getAddress());
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error getMyRecentDeliveryInfo()", e);
             result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
             return result;
         }
