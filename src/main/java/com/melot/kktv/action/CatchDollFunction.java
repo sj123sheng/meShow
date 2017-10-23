@@ -426,16 +426,14 @@ public class CatchDollFunction {
             CatchDollRecordDO catchDollRecordDO = catchDollRecordDOResult.getData();
             int roomId = catchDollRecordDO.getRoomId();
 
+            // 更新游戏记录状态为投币失败
             catchDollRecordService.updateRecordStatus(catchDollRecordId, CatchDollRecordStatusEnum.Coin_Fail);
-            Result<Boolean> updateResult = dollMachineService.updateRedisDollMachineStatus(roomId, DollMachineStatusEnum.Ready);
 
-            if(!updateResult.getCode().equals(CommonStateCode.SUCCESS)) {
-                result.addProperty("TagCode", TagCodeEnum.REDIS_ERROR);
-                return result;
-            }
+            // 更新娃娃机状态为准备就绪(空闲中) 并通知房间所有用户
+            dollMachineService.updateRedisDollMachineStatus(roomId, DollMachineStatusEnum.Ready);
 
-            //添加返回信息
-            result.addProperty("result", updateResult.getData());
+            // 添加返回信息
+            result.addProperty("result", true);
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
         } catch (Exception e) {
@@ -475,7 +473,7 @@ public class CatchDollFunction {
             return result;
         }
 
-        if(roomId == 0 || userId == 0) {
+        if(roomId == 0 || userId == 0 || platform == 0) {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_MISSING);
             return result;
         }
@@ -539,17 +537,16 @@ public class CatchDollFunction {
 
             DollMachineService dollMachineService = (DollMachineService) MelotBeanFactory.getBean("dollMachineService");
 
-            Result<Boolean> updateResult = dollMachineService.updateRedisDollMachineStatus(roomId, DollMachineStatusEnum.Ready);
+            RedisDollMachineDO redisDollMachineDO = dollMachineService.getRedisDollMachineDO(roomId).getData();
+            Integer status = redisDollMachineDO.getStatus();
+            if(status != null && status == DollMachineStatusEnum.Wait_Coin) {
 
-            if(!updateResult.getCode().equals(CommonStateCode.SUCCESS)) {
-                result.addProperty("TagCode", TagCodeEnum.REDIS_ERROR);
-                return result;
+               // 更新娃娃机缓存状态为准备就绪(空闲中) 并通知房间所有用户
+               dollMachineService.updateRedisDollMachineStatus(roomId, DollMachineStatusEnum.Ready);
             }
 
-            // TODO 向房间发通知
-
             //添加返回信息
-            result.addProperty("result", updateResult.getData());
+            result.addProperty("result", true);
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
         } catch (Exception e) {
@@ -635,9 +632,10 @@ public class CatchDollFunction {
             return result;
         }
 
-        int userId;
+        int roomId, playRecordId;
         try {
-            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
+            roomId = CommonUtil.getJsonParamInt(jsonObject, "roomId", 0, null, 1, Integer.MAX_VALUE);
+            playRecordId = CommonUtil.getJsonParamInt(jsonObject, "playRecordId", 0, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -646,32 +644,35 @@ public class CatchDollFunction {
             return result;
         }
 
-        if(userId == 0) {
-            result.addProperty("TagCode", TagCodeEnum.USERID_MISSING);
+        if(roomId == 0 || playRecordId == 0) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_MISSING);
             return result;
         }
 
         try {
 
-            CatchDollRecordService catchDollRecordService = (CatchDollRecordService) MelotBeanFactory.getBean("dollMachineService");
+            DollMachineService dollMachineService = (DollMachineService) MelotBeanFactory.getBean("dollMachineService");
 
-            Result<CatchDollRecordDO> recentDeliveryDOResult = catchDollRecordService.getRecentDeliverDOByUserId(userId);
-            CatchDollRecordDO catchDollRecordDO = new CatchDollRecordDO();
-            if(recentDeliveryDOResult.getCode().equals(CommonStateCode.SUCCESS)  && recentDeliveryDOResult.getData() != null) {
-                catchDollRecordDO = recentDeliveryDOResult.getData();
-            }else {
-                result.addProperty("TagCode", "5110902");
+            // 更新娃娃机状态为游戏结束等待投币
+            RedisDollMachineDO redisDollMachineDO = dollMachineService.getRedisDollMachineDO(roomId).getData();
+            Integer status = redisDollMachineDO.getStatus();
+            if(status != null && status == DollMachineStatusEnum.Play) {
+                dollMachineService.updateRedisDollMachineStatus(roomId, DollMachineStatusEnum.Wait_Coin);
+            }
+
+            Result<Boolean> catchResult = dollMachineService.getThirdCatchResultByPlayRecordId(playRecordId);
+            if(!catchResult.getCode().equals(CommonStateCode.SUCCESS) || catchResult.getData() == null) {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
                 return result;
             }
 
-            result.addProperty("consignee", catchDollRecordDO.getConsignee());
-            result.addProperty("mobile", catchDollRecordDO.getMobile());
-            result.addProperty("address", catchDollRecordDO.getAddress());
+            //添加返回信息
+            result.addProperty("catchResult", catchResult.getData());
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
         } catch (Exception e) {
-            logger.error("Error getMyRecentDeliveryInfo()", e);
-            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            logger.error("Error gameOver()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             return result;
         }
     }

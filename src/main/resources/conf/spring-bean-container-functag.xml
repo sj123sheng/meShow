@@ -2622,5 +2622,9 @@
         <constructor-arg name="t" ref="catchDollFunction" />
         <constructor-arg name="methodName" value="getMyRecentDeliveryInfo" />
     </bean>
+    <bean id="51060214" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="catchDollFunction" />
+        <constructor-arg name="methodName" value="gameOver" />
+    </bean>
 
 </beans>
