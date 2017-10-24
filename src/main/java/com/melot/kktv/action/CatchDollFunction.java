@@ -104,7 +104,7 @@ public class CatchDollFunction {
 
             DollMachineService dollMachineService = (DollMachineService) MelotBeanFactory.getBean("dollMachineService");
 
-            dollMachineService.updateRecentHeartbeatTime(dollMachineId, cameraId, pushFlowStatus);
+            dollMachineService.updateRecentHeartbeatStatus(dollMachineId, cameraId, pushFlowStatus);
 
             Result<DollMachineDO> dollMachineDOResult = dollMachineService.getDollMachineDOByDollMachineId(dollMachineId);
             if(!dollMachineDOResult.getCode().equals(CommonStateCode.SUCCESS) || dollMachineDOResult.getData() == null) {
