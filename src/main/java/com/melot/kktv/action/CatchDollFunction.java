@@ -732,7 +732,7 @@ public class CatchDollFunction {
             DollMachineService dollMachineService = (DollMachineService) MelotBeanFactory.getBean("dollMachineService");
 
             // 获取第三方游戏记录的抓取结果
-            Result<Boolean> catchResult = dollMachineService.getThirdCatchResultByPlayRecordId(catchDollRecordId);
+            Result<Boolean> catchResult = dollMachineService.getThirdCatchResultByCatchDollRecordId(catchDollRecordId);
             if(!catchResult.getCode().equals(CommonStateCode.SUCCESS) || catchResult.getData() == null) {
                 result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
                 return result;
