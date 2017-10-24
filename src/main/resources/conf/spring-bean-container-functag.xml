@@ -2606,6 +2606,10 @@
         <constructor-arg name="t" ref="catchDollFunction" />
         <constructor-arg name="methodName" value="getRoomCatchRecords" />
     </bean>
+    <bean id="51060205" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="catchDollFunction" />
+        <constructor-arg name="methodName" value="getMyDollInfo" />
+    </bean>
     <bean id="51060210" class="com.melot.sdk.core.function.GenericFunction">
         <constructor-arg name="t" ref="catchDollFunction" />
         <constructor-arg name="methodName" value="coinFailed" />

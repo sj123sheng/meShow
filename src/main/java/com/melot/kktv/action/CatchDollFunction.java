@@ -16,6 +16,8 @@ import com.melot.kk.doll.api.service.CatchDollRecordService;
 import com.melot.kk.doll.api.service.DollMachineService;
 import com.melot.kkcore.actor.api.RoomInfo;
 import com.melot.kkcore.actor.service.ActorService;
+import com.melot.kkcore.user.api.UserProfile;
+import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.util.CommonUtil;
@@ -287,8 +289,18 @@ public class CatchDollFunction {
             }
 
             Integer dollMachineStatus = redisDollMachineDO.getStatus();
+            Integer userId = redisDollMachineDO.getRecentStartGameUserId();
             if(dollMachineStatus == null)
                 dollMachineStatus = dollMachineDO.getStatus();
+
+            if((dollMachineStatus == DollMachineStatusEnum.Play || dollMachineStatus == DollMachineStatusEnum.Wait_Coin) && userId != null) {
+                KkUserService userService = MelotBeanFactory.getBean("kkUserService", KkUserService.class);
+                UserProfile userProfile = userService.getUserProfile(userId);
+                if(userProfile != null) {
+                    result.addProperty("userId", userId);
+                    result.addProperty("nickName", userProfile.getNickName());
+                }
+            }
 
             result.addProperty("dollMachineId", dollMachineDO.getDollMachineId());
             result.addProperty("dollMachineStatus", dollMachineStatus);
@@ -388,6 +400,65 @@ public class CatchDollFunction {
             catchEndTime = DateUtils.format(endTime, DateUtils.DATE_FMT_1);
         }
         return catchEndTime;
+    }
+
+    /**
+     * 获取我的娃娃信息(总局数，娃娃票数量)【51060205】
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getMyDollInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        if(userId == 0) {
+            result.addProperty("TagCode", TagCodeEnum.USERID_MISSING);
+            return result;
+        }
+
+        try {
+
+            DollMachineService dollMachineService = (DollMachineService) MelotBeanFactory.getBean("dollMachineService");
+
+            Result<DollMachineDO> dollMachineDOResult = null;//dollMachineService.getDollMachineDOByRoomId(roomId);
+            DollMachineDO dollMachineDO;
+            if(dollMachineDOResult.getCode().equals(CommonStateCode.SUCCESS)  && dollMachineDOResult.getData() != null) {
+                dollMachineDO = dollMachineDOResult.getData();
+            }else {
+                result.addProperty("TagCode", "5110902");
+                return result;
+            }
+
+            result.addProperty("gameTotalCount", dollMachineDO.getDollDesc());
+            result.addProperty("dollTicketCount", dollMachineDO.getDollPictureUrl());
+            result.addProperty("unExchangeCount", dollMachineDO.getPrice());
+            result.addProperty("exchangedCount", dollMachineDO.getGameTime());
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error getDollMachineRoomDetail()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            return result;
+        }
     }
 
     /**
@@ -639,10 +710,10 @@ public class CatchDollFunction {
             return result;
         }
 
-        int roomId, playRecordId;
+        int roomId, catchDollRecordId;
         try {
             roomId = CommonUtil.getJsonParamInt(jsonObject, "roomId", 0, null, 1, Integer.MAX_VALUE);
-            playRecordId = CommonUtil.getJsonParamInt(jsonObject, "playRecordId", 0, null, 1, Integer.MAX_VALUE);
+            catchDollRecordId = CommonUtil.getJsonParamInt(jsonObject, "catchDollRecordId", 0, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -651,7 +722,7 @@ public class CatchDollFunction {
             return result;
         }
 
-        if(roomId == 0 || playRecordId == 0) {
+        if(roomId == 0 || catchDollRecordId == 0) {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_MISSING);
             return result;
         }
@@ -661,7 +732,7 @@ public class CatchDollFunction {
             DollMachineService dollMachineService = (DollMachineService) MelotBeanFactory.getBean("dollMachineService");
 
             // 获取第三方游戏记录的抓取结果
-            Result<Boolean> catchResult = dollMachineService.getThirdCatchResultByPlayRecordId(playRecordId);
+            Result<Boolean> catchResult = dollMachineService.getThirdCatchResultByPlayRecordId(catchDollRecordId);
             if(!catchResult.getCode().equals(CommonStateCode.SUCCESS) || catchResult.getData() == null) {
                 result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
                 return result;
@@ -735,8 +806,8 @@ public class CatchDollFunction {
     public static void main(String[] args) {
         StringBuilder builder = new StringBuilder();
         builder.append(KEY);
-        //builder.append("roomId=");
-        //builder.append(10002534);
+        builder.append("cameraId=");
+        builder.append(10002534);
         builder.append("dollMachineId=");
         builder.append(1076);
         /*builder.append("&pushFlowStatus=");
