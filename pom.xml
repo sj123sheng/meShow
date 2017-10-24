@@ -573,7 +573,7 @@
         <dependency>
             <groupId>com.melot.module</groupId>
             <artifactId>kkcore-actor-api</artifactId>
-            <version>1.0.7</version>
+            <version>1.0.8-SNAPSHOT</version>
         </dependency>
 	</dependencies>
  	
