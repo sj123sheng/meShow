@@ -16,6 +16,8 @@ import com.melot.kk.doll.api.service.CatchDollRecordService;
 import com.melot.kk.doll.api.service.DollMachineService;
 import com.melot.kkcore.actor.api.RoomInfo;
 import com.melot.kkcore.actor.service.ActorService;
+import com.melot.kkcore.user.api.UserProfile;
+import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.util.CommonUtil;
@@ -287,8 +289,18 @@ public class CatchDollFunction {
             }
 
             Integer dollMachineStatus = redisDollMachineDO.getStatus();
+            Integer userId = redisDollMachineDO.getRecentStartGameUserId();
             if(dollMachineStatus == null)
                 dollMachineStatus = dollMachineDO.getStatus();
+
+            if((dollMachineStatus == DollMachineStatusEnum.Play || dollMachineStatus == DollMachineStatusEnum.Wait_Coin) && userId != null) {
+                KkUserService userService = MelotBeanFactory.getBean("kkUserService", KkUserService.class);
+                UserProfile userProfile = userService.getUserProfile(userId);
+                if(userProfile != null) {
+                    result.addProperty("userId", userId);
+                    result.addProperty("nickName", userProfile.getNickName());
+                }
+            }
 
             result.addProperty("dollMachineId", dollMachineDO.getDollMachineId());
             result.addProperty("dollMachineStatus", dollMachineStatus);
@@ -735,8 +747,8 @@ public class CatchDollFunction {
     public static void main(String[] args) {
         StringBuilder builder = new StringBuilder();
         builder.append(KEY);
-        //builder.append("roomId=");
-        //builder.append(10002534);
+        builder.append("cameraId=");
+        builder.append(10002534);
         builder.append("dollMachineId=");
         builder.append(1076);
         /*builder.append("&pushFlowStatus=");
