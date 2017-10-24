@@ -74,11 +74,12 @@ public class CatchDollFunction {
 
         JsonObject result = new JsonObject();
 
-        int dollMachineId, pushFlowStatus;
+        int dollMachineId, pushFlowStatus, cameraId;
         String sign;
         try {
             dollMachineId = CommonUtil.getJsonParamInt(jsonObject, "dollMachineId", 0, null, 1, Integer.MAX_VALUE);
             pushFlowStatus = CommonUtil.getJsonParamInt(jsonObject, "pushFlowStatus", 0, null, 1, Integer.MAX_VALUE);
+            cameraId = CommonUtil.getJsonParamInt(jsonObject, "cameraId", 0, null, 1, Integer.MAX_VALUE);
             sign = CommonUtil.getJsonParamString(jsonObject, "sign", null, "05110101", 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
@@ -88,13 +89,13 @@ public class CatchDollFunction {
             return result;
         }
 
-        if(dollMachineId == 0 || pushFlowStatus == 0) {
+        if(dollMachineId == 0 || pushFlowStatus == 0 || cameraId == 0) {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_MISSING);
             return result;
         }
 
         // 校验参数
-        if (!checkSign(dollMachineId, 0 , pushFlowStatus, sign)) {
+        if (!checkSign(dollMachineId, cameraId , pushFlowStatus, sign)) {
             result.addProperty("TagCode", "5110901");
             return result;
         }
@@ -103,35 +104,39 @@ public class CatchDollFunction {
 
             DollMachineService dollMachineService = (DollMachineService) MelotBeanFactory.getBean("dollMachineService");
 
-            Result<Boolean> updateResult = dollMachineService.updateRecentHeartbeatTime(dollMachineId);
-
-            if(!updateResult.getCode().equals(CommonStateCode.SUCCESS)) {
-                result.addProperty("TagCode", TagCodeEnum.REDIS_ERROR);
-                return result;
-            }
+            dollMachineService.updateRecentHeartbeatTime(dollMachineId, cameraId, pushFlowStatus);
 
             Result<DollMachineDO> dollMachineDOResult = dollMachineService.getDollMachineDOByDollMachineId(dollMachineId);
-            Integer roomId;
-            if(dollMachineDOResult.getCode().equals(CommonStateCode.SUCCESS) && dollMachineDOResult.getData() != null) {
-                roomId = dollMachineDOResult.getData().getRoomId();
-            }else {
+            if(!dollMachineDOResult.getCode().equals(CommonStateCode.SUCCESS) || dollMachineDOResult.getData() == null) {
                 result.addProperty("TagCode", "5110902");
                 return result;
             }
 
+            DollMachineDO dollMachineDO = dollMachineDOResult.getData();
+            int roomId = dollMachineDO.getRoomId();
+            int primaryCameraId = dollMachineDO.getPrimaryCameraId();
+            int secondaryCameraId = dollMachineDO.getSecondaryCameraId();
+            Integer secondaryCameraStatus = null;
+            if(cameraId == primaryCameraId) {
+                secondaryCameraStatus = dollMachineService.getRecentHeartbeatStatus(dollMachineId, secondaryCameraId).getData();
+            }else if(cameraId == secondaryCameraId) {
+                secondaryCameraStatus = dollMachineService.getRecentHeartbeatStatus(dollMachineId, primaryCameraId).getData();
+            }
+
             ActorService actorService = (ActorService) MelotBeanFactory.getBean("actorService");
             RoomInfo roomInfo = actorService.getRoomInfoById(roomId);
-            Integer roomSource = 1;
-            if(roomInfo != null)
-                roomSource = roomInfo.getRoomSource();
+            Long liveEndTime = roomInfo.getLiveEndTime();
+            boolean isLive = true;
+            if(liveEndTime != null)
+                isLive = false;
 
-            if(pushFlowStatus == 1 && roomSource != 16) {
+            if(pushFlowStatus == 1 && !isLive && secondaryCameraStatus != null && secondaryCameraStatus == 1) {
                 Map<String,Object> param = Maps.newHashMap();
-                param.put("roomSource", 16);
+                param.put("liveEndTime", -1l);
                 actorService.updateRoomInfoById(roomId, param);
-            }else if(pushFlowStatus == 2 && roomSource == 16) {
+            }else if(pushFlowStatus == 2 && isLive) {
                 Map<String,Object> param = Maps.newHashMap();
-                param.put("roomSource", 1);
+                param.put("liveEndTime", DateUtils.getCurrentDate().getTime());
                 actorService.updateRoomInfoById(roomId, param);
             }
 
@@ -180,7 +185,7 @@ public class CatchDollFunction {
         }
 
         // 校验参数
-        if (!checkSign(dollMachineId, roomId, null, sign)) {
+        if (!checkSign(dollMachineId, roomId, sign)) {
             result.addProperty("TagCode", "5110901");
             return result;
         }
@@ -344,7 +349,7 @@ public class CatchDollFunction {
                 for(CatchDollRecordDO catchDollRecordDO : catchDollRecordDOs) {
                     JsonObject recentRecordJson = new JsonObject();
                     recentRecordJson.addProperty("portrait", catchDollRecordDO.getPortrait());
-                    recentRecordJson.addProperty("nickname", catchDollRecordDO.getNickName());
+                    recentRecordJson.addProperty("nickName", catchDollRecordDO.getNickName());
                     String catchEndTime = getCatchEndTime(catchDollRecordDO);
                     recentRecordJson.addProperty("catchEndTime", catchEndTime);
                     recentRecordList.add(recentRecordJson);
@@ -655,17 +660,18 @@ public class CatchDollFunction {
 
             DollMachineService dollMachineService = (DollMachineService) MelotBeanFactory.getBean("dollMachineService");
 
+            // 获取第三方游戏记录的抓取结果
+            Result<Boolean> catchResult = dollMachineService.getThirdCatchResultByPlayRecordId(playRecordId);
+            if(!catchResult.getCode().equals(CommonStateCode.SUCCESS) || catchResult.getData() == null) {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+                return result;
+            }
+
             // 更新娃娃机状态为游戏结束等待投币
             RedisDollMachineDO redisDollMachineDO = dollMachineService.getRedisDollMachineDO(roomId).getData();
             Integer status = redisDollMachineDO.getStatus();
             if(status != null && status == DollMachineStatusEnum.Play) {
                 dollMachineService.updateRedisDollMachineStatus(roomId, DollMachineStatusEnum.Wait_Coin);
-            }
-
-            Result<Boolean> catchResult = dollMachineService.getThirdCatchResultByPlayRecordId(playRecordId);
-            if(!catchResult.getCode().equals(CommonStateCode.SUCCESS) || catchResult.getData() == null) {
-                result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
-                return result;
             }
 
             //添加返回信息
@@ -683,7 +689,30 @@ public class CatchDollFunction {
      * 校验参数
      * @return
      */
-    private static boolean checkSign(int dollMachineId, int roomId, Integer pushFlowStatus, String sign) {
+    private static boolean checkSign(int dollMachineId, int cameraId, int pushFlowStatus, String sign) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(KEY);
+        builder.append("cameraId=");
+        builder.append(cameraId);
+        builder.append("&dollMachineId=");
+        builder.append(dollMachineId);
+        builder.append("&pushFlowStatus=");
+        builder.append(pushFlowStatus);
+        builder.append(KEY);
+
+        String param = builder.toString();
+        String signTemp = CommonUtil.md5(param);
+        if (signTemp.equals(sign)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 校验参数
+     * @return
+     */
+    private static boolean checkSign(int dollMachineId, int roomId, String sign) {
         StringBuilder builder = new StringBuilder();
         builder.append(KEY);
         if(dollMachineId == 0) {
@@ -692,10 +721,6 @@ public class CatchDollFunction {
         }else {
             builder.append("dollMachineId=");
             builder.append(dollMachineId);
-            if (pushFlowStatus != null) {
-                builder.append("&pushFlowStatus=");
-                builder.append(pushFlowStatus);
-            }
         }
         builder.append(KEY);
         
