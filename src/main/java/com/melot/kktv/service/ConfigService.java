@@ -32,8 +32,8 @@ public class ConfigService {
 
     private boolean isAbroad;
 
-    //是否关闭手机号校验  1：关闭
-    private String closeCheckPhone;
+    //是否特殊时期
+    private boolean isSpecialTime;
 
     @DisconfFileItem(name = "challenger.family", associateField = "challengerFamily")
     public String getChallengerFamily() {
@@ -80,13 +80,13 @@ public class ConfigService {
         this.goldMedalFamilyIds = goldMedalFamilyIds;
     }
 
-    @DisconfFileItem(name = "global.closeCheckPhone", associateField = "closeCheckPhone")
-    public String getCloseCheckPhone() {
-        return closeCheckPhone;
+    @DisconfFileItem(name = "global.isSpecialTime", associateField = "isSpecialTime")
+    public boolean getIsSpecialTime() {
+        return isSpecialTime;
     }
 
-    public void setCloseCheckPhone(String closeCheckPhone) {
-        this.closeCheckPhone = closeCheckPhone;
+    public void setIsSpecialTime(boolean isSpecialTime) {
+        this.isSpecialTime = isSpecialTime;
     }
 
     @DisconfFileItem(name = "global.isAbroad", associateField = "isAbroad")
@@ -97,5 +97,4 @@ public class ConfigService {
     public void setIsAbroad(boolean isAbroad) {
         this.isAbroad = isAbroad;
     }
-
 }
