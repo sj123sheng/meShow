@@ -165,12 +165,12 @@ public class NewsV2Functions {
                 resource.setFileWidth(videoInfo.getWidth());
             }
             resource.setTitle(String.valueOf(mediaFrom));
+            if(!imageUrl.startsWith(SEPARATOR)) {
+                imageUrl = SEPARATOR + imageUrl;
+            }
             if (!StringUtil.strIsNull(imageUrl)) {
                 imageUrl = imageUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
                 imageUrl = imageUrl.replaceFirst("/kktv", "");
-            }
-            if(!imageUrl.startsWith(SEPARATOR)) {
-                imageUrl = SEPARATOR + imageUrl;
             }
             resource.setImageUrl(imageUrl != null ? imageUrl : Pattern.compile("mp4$").matcher(mediaUrl).replaceAll("jpg"));
             int resId = ResourceService.addResource(resource);
