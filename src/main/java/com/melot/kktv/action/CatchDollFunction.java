@@ -1,5 +1,6 @@
 package com.melot.kktv.action;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -20,11 +21,11 @@ import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
-import com.melot.kktv.util.CommonUtil;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.DateUtils;
-import com.melot.kktv.util.TagCodeEnum;
+import com.melot.kktv.service.GeneralService;
+import com.melot.kktv.util.*;
 import com.melot.sdk.core.util.MelotBeanFactory;
+import com.melot.stream.driver.service.LiveStreamConfigService;
+import com.melot.stream.driver.service.domain.ClientDetail;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -227,7 +228,17 @@ public class CatchDollFunction {
                 return result;
             }
 
+            LiveStreamConfigService liveStreamConfigService = (LiveStreamConfigService) MelotBeanFactory.getBean("liveStreamConfigService");
+            ClientDetail detail = new ClientDetail();
+            detail.setActorId(roomId);
+            detail.setUserId(roomId);
+            detail.setClientIp(GeneralService.getIpAddr(request, AppIdEnum.AMUSEMENT, PlatformEnum.WEB, null));
+            detail.setCdnType(1);
+            String resObj = liveStreamConfigService.getPushStreamAddress(detail);
+            String pushStream = JSONObject.parseObject(resObj).get("pushStream") + "/" + JSONObject.parseObject(resObj).get("pushCode");
+
             result.addProperty("roomId", roomId);
+            result.addProperty("pushStream", pushStream);
             result.addProperty("primaryCameraId", dollMachineDO.getPrimaryCameraId());
             result.addProperty("secondaryCameraId", dollMachineDO.getSecondaryCameraId());
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
@@ -804,20 +815,7 @@ public class CatchDollFunction {
     }
 
     public static void main(String[] args) {
-        StringBuilder builder = new StringBuilder();
-        builder.append(KEY);
-        builder.append("cameraId=");
-        builder.append(10002534);
-        builder.append("dollMachineId=");
-        builder.append(1076);
-        /*builder.append("&pushFlowStatus=");
-        builder.append(1);*/
 
-        builder.append(KEY);
-
-        String param = builder.toString();
-        String signTemp = CommonUtil.md5(param);
-        System.out.println(signTemp);
-        //System.out.println(checkSign(0, 10002534,null,signTemp));
+        checkSign(0, 10002534, "123");
     }
 }
