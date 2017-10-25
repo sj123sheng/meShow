@@ -194,11 +194,11 @@ public class NewsV2Functions {
                 resource.setState(0);
                 resource.setType(mediaType);
                 if (!StringUtil.strIsNull(tempUrl)) {
+                    if(!imageUrl.startsWith(SEPARATOR)) {
+                        tempUrl = SEPARATOR + tempUrl;
+                    }
                     tempUrl = tempUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
                     tempUrl = tempUrl.replaceFirst("/kktv", "");
-                }
-                if(!tempUrl.startsWith(SEPARATOR)) {
-                    tempUrl = SEPARATOR + tempUrl;
                 }
                 resource.setImageUrl(tempUrl);
                 resourceList.add(resource);
