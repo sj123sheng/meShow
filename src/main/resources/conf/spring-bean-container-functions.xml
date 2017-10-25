@@ -158,6 +158,9 @@
 	<!-- 1v1视频相关接口 -->
 	<bean id="singleChatFunction" class="com.melot.kktv.action.SingleChatFunction" />
 
+	<!-- 资源相关接口 -->
+	<bean id="resourceNewFunction" class="com.melot.kkcx.functions.ResourceFunctions" />
+
     <!-- 主播代言团相关接口 -->
     <bean id="actorKKTVFunction" class="com.melot.kktv.action.ActorFunction" />
 

@@ -55,13 +55,15 @@ import redis.clients.jedis.Tuple;
 public class NewsV2Functions {
 
     private static Logger logger = Logger.getLogger(NewsV2Functions.class);
-    
+
+    private static String SEPARATOR = "/";
+
     @Autowired
-    private ConfigService configService;
+    ConfigService configService;
 
     /**
      * 发布动态(20006002)
-     * 
+     *
      * @param jsonObject
      *            请求对象
      * @param checkTag
@@ -167,6 +169,9 @@ public class NewsV2Functions {
                 imageUrl = imageUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
                 imageUrl = imageUrl.replaceFirst("/kktv", "");
             }
+            if(!imageUrl.startsWith(SEPARATOR)) {
+                imageUrl = SEPARATOR + imageUrl;
+            }
             resource.setImageUrl(imageUrl != null ? imageUrl : Pattern.compile("mp4$").matcher(mediaUrl).replaceAll("jpg"));
             int resId = ResourceService.addResource(resource);
             if (resId > 0) {
@@ -191,6 +196,9 @@ public class NewsV2Functions {
                 if (!StringUtil.strIsNull(tempUrl)) {
                     tempUrl = tempUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
                     tempUrl = tempUrl.replaceFirst("/kktv", "");
+                }
+                if(!tempUrl.startsWith(SEPARATOR)) {
+                    tempUrl = SEPARATOR + tempUrl;
                 }
                 resource.setImageUrl(tempUrl);
                 resourceList.add(resource);
@@ -221,7 +229,7 @@ public class NewsV2Functions {
 
     /**
      * 删除动态(20006003)
-     * 
+     *
      * @param jsonObject
      *            请求对象
      * @param checkTag
@@ -274,7 +282,7 @@ public class NewsV2Functions {
 
     /**
      * 获取个人动态列表(20006004)
-     * 
+     *
      * @param jsonObject
      *            请求对象
      * @return 结果字符串
@@ -397,7 +405,7 @@ public class NewsV2Functions {
 
     /**
      * 评论动态(20006005)
-     * 
+     *
      * @param jsonObject
      *            请求对象
      * @param checkTag
@@ -413,12 +421,6 @@ public class NewsV2Functions {
             result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
             return result;
         }
-        
-        //特殊时期接口暂停使用
-        if (configService.getIsSpecialTime()) {
-            result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
-            return result;
-        }
 
         // 定义所需参数
         int userId, newsId, toUserId, platform;
@@ -430,8 +432,8 @@ public class NewsV2Functions {
             toUserId = CommonUtil.getJsonParamInt(jsonObject, "toUserId", 0, null, 1, Integer.MAX_VALUE);
             platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, 1, Integer.MAX_VALUE);
             content = CommonUtil.getJsonParamString(jsonObject, "content", null, "06050005", 1, 250);
-            // matchXSSTag,字符长度要小于等于7
-            if (CommonUtil.matchXSSTag(content) || content.length() > 7) {
+            // matchXSSTag,字符长度要小于等于30
+            if (CommonUtil.matchXSSTag(content) || content.length() > 30) {
                 result.addProperty("TagCode", "06050006");
                 return result;
             }
@@ -482,7 +484,7 @@ public class NewsV2Functions {
 
     /**
      * 点赞接口(20006019)
-     * 
+     *
      * @param jsonObject
      * @param checkTag
      * @param request
@@ -532,7 +534,7 @@ public class NewsV2Functions {
 
     /**
      * 获取推荐短评(20006021)
-     * 
+     *
      * @param jsonObject
      * @param checkTag
      * @param request
@@ -581,7 +583,7 @@ public class NewsV2Functions {
 
     /**
      * 热门短评换一换接口(20006020)
-     * 
+     *
      * @param jsonObject
      * @param checkTag
      * @param request
@@ -631,7 +633,7 @@ public class NewsV2Functions {
 
     /**
      * 获取热门动态(20006022)
-     * 
+     *
      * @param jsonObject
      * @param checkTag
      * @param request
@@ -720,7 +722,7 @@ public class NewsV2Functions {
 
     /**
      * 获取话题相关动态(20006023)
-     * 
+     *
      * @param jsonObject
      * @param checkTag
      * @param request
@@ -805,7 +807,7 @@ public class NewsV2Functions {
 
     /**
      * 获取短评相关动态(20006024)
-     * 
+     *
      * @param jsonObject
      * @param checkTag
      * @param request
@@ -820,7 +822,7 @@ public class NewsV2Functions {
         String content;
         // 解析参数
         try {
-            content = CommonUtil.getJsonParamString(jsonObject, "content", null, "06240001", 1, 7);
+            content = CommonUtil.getJsonParamString(jsonObject, "content", null, "06240001", 1, configService.getIsAbroad() ? 30 : 7);
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 0, Integer.MAX_VALUE);
             start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, null, 0, Integer.MAX_VALUE);
             offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 10, null, 0, Integer.MAX_VALUE);
@@ -867,7 +869,7 @@ public class NewsV2Functions {
 
     /**
      * 获取动态审核状态(20006025)
-     * 
+     *
      * @param jsonObject
      * @param checkTag
      * @param request
@@ -918,7 +920,7 @@ public class NewsV2Functions {
 
     /**
      * 动态点赞接口(20006026)
-     * 
+     *
      * @param jsonObject
      * @param checkTag
      * @param request
@@ -957,7 +959,7 @@ public class NewsV2Functions {
 
     /**
      * 取消动态点赞接口(20006027)
-     * 
+     *
      * @param jsonObject
      * @param checkTag
      * @param request
@@ -996,7 +998,7 @@ public class NewsV2Functions {
 
     /**
      * 取消点赞接口(20006028)
-     * 
+     *
      * @param jsonObject
      * @param checkTag
      * @param request
@@ -1034,7 +1036,7 @@ public class NewsV2Functions {
 
     /**
      * 根据话题id获取推荐短评(20006029)
-     * 
+     *
      * @param jsonObject
      * @param checkTag
      * @param request
@@ -1076,135 +1078,10 @@ public class NewsV2Functions {
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
-    
-    /**
-     * 根据newsType获取动态(20006030)
-     * 
-     * @param jsonObject
-     * @param checkTag
-     * @param request
-     * @return
-     * @throws Exception
-     */
-    public JsonObject getNewsListByNewsType(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
-        JsonObject result = new JsonObject();
 
-        // 定义所需参数
-        int userId, newsType, start, offset, state, platform, actorId = 0;
-        // 解析参数
-        try {
-        	userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 0, Integer.MAX_VALUE);
-        	actorId = CommonUtil.getJsonParamInt(jsonObject, "actorId", 0, null, 0, Integer.MAX_VALUE);
-        	newsType = CommonUtil.getJsonParamInt(jsonObject, "newsType", 10, null, 0, Integer.MAX_VALUE);
-        	start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, null, 0, Integer.MAX_VALUE);
-        	offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 20, null, 1, Integer.MAX_VALUE);
-        	state = CommonUtil.getJsonParamInt(jsonObject, "state", 1, null, 0, Integer.MAX_VALUE);
-            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
-        } catch (ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
-            return result;
-        }
-        
-        if (userId == 0 && actorId == 0) {
-        	result.addProperty("TagCode", "06300001");
-        	return result;
-        }
-        
-        if (actorId == 0) {
-        	//老版参数兼容,之前userId作为actorId使用,且不传actorId
-        	actorId = userId;
-        }
-        
-        int count = NewsService.getNewsCountByResType(actorId, newsType, state);
-        if (count > 0) {
-        	List<NewsInfo> newsList;
-        	if (checkTag) {
-        		newsList = NewsService.getNewsListAndPraiseByResType(actorId, userId, newsType, start, offset);
-        	} else {
-            	newsList = NewsService.getNewsListByResType(actorId, newsType, start, offset);
-        	}
-            if (newsList != null && newsList.size() > 0) {
-            	JsonArray jNewsList = new JsonArray();
-            	for (NewsInfo newsInfo : newsList) {
-            		JsonObject json = NewsService.getNewResourceJson(newsInfo, platform, false);
-                    jNewsList.add(json);
-                }
-            	
-            	
-            	result.add("newsList", jNewsList);
-                
-            }
-        } 
-        
-        RoomInfo actorInfo = RoomService.getRoomInfo(actorId);
-        if (actorInfo != null) {
-            result.addProperty("nickname", actorInfo.getNickname());
-            if (actorInfo.getGender() != null) {
-                result.addProperty("gender", actorInfo.getGender());
-            }
-            if (actorInfo.getPortrait() != null) {
-                if (platform == PlatformEnum.WEB) {
-                    result.addProperty("portrait_path_256", actorInfo.getPortrait() + "!256");
-                } else if (platform == PlatformEnum.ANDROID) {
-                    result.addProperty("portrait_path_48", actorInfo.getPortrait() + "!48");
-                    result.addProperty("portrait_path_128", actorInfo.getPortrait() + "!128");
-                } else if (platform == PlatformEnum.IPHONE) {
-                    result.addProperty("portrait_path_128", actorInfo.getPortrait() + "!128");
-                } else if (platform == PlatformEnum.IPAD) {
-                    result.addProperty("portrait_path_128", actorInfo.getPortrait() + "!128");
-                } else {
-                    result.addProperty("portrait_path_1280", actorInfo.getPortrait() + "!1280");
-                    result.addProperty("portrait_path_256", actorInfo.getPortrait() + "!256");
-                    result.addProperty("portrait_path_128", actorInfo.getPortrait() + "!128");
-                    result.addProperty("portrait_path_48", actorInfo.getPortrait() + "!48");
-                }
-            }
-            result.addProperty("actorLevel", actorInfo.getActorLevel());
-            result.addProperty("richLevel", actorInfo.getRichLevel());
-            // 直播状态
-            result.addProperty("isLive", actorInfo.getLiveStarttime() != null && actorInfo.getLiveEndtime() == null ? 1 : 0);
-            result.addProperty("roomSource", actorInfo.getRoomSource());
-            result.addProperty("screenType", actorInfo.getScreenType());
-            result.addProperty("actorTag", 1);
-        } else {
-            UserProfile userInfo = com.melot.kktv.service.UserService.getUserInfoV2(actorId);
-            if (userInfo != null) {
-                result.addProperty("nickname", userInfo.getNickName());
-                result.addProperty("gender", userInfo.getGender());
-                result.addProperty("actorLevel", userInfo.getActorLevel());
-                result.addProperty("richLevel", userInfo.getUserLevel());
-                result.addProperty("actorTag", 0);
-                if (userInfo.getPortrait() != null) {
-                    if (platform == PlatformEnum.WEB) {
-                        result.addProperty("portrait_path_256", userInfo.getPortrait() + "!256");
-                    } else if (platform == PlatformEnum.ANDROID) {
-                        result.addProperty("portrait_path_48", userInfo.getPortrait() + "!48");
-                        result.addProperty("portrait_path_128", userInfo.getPortrait() + "!128");
-                    } else if (platform == PlatformEnum.IPHONE) {
-                        result.addProperty("portrait_path_128", userInfo.getPortrait() + "!128");
-                    } else if (platform == PlatformEnum.IPAD) {
-                        result.addProperty("portrait_path_128", userInfo.getPortrait() + "!128");
-                    } else {
-                        result.addProperty("portrait_path_1280", userInfo.getPortrait() + "!1280");
-                        result.addProperty("portrait_path_256", userInfo.getPortrait() + "!256");
-                        result.addProperty("portrait_path_128", userInfo.getPortrait() + "!128");
-                        result.addProperty("portrait_path_48", userInfo.getPortrait() + "!48");
-                    }
-                }
-            }
-        }
-        
-        result.addProperty("pathPrefix", ConfigHelper.getHttpdir()); // 图片前缀
-        result.addProperty("mediaPathPrefix", ConfigHelper.getMediahttpdir()); // 多媒体前缀
-        result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());// 七牛前缀
-        result.addProperty("countTotal", count);
-        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        return result;
-    }
-    
     /**
      * 删除评论(20006006)
-     * 
+     *
      * @param jsonObject
      *            请求对象
      * @param checkTag
@@ -1260,7 +1137,7 @@ public class NewsV2Functions {
 
     /**
      * 获取评论(20006007)
-     * 
+     *
      * @param jsonObject
      * @param checkTag
      * @param request
@@ -1317,7 +1194,7 @@ public class NewsV2Functions {
 
     /**
      * 根据动态Id获取动态详细信息(20006012)
-     * 
+     *
      * @param jsonObject
      *            请求对象
      * @param checkTag
@@ -1415,7 +1292,7 @@ public class NewsV2Functions {
 
     /**
      * 获取热门动态列表(20000402)
-     * 
+     *
      * @return
      */
     public JsonObject getHotMediaNewsList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
@@ -1423,7 +1300,7 @@ public class NewsV2Functions {
         // 定义使用的参数
         @SuppressWarnings("unused")
         int userId = 0, pageIndex = 0, totalCount = 0, platform = PlatformEnum.WEB, countPerPage = Constant.return_news_count
-        	, v = 0;
+                , v = 0;
         // 定义返回结果
         JsonObject result = new JsonObject();
 
@@ -1546,7 +1423,7 @@ public class NewsV2Functions {
 
     /**
      * 获取推荐动态（用户关注）列表 （20000403）
-     * 
+     *
      * @param paramJsonObject
      * @return
      */
@@ -1606,7 +1483,7 @@ public class NewsV2Functions {
 
     /**
      * 模糊搜索动态(20000404)
-     * 
+     *
      * @param jsonObject
      * @param checkTag
      * @param request
@@ -1681,7 +1558,7 @@ public class NewsV2Functions {
 
     /**
      * 獲取熱門搜索(20000405)
-     * 
+     *
      * @param jsonObject
      * @param checkTag
      * @param request
@@ -1709,7 +1586,7 @@ public class NewsV2Functions {
 
     /**
      * 获取热门话题列表(分数排序)(20000406)
-     * 
+     *
      * @param jsonObject
      * @param checkTag
      * @param request
