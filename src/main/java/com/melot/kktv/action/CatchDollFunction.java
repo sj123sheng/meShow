@@ -511,14 +511,16 @@ public class CatchDollFunction {
 
             JsonArray unExchangesRecordList = new JsonArray();
 
-            for(CatchDollRecordDO catchDollRecordDO : catchDollRecordPageDO.getCatchDollRecordDOs()) {
-                JsonObject unExchangesRecordJson = new JsonObject();
-                unExchangesRecordJson.addProperty("catchDollRecordId", catchDollRecordDO.getCatchDollRecordId());
-                unExchangesRecordJson.addProperty("dollName", catchDollRecordDO.getDollName());
-                unExchangesRecordJson.addProperty("exchangeNum", catchDollRecordDO.getExchangeNum());
-                unExchangesRecordJson.addProperty("pictureUrl", catchDollRecordDO.getDollPictureUrl());
-                unExchangesRecordJson.addProperty("catchTime", catchDollRecordDO.getEndTime().getTime());
-                unExchangesRecordList.add(unExchangesRecordJson);
+            if(catchDollRecordPageDO.getCatchDollRecordDOs() != null) {
+                for (CatchDollRecordDO catchDollRecordDO : catchDollRecordPageDO.getCatchDollRecordDOs()) {
+                    JsonObject unExchangesRecordJson = new JsonObject();
+                    unExchangesRecordJson.addProperty("catchDollRecordId", catchDollRecordDO.getCatchDollRecordId());
+                    unExchangesRecordJson.addProperty("dollName", catchDollRecordDO.getDollName());
+                    unExchangesRecordJson.addProperty("exchangeNum", catchDollRecordDO.getExchangeNum());
+                    unExchangesRecordJson.addProperty("pictureUrl", catchDollRecordDO.getDollPictureUrl());
+                    unExchangesRecordJson.addProperty("catchTime", catchDollRecordDO.getEndTime().getTime());
+                    unExchangesRecordList.add(unExchangesRecordJson);
+                }
             }
 
 
@@ -586,24 +588,26 @@ public class CatchDollFunction {
 
             JsonArray exchangedsRecordList = new JsonArray();
 
-            for(CatchDollRecordDO catchDollRecordDO : catchDollRecordPageDO.getCatchDollRecordDOs()) {
-                JsonObject exchangedsRecordJson = new JsonObject();
+            if(catchDollRecordPageDO.getCatchDollRecordDOs() != null) {
+                for (CatchDollRecordDO catchDollRecordDO : catchDollRecordPageDO.getCatchDollRecordDOs()) {
+                    JsonObject exchangedsRecordJson = new JsonObject();
 
-                exchangedsRecordJson.addProperty("catchDollRecordId", catchDollRecordDO.getCatchDollRecordId());
-                exchangedsRecordJson.addProperty("dollName", catchDollRecordDO.getDollName());
-                exchangedsRecordJson.addProperty("exchangeNum", catchDollRecordDO.getExchangeNum());
-                exchangedsRecordJson.addProperty("pictureUrl", catchDollRecordDO.getDollPictureUrl());
-                exchangedsRecordJson.addProperty("catchTime", catchDollRecordDO.getEndTime().getTime());
+                    exchangedsRecordJson.addProperty("catchDollRecordId", catchDollRecordDO.getCatchDollRecordId());
+                    exchangedsRecordJson.addProperty("dollName", catchDollRecordDO.getDollName());
+                    exchangedsRecordJson.addProperty("exchangeNum", catchDollRecordDO.getExchangeNum());
+                    exchangedsRecordJson.addProperty("pictureUrl", catchDollRecordDO.getDollPictureUrl());
+                    exchangedsRecordJson.addProperty("catchTime", catchDollRecordDO.getEndTime().getTime());
 
-                exchangedsRecordJson.addProperty("exchangeStatus", catchDollRecordDO.getExchangeStatus());
-                exchangedsRecordJson.addProperty("exchangeTime", catchDollRecordDO.getExchangeTime().getTime());
-                exchangedsRecordJson.addProperty("waybillNumber", catchDollRecordDO.getWaybillNumber());
-                exchangedsRecordJson.addProperty("courierCompany", catchDollRecordDO.getCourierCompany());
-                exchangedsRecordJson.addProperty("consignee", catchDollRecordDO.getConsignee());
-                exchangedsRecordJson.addProperty("mobile", catchDollRecordDO.getMobile());
-                exchangedsRecordJson.addProperty("address", catchDollRecordDO.getAddress());
+                    exchangedsRecordJson.addProperty("exchangeStatus", catchDollRecordDO.getExchangeStatus());
+                    exchangedsRecordJson.addProperty("exchangeTime", catchDollRecordDO.getExchangeTime().getTime());
+                    exchangedsRecordJson.addProperty("waybillNumber", catchDollRecordDO.getWaybillNumber());
+                    exchangedsRecordJson.addProperty("courierCompany", catchDollRecordDO.getCourierCompany());
+                    exchangedsRecordJson.addProperty("consignee", catchDollRecordDO.getConsignee());
+                    exchangedsRecordJson.addProperty("mobile", catchDollRecordDO.getMobile());
+                    exchangedsRecordJson.addProperty("address", catchDollRecordDO.getAddress());
 
-                exchangedsRecordList.add(exchangedsRecordJson);
+                    exchangedsRecordList.add(exchangedsRecordJson);
+                }
             }
 
 
@@ -884,7 +888,8 @@ public class CatchDollFunction {
 
             RedisDollMachineDO redisDollMachineDO = dollMachineService.getRedisDollMachineDO(roomId).getData();
             Integer status = redisDollMachineDO.getStatus();
-            if(status != null && status == DollMachineStatusEnum.Wait_Coin) {
+            Integer recentStartGameUserId = redisDollMachineDO.getRecentStartGameUserId();
+            if(status != null && status == DollMachineStatusEnum.Wait_Coin && recentStartGameUserId != null && recentStartGameUserId == userId) {
 
                // 更新娃娃机缓存状态为准备就绪(空闲中) 并通知房间所有用户
                dollMachineService.updateRedisDollMachineStatus(roomId, DollMachineStatusEnum.Ready);
