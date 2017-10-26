@@ -304,6 +304,8 @@ public class CatchDollFunction {
                 if(userProfile != null) {
                     result.addProperty("userId", userId);
                     result.addProperty("nickName", userProfile.getNickName());
+                    result.addProperty("portrait", ConfigHelper.getHttpdir() + userProfile.getPortrait());
+
                 }
             }
 
@@ -945,16 +947,18 @@ public class CatchDollFunction {
 
             Result<CatchDollRecordDO> recentDeliveryDOResult = catchDollRecordService.getRecentDeliverDOByUserId(userId);
             CatchDollRecordDO catchDollRecordDO = new CatchDollRecordDO();
-            if(recentDeliveryDOResult.getCode().equals(CommonStateCode.SUCCESS)  && recentDeliveryDOResult.getData() != null) {
+            if(recentDeliveryDOResult.getCode().equals(CommonStateCode.SUCCESS)) {
                 catchDollRecordDO = recentDeliveryDOResult.getData();
             }else {
                 result.addProperty("TagCode", "5110902");
                 return result;
             }
 
-            result.addProperty("consignee", catchDollRecordDO.getConsignee());
-            result.addProperty("mobile", catchDollRecordDO.getMobile());
-            result.addProperty("address", catchDollRecordDO.getAddress());
+            if(catchDollRecordDO != null) {
+                result.addProperty("consignee", catchDollRecordDO.getConsignee());
+                result.addProperty("mobile", catchDollRecordDO.getMobile());
+                result.addProperty("address", catchDollRecordDO.getAddress());
+            }
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
         } catch (Exception e) {
