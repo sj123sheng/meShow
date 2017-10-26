@@ -135,6 +135,8 @@ public class CatchDollFunction {
 
             if(pushFlowStatus == 1 && !isLive && secondaryCameraStatus != null && secondaryCameraStatus == 1) {
                 Map<String,Object> param = Maps.newHashMap();
+                param.put("liveType", LiveTypeEnum.PC);
+                param.put("roomSource", 16);
                 param.put("liveEndTime", -1l);
                 actorService.updateRoomInfoById(roomId, param);
             }else if(pushFlowStatus == 2 && isLive) {
