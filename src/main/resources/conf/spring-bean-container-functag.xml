@@ -2610,6 +2610,22 @@
         <constructor-arg name="t" ref="catchDollFunction" />
         <constructor-arg name="methodName" value="getMyDollInfo" />
     </bean>
+    <bean id="51060206" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="catchDollFunction" />
+        <constructor-arg name="methodName" value="getMyDollUnExchanges" />
+    </bean>
+    <bean id="51060207" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="catchDollFunction" />
+        <constructor-arg name="methodName" value="getMyDollExchangeds" />
+    </bean>
+    <bean id="51060208" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="catchDollFunction" />
+        <constructor-arg name="methodName" value="applyForDelivery" />
+    </bean>
+    <bean id="51060209" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="catchDollFunction" />
+        <constructor-arg name="methodName" value="exchangeDollTickets" />
+    </bean>
     <bean id="51060210" class="com.melot.sdk.core.function.GenericFunction">
         <constructor-arg name="t" ref="catchDollFunction" />
         <constructor-arg name="methodName" value="coinFailed" />

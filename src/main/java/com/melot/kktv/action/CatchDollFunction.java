@@ -9,10 +9,9 @@ import com.melot.common.driver.domain.AgoraInfo;
 import com.melot.common.driver.service.ConfigInfoService;
 import com.melot.kk.doll.api.constant.CatchDollRecordStatusEnum;
 import com.melot.kk.doll.api.constant.DollMachineStatusEnum;
-import com.melot.kk.doll.api.domain.DO.CatchDollRecordDO;
-import com.melot.kk.doll.api.domain.DO.DollMachineDO;
-import com.melot.kk.doll.api.domain.DO.RedisDollMachineDO;
-import com.melot.kk.doll.api.domain.DO.StartGameDO;
+import com.melot.kk.doll.api.constant.ExchangeStatusEnum;
+import com.melot.kk.doll.api.domain.DO.*;
+import com.melot.kk.doll.api.domain.queryDO.AppRecordQueryDO;
 import com.melot.kk.doll.api.service.CatchDollRecordService;
 import com.melot.kk.doll.api.service.DollMachineService;
 import com.melot.kkcore.actor.api.RoomInfo;
@@ -26,6 +25,7 @@ import com.melot.kktv.util.*;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import com.melot.stream.driver.service.LiveStreamConfigService;
 import com.melot.stream.driver.service.domain.ClientDetail;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -161,10 +161,6 @@ public class CatchDollFunction {
 
     /**
      * 获取娃娃机直播间信息【51060202】
-     * @param jsonObject
-     * @param checkTag
-     * @param request
-     * @return
      */
     public JsonObject getDollMachineRoomInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 
@@ -254,10 +250,6 @@ public class CatchDollFunction {
 
     /**
      * 获取娃娃机直播间详情【51060203】
-     * @param jsonObject
-     * @param checkTag
-     * @param request
-     * @return
      */
     public JsonObject getDollMachineRoomDetail(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 
@@ -332,10 +324,6 @@ public class CatchDollFunction {
 
     /**
      * 获取娃娃机直播间最近抓中记录列表(不分页 取最近10条记录)【51060204】
-     * @param jsonObject
-     * @param checkTag
-     * @param request
-     * @return
      */
     public JsonObject getRoomCatchRecords(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 
@@ -417,10 +405,6 @@ public class CatchDollFunction {
 
     /**
      * 获取我的娃娃信息(总局数，娃娃票数量)【51060205】
-     * @param jsonObject
-     * @param checkTag
-     * @param request
-     * @return
      */
     public JsonObject getMyDollInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 
@@ -450,25 +434,295 @@ public class CatchDollFunction {
 
         try {
 
-            DollMachineService dollMachineService = (DollMachineService) MelotBeanFactory.getBean("dollMachineService");
+            CatchDollRecordService catchDollRecordService = (CatchDollRecordService) MelotBeanFactory.getBean("catchDollRecordService");
 
-            Result<DollMachineDO> dollMachineDOResult = null;//dollMachineService.getDollMachineDOByRoomId(roomId);
-            DollMachineDO dollMachineDO;
-            if(dollMachineDOResult.getCode().equals(CommonStateCode.SUCCESS)  && dollMachineDOResult.getData() != null) {
-                dollMachineDO = dollMachineDOResult.getData();
+            Result<MyDollInfoDO> myDollInfoDOResult = catchDollRecordService.getMyDollInfo(userId);
+            MyDollInfoDO myDollInfoDO;
+            if(myDollInfoDOResult.getCode().equals(CommonStateCode.SUCCESS)  && myDollInfoDOResult.getData() != null) {
+                myDollInfoDO = myDollInfoDOResult.getData();
             }else {
                 result.addProperty("TagCode", "5110902");
                 return result;
             }
 
-            result.addProperty("gameTotalCount", dollMachineDO.getDollDesc());
-            result.addProperty("dollTicketCount", dollMachineDO.getDollPictureUrl());
-            result.addProperty("unExchangeCount", dollMachineDO.getPrice());
-            result.addProperty("exchangedCount", dollMachineDO.getGameTime());
+            result.addProperty("gameTotalCount", myDollInfoDO.getGameTotalCount());
+            result.addProperty("dollTicketCount", myDollInfoDO.getDollTicketCount());
+            result.addProperty("unExchangeCount", myDollInfoDO.getUnExchangeCount());
+            result.addProperty("exchangedCount", myDollInfoDO.getExchangedCount());
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
         } catch (Exception e) {
-            logger.error("Error getDollMachineRoomDetail()", e);
+            logger.error("Error getMyDollInfo()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            return result;
+        }
+    }
+
+    /**
+     * 获取我的娃娃未兑换列表【51060206】
+     */
+    public JsonObject getMyDollUnExchanges(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId, pageIndex, countPerPage;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
+            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 20, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        if(userId == 0) {
+            result.addProperty("TagCode", TagCodeEnum.USERID_MISSING);
+            return result;
+        }
+
+        try {
+
+            CatchDollRecordService catchDollRecordService = (CatchDollRecordService) MelotBeanFactory.getBean("catchDollRecordService");
+
+            AppRecordQueryDO queryDO = new AppRecordQueryDO();
+            queryDO.setUserId(userId);
+            queryDO.setExchangeStatus(ExchangeStatusEnum.UnExchange);
+
+            queryDO.setPageIndex(pageIndex);
+            queryDO.setCountPerPage(countPerPage);
+            Result<CatchDollRecordPageDO> catchDollRecordPageDOResult = catchDollRecordService.getAppRecords(queryDO);
+
+            CatchDollRecordPageDO catchDollRecordPageDO;
+            if(catchDollRecordPageDOResult.getCode().equals(CommonStateCode.SUCCESS)) {
+                catchDollRecordPageDO = catchDollRecordPageDOResult.getData();
+            }else {
+                result.addProperty("TagCode", "5110902");
+                return result;
+            }
+
+            JsonArray unExchangesRecordList = new JsonArray();
+
+            for(CatchDollRecordDO catchDollRecordDO : catchDollRecordPageDO.getCatchDollRecordDOs()) {
+                JsonObject unExchangesRecordJson = new JsonObject();
+                unExchangesRecordJson.addProperty("catchDollRecordId", catchDollRecordDO.getCatchDollRecordId());
+                unExchangesRecordJson.addProperty("dollName", catchDollRecordDO.getDollName());
+                unExchangesRecordJson.addProperty("exchangeNum", catchDollRecordDO.getExchangeNum());
+                unExchangesRecordJson.addProperty("pictureUrl", catchDollRecordDO.getDollPictureUrl());
+                unExchangesRecordJson.addProperty("catchTime", catchDollRecordDO.getEndTime().getTime());
+                unExchangesRecordList.add(unExchangesRecordJson);
+            }
+
+
+            result.addProperty("count", catchDollRecordPageDO.getTotalCount());
+            result.add("unExchanges", unExchangesRecordList);
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error getMyDollUnExchanges()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            return result;
+        }
+    }
+
+    /**
+     * 获取我的娃娃已兑换列表【51060207】
+     */
+    public JsonObject getMyDollExchangeds(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId, pageIndex, countPerPage;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
+            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 20, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        if(userId == 0) {
+            result.addProperty("TagCode", TagCodeEnum.USERID_MISSING);
+            return result;
+        }
+
+        try {
+
+            CatchDollRecordService catchDollRecordService = (CatchDollRecordService) MelotBeanFactory.getBean("catchDollRecordService");
+
+            AppRecordQueryDO queryDO = new AppRecordQueryDO();
+            queryDO.setUserId(userId);
+            queryDO.setExchangeStatus(2);
+
+            queryDO.setPageIndex(pageIndex);
+            queryDO.setCountPerPage(countPerPage);
+            Result<CatchDollRecordPageDO> catchDollRecordPageDOResult = catchDollRecordService.getAppRecords(queryDO);
+
+            CatchDollRecordPageDO catchDollRecordPageDO;
+            if(catchDollRecordPageDOResult.getCode().equals(CommonStateCode.SUCCESS)) {
+                catchDollRecordPageDO = catchDollRecordPageDOResult.getData();
+            }else {
+                result.addProperty("TagCode", "5110902");
+                return result;
+            }
+
+            JsonArray exchangedsRecordList = new JsonArray();
+
+            for(CatchDollRecordDO catchDollRecordDO : catchDollRecordPageDO.getCatchDollRecordDOs()) {
+                JsonObject exchangedsRecordJson = new JsonObject();
+
+                exchangedsRecordJson.addProperty("catchDollRecordId", catchDollRecordDO.getCatchDollRecordId());
+                exchangedsRecordJson.addProperty("dollName", catchDollRecordDO.getDollName());
+                exchangedsRecordJson.addProperty("exchangeNum", catchDollRecordDO.getExchangeNum());
+                exchangedsRecordJson.addProperty("pictureUrl", catchDollRecordDO.getDollPictureUrl());
+                exchangedsRecordJson.addProperty("catchTime", catchDollRecordDO.getEndTime().getTime());
+
+                exchangedsRecordJson.addProperty("exchangeStatus", catchDollRecordDO.getExchangeStatus());
+                exchangedsRecordJson.addProperty("exchangeTime", catchDollRecordDO.getExchangeTime().getTime());
+                exchangedsRecordJson.addProperty("waybillNumber", catchDollRecordDO.getWaybillNumber());
+                exchangedsRecordJson.addProperty("courierCompany", catchDollRecordDO.getCourierCompany());
+                exchangedsRecordJson.addProperty("consignee", catchDollRecordDO.getConsignee());
+                exchangedsRecordJson.addProperty("mobile", catchDollRecordDO.getMobile());
+                exchangedsRecordJson.addProperty("address", catchDollRecordDO.getAddress());
+
+                exchangedsRecordList.add(exchangedsRecordJson);
+            }
+
+
+            result.addProperty("count", catchDollRecordPageDO.getTotalCount());
+            result.add("exchangeds", exchangedsRecordList);
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error getMyDollExchangeds()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            return result;
+        }
+    }
+
+    /**
+     * 申请发货【51060208】
+     */
+    public JsonObject applyForDelivery(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int catchDollRecordId;
+        String consignee, mobile, address;
+        try {
+            catchDollRecordId = CommonUtil.getJsonParamInt(jsonObject, "catchDollRecordId", 0, null, 1, Integer.MAX_VALUE);
+            consignee = CommonUtil.getJsonParamString(jsonObject, "consignee", "", null, 1, Integer.MAX_VALUE);
+            mobile = CommonUtil.getJsonParamString(jsonObject, "mobile", "", null, 1, Integer.MAX_VALUE);
+            address = CommonUtil.getJsonParamString(jsonObject, "address", "", null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        if(catchDollRecordId == 0 || StringUtils.isEmpty(consignee) || StringUtils.isEmpty(mobile) || StringUtils.isEmpty(address)) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_MISSING);
+            return result;
+        }
+
+        try {
+
+            CatchDollRecordService catchDollRecordService = (CatchDollRecordService) MelotBeanFactory.getBean("catchDollRecordService");
+
+            Result<Boolean> applyDeliveryResult = catchDollRecordService.applyDelivery(catchDollRecordId, consignee, mobile, address);
+
+            boolean  applyResult = true;
+            if(applyDeliveryResult.getCode().equals(CommonStateCode.SUCCESS)) {
+                applyResult = applyDeliveryResult.getData();
+            }else {
+                result.addProperty("TagCode", "5110902");
+                return result;
+            }
+
+            result.addProperty("result", applyResult);
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error applyForDelivery()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            return result;
+        }
+    }
+
+    /**
+     * 兑换娃娃票【51060209】
+     */
+    public JsonObject exchangeDollTickets(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int catchDollRecordId;
+        try {
+            catchDollRecordId = CommonUtil.getJsonParamInt(jsonObject, "catchDollRecordId", 0, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        if(catchDollRecordId == 0) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_MISSING);
+            return result;
+        }
+
+        try {
+
+            CatchDollRecordService catchDollRecordService = (CatchDollRecordService) MelotBeanFactory.getBean("catchDollRecordService");
+
+            Result<Boolean> exchangeDollTicketResult = catchDollRecordService.exchangeDollTicket(catchDollRecordId);
+
+            boolean exchangeResult = true;
+            if(exchangeDollTicketResult.getCode().equals(CommonStateCode.SUCCESS)) {
+                exchangeResult = exchangeDollTicketResult.getData();
+            }else {
+                result.addProperty("TagCode", "5110902");
+                return result;
+            }
+
+            result.addProperty("result", exchangeResult);
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error exchangeDollTickets()", e);
             result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
             return result;
         }
