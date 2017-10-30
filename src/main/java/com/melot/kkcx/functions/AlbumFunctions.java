@@ -11,6 +11,7 @@ import com.melot.kktv.action.FamilyAction;
 import com.melot.kktv.model.FamilyPoster;
 import com.melot.kktv.model.Photo;
 import com.melot.kktv.model.PhotoComment;
+import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.LiveVideoService;
 import com.melot.kktv.util.*;
 import com.melot.kktv.util.db.DB;
@@ -24,6 +25,7 @@ import com.melot.opus.driver.enums.OpusCostantEnum;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import com.upyun.api.UpYun;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -45,6 +47,9 @@ public class AlbumFunctions {
 
 	@Resource
 	private ResourceNewService resourceNewService;
+
+	@Autowired
+	private ConfigService configService;
 
 	@SuppressWarnings("unused")
 	private static JsonObject addBackground(int userId, int fileId, String fileName, String path_original) {
@@ -910,6 +915,9 @@ public class AlbumFunctions {
 
 			url = CommonUtil.getJsonParamString(jsonObject, "url", null, "04010024", 1, Integer.MAX_VALUE);
 			url = url.replaceFirst(ConfigHelper.getHttpdir(), "");
+			if(!url.startsWith("/")){
+				url = "/"+url;
+			}
 			url = url.replaceFirst("/kktv", "");
 			File tempFile = new File(url);
 			pictureName = tempFile.getName();
@@ -925,6 +933,17 @@ public class AlbumFunctions {
 			com.melot.kktv.action.AlbumFunctions publicAlbumFunction = (com.melot.kktv.action.AlbumFunctions) MelotBeanFactory.getBean("publicAlbumFunction");
 			return publicAlbumFunction.insertToDB(jsonObject, checkTag, request);
 		}
+
+        if(configService.getResourceType().contains(","+ pictureType+",")){
+			com.melot.kk.module.resource.domain.Resource resource = new com.melot.kk.module.resource.domain.Resource();
+			resource.setImageUrl(url);
+			resource.setUserId(userId);
+			resource.setResType(pictureType);
+			resource.setMimeType(2);
+			resource.seteCloudType(2);
+			resourceNewService.addResource()
+		}
+
 
 		// 0.头像 1.直播海报(弃用) 2.照片3.资源图片4.背景图
 		if (pictureType == PictureTypeEnum.portrait) { // 0 : 头像
