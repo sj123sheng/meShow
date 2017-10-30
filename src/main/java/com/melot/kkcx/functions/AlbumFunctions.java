@@ -162,34 +162,11 @@ public class AlbumFunctions {
 			if (tempUserResource != null) {
 				LiveVideoService.delTempUserResourceById(tempUserResource.getId(), userId, OpusCostantEnum.CHECKING_PHOTO_RES_TYPE, photoId, null);
 			}
-			String picUrl = (String) map.get("oldPath");
-			if (!StringUtil.strIsNull(picUrl) && !OpusCostantEnum.CHECKING_PHOTO_RESOURCEURL.equals(picUrl)) {
-				if (picUrl != null && !picUrl.contains("checking")) {
-					// ****** 可选设置 ******
-					// 切换 API 接口的域名接入点，默认为自动识别接入点
-					upyun.setApiDomain(UpYun.ED_AUTO);
-					// 设置连接超时时间，默认为30秒
-					upyun.setTimeout(60);
-					// 设置是否开启debug模式，默认不开启
-					upyun.setDebug(true);
-					try {
-						int i = 0;
-						boolean flag = false;
-						while (i++ < 5) {
-							if(upyun.deleteFile("kktv" + picUrl)) {
-								flag = true;
-								break;
-							}
-						}
-						if (!flag) {
-							logger.error("[AlbumFunctions]: Failed to delete pictures[" + "kktv" + picUrl + "] from Youpai.");
-						}
-					} catch (Exception e) {
-						logger.error("[AlbumFunctions]: Failed to delete pictures[" + "kktv" + picUrl + "] from Youpai." + e);
-					}
-				}
+			try {
+				resourceNewService.delResource(photoId);
+			} catch (Exception e) {
+				logger.error("[AlbumFunctions]: Failed to delete photoId:[" + photoId + "]" + e);
 			}
-
 			JsonObject result = new JsonObject();
 			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 			return result;
@@ -713,7 +690,7 @@ public class AlbumFunctions {
 		boolean flag;
 		if (posterService != null) {
 			try {
-				flag = posterService.delPoster(userId, resId);
+				flag = posterService.delPosterV2(userId, resId);
 			} catch (MelotModuleException e) {
 				switch (e.getErrCode()) {
 					case 101:
@@ -734,6 +711,12 @@ public class AlbumFunctions {
 				return result;
 			}
 			if (flag == true) {
+				try {
+					// 将亚马逊的S3、又拍云等服务器资源文件删除
+					resourceNewService.delResource(resId);
+				} catch (Exception e) {
+					logger.error("[AlbumFunctions]: Failed to delete poster[" + resId + "]" + e);
+				}
 				result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 			} else {
 				result.addProperty("TagCode", "04160004");
@@ -1169,6 +1152,9 @@ public class AlbumFunctions {
 			pictureType = CommonUtil.getJsonParamInt(jsonObject, "pictureType", 0, "04130004", 1, Integer.MAX_VALUE);
 			url = CommonUtil.getJsonParamString(jsonObject, "url", null, "04130002", 1, Integer.MAX_VALUE);
 			url = url.replaceFirst(ConfigHelper.getHttpdir(), "");
+			if(!url.startsWith("/")){
+				url = "/"+url;
+			}
 			url = url.replaceFirst("/kktv", "");
 		} catch (CommonUtil.ErrorGetParameterException e) {
 			result.addProperty("TagCode", e.getErrCode());
@@ -1178,6 +1164,25 @@ public class AlbumFunctions {
 			return result;
 		}
 
+		Integer resId = 0;
+		if(configService.getResourceType().contains(","+ pictureType+",")){
+			com.melot.kk.module.resource.domain.Resource resource = new com.melot.kk.module.resource.domain.Resource();
+			resource.setImageUrl(url);
+			resource.setUserId(userId);
+			resource.setResType(pictureType);
+			resource.setMimeType(2);
+			resource.seteCloudType(2);
+			try{
+				Result<Integer> r =resourceNewService.addResource(resource);
+				if(r!= null && r.getCode().equals(CommonStateCode.SUCCESS)){
+					resId = r.getData();
+				}
+			}catch (Exception e){
+				logger.debug("Failed to insert to resource DB." + e);
+				result.addProperty("TagCode", TagCodeEnum.UNCATCHED_EXCEPTION);
+			}
+		}
+
 		PosterService posterService = MelotBeanFactory.getBean("posterService", PosterService.class);
 		if (posterService == null) {
 			//调用模块异常
@@ -1185,7 +1190,7 @@ public class AlbumFunctions {
 			return result;
 		}
 		try {
-			String tagCode = posterService.savePoster(userId, pictureType, url, 0);
+			String tagCode = posterService.savePosterV2(userId, resId, ConfigHelper.getHttpdir(), url, 0);;
 			if (tagCode != null) {
 				if (tagCode.equals("00000000")) {
 					// 入库成功
