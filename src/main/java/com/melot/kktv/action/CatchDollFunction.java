@@ -753,7 +753,7 @@ public class CatchDollFunction {
 
         int catchDollRecordId;
         try {
-            catchDollRecordId = CommonUtil.getJsonParamInt(jsonObject, "roomId", 0, null, 1, Integer.MAX_VALUE);
+            catchDollRecordId = CommonUtil.getJsonParamInt(jsonObject, "catchDollRecordId", 0, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
