@@ -8,6 +8,8 @@ import com.melot.kk.module.resource.service.ResourceNewService;
 import com.melot.kkcx.service.AlbumServices;
 import com.melot.kkcx.service.ProfileServices;
 import com.melot.kktv.action.FamilyAction;
+import com.melot.kktv.base.CommonStateCode;
+import com.melot.kktv.base.Result;
 import com.melot.kktv.model.FamilyPoster;
 import com.melot.kktv.model.Photo;
 import com.melot.kktv.model.PhotoComment;
@@ -934,6 +936,7 @@ public class AlbumFunctions {
 			return publicAlbumFunction.insertToDB(jsonObject, checkTag, request);
 		}
 
+		Integer resId = 0;
         if(configService.getResourceType().contains(","+ pictureType+",")){
 			com.melot.kk.module.resource.domain.Resource resource = new com.melot.kk.module.resource.domain.Resource();
 			resource.setImageUrl(url);
@@ -941,14 +944,22 @@ public class AlbumFunctions {
 			resource.setResType(pictureType);
 			resource.setMimeType(2);
 			resource.seteCloudType(2);
-			resourceNewService.addResource()
+			try{
+				Result<Integer> r =resourceNewService.addResource(resource);
+				if(r!= null && r.getCode().equals(CommonStateCode.SUCCESS)){
+					resId = r.getData();
+				}
+			}catch (Exception e){
+				logger.debug("Failed to insert to resource DB." + e);
+				result.addProperty("TagCode", TagCodeEnum.UNCATCHED_EXCEPTION);
+			}
 		}
 
 
 		// 0.头像 1.直播海报(弃用) 2.照片3.资源图片4.背景图
 		if (pictureType == PictureTypeEnum.portrait) { // 0 : 头像
 			try {
-				result = AlbumServices.addPortraitNew(0, userId, url, pictureName);
+				result = AlbumServices.addPortraitNew(resId, userId, url, pictureName);
 			} catch (Exception e) {
 				logger.error("Failed to insert to DB.", e);
 				result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
@@ -991,7 +1002,7 @@ public class AlbumFunctions {
 					result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 					result.addProperty("pictureId", 1); // 必须返回一个值否则客户端会报错
 				} else {
-					result = AlbumServices.addPictureNew(userId, pictureType, url, pictureName);
+					result = AlbumServices.addPictureNewV2(resId,userId, pictureType, url, pictureName);
 				}
 			} catch (Exception e) {
 				logger.debug("Failed to insert to DB." + e);
