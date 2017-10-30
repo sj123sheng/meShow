@@ -130,14 +130,16 @@ public class CatchDollFunction {
             RoomInfo roomInfo = actorService.getRoomInfoById(roomId);
             Long liveEndTime = roomInfo.getLiveEndTime();
             boolean isLive = true;
-            if(liveEndTime != null)
+            if(liveEndTime != null) {
                 isLive = false;
+            }
 
             if(pushFlowStatus == 1 && !isLive && secondaryCameraStatus != null && secondaryCameraStatus == 1) {
                 Map<String,Object> param = Maps.newHashMap();
                 param.put("liveType", LiveTypeEnum.PC);
                 param.put("roomSource", 16);
-                param.put("liveEndTime", -1l);
+                param.put("liveStartTime", DateUtils.getCurrentDate().getTime());
+                param.put("liveEndTime", -1L);
                 actorService.updateRoomInfoById(roomId, param);
             }else if(pushFlowStatus == 2 && isLive) {
                 Map<String,Object> param = Maps.newHashMap();
@@ -295,8 +297,9 @@ public class CatchDollFunction {
 
             Integer dollMachineStatus = redisDollMachineDO.getStatus();
             Integer userId = redisDollMachineDO.getRecentStartGameUserId();
-            if(dollMachineStatus == null)
+            if(dollMachineStatus == null) {
                 dollMachineStatus = dollMachineDO.getStatus();
+            }
 
             if((dollMachineStatus == DollMachineStatusEnum.Play || dollMachineStatus == DollMachineStatusEnum.Wait_Coin) && userId != null) {
                 KkUserService userService = MelotBeanFactory.getBean("kkUserService", KkUserService.class);
