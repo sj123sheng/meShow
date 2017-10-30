@@ -137,7 +137,8 @@ public class CatchDollFunction {
                 Map<String,Object> param = Maps.newHashMap();
                 param.put("liveType", LiveTypeEnum.PC);
                 param.put("roomSource", 16);
-                param.put("liveEndTime", -1l);
+                param.put("liveStartTime", DateUtils.getCurrentDate().getTime());
+                param.put("liveEndTime", -1L);
                 actorService.updateRoomInfoById(roomId, param);
             }else if(pushFlowStatus == 2 && isLive) {
                 Map<String,Object> param = Maps.newHashMap();
