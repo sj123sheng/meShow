@@ -599,7 +599,7 @@ public class CatchDollFunction {
 
                     exchangedsRecordJson.addProperty("catchDollRecordId", catchDollRecordDO.getCatchDollRecordId());
                     exchangedsRecordJson.addProperty("dollName", catchDollRecordDO.getDollName());
-                    exchangedsRecordJson.addProperty("exchangeNum", catchDollRecordDO.getExchangeNum());
+                    exchangedsRecordJson.addProperty("exchangedNum", catchDollRecordDO.getExchangeNum());
                     exchangedsRecordJson.addProperty("pictureUrl", catchDollRecordDO.getDollPictureUrl());
                     exchangedsRecordJson.addProperty("catchTime", catchDollRecordDO.getEndTime().getTime());
 
@@ -751,8 +751,9 @@ public class CatchDollFunction {
             return result;
         }
 
-        int catchDollRecordId;
+        int catchDollRecordId, userId;
         try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
             catchDollRecordId = CommonUtil.getJsonParamInt(jsonObject, "catchDollRecordId", 0, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
@@ -762,7 +763,7 @@ public class CatchDollFunction {
             return result;
         }
 
-        if(catchDollRecordId == 0) {
+        if(catchDollRecordId == 0 || userId == 0) {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_MISSING);
             return result;
         }
@@ -779,12 +780,15 @@ public class CatchDollFunction {
             }
             CatchDollRecordDO catchDollRecordDO = catchDollRecordDOResult.getData();
             int roomId = catchDollRecordDO.getRoomId();
+            int status = catchDollRecordDO.getStatus();
 
-            // 更新游戏记录状态为投币失败
-            catchDollRecordService.updateRecordStatus(catchDollRecordId, CatchDollRecordStatusEnum.Coin_Fail);
+            if(status == CatchDollRecordStatusEnum.Not_Coin && userId == catchDollRecordDO.getUserId()) {
+                // 更新游戏记录状态为投币失败
+                catchDollRecordService.updateRecordStatus(catchDollRecordId, CatchDollRecordStatusEnum.Coin_Fail);
 
-            // 更新娃娃机状态为准备就绪(空闲中) 并通知房间所有用户
-            dollMachineService.updateRedisDollMachineStatus(roomId, DollMachineStatusEnum.Ready);
+                // 更新娃娃机状态为准备就绪(空闲中) 并通知房间所有用户
+                dollMachineService.updateRedisDollMachineStatus(roomId, DollMachineStatusEnum.Ready);
+            }
 
             // 添加返回信息
             result.addProperty("result", true);
