@@ -55,9 +55,6 @@ import redis.clients.jedis.Tuple;
 public class NewsV2Functions {
 
     private static Logger logger = Logger.getLogger(NewsV2Functions.class);
-    
-    @Autowired
-    private ConfigService configService;
 
     private static String SEPARATOR = "/";
 
