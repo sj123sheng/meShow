@@ -932,8 +932,12 @@ public class AlbumFunctions {
 			resource.seteCloudType(2);
 			try{
 				Result<Integer> r =resourceNewService.addResource(resource);
-				if(r!= null && r.getCode().equals(CommonStateCode.SUCCESS)){
+				if(r!= null && r.getCode().equals(CommonStateCode.SUCCESS) && r.getData()!= null){
 					resId = r.getData();
+				}
+				else {
+					logger.error("Failed to insert to resource DB.");
+					result.addProperty("TagCode", TagCodeEnum.UNCATCHED_EXCEPTION);
 				}
 			}catch (Exception e){
 				logger.error("Failed to insert to resource DB." + e);
@@ -1173,7 +1177,7 @@ public class AlbumFunctions {
 			com.melot.kk.module.resource.domain.Resource resource = new com.melot.kk.module.resource.domain.Resource();
 			resource.setImageUrl(url);
 			resource.setUserId(userId);
-			resource.setResType(pictureType);
+			resource.setResType(1);
 			resource.setMimeType(2);
 			resource.seteCloudType(2);
 			try{
