@@ -936,7 +936,7 @@ public class AlbumFunctions {
 					resId = r.getData();
 				}
 			}catch (Exception e){
-				logger.debug("Failed to insert to resource DB." + e);
+				logger.error("Failed to insert to resource DB." + e);
 				result.addProperty("TagCode", TagCodeEnum.UNCATCHED_EXCEPTION);
 			}
 		}
