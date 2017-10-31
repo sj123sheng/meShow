@@ -103,6 +103,8 @@
     <!-- 主播模块 -->
     <kkrpc:reference id="areaNewActorsService" interface="com.melot.common.driver.service.AreaNewActorsService" version="1.0.0" ></kkrpc:reference>
 
+	<kkrpc:reference id="resourceNewService" interface="com.melot.kk.module.resource.service.ResourceNewService" version="1.0.0" />
+
     <!-- 主播代言团服务 -->
 	<kkrpc:reference id="shareActivityService" interface="com.melot.share.driver.service.ShareActivityService" version="1.0.2"/>
 
@@ -114,6 +116,7 @@
     <kkrpc:reference id="smsService" interface="com.melot.sms.api.service.SmsService" version="1.0.1"/>
 
 	<kkrpc:reference id="videoBgmService" interface="com.melot.common.driver.service.VideoBgmService" version="1.0.0" />
+
 	
 	<kkrpc:reference id="gameConfigService" interface="com.melot.kkactivity.driver.service.GameConfigService" version="1.0.0" />
 	
@@ -125,4 +128,5 @@
 
     <!-- 主播模块 -->
     <kkrpc:reference id="actorService" interface="com.melot.kkcore.actor.service.ActorService" version="1.0.8" />
+
 </beans>

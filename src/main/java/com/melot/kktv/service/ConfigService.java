@@ -30,8 +30,15 @@ public class ConfigService {
 
     private String goldMedalFamilyIds;
 
-    //是否特殊时期 
+    private boolean isAbroad;
+
+    //是否特殊时期
     private boolean isSpecialTime;
+
+    /**
+     * 需要接入资源模块的资源类型
+     */
+    private String resourceType;
 
     @DisconfFileItem(name = "challenger.family", associateField = "challengerFamily")
     public String getChallengerFamily() {
@@ -85,5 +92,23 @@ public class ConfigService {
 
     public void setIsSpecialTime(boolean isSpecialTime) {
         this.isSpecialTime = isSpecialTime;
+    }
+
+    @DisconfFileItem(name = "global.isAbroad", associateField = "isAbroad")
+    public boolean getIsAbroad() {
+        return isAbroad;
+    }
+
+    public void setIsAbroad(boolean isAbroad) {
+        this.isAbroad = isAbroad;
+    }
+
+    @DisconfFileItem(name = "global.resourceType", associateField = "resourceType")
+    public String getResourceType() {
+        return resourceType;
+    }
+
+    public void setResourceType(String resourceType) {
+        this.resourceType = resourceType;
     }
 }

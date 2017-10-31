@@ -1842,12 +1842,17 @@
 		<constructor-arg name="t" ref="gameRankFunction" />
 		<constructor-arg name="methodName" value="getRankList" />
 	</bean>
-	
+
 	<!-- 照片，海报类 -->
 	<!-- 删除照片 -->
 	<bean id="10004002" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="albumFunction" />
 		<constructor-arg name="methodName" value="deletePhoto" />
+	</bean>
+	<!-- 删除照片V2 删除S3资源上的照片-->
+	<bean id="10004023" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="albumFunction" />
+		<constructor-arg name="methodName" value="deletePhotoV2" />
 	</bean>
 	<!-- 获取用户照片列表 -->
 	<bean id="10004003" class="com.melot.sdk.core.function.GenericFunction">
@@ -1873,6 +1878,11 @@
 		<constructor-arg name="t" ref="albumFunction" />
 		<constructor-arg name="methodName" value="insertToDB" />
 	</bean>
+	<!-- 图片信息存入数据库V2 -->
+	<bean id="10004022" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="albumFunction" />
+		<constructor-arg name="methodName" value="insertToDBV2" />
+	</bean>
 	<!-- 获取用户海报列表 -->
 	<bean id="10004015" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="albumFunction" />
@@ -1882,6 +1892,11 @@
 	<bean id="10004016" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="albumFunction" />
 		<constructor-arg name="methodName" value="deleteUserPoster" />
+	</bean>
+	<!-- 用户删除海报V2 -->
+	<bean id="10004020" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="albumFunction" />
+		<constructor-arg name="methodName" value="deleteUserPosterV2" />
 	</bean>
 	<!-- 设置用户海报为当前海报 -->
 	<bean id="10004017" class="com.melot.sdk.core.function.GenericFunction">
@@ -1897,6 +1912,11 @@
 	<bean id="10004019" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="albumFunction" />
 		<constructor-arg name="methodName" value="insertToDBNew" />
+	</bean>
+	<!-- 新版海报入库V2 -->
+	<bean id="10004021" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="albumFunction" />
+		<constructor-arg name="methodName" value="insertToDBNewV2" />
 	</bean>
 	
 	<!-- 充值配置接口类 -->
@@ -2646,5 +2666,15 @@
         <constructor-arg name="t" ref="catchDollFunction" />
         <constructor-arg name="methodName" value="gameOver" />
     </bean>
+
+	<bean id="52080101" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="resourceNewFunction" />
+		<constructor-arg name="methodName" value="getUpLoadConf" />
+	</bean>
+
+	<bean id="52080102" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="resourceNewFunction" />
+		<constructor-arg name="methodName" value="addResource" />
+	</bean>
 
 </beans>

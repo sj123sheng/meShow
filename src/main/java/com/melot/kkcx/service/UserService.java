@@ -491,7 +491,6 @@ public class UserService {
         return true;
     }
     
-    
     /**
      * 检查用户昵称是否修改
      * @param nickname
