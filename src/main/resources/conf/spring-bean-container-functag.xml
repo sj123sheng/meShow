@@ -2677,4 +2677,31 @@
 		<constructor-arg name="methodName" value="addResource" />
 	</bean>
 
+    <!-- 钻石商城 -->
+    <!-- 购买游戏勋章 -->
+    <bean id="51030101" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="mallFunctions" />
+        <constructor-arg name="methodName" value="buyGameMedal" />
+    </bean>
+    <!-- 获取商城栏目列表  -->
+    <bean id="51030102" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="mallFunctions" />
+        <constructor-arg name="methodName" value="getGameMallCataList" />
+    </bean>
+    <!-- 获取商城栏目礼物列表 -->
+    <bean id="51030103" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="mallFunctions" />
+        <constructor-arg name="methodName" value="getGameGiftList" />
+    </bean>
+    <!-- 获取当前用户游戏币 -->
+    <bean id="51030104" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="mallFunctions" />
+        <constructor-arg name="methodName" value="getUserGameMoney" />
+    </bean>
+    <!-- （钻石商城） 兑换礼物-->
+    <bean id="51030105" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="mallFunctions" />
+        <constructor-arg name="methodName" value="exchangeGameGift" />
+    </bean>
+
 </beans>

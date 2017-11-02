@@ -173,5 +173,6 @@
 	<bean id="videoBgmFunction" class="com.melot.kkcx.functions.VideoBgmFunctions" />
 
     <bean id="catchDollFunction" class="com.melot.kktv.action.CatchDollFunction" />
-
+    
+    <bean id="mallFunctions" class="com.melot.kkcx.functions.MallFunctions" />
 </beans>
