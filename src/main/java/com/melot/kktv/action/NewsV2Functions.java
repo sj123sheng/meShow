@@ -55,13 +55,15 @@ import redis.clients.jedis.Tuple;
 public class NewsV2Functions {
 
     private static Logger logger = Logger.getLogger(NewsV2Functions.class);
-    
+
+    private static String SEPARATOR = "/";
+
     @Autowired
-    private ConfigService configService;
+    ConfigService configService;
 
     /**
      * 发布动态(20006002)
-     * 
+     *
      * @param jsonObject
      *            请求对象
      * @param checkTag
@@ -163,6 +165,9 @@ public class NewsV2Functions {
                 resource.setFileWidth(videoInfo.getWidth());
             }
             resource.setTitle(String.valueOf(mediaFrom));
+            if(!imageUrl.startsWith(SEPARATOR)) {
+                imageUrl = SEPARATOR + imageUrl;
+            }
             if (!StringUtil.strIsNull(imageUrl)) {
                 imageUrl = imageUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
                 imageUrl = imageUrl.replaceFirst("/kktv", "");
@@ -189,6 +194,9 @@ public class NewsV2Functions {
                 resource.setState(0);
                 resource.setType(mediaType);
                 if (!StringUtil.strIsNull(tempUrl)) {
+                    if(!imageUrl.startsWith(SEPARATOR)) {
+                        tempUrl = SEPARATOR + tempUrl;
+                    }
                     tempUrl = tempUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
                     tempUrl = tempUrl.replaceFirst("/kktv", "");
                 }
@@ -221,7 +229,7 @@ public class NewsV2Functions {
 
     /**
      * 删除动态(20006003)
-     * 
+     *
      * @param jsonObject
      *            请求对象
      * @param checkTag
@@ -274,7 +282,7 @@ public class NewsV2Functions {
 
     /**
      * 获取个人动态列表(20006004)
-     * 
+     *
      * @param jsonObject
      *            请求对象
      * @return 结果字符串
@@ -397,7 +405,7 @@ public class NewsV2Functions {
 
     /**
      * 评论动态(20006005)
-     * 
+     *
      * @param jsonObject
      *            请求对象
      * @param checkTag
@@ -532,7 +540,7 @@ public class NewsV2Functions {
 
     /**
      * 获取推荐短评(20006021)
-     * 
+     *
      * @param jsonObject
      * @param checkTag
      * @param request
@@ -581,7 +589,7 @@ public class NewsV2Functions {
 
     /**
      * 热门短评换一换接口(20006020)
-     * 
+     *
      * @param jsonObject
      * @param checkTag
      * @param request
@@ -631,7 +639,7 @@ public class NewsV2Functions {
 
     /**
      * 获取热门动态(20006022)
-     * 
+     *
      * @param jsonObject
      * @param checkTag
      * @param request
@@ -720,7 +728,7 @@ public class NewsV2Functions {
 
     /**
      * 获取话题相关动态(20006023)
-     * 
+     *
      * @param jsonObject
      * @param checkTag
      * @param request
@@ -805,7 +813,7 @@ public class NewsV2Functions {
 
     /**
      * 获取短评相关动态(20006024)
-     * 
+     *
      * @param jsonObject
      * @param checkTag
      * @param request
@@ -867,7 +875,7 @@ public class NewsV2Functions {
 
     /**
      * 获取动态审核状态(20006025)
-     * 
+     *
      * @param jsonObject
      * @param checkTag
      * @param request
@@ -918,7 +926,7 @@ public class NewsV2Functions {
 
     /**
      * 动态点赞接口(20006026)
-     * 
+     *
      * @param jsonObject
      * @param checkTag
      * @param request
@@ -957,7 +965,7 @@ public class NewsV2Functions {
 
     /**
      * 取消动态点赞接口(20006027)
-     * 
+     *
      * @param jsonObject
      * @param checkTag
      * @param request
@@ -996,7 +1004,7 @@ public class NewsV2Functions {
 
     /**
      * 取消点赞接口(20006028)
-     * 
+     *
      * @param jsonObject
      * @param checkTag
      * @param request
@@ -1034,7 +1042,7 @@ public class NewsV2Functions {
 
     /**
      * 根据话题id获取推荐短评(20006029)
-     * 
+     *
      * @param jsonObject
      * @param checkTag
      * @param request
@@ -1076,7 +1084,7 @@ public class NewsV2Functions {
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
-    
+
     /**
      * 根据newsType获取动态(20006030)
      * 
@@ -1204,7 +1212,7 @@ public class NewsV2Functions {
     
     /**
      * 删除评论(20006006)
-     * 
+     *
      * @param jsonObject
      *            请求对象
      * @param checkTag
@@ -1260,7 +1268,7 @@ public class NewsV2Functions {
 
     /**
      * 获取评论(20006007)
-     * 
+     *
      * @param jsonObject
      * @param checkTag
      * @param request
@@ -1317,7 +1325,7 @@ public class NewsV2Functions {
 
     /**
      * 根据动态Id获取动态详细信息(20006012)
-     * 
+     *
      * @param jsonObject
      *            请求对象
      * @param checkTag
@@ -1415,7 +1423,7 @@ public class NewsV2Functions {
 
     /**
      * 获取热门动态列表(20000402)
-     * 
+     *
      * @return
      */
     public JsonObject getHotMediaNewsList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
@@ -1423,7 +1431,7 @@ public class NewsV2Functions {
         // 定义使用的参数
         @SuppressWarnings("unused")
         int userId = 0, pageIndex = 0, totalCount = 0, platform = PlatformEnum.WEB, countPerPage = Constant.return_news_count
-        	, v = 0;
+                , v = 0;
         // 定义返回结果
         JsonObject result = new JsonObject();
 
@@ -1546,7 +1554,7 @@ public class NewsV2Functions {
 
     /**
      * 获取推荐动态（用户关注）列表 （20000403）
-     * 
+     *
      * @param paramJsonObject
      * @return
      */
@@ -1606,7 +1614,7 @@ public class NewsV2Functions {
 
     /**
      * 模糊搜索动态(20000404)
-     * 
+     *
      * @param jsonObject
      * @param checkTag
      * @param request
@@ -1681,7 +1689,7 @@ public class NewsV2Functions {
 
     /**
      * 獲取熱門搜索(20000405)
-     * 
+     *
      * @param jsonObject
      * @param checkTag
      * @param request
@@ -1709,7 +1717,7 @@ public class NewsV2Functions {
 
     /**
      * 获取热门话题列表(分数排序)(20000406)
-     * 
+     *
      * @param jsonObject
      * @param checkTag
      * @param request

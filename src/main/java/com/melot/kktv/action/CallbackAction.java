@@ -1,35 +1,33 @@
 package com.melot.kktv.action;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.log4j.Logger;
-import org.apache.struts2.ServletActionContext;
-
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.melot.kkcx.service.AlbumServices;
 import com.melot.kktv.model.FamilyPoster;
 import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.PictureTypeEnum;
 import com.melot.kktv.util.TagCodeEnum;
-import com.melot.kkcx.service.AlbumServices;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionSupport;
+import org.apache.log4j.Logger;
+import org.apache.struts2.ServletActionContext;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 /**
  * 回调接口
- * 
+ *
  * @author LY
- * 
+ *
  */
 public class CallbackAction extends ActionSupport {
 
-    private static final long serialVersionUID = 1179753241062911064L;
+	private static final long serialVersionUID = 1179753241062911064L;
 
-    /** 日志记录对象 */
+	/** 日志记录对象 */
 	private Logger logger = Logger.getLogger(CallbackAction.class);
 
 	/** 应用预设返回值 */
@@ -101,7 +99,7 @@ public class CallbackAction extends ActionSupport {
 
 				fileName = fsParamsJson.get("fileName").getAsString();
 				path_original = fsParamsJson.get("fileUrl").getAsString();
-				
+
 			} catch (Exception e) {
 				writeBackMsg = "{\"TagCode\":\"04010009\"}" + e ;// 文件服务器回调失败
 				// 输出响应结果
@@ -112,7 +110,7 @@ public class CallbackAction extends ActionSupport {
 
 			// 入库
 			// 输出响应结果
-			out.println(AlbumServices.addPortraitNew(userId, path_original, fileName).toString());
+			out.println(AlbumServices.addPortraitNew(0, userId, path_original, fileName).toString());
 			out.flush();
 			out.close();
 		} else if (pictureType == PictureTypeEnum.background) { // 4 : 背景图
@@ -137,7 +135,7 @@ public class CallbackAction extends ActionSupport {
 			out.println(AlbumServices.addBackgroundNew(userId,  path_original , fileName).toString());
 			out.flush();
 			out.close();
-			
+
 		} else if (pictureType == PictureTypeEnum.family_poster) { // 5:家族海报
 			FamilyPoster familyPoster = new FamilyPoster();
 			try {
@@ -168,11 +166,11 @@ public class CallbackAction extends ActionSupport {
 		} else { // 1.直播海报(弃用) 2.照片3.资源图片
 			String fileName;
 			String path_original;
-			
+
 			try {
 				JsonParser parser = new JsonParser();
 				JsonObject fsParamsJson = parser.parse(fsParams).getAsJsonObject();
-				
+
 				fileName = fsParamsJson.get("fileName").getAsString();
 				path_original = fsParamsJson.get("fileUrl").getAsString();
 				path_original = path_original.replaceFirst(ConfigHelper.getHttpdir(), "");
@@ -195,7 +193,7 @@ public class CallbackAction extends ActionSupport {
 		// 本次请求结束
 		return null;
 	}
-	
+
 	public String getCallback() {
 		return callback;
 	}
