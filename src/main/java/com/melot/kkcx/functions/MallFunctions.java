@@ -115,7 +115,7 @@ public class MallFunctions {
         
         try {
             MallService mallService = (MallService) MelotBeanFactory.getBean("mallService");
-            List<ShopCatalog> shopCatalogList = mallService.getShopCatalogList(null, null, null, null, cataType, 0, 50);
+            List<ShopCatalog> shopCatalogList = mallService.getShopCatalogList(null, null, null, null, cataType, 1, 50);
             JsonArray cataList = new JsonArray();
             if (shopCatalogList != null) {
                 for (ShopCatalog shopCatalog : shopCatalogList) {
