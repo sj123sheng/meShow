@@ -366,7 +366,7 @@ public class CatchDollFunction {
             if(catchDollRecordDOs != null) {
                 for(CatchDollRecordDO catchDollRecordDO : catchDollRecordDOs) {
                     JsonObject recentRecordJson = new JsonObject();
-                    recentRecordJson.addProperty("portrait", catchDollRecordDO.getPortrait());
+                    recentRecordJson.addProperty("portrait", StringUtils.defaultIfEmpty(catchDollRecordDO.getPortrait(), ""));
                     recentRecordJson.addProperty("nickName", catchDollRecordDO.getNickName());
                     String catchEndTime = getCatchEndTime(catchDollRecordDO);
                     recentRecordJson.addProperty("catchEndTime", catchEndTime);
