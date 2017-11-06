@@ -343,8 +343,8 @@ public class ActorFunction {
                 zmrzApply.setStatus(ZmrzStatusEnum.WAIT_VERIFY.getId());
                 zmrzApply.setCreateTime(now);
                 zmrzApply.setUpdateTime(now);
-                zmrzApply.setCertNo(certNo);
-                zmrzApply.setCertName(certName);
+                //zmrzApply.setCertNo(certNo);
+                //zmrzApply.setCertName(certName);
                 applyActorService.saveZmrzApply(zmrzApply);
                 result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             }
@@ -396,7 +396,7 @@ public class ActorFunction {
         if(response.isSuccess() && Boolean.parseBoolean(response.getPassed())) {
 
             ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
-            ZmrzApply zmrzApply = applyActorService.getZmrzApplyByBizNo(bizNo);
+            /*ZmrzApply zmrzApply = applyActorService.getZmrzApplyByBizNo(bizNo);
             String verifyCertNo = zmrzApply.getCertNo();
             certName = zmrzApply.getCertName();
 
@@ -404,7 +404,7 @@ public class ActorFunction {
                 verifyResult = true;
             }else {
                 result.addProperty("errorMessage", "身份证号码不一致");
-            }
+            }*/
         }else if(!response.isSuccess()) {
             result.addProperty("errorMessage", response.getErrorMessage());
         }else {
