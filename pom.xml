@@ -232,7 +232,7 @@
 		<dependency>
   			<groupId>com.melot</groupId>
   			<artifactId>melot-site-content-config</artifactId>
-  			<version>1.1.18</version><!--$NO-MVN-MAN-VER$-->
+  			<version>1.1.21-SNAPSHOT</version><!--$NO-MVN-MAN-VER$-->
 		</dependency>
 		<dependency>
 			<groupId>com.sun.jersey</groupId>
@@ -567,13 +567,13 @@
         <dependency>
             <groupId>com.melot.module</groupId>
             <artifactId>kk-doll-api</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>1.0.0</version>
         </dependency>
 
         <dependency>
             <groupId>com.melot.module</groupId>
             <artifactId>kkcore-actor-api</artifactId>
-            <version>1.0.8-SNAPSHOT</version>
+            <version>1.0.8</version>
         </dependency>
 	</dependencies>
  	
