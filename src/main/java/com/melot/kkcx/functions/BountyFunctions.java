@@ -720,6 +720,30 @@ public class BountyFunctions {
                 return result;
             }
             
+            // 红包过期
+            if (BountyResultCode.ERROR_SHARE_EXPIRE.equals(amountResult.getCode())) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5205021002");
+                return result;
+            }
+            
+            // 红包没有解锁
+            if (BountyResultCode.ERROR_SHARE_LOCKED.equals(amountResult.getCode())) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5205021003");
+                return result;
+            }
+            
+            // 改规则不存在或者红包已经领取
+            if (BountyResultCode.ERROR_SHARE_NO_RULE.equals(amountResult.getCode())) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5205021004");
+                return result;
+            }
+            
+            // 达到分享红包金额上限
+            if (BountyResultCode.ERROR_SHARE_UPPER_LIMIT.equals(amountResult.getCode())) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5205021005");
+                return result;
+            }
+            
             if (amountResult.getCode().equals(BountyResultCode.SUCCESS)) {
     
                 Long amount = amountResult.getData();
@@ -766,10 +790,9 @@ public class BountyFunctions {
         String redPacketDate;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-            redPacketRuleId = CommonUtil.getJsonParamInt(jsonObject, "redPacketRuleId", 0, "5205021001", 1, Integer.MAX_VALUE);
+            redPacketRuleId = CommonUtil.getJsonParamInt(jsonObject, "redPacketRuleId", 0, "5205021201", 1, Integer.MAX_VALUE);
             redPacketDate = CommonUtil.getJsonParamString(jsonObject, "redPacketDate", DateUtil.formatDate(new Date(), "yyyy-MM-dd"), null, 10, 10);
         } catch (CommonUtil.ErrorGetParameterException e) {
-            e.printStackTrace();
             result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
             return result;
         } catch (Exception e) {
@@ -787,6 +810,18 @@ public class BountyFunctions {
             
             if (BountyResultCode.ERROR_SQL.equals(redPacketResult.getCode())) {
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.EXECSQL_EXCEPTION);
+                return result;
+            }
+            
+            // 红包过期
+            if (BountyResultCode.ERROR_SHARE_EXPIRE.equals(redPacketResult.getCode())) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5205021202");
+                return result;
+            }
+            
+            // 红包规则不存在或者红包已经领完
+            if (BountyResultCode.ERROR_SHARE_NO_RULE.equals(redPacketResult.getCode())) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5205021203");
                 return result;
             }
             
