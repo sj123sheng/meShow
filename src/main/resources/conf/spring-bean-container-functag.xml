@@ -2703,5 +2703,28 @@
         <constructor-arg name="t" ref="mallFunctions" />
         <constructor-arg name="methodName" value="exchangeGameGift" />
     </bean>
-
+	
+	<!-- 获取奖励金分享红包列表 -->
+	<bean id="52050209" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="bountyFunctions" />
+		<constructor-arg name="methodName" value="getSharRedPacketList" />
+	</bean>
+	
+	<!-- 开启分享红包 -->
+	<bean id="52050210" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="bountyFunctions" />
+		<constructor-arg name="methodName" value="openSharRedPacket" />
+	</bean>
+	
+	<!-- 获取分享红包题目信息 -->
+	<bean id="51050211" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="bountyFunctions" />
+		<constructor-arg name="methodName" value="getSharQuestionInfo" />
+	</bean>
+	
+	<!-- 获取分享红包状态 -->
+	<bean id="52050212" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="bountyFunctions" />
+		<constructor-arg name="methodName" value="getSharRedPacketState" />
+	</bean>
 </beans>
