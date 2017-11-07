@@ -98,8 +98,7 @@ public class ZmxyService extends BaseService {
         request.setExtBizParam("{}");// 必要参数
         try {
             ZhimaCustomerCertificationInitializeResponse response = getZhimaClient().execute(request);
-            logger.error("zmrz bizNo: " + response.getBizNo());
-            System.out.println("zmrz bizNo: " + response.getBizNo());
+            logger.info("zmrz bizNo: " + response.getBizNo());
             result = response;
             result.setBody(transactionId);
         } catch (ZhimaApiException e) {
@@ -135,8 +134,7 @@ public class ZmxyService extends BaseService {
             // alipay://www.taobao.com 或者 alipays://www.taobao.com,分别对应http和https请求
             request.setReturnUrl(returnUrl);// 必要参数
             String url = getZhimaClient().generatePageRedirectInvokeUrl(request);
-            System.out.println("zmrz return_url: " + url);
-            logger.error("zmrz return_url: " + url);
+            logger.info("zmrz return_url: " + url);
             result = url;
         } catch (ZhimaApiException e) {
             logger.error("支付宝端内认证生成认证请求URL失败 getUrl(bizNo:" + bizNo + ",returnUrl:" + returnUrl + ")", e);
@@ -156,8 +154,7 @@ public class ZmxyService extends BaseService {
         req.setBizNo(bizNo);// 必要参数
         try {
             response = getZhimaClient().execute(req);
-            System.out.println(new Gson().toJson(response));
-            logger.error("zmrz result: " + new Gson().toJson(response));
+            logger.info("zmrz result: " + new Gson().toJson(response));
         } catch (ZhimaApiException e) {
             logger.error("通过bizNo获取本次认证结果失败 getResult(bizNo:" + bizNo + ")", e);
         }
