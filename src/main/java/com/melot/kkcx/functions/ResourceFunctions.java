@@ -12,6 +12,7 @@ import com.melot.kk.module.resource.service.ResourceNewService;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.util.*;
+import com.melot.kktv.service.ConfigService;
 import com.melot.qiniu.common.QiniuService;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import org.apache.http.HttpResponse;
@@ -20,6 +21,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -36,15 +38,18 @@ import java.io.IOException;
  */
 public class ResourceFunctions {
 
+    @Autowired
+    private ConfigService configService;
+
     /**
      * 52080101 获取资源上传配置
      */
     public JsonObject getUpLoadConf(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
         String tagCode_prefix = "52080101";
-        JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
-        if (rtJO != null) {
-            return rtJO;
-        }
+//        JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
+//        if (rtJO != null) {
+//            return rtJO;
+//        }
         JsonObject result = new JsonObject();
         try {
             Integer userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, tagCode_prefix+"01", 1, Integer.MAX_VALUE);
@@ -69,7 +74,15 @@ public class ResourceFunctions {
             resourceUploadConfParam.setTranscoding(transcoding);
             Result<ResourceUpLoadConf> conf = resourceNewService.getUpLoadConf(resourceUploadConfParam);
             if(conf.getCode().equals(CommonStateCode.SUCCESS)){
-                result.add("config",new Gson().toJsonTree(conf.getData()));
+                ResourceUpLoadConf config = conf.getData();
+//                ConfigService configService = (ConfigService) MelotBeanFactory.getBean("configService");
+                if(configService.getResourceType().contains(","+ resType+",")){
+                    config.setResUpload(1);
+                }
+                else {
+                    config.setResUpload(0);
+                }
+                result.add("config",new Gson().toJsonTree(config));
                 result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             }
             else {
