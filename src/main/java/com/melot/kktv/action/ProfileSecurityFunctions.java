@@ -1053,7 +1053,6 @@ public class ProfileSecurityFunctions {
             if (!StringUtil.strIsNull(uuid)) {
                 qiNiuTokenConf.setUuid(uuid);
             }
-            System.out.println(new Gson().toJson(qiNiuTokenConf));
             String token = getQinuUploadToken(qiNiuTokenConf);
             if (token != null && !token.trim().isEmpty()) {
                 result.addProperty("upToken", token);
