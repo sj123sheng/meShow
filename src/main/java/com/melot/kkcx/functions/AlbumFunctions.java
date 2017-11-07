@@ -917,11 +917,6 @@ public class AlbumFunctions {
 			return result;
 		}
 
-		if (appId == AppIdEnum.GAME) {
-			com.melot.kktv.action.AlbumFunctions publicAlbumFunction = (com.melot.kktv.action.AlbumFunctions) MelotBeanFactory.getBean("publicAlbumFunction");
-			return publicAlbumFunction.insertToDB(jsonObject, checkTag, request);
-		}
-
 		Integer resId = 0;
         if(configService.getResourceType().contains(","+ pictureType+",")){
 			com.melot.kk.module.resource.domain.Resource resource = new com.melot.kk.module.resource.domain.Resource();

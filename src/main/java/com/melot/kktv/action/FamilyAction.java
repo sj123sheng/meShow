@@ -105,22 +105,22 @@ public class FamilyAction {
 			return result;
 		}
 
-        //获取最近2期家族擂台赛信息
-        RecentFamilyMatch recentFamilyMatch = getRecentFamilyMatch();
+//        //获取最近2期家族擂台赛信息
+//        RecentFamilyMatch recentFamilyMatch = getRecentFamilyMatch();
 
         // 获取上期家族比赛冠军
 		Integer lastChampionFamilyId = null;
-		if (recentFamilyMatch != null) {
-			Integer period = recentFamilyMatch.getLastPeriod();
-			FamilyMatchRank familyMatchRank = FamilyMatchService.getFamilyMatchChampion(period);
-			if(familyMatchRank != null) {
-                Family lastChampionFamily = FamilyService.getFamilyInfo(familyMatchRank.getFamilyId().intValue(), platform);
-                // 获取上期冠军家族当前消费榜排名
-                if (lastChampionFamily != null && lastChampionFamily.getFamilyId() != null) {
-                    lastChampionFamilyId = lastChampionFamily.getFamilyId();
-                }
-            }
-		}
+//		if (recentFamilyMatch != null) {
+//			Integer period = recentFamilyMatch.getLastPeriod();
+//			FamilyMatchRank familyMatchRank = FamilyMatchService.getFamilyMatchChampion(period);
+//			if(familyMatchRank != null) {
+//                Family lastChampionFamily = FamilyService.getFamilyInfo(familyMatchRank.getFamilyId().intValue(), platform);
+//                // 获取上期冠军家族当前消费榜排名
+//                if (lastChampionFamily != null && lastChampionFamily.getFamilyId() != null) {
+//                    lastChampionFamilyId = lastChampionFamily.getFamilyId();
+//                }
+//            }
+//		}
 		
 		// 判断家族列表缓存是否失效或是否未缓存
 		long currentTime = System.currentTimeMillis();
@@ -190,11 +190,7 @@ public class FamilyAction {
                         boolean showCorner = false;
 						String cornerName = "";
 						String cornerBackground = "";
-                        if(start == 0 && i == 0) { //擂主
-                            showCorner = true;
-                            cornerName = challengerFamilyName;
-                            cornerBackground = challengerFamilyBackground;
-                        }else if(trumpFamilyIds.contains(familyId + "")){ //王牌
+                        if(trumpFamilyIds.contains(familyId + "")){ //王牌
                             showCorner = true;
                             cornerName = trumpFamilyName;
                             cornerBackground = trumpFamilyBackground;

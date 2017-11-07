@@ -4,7 +4,6 @@ import com.antgroup.zmxy.openplatform.api.response.ZhimaCustomerCertificationIni
 import com.antgroup.zmxy.openplatform.api.response.ZhimaCustomerCertificationQueryResponse;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.melot.blacklist.service.BlacklistService;
 import com.melot.content.config.apply.service.ApplyActorService;
 import com.melot.content.config.domain.ApplyActor;
@@ -344,6 +343,8 @@ public class ActorFunction {
                 zmrzApply.setStatus(ZmrzStatusEnum.WAIT_VERIFY.getId());
                 zmrzApply.setCreateTime(now);
                 zmrzApply.setUpdateTime(now);
+                zmrzApply.setCertNo(certNo);
+                zmrzApply.setCertName(certName);
                 applyActorService.saveZmrzApply(zmrzApply);
                 result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             }
@@ -358,7 +359,7 @@ public class ActorFunction {
     }
 
     /**
-     * 52020102-校验芝麻认证是否通过 认证成功：如果申请的是自由主播直接变成主播，如果是家族主播等待家族审核通过后变成主播 认证失败返回申请状态为空【52020102】
+     * 50001024-校验芝麻认证是否通过 认证成功：如果申请的是自由主播直接变成主播，如果是家族主播等待家族审核通过后变成主播 认证失败返回申请状态为空【52020102】
      * @param jsonObject
      * @param checkTag
      * @return
@@ -393,9 +394,12 @@ public class ActorFunction {
         boolean verifyResult = false;
         String certName = "";
         if(response.isSuccess() && Boolean.parseBoolean(response.getPassed())) {
-            JsonObject identityInfo = new JsonParser().parse(response.getIdentityInfo()).getAsJsonObject();
-            String verifyCertNo = identityInfo.get("cert_no").getAsString();
-            certName = identityInfo.get("cert_name").getAsString();
+
+            ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
+            ZmrzApply zmrzApply = applyActorService.getZmrzApplyByBizNo(bizNo);
+            String verifyCertNo = zmrzApply.getCertNo();
+            certName = zmrzApply.getCertName();
+
             if(!StringUtils.isEmpty(verifyCertNo) && certNo.equals(verifyCertNo)) {
                 verifyResult = true;
             }else {

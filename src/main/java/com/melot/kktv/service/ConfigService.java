@@ -30,6 +30,8 @@ public class ConfigService {
 
     private String goldMedalFamilyIds;
 
+    private boolean isAbroad;
+
     //是否特殊时期
     private boolean isSpecialTime;
 
@@ -90,6 +92,15 @@ public class ConfigService {
 
     public void setIsSpecialTime(boolean isSpecialTime) {
         this.isSpecialTime = isSpecialTime;
+    }
+
+    @DisconfFileItem(name = "global.isAbroad", associateField = "isAbroad")
+    public boolean getIsAbroad() {
+        return isAbroad;
+    }
+
+    public void setIsAbroad(boolean isAbroad) {
+        this.isAbroad = isAbroad;
     }
 
     @DisconfFileItem(name = "global.resourceType", associateField = "resourceType")
