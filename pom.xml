@@ -219,7 +219,7 @@
 		<dependency>
 			<groupId>com.melot</groupId>
 		  	<artifactId>api-menu-sdk</artifactId>
-		  	<version>1.1.46</version><!--$NO-MVN-MAN-VER$-->
+		  	<version>1.1.47-SNAPSHOT</version><!--$NO-MVN-MAN-VER$-->
 		</dependency>
 		<dependency>
 			<groupId>com.melot</groupId>
