@@ -224,6 +224,7 @@
 		<dependency>
 			<groupId>com.melot</groupId>
 			<artifactId>common-config</artifactId>
+			<version>1.0.9</version>
 		</dependency>
 		<dependency>
 			<groupId>com.melot</groupId>
