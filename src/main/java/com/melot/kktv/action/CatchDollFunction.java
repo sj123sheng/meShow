@@ -307,7 +307,9 @@ public class CatchDollFunction {
                 if(userProfile != null) {
                     result.addProperty("userId", userId);
                     result.addProperty("nickName", userProfile.getNickName());
-                    result.addProperty("portrait", ConfigHelper.getHttpdir() + userProfile.getPortrait());
+                    if(StringUtils.isNotEmpty(userProfile.getPortrait())) {
+                        result.addProperty("portrait", ConfigHelper.getHttpdir() + userProfile.getPortrait());
+                    }
 
                 }
             }
