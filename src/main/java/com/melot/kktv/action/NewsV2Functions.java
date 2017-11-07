@@ -438,8 +438,8 @@ public class NewsV2Functions {
             toUserId = CommonUtil.getJsonParamInt(jsonObject, "toUserId", 0, null, 1, Integer.MAX_VALUE);
             platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, 1, Integer.MAX_VALUE);
             content = CommonUtil.getJsonParamString(jsonObject, "content", null, "06050005", 1, 250);
-            // matchXSSTag,字符长度要小于等于30
-            if (CommonUtil.matchXSSTag(content) || content.length() > 30) {
+            // matchXSSTag,字符长度要小于等于7
+            if (CommonUtil.matchXSSTag(content) || content.length() > 7) {
                 result.addProperty("TagCode", "06050006");
                 return result;
             }
@@ -828,7 +828,7 @@ public class NewsV2Functions {
         String content;
         // 解析参数
         try {
-            content = CommonUtil.getJsonParamString(jsonObject, "content", null, "06240001", 1, configService.getIsAbroad() ? 30 : 7);
+            content = CommonUtil.getJsonParamString(jsonObject, "content", null, "06240001", 1, 7);
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 0, Integer.MAX_VALUE);
             start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, null, 0, Integer.MAX_VALUE);
             offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 10, null, 0, Integer.MAX_VALUE);
@@ -1085,6 +1085,131 @@ public class NewsV2Functions {
         return result;
     }
 
+    /**
+     * 根据newsType获取动态(20006030)
+     * 
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     * @throws Exception
+     */
+    public JsonObject getNewsListByNewsType(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+        JsonObject result = new JsonObject();
+
+        // 定义所需参数
+        int userId, newsType, start, offset, state, platform, actorId = 0;
+        // 解析参数
+        try {
+        	userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 0, Integer.MAX_VALUE);
+        	actorId = CommonUtil.getJsonParamInt(jsonObject, "actorId", 0, null, 0, Integer.MAX_VALUE);
+        	newsType = CommonUtil.getJsonParamInt(jsonObject, "newsType", 10, null, 0, Integer.MAX_VALUE);
+        	start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, null, 0, Integer.MAX_VALUE);
+        	offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 20, null, 1, Integer.MAX_VALUE);
+        	state = CommonUtil.getJsonParamInt(jsonObject, "state", 1, null, 0, Integer.MAX_VALUE);
+            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        } catch (ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+        
+        if (userId == 0 && actorId == 0) {
+        	result.addProperty("TagCode", "06300001");
+        	return result;
+        }
+        
+        if (actorId == 0) {
+        	//老版参数兼容,之前userId作为actorId使用,且不传actorId
+        	actorId = userId;
+        }
+        
+        int count = NewsService.getNewsCountByResType(actorId, newsType, state);
+        if (count > 0) {
+        	List<NewsInfo> newsList;
+        	if (checkTag) {
+        		newsList = NewsService.getNewsListAndPraiseByResType(actorId, userId, newsType, start, offset);
+        	} else {
+            	newsList = NewsService.getNewsListByResType(actorId, newsType, start, offset);
+        	}
+            if (newsList != null && newsList.size() > 0) {
+            	JsonArray jNewsList = new JsonArray();
+            	for (NewsInfo newsInfo : newsList) {
+            		JsonObject json = NewsService.getNewResourceJson(newsInfo, platform, false);
+                    jNewsList.add(json);
+                }
+            	
+            	
+            	result.add("newsList", jNewsList);
+                
+            }
+        } 
+        
+        RoomInfo actorInfo = RoomService.getRoomInfo(actorId);
+        if (actorInfo != null) {
+            result.addProperty("nickname", actorInfo.getNickname());
+            if (actorInfo.getGender() != null) {
+                result.addProperty("gender", actorInfo.getGender());
+            }
+            if (actorInfo.getPortrait() != null) {
+                if (platform == PlatformEnum.WEB) {
+                    result.addProperty("portrait_path_256", actorInfo.getPortrait() + "!256");
+                } else if (platform == PlatformEnum.ANDROID) {
+                    result.addProperty("portrait_path_48", actorInfo.getPortrait() + "!48");
+                    result.addProperty("portrait_path_128", actorInfo.getPortrait() + "!128");
+                } else if (platform == PlatformEnum.IPHONE) {
+                    result.addProperty("portrait_path_128", actorInfo.getPortrait() + "!128");
+                } else if (platform == PlatformEnum.IPAD) {
+                    result.addProperty("portrait_path_128", actorInfo.getPortrait() + "!128");
+                } else {
+                    result.addProperty("portrait_path_1280", actorInfo.getPortrait() + "!1280");
+                    result.addProperty("portrait_path_256", actorInfo.getPortrait() + "!256");
+                    result.addProperty("portrait_path_128", actorInfo.getPortrait() + "!128");
+                    result.addProperty("portrait_path_48", actorInfo.getPortrait() + "!48");
+                }
+            }
+            result.addProperty("actorLevel", actorInfo.getActorLevel());
+            result.addProperty("richLevel", actorInfo.getRichLevel());
+            // 直播状态
+            result.addProperty("isLive", actorInfo.getLiveStarttime() != null && actorInfo.getLiveEndtime() == null ? 1 : 0);
+            result.addProperty("roomSource", actorInfo.getRoomSource());
+            result.addProperty("screenType", actorInfo.getScreenType());
+            result.addProperty("actorTag", 1);
+        } else {
+            UserProfile userInfo = com.melot.kktv.service.UserService.getUserInfoV2(actorId);
+            if (userInfo != null) {
+                result.addProperty("nickname", userInfo.getNickName());
+                result.addProperty("gender", userInfo.getGender());
+                result.addProperty("actorLevel", userInfo.getActorLevel());
+                result.addProperty("richLevel", userInfo.getUserLevel());
+                result.addProperty("actorTag", 0);
+                if (userInfo.getPortrait() != null) {
+                    if (platform == PlatformEnum.WEB) {
+                        result.addProperty("portrait_path_256", userInfo.getPortrait() + "!256");
+                    } else if (platform == PlatformEnum.ANDROID) {
+                        result.addProperty("portrait_path_48", userInfo.getPortrait() + "!48");
+                        result.addProperty("portrait_path_128", userInfo.getPortrait() + "!128");
+                    } else if (platform == PlatformEnum.IPHONE) {
+                        result.addProperty("portrait_path_128", userInfo.getPortrait() + "!128");
+                    } else if (platform == PlatformEnum.IPAD) {
+                        result.addProperty("portrait_path_128", userInfo.getPortrait() + "!128");
+                    } else {
+                        result.addProperty("portrait_path_1280", userInfo.getPortrait() + "!1280");
+                        result.addProperty("portrait_path_256", userInfo.getPortrait() + "!256");
+                        result.addProperty("portrait_path_128", userInfo.getPortrait() + "!128");
+                        result.addProperty("portrait_path_48", userInfo.getPortrait() + "!48");
+                    }
+                }
+            }
+        }
+        
+        result.addProperty("pathPrefix", ConfigHelper.getHttpdir()); // 图片前缀
+        result.addProperty("mediaPathPrefix", ConfigHelper.getMediahttpdir()); // 多媒体前缀
+        result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());// 七牛前缀
+        result.addProperty("countTotal", count);
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+    
     /**
      * 删除评论(20006006)
      *

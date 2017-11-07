@@ -99,7 +99,6 @@ public class ZmxyService extends BaseService {
         try {
             ZhimaCustomerCertificationInitializeResponse response = getZhimaClient().execute(request);
             logger.info("zmrz bizNo: " + response.getBizNo());
-            //System.out.println("zmrz bizNo: " + response.getBizNo());
             result = response;
             result.setBody(transactionId);
         } catch (ZhimaApiException e) {
@@ -135,7 +134,6 @@ public class ZmxyService extends BaseService {
             // alipay://www.taobao.com 或者 alipays://www.taobao.com,分别对应http和https请求
             request.setReturnUrl(returnUrl);// 必要参数
             String url = getZhimaClient().generatePageRedirectInvokeUrl(request);
-            //System.out.println("zmrz return_url: " + url);
             logger.info("zmrz return_url: " + url);
             result = url;
         } catch (ZhimaApiException e) {

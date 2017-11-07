@@ -36,6 +36,5 @@ public class DesUtil {
 	}
 	
 	public static void main(String[] args) throws Exception{
-		System.out.println(DesUtil.encode("565a937ade0162bf8b47c469c6818404", "tenc1234"));
 	}
 }

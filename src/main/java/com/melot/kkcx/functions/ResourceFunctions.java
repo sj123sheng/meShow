@@ -218,7 +218,6 @@ public class ResourceFunctions {
 
     public static void main(String[] args) {
         String fileUrl = "xxxx/xx.mp4";
-        System.out.print(fileUrl.substring(0,fileUrl.indexOf(".") + 1) + "jpg");
     }
 
 }
