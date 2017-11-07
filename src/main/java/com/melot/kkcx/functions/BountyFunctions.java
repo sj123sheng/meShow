@@ -679,18 +679,18 @@ public class BountyFunctions {
      */
     public JsonObject openSharRedPacket(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
         // 安全校验
-//        JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
-//        if(rtJO != null) {
-//            return rtJO;
-//        }
+        JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
+        if(rtJO != null) {
+            return rtJO;
+        }
         
         JsonObject result = new JsonObject();
         
         // Token 校验
-//        if (!checkTag) {
-//            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_NOT_CHECKED);
-//            return result;
-//        }
+        if (!checkTag) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
     
         int userId;
         int redPacketRuleId;
@@ -748,18 +748,18 @@ public class BountyFunctions {
      */
     public JsonObject getSharRedPacketState(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
         // 安全校验
-//        JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
-//        if(rtJO != null) {
-//            return rtJO;
-//        }
+        JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
+        if(rtJO != null) {
+            return rtJO;
+        }
         
         JsonObject result = new JsonObject();
         
         // Token 校验
-//        if (!checkTag) {
-//            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_NOT_CHECKED);
-//            return result;
-//        }
+        if (!checkTag) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
     
         int userId;
         int redPacketRuleId;
