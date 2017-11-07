@@ -2603,6 +2603,64 @@
 		<constructor-arg name="t" ref="wechatCashFunctions" />
 		<constructor-arg name="methodName" value="cashBounty" />
 	</bean>
+	
+    <!-- 直播抓娃娃接口 -->
+    <bean id="51060201" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="catchDollFunction" />
+        <constructor-arg name="methodName" value="monitorPushFlow" />
+    </bean>
+    <bean id="51060202" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="catchDollFunction" />
+        <constructor-arg name="methodName" value="getDollMachineRoomInfo" />
+    </bean>
+    <bean id="51060203" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="catchDollFunction" />
+        <constructor-arg name="methodName" value="getDollMachineRoomDetail" />
+    </bean>
+    <bean id="51060204" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="catchDollFunction" />
+        <constructor-arg name="methodName" value="getRoomCatchRecords" />
+    </bean>
+    <bean id="51060205" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="catchDollFunction" />
+        <constructor-arg name="methodName" value="getMyDollInfo" />
+    </bean>
+    <bean id="51060206" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="catchDollFunction" />
+        <constructor-arg name="methodName" value="getMyDollUnExchanges" />
+    </bean>
+    <bean id="51060207" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="catchDollFunction" />
+        <constructor-arg name="methodName" value="getMyDollExchangeds" />
+    </bean>
+    <bean id="51060208" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="catchDollFunction" />
+        <constructor-arg name="methodName" value="applyForDelivery" />
+    </bean>
+    <bean id="51060209" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="catchDollFunction" />
+        <constructor-arg name="methodName" value="exchangeDollTickets" />
+    </bean>
+    <bean id="51060210" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="catchDollFunction" />
+        <constructor-arg name="methodName" value="coinFailed" />
+    </bean>
+    <bean id="51060211" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="catchDollFunction" />
+        <constructor-arg name="methodName" value="play" />
+    </bean>
+    <bean id="51060212" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="catchDollFunction" />
+        <constructor-arg name="methodName" value="giveUp" />
+    </bean>
+    <bean id="51060213" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="catchDollFunction" />
+        <constructor-arg name="methodName" value="getMyRecentDeliveryInfo" />
+    </bean>
+    <bean id="51060214" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="catchDollFunction" />
+        <constructor-arg name="methodName" value="gameOver" />
+    </bean>
 
 	<bean id="52080101" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="resourceNewFunction" />

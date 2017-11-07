@@ -490,7 +490,7 @@ public class NewsV2Functions {
 
     /**
      * 点赞接口(20006019)
-     * 
+     *
      * @param jsonObject
      * @param checkTag
      * @param request
