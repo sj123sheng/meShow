@@ -41,7 +41,7 @@ public class QQService extends BaseService {
             if (jsonObj.get("unionid") != null) {
                 return TagCodeEnum.SUCCESS;
             } else {
-                logger.error("qq服务端验证用户失败, respose:" + jsonObj.toString());
+                logger.info("qq服务端验证用户失败, respose:" + jsonObj.toString());
             }
             rd.close();
             in.close();
@@ -75,7 +75,7 @@ public class QQService extends BaseService {
             if (jsonObj.get("unionid") != null) {
                 return jsonObj.get("unionid").getAsString();
             } else {
-                logger.error("qq服务端获取unionID失败, respose:" + jsonObj.toString());
+                logger.info("qq服务端获取unionID失败, respose:" + jsonObj.toString());
             }
             rd.close();
             in.close();
