@@ -114,8 +114,15 @@
 
     <!-- 短信服务 -->
     <kkrpc:reference id="smsService" interface="com.melot.sms.api.service.SmsService" version="1.0.1"/>
-	
+
 	<kkrpc:reference id="gameConfigService" interface="com.melot.kkactivity.driver.service.GameConfigService" version="1.0.0" />
 	
 	<kkrpc:reference id="bountyService" interface="com.melot.kk.bounty.api.service.BountyService" version="1.0.0" />
+
+    <!-- 抓娃娃模块 -->
+    <kkrpc:reference id="dollMachineService" interface="com.melot.kk.doll.api.service.DollMachineService" version="1.0.0" />
+    <kkrpc:reference id="catchDollRecordService" interface="com.melot.kk.doll.api.service.CatchDollRecordService" version="1.0.0" />
+
+    <!-- 主播模块 -->
+    <kkrpc:reference id="actorService" interface="com.melot.kkcore.actor.service.ActorService" version="1.0.8" />
 </beans>
