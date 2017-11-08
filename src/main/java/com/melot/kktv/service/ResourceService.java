@@ -16,7 +16,7 @@ public class ResourceService {
 		}
 		return 0;
 	}
-	
+
 	public static String addResources(List<Resource> resourceList) {
 		com.melot.resource.service.ResourceService resourceService = (com.melot.resource.service.ResourceService) MelotBeanFactory.getBean("resourceCenter");;
 		if (resourceService != null) {
@@ -24,7 +24,7 @@ public class ResourceService {
 		}
 		return null;
 	}
-	
+
 	public static Resource getResource(int resId, int type) {
 		com.melot.resource.service.ResourceService resourceService = (com.melot.resource.service.ResourceService) MelotBeanFactory.getBean("resourceCenter");;
 		if (resourceService != null) {
@@ -32,7 +32,7 @@ public class ResourceService {
 		}
 		return null;
 	}
-	
+
 	public static boolean delResource(NewsInfo newsInfo) {
 		com.melot.resource.service.ResourceService resourceService = (com.melot.resource.service.ResourceService) MelotBeanFactory.getBean("resourceCenter");;
 		if (resourceService == null) {
@@ -48,7 +48,7 @@ public class ResourceService {
 		}
 		return true;
 	}
-	
+
 	public static List<Resource> getResourceList(String imageUrls) {
 		com.melot.resource.service.ResourceService resourceService = (com.melot.resource.service.ResourceService) MelotBeanFactory.getBean("resourceCenter");;
 		if (resourceService == null) {

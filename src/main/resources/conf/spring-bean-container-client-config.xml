@@ -117,7 +117,6 @@
     <kkrpc:reference id="smsService" interface="com.melot.sms.api.service.SmsService" version="1.0.1"/>
 
 	<kkrpc:reference id="videoBgmService" interface="com.melot.common.driver.service.VideoBgmService" version="1.0.0" />
-	
 	<kkrpc:reference id="gameConfigService" interface="com.melot.kkactivity.driver.service.GameConfigService" version="1.0.0" />
 	
 	<kkrpc:reference id="bountyService" interface="com.melot.kk.bounty.api.service.BountyService" version="1.0.0" />
@@ -130,4 +129,5 @@
     <kkrpc:reference id="actorService" interface="com.melot.kkcore.actor.service.ActorService" version="1.0.8" />
 
 	<kkrpc:reference id="bountyQuestionService" interface="com.melot.kk.bounty.api.service.BountyQuestionService" version="1.0.0" />
+
 </beans>

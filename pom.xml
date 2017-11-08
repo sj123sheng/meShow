@@ -10,7 +10,8 @@
 	
 	<artifactId>meShow</artifactId>
 	<packaging>war</packaging>
-	<version>2.2.11.67</version>
+	<version>2.2.11.68</version>
+>>>>>>> origin/feature/1103
 	
 	<name>meShow</name>
 	<url>http://maven.apache.org</url>
@@ -563,6 +564,23 @@
 		  <groupId>com.melot.kk.module</groupId>
 		  <artifactId>kk-bounty-api</artifactId>
 		  <version>0.0.5-SNAPSHOT</version>
+		</dependency>
+
+        <dependency>
+            <groupId>com.melot.module</groupId>
+            <artifactId>kk-doll-api</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.melot.module</groupId>
+            <artifactId>kkcore-actor-api</artifactId>
+            <version>1.0.8</version>
+        </dependency>
+		<dependency>
+			<groupId>com.melot.module</groupId>
+			<artifactId>kk-resource-api</artifactId>
+			<version>1.0.1</version>
 		</dependency>
 
         <dependency>
