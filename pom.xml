@@ -11,7 +11,6 @@
 	<artifactId>meShow</artifactId>
 	<packaging>war</packaging>
 	<version>2.2.11.68</version>
->>>>>>> origin/feature/1103
 	
 	<name>meShow</name>
 	<url>http://maven.apache.org</url>
