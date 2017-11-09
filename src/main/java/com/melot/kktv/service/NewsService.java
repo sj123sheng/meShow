@@ -88,7 +88,6 @@ public class NewsService {
 	/**
 	 *  获取用户关注动态
 	 * @param userId 用户Id
-	 * @param platform 平台Id
 	 * @param min 起始位置
 	 * @param max 结束位置
 	 * @return
@@ -859,7 +858,6 @@ public class NewsService {
 	
 	/**
 	 * 删除人工推荐动态
-	 * @param newsId
 	 */
 	public static void delManualNews(String index) {
 		NewsSource.delManualNews(index);

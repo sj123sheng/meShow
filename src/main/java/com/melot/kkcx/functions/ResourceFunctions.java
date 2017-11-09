@@ -73,7 +73,7 @@ public class ResourceFunctions {
             resourceUploadConfParam.setVframeSeconds(vframeSeconds);
             resourceUploadConfParam.setTranscoding(transcoding);
             Result<ResourceUpLoadConf> conf = resourceNewService.getUpLoadConf(resourceUploadConfParam);
-            if(conf.getCode().equals(CommonStateCode.SUCCESS)){
+            if(conf != null && conf.getCode() != null && conf.getCode().equals(CommonStateCode.SUCCESS)){
                 ResourceUpLoadConf config = conf.getData();
 //                ConfigService configService = (ConfigService) MelotBeanFactory.getBean("configService");
                 if(configService.getResourceType().contains(","+ resType+",")){

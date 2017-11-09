@@ -1,5 +1,12 @@
 package com.melot.kktv.service;
 
+import com.melot.kk.module.resource.domain.Resource;
+import com.melot.news.model.NewsInfo;
+import com.melot.sdk.core.util.MelotBeanFactory;
+
+import java.util.List;
+import java.util.regex.Pattern;
+
 /**
  * Title:
  * <p>
