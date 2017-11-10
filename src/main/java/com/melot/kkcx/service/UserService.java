@@ -15,6 +15,8 @@ import org.apache.log4j.Logger;
 import com.esotericsoftware.reflectasm.MethodAccess;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.common.driver.service.StarService;
+import com.melot.kkcore.user.api.UserAssets;
+import com.melot.kkcore.user.api.UserGameAssets;
 import com.melot.kkcore.user.api.UserInfoDetail;
 import com.melot.kkcore.user.api.UserLevel;
 import com.melot.kkcore.user.api.UserProfile;
@@ -490,7 +492,7 @@ public class UserService {
         
         return true;
     }
-
+    
     /**
      * 检查用户昵称是否修改
      * @param nickname
@@ -971,4 +973,22 @@ public class UserService {
 		}
 		return true;
 	}
+	
+	/**
+     * 获取用户游戏币
+     * @param userId
+     * @return
+     */
+    public static long getUserGameMoney(int userId) {
+        try {
+            com.melot.kkcore.user.service.KkUserService userService = (com.melot.kkcore.user.service.KkUserService) MelotBeanFactory.getBean("kkUserService");
+            if (userService != null) {
+                UserGameAssets  userGameAssets  = userService.getUserGameAssets(userId);
+                return userGameAssets != null ? userGameAssets.getGameMoney() : 0;
+            }
+        } catch (Exception e) {
+            logger.error("fail to execute KkUserService.getUserGameAssets, userId: " + userId, e);
+        }
+        return 0;
+    }
 }
