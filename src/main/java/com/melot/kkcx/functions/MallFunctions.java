@@ -156,7 +156,7 @@ public class MallFunctions {
         try {
             cataId = CommonUtil.getJsonParamInt(jsonObject, "cataId", 1, "5103010301", 1, Integer.MAX_VALUE);
             pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
-            countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 1, null, 1, Integer.MAX_VALUE);
+            countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 10, null, 1, Integer.MAX_VALUE);
         } catch(CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -247,7 +247,7 @@ public class MallFunctions {
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
             giftId = CommonUtil.getJsonParamInt(jsonObject, "giftId", 0, "5103010501", 1, Integer.MAX_VALUE);
-            amount = CommonUtil.getJsonParamInt(jsonObject, "amount", 0, null, 1, Integer.MAX_VALUE);
+            amount = CommonUtil.getJsonParamInt(jsonObject, "amount", 1, null, 1, Integer.MAX_VALUE);
         } catch(CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -267,6 +267,8 @@ public class MallFunctions {
                 result.addProperty("TagCode", "5103010502");
             } else if ("4".equals(resp.getCode())) {
                 result.addProperty("TagCode", "5103010503");
+            } else {
+                result.addProperty("TagCode", "5103010504");
             }
             
         } catch (Exception e) {

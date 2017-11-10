@@ -856,6 +856,16 @@
 		<constructor-arg name="cacheType" value="180" />
 		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
 	</bean>
+	<!-- 获取家族待审核主播列表 -->
+	<bean id="51040101" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="familyFunction" />
+		<constructor-arg name="methodName" value="getFamilyApplyActorList" />
+	</bean>
+	<!-- 家族长审核主播 -->
+	<bean id="51040102" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="familyFunction" />
+		<constructor-arg name="methodName" value="auditFamilyApplyActor" />
+	</bean>
 	
 	<!-- 个人财产(道具汽车靓号)相关接口 -->
 	<!-- 获取用户所拥有的财产列表(VIP 车 门票) -->

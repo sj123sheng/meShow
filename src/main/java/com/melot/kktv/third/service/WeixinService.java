@@ -53,9 +53,10 @@ public class WeixinService extends BaseService {
             }
             JsonObject jsonObj = new JsonParser().parse(tempStr.toString()).getAsJsonObject();		
 			if(jsonObj.has("errcode")&&jsonObj.get("errcode").getAsInt()!=0)
-				logger.error("微信服务端验证用户失败, respose:" + jsonObj.toString());
-			else
-            	isValid = true;
+				logger.info("微信服务端验证用户失败, respose:" + jsonObj.toString());
+			else {
+			    isValid = true;
+			}
             rd.close();
             in.close();
         } catch (Exception e) {
