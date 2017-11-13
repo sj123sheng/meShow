@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.google.common.collect.Lists;
 import com.melot.kk.module.resource.constant.CommonConstant;
 import com.melot.kk.module.resource.constant.ECloudTypeConstant;
 import com.melot.kk.module.resource.constant.FileTypeConstant;
@@ -252,7 +253,23 @@ public class NewsV2Functions {
 
         if (NewsService.isWhiteUser(userId)) {
             newsInfo.setState(1);
+            if(mediaType == NewsMediaTypeEnum.AUDIO && !StringUtil.strIsNull(newsInfo.getRefAudio())){
+                resourceNewService.checkResource(Lists.newArrayList(Integer.parseInt(newsInfo.getRefAudio())),ResourceStateConstant.checkpass,"动态白名单",1);
+            }
+            else if(mediaType == NewsMediaTypeEnum.VIDEO && !StringUtil.strIsNull(newsInfo.getRefVideo())){
+                resourceNewService.checkResource(Lists.newArrayList(Integer.parseInt(newsInfo.getRefVideo())),ResourceStateConstant.checkpass,"动态白名单",1);
+            }
+            else if(mediaType == NewsMediaTypeEnum.IMAGE && !StringUtil.strIsNull(newsInfo.getRefImage())){
+                List<Integer> resIds = Lists.newArrayList();
+                for(String id:newsInfo.getRefImage().split(",")){
+                    if(!StringUtil.strIsNull(id)){
+                        resIds.add(Integer.parseInt(id));
+                    }
+                }
+                resourceNewService.checkResource(resIds,ResourceStateConstant.checkpass,"动态白名单",1);
+            }
         }
+
         int newsId = NewsService.addNews(newsInfo, topic);
         if (newsId > 0) {
             result.addProperty("newsId", newsId);
