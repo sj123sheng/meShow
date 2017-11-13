@@ -1017,13 +1017,16 @@ public class AlbumFunctions {
 		}
 
 		// 验证参数
-		int userId, pictureType, resId;
+		int userId, pictureType, resId,familyId = 0;
 		String fileUrl, pictureName;
 
 		try {
 			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-			resId = CommonUtil.getJsonParamInt(jsonObject, "resId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+			resId = CommonUtil.getJsonParamInt(jsonObject, "resId", 0, null, 1, Integer.MAX_VALUE);
 			pictureType = CommonUtil.getJsonParamInt(jsonObject, "pictureType", 0, "04010004", -10, Integer.MAX_VALUE);
+			if (pictureType == PictureTypeEnum.family_poster) {
+				familyId = CommonUtil.getJsonParamInt(jsonObject, "familyId", 0, "04010016", 1, Integer.MAX_VALUE);
+			}
 			fileUrl = CommonUtil.getJsonParamString(jsonObject, "fileUrl", null, "04010024", 1, Integer.MAX_VALUE);
 			fileUrl = fileUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
 			if(!fileUrl.startsWith("/")){
@@ -1048,6 +1051,11 @@ public class AlbumFunctions {
 				result = AlbumServices.addPortraitNew(resId, userId, fileUrl, pictureName);
 			} else if(pictureType == 2) { // 2:相册图片
 				result = AlbumServices.addPictureNewV2(resId, userId, pictureType, fileUrl, pictureName);
+			} else if (pictureType == PictureTypeEnum.family_poster) { // 5:家族海报
+				FamilyPoster familyPoster = new FamilyPoster();
+				familyPoster.setPath_original(fileUrl);
+				FamilyAction familyAction = MelotBeanFactory.getBean("familyFunction", FamilyAction.class);
+				result = familyAction.setFamilyPoster(userId, familyId, familyPoster);
 			}
 		} catch (Exception e) {
 			logger.error("Failed to insert to DB." + e);

@@ -1173,6 +1173,7 @@ public class NewsService {
 			//{"mediaUrl":"/2014/3/25/1008198_36000.mp4","imageUrl":"/2014/3/25/1008198_36000.jpg","mediaSize":2048,"mediaDur":60000}
 			JsonObject mediaSourceJson = new JsonObject();
 			int resId = Integer.valueOf(Pattern.compile("\\{|\\}").matcher(newsInfo.getRefVideo()).replaceAll(""));
+
 			Resource resVideo = ResourceService.getResource(resId, 3);
 			int mediaFrom = 2;
 			if (resVideo != null && resVideo.getTitle() != null) {
