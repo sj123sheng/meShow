@@ -1017,13 +1017,16 @@ public class AlbumFunctions {
 		}
 
 		// 验证参数
-		int userId, pictureType, resId;
+		int userId, familyId = 0,pictureType, resId;
 		String fileUrl, pictureName;
 
 		try {
 			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-			resId = CommonUtil.getJsonParamInt(jsonObject, "resId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+			resId = CommonUtil.getJsonParamInt(jsonObject, "resId", 0, null, 1, Integer.MAX_VALUE);
 			pictureType = CommonUtil.getJsonParamInt(jsonObject, "pictureType", 0, "04010004", -10, Integer.MAX_VALUE);
+			if (pictureType == PictureTypeEnum.family_poster) {
+				familyId = CommonUtil.getJsonParamInt(jsonObject, "familyId", 0, "04010016", 1, Integer.MAX_VALUE);
+			}
 			fileUrl = CommonUtil.getJsonParamString(jsonObject, "fileUrl", null, "04010024", 1, Integer.MAX_VALUE);
 			fileUrl = fileUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
 			if(!fileUrl.startsWith("/")){
@@ -1048,6 +1051,25 @@ public class AlbumFunctions {
 				result = AlbumServices.addPortraitNew(resId, userId, fileUrl, pictureName);
 			} else if(pictureType == 2) { // 2:相册图片
 				result = AlbumServices.addPictureNewV2(resId, userId, pictureType, fileUrl, pictureName);
+			}
+			else if (pictureType == PictureTypeEnum.family_poster) { // 5:家族海报
+				FamilyPoster familyPoster = new FamilyPoster();
+				familyPoster.setPath_original(fileUrl);
+				FamilyAction familyAction = MelotBeanFactory.getBean("familyFunction", FamilyAction.class);
+				result = familyAction.setFamilyPoster(userId, familyId, familyPoster);
+			}
+			else if (pictureType == PictureTypeExtendEnum.video_tape) {// 9:录屏分享视频
+				result = AlbumServices.addVideoTape(userId, fileUrl, pictureName);
+			}
+			else { // 1.直播海报(弃用) 2.照片 3.资源图片
+				// 10的时候是技能服务接口，不添加到个人秀中
+				if (pictureType == 3 || pictureType == 10 || pictureType == 7) {
+					// 动态图片不保存在user_picture中
+					result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+					result.addProperty("pictureId", 1); // 必须返回一个值否则客户端会报错
+				} else {
+					result = AlbumServices.addPictureNewV2(resId, userId, pictureType, fileUrl, pictureName);
+				}
 			}
 		} catch (Exception e) {
 			logger.error("Failed to insert to DB." + e);
