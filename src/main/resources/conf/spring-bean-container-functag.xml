@@ -392,6 +392,7 @@
 	<bean id="10005007" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="profileFunction" />
 		<constructor-arg name="methodName" value="getUserSendGiftList" />
+        <constructor-arg name="cacheType" value="60" />
 	</bean>
 	<!-- 获取用户收到的礼物列表 -->
 	<!-- 
@@ -2478,6 +2479,7 @@
     <bean id="51020101" class="com.melot.sdk.core.function.GenericFunction">
         <constructor-arg name="t" ref="actorKKTVFunction" />
         <constructor-arg name="methodName" value="getRepresentList" />
+        <constructor-arg name="cacheType" value="60" />
     </bean>
     <!-- 更新H5页面上的 UV 数据 -->
     <bean id="51020102" class="com.melot.sdk.core.function.GenericFunction">
