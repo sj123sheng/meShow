@@ -1,29 +1,8 @@
 package com.melot.kktv.action;
 
-import java.sql.SQLException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Random;
-import java.util.Set;
-import java.util.regex.Pattern;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.log4j.Logger;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.gson.*;
 import com.melot.api.menu.sdk.dao.domain.HomePage;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.api.menu.sdk.dao.domain.SysMenu;
@@ -49,38 +28,24 @@ import com.melot.kkcx.service.UserService;
 import com.melot.kkcx.transform.LiveShowTF;
 import com.melot.kkcx.transform.NewsRewardRankTF;
 import com.melot.kkcx.transform.RoomTF;
-import com.melot.kktv.model.Activity;
-import com.melot.kktv.model.HotActivity;
-import com.melot.kktv.model.NewsRewardRank;
-import com.melot.kktv.model.Notice;
-import com.melot.kktv.model.PreviewAct;
-import com.melot.kktv.model.RankUser;
-import com.melot.kktv.model.Room;
-import com.melot.kktv.model.WeekStarGift;
-import com.melot.kktv.redis.GiftRecordSource;
-import com.melot.kktv.redis.HotDataSource;
-import com.melot.kktv.redis.NewsSource;
-import com.melot.kktv.redis.SearchWordsSource;
-import com.melot.kktv.redis.WeekGiftSource;
+import com.melot.kktv.model.*;
+import com.melot.kktv.redis.*;
 import com.melot.kktv.service.NewsService;
 import com.melot.kktv.service.RoomService;
-import com.melot.kktv.util.AppChannelEnum;
-import com.melot.kktv.util.AppIdEnum;
-import com.melot.kktv.util.CityUtil;
-import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.*;
 import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.Constant;
-import com.melot.kktv.util.ConstantEnum;
-import com.melot.kktv.util.DateUtil;
-import com.melot.kktv.util.PlatformEnum;
-import com.melot.kktv.util.RankingEnum;
-import com.melot.kktv.util.StringUtil;
-import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.confdynamic.GiftInfoConfig;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.sdk.core.util.MelotBeanFactory;
+import org.apache.log4j.Logger;
+
+import javax.servlet.http.HttpServletRequest;
+import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
 /**
  * 大厅相关的接口类
@@ -1636,13 +1601,32 @@ public class IndexFunctions {
 						if (actorArray.size() > 0) {
 							wholeJson.add("actorRankList", actorArray);
 						}
-						
+
 						Map<Integer, Long> userGiftRankMap = WeekGiftSource.getUserWeekGiftRank(String.valueOf(weekTime), relationGiftId != null && relationGiftId > 0 ? giftId + "_" + relationGiftId : String.valueOf(giftId), 3);
 						if (userGiftRankMap != null && !userGiftRankMap.isEmpty()) {
+
+                            List<Integer> userIds  = Lists.newArrayList();
+                            for (Entry<Integer, Long> entry : userGiftRankMap.entrySet()) {
+                                if(entry.getKey() != null) {
+                                    userIds.add(entry.getKey());
+                                }
+                            }
+
+                            // 获取用户信息列表
+                            KkUserService kkUserService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
+                            List<UserProfile> userProfiles = kkUserService.getUserProfileBatch(userIds);
+                            Map<Integer, UserProfile> userProfileMap = Maps.newHashMap();
+                            if (userProfiles != null) {
+                                for (UserProfile userProfile : userProfiles) {
+                                    userProfileMap.put(userProfile.getUserId(), userProfile);
+                                }
+                            }
+
 						    JsonArray userArray = new JsonArray();
 						    for (Entry<Integer, Long> entry : userGiftRankMap.entrySet()) {
 						        JsonObject userJson = new JsonObject();
-						        UserProfile userProfile = com.melot.kktv.service.UserService.getUserInfoV2(entry.getKey());
+
+						        UserProfile userProfile = userProfileMap.get(entry.getKey());
 						        if (userProfile != null) {
 						            userJson.addProperty("userId", entry.getKey());
 						            userJson.addProperty("giftCount", entry.getValue());
