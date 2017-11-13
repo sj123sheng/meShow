@@ -1,13 +1,7 @@
 package com.melot.kkcx.service;
 
-import java.sql.SQLException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.log4j.Logger;
-
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
@@ -18,16 +12,23 @@ import com.melot.content.config.apply.service.ApplyContractService;
 import com.melot.content.config.domain.ApplyActor;
 import com.melot.content.config.domain.ApplyContractInfo;
 import com.melot.kkcore.user.api.UserProfile;
+import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kktv.model.FansRankingItem;
 import com.melot.kktv.redis.GiftRecordSource;
 import com.melot.kktv.redis.MatchSource;
-import com.melot.kktv.service.UserService;
 import com.melot.kktv.util.DateUtil;
 import com.melot.kktv.util.RankingEnum;
 import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.sdk.core.util.MelotBeanFactory;
+import org.apache.log4j.Logger;
+
+import java.sql.SQLException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 类说明：
@@ -75,8 +76,26 @@ public class RoomService {
 				logger.error("未能正常调用SQL语句", e);	
 			}
 			if (fansList != null && fansList.size() > 0) {
+
+                List<Integer> userIds  = Lists.newArrayList();
+                for(FansRankingItem fansRankingItem : fansList) {
+                    if(fansRankingItem.getUserId() != null) {
+                        userIds.add(fansRankingItem.getUserId());
+                    }
+                }
+
+                // 获取用户信息列表
+                KkUserService kkUserService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
+                List<UserProfile> userProfiles = kkUserService.getUserProfileBatch(userIds);
+                Map<Integer, UserProfile> userProfileMap = Maps.newHashMap();
+                if (userProfiles != null) {
+                    for (UserProfile userProfile : userProfiles) {
+                        userProfileMap.put(userProfile.getUserId(), userProfile);
+                    }
+                }
+
 				for (FansRankingItem fansRank : fansList) {
-				    UserProfile userProfile = UserService.getUserInfoV2(fansRank.getUserId());
+				    UserProfile userProfile = userProfileMap.get(fansRank.getUserId());
 					if (userProfile != null) {
 						fansRank.setNickname(userProfile.getNickName());
 						fansRank.setGender(userProfile.getGender());

@@ -1,24 +1,10 @@
 package com.melot.kkcx.functions;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.dianping.cat.Cat;
 import com.dianping.cat.message.Transaction;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.gson.*;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.content.config.apply.service.ApplyActorService;
 import com.melot.content.config.domain.ApplyActor;
@@ -29,48 +15,21 @@ import com.melot.kkcore.user.api.UserInfoDetail;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.api.UserRegistry;
 import com.melot.kkcore.user.service.KkUserService;
-import com.melot.kkcx.model.ActorLevel;
-import com.melot.kkcx.model.CommonDevice;
-import com.melot.kkcx.model.LotteryPrize;
-import com.melot.kkcx.model.LotteryPrizeList;
-import com.melot.kkcx.model.RichLevel;
-import com.melot.kkcx.model.StarInfo;
-import com.melot.kkcx.service.FamilyService;
-import com.melot.kkcx.service.GeneralService;
-import com.melot.kkcx.service.MessageBoxServices;
-import com.melot.kkcx.service.ProfileServices;
-import com.melot.kkcx.service.UserAssetServices;
-import com.melot.kkcx.service.UserService;
+import com.melot.kkcx.model.*;
+import com.melot.kkcx.service.*;
 import com.melot.kkgame.domain.GameUserInfo;
 import com.melot.kkgame.redis.LiveTypeSource;
 import com.melot.kktv.domain.mongo.MongoRoom;
 import com.melot.kktv.lottery.arithmetic.LotteryArithmetic;
 import com.melot.kktv.lottery.arithmetic.LotteryArithmeticCache;
-import com.melot.kktv.model.BuyProperties;
-import com.melot.kktv.model.ConsumerRecord;
-import com.melot.kktv.model.Family;
-import com.melot.kktv.model.GiftRecord;
-import com.melot.kktv.model.Honor;
-import com.melot.kktv.model.LiveRecord;
-import com.melot.kktv.model.MedalInfo;
-import com.melot.kktv.model.Task;
-import com.melot.kktv.model.WinLotteryRecord;
+import com.melot.kktv.model.*;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.MedalSource;
 import com.melot.kktv.redis.QQVipSource;
 import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.LiveVideoService;
 import com.melot.kktv.service.UserRelationService;
-import com.melot.kktv.util.AppChannelEnum;
-import com.melot.kktv.util.AppIdEnum;
-import com.melot.kktv.util.CityUtil;
-import com.melot.kktv.util.CommonUtil;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.DateUtil;
-import com.melot.kktv.util.PlatformEnum;
-import com.melot.kktv.util.StringUtil;
-import com.melot.kktv.util.TagCodeEnum;
-import com.melot.kktv.util.TextFilter;
+import com.melot.kktv.util.*;
 import com.melot.kktv.util.confdynamic.MedalConfig;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
@@ -92,6 +51,12 @@ import com.melot.sdk.core.util.MelotBeanFactory;
 import com.melot.showmoney.driver.domain.PageShowMoneyHistory;
 import com.melot.showmoney.driver.domain.ShowMoneyHistory;
 import com.melot.showmoney.driver.service.ShowMoneyService;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.servlet.http.HttpServletRequest;
+import java.sql.SQLException;
+import java.util.*;
 
 public class ProfileFunctions {
 	
@@ -197,7 +162,9 @@ public class ProfileFunctions {
 		boolean bValidHotData = false;
 		if (hotData != null && hotData.size() > 0) {
 			if (hotData.containsKey("loadTime"))//loadTime is only set after loaded from oracle
-				bValidHotData = true;
+            {
+                bValidHotData = true;
+            }
 		}
 		if (bValidHotData) {
 			result.addProperty("userId", userId);
@@ -1156,11 +1123,15 @@ public class ProfileFunctions {
 		    		digitCount++;
 		    		if(digitCount<=6) {
 		    			sb.append(nickname.charAt(i));
-		    			if(sb.length()>=10) break;
+		    			if(sb.length()>=10) {
+                            break;
+                        }
 		    		}
 		    	} else {
 		    		sb.append(nickname.charAt(i));
-		    		if(sb.length()>=10) break;
+		    		if(sb.length()>=10) {
+                        break;
+                    }
 		    	}
 		    }
 		    nickname = sb.toString();
@@ -1228,7 +1199,7 @@ public class ProfileFunctions {
                 if (isNickNameChange) {
                     if (configService.getIsSpecialTime()) {
                         UserRegistry userRegistry = UserService.getUserRegistryInfo(userId);
-                        if (userRegistry != null && userRegistry.getRegisterTime() > 1506700800000l
+                        if (userRegistry != null && userRegistry.getRegisterTime() > 1506700800000L
                                 && !ProfileServices.checkUserUpdateProfileByType(userId, "nickName")) {
                             //特殊时期昵称修改需前置审核
                             ProfileServices.insertChangeUserName(userId, nickname, 3);
@@ -1486,7 +1457,7 @@ public class ProfileFunctions {
 		try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
             pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, "05070007", 1, Integer.MAX_VALUE);
-            startTime = CommonUtil.getJsonParamLong(jsonObject, "startTime", 0, "10006004", DateUtil.getDayBeginTime(System.currentTimeMillis()) - 180 * 24 * 3600 * 1000l, Long.MAX_VALUE);
+            startTime = CommonUtil.getJsonParamLong(jsonObject, "startTime", 0, "10006004", DateUtil.getDayBeginTime(System.currentTimeMillis()) - 180 * 24 * 3600 * 1000L, Long.MAX_VALUE);
             endTime = CommonUtil.getJsonParamLong(jsonObject, "endTime", 0, "10006006", startTime, Long.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
@@ -1520,8 +1491,8 @@ public class ProfileFunctions {
 			result.addProperty("pageTotal", (Integer) map.get("pageTotal"));
 			JsonArray jRecordList = new JsonArray();
 			if (recordList != null) {
-				for (Object object : recordList) {
-					jRecordList.add(((GiftRecord) object).toSendJsonObject());
+				for (GiftRecord record : recordList) {
+					jRecordList.add(record.toSendJsonObject());
 				}
 			}
 			result.add("recordList", jRecordList);
@@ -1559,7 +1530,7 @@ public class ProfileFunctions {
 		try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
             pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, "10006008", 1, Integer.MAX_VALUE);
-            startTime = CommonUtil.getJsonParamLong(jsonObject, "startTime", 0, "10006004", DateUtil.getDayBeginTime(System.currentTimeMillis()) - 180 * 24 * 3600 * 1000l, Long.MAX_VALUE);
+            startTime = CommonUtil.getJsonParamLong(jsonObject, "startTime", 0, "10006004", DateUtil.getDayBeginTime(System.currentTimeMillis()) - 180 * 24 * 3600 * 1000L, Long.MAX_VALUE);
             endTime = CommonUtil.getJsonParamLong(jsonObject, "endTime", 0, "10006006", startTime, Long.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
@@ -2444,7 +2415,7 @@ public class ProfileFunctions {
 	
     /**
      * 修改房间主题（10005055）
-     * @param paramJsonObject
+     * @param request
      * @param checkTag
      * @return
      */
@@ -2524,7 +2495,7 @@ public class ProfileFunctions {
 	
     /**
      * 设置隐身 （10005057）
-     * @param paramJsonObject
+     * @param request
      * @param checkTag
      * @return
      */
@@ -2573,7 +2544,7 @@ public class ProfileFunctions {
         
     /**
      * 获取用户实名认证信息 （10006058）
-     * @param paramJsonObject
+     * @param request
      * @param checkTag
      * @return
      */
@@ -2728,7 +2699,7 @@ public class ProfileFunctions {
         long startTime, endTime;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-            startTime = CommonUtil.getJsonParamLong(jsonObject, "startTime", 0, "10006004", DateUtil.getDayBeginTime(System.currentTimeMillis()) - 180 * 24 * 3600 * 1000l, Long.MAX_VALUE);
+            startTime = CommonUtil.getJsonParamLong(jsonObject, "startTime", 0, "10006004", DateUtil.getDayBeginTime(System.currentTimeMillis()) - 180 * 24 * 3600 * 1000L, Long.MAX_VALUE);
             endTime = CommonUtil.getJsonParamLong(jsonObject, "endTime", 0, "10006006", startTime, Long.MAX_VALUE);
             start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, "10006008", 0, Integer.MAX_VALUE);
             offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 10, "10006008", 1, Integer.MAX_VALUE);
@@ -2749,14 +2720,32 @@ public class ProfileFunctions {
         		list = pageShowMoneyHistory.getPageList();
         		result.addProperty("listCount", pageShowMoneyHistory.getPageCount());
         		if (list != null && list.size() > 0) {
+
+        		    List<Integer> userIds  = Lists.newArrayList();
+                    for(ShowMoneyHistory hist : list) {
+                        if(hist.getToUserId() != null) {
+                            userIds.add(hist.getToUserId());
+                        }
+                    }
+
+                    // 获取用户信息列表
+                    KkUserService kkUserService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
+                    List<UserProfile> userProfiles = kkUserService.getUserProfileBatch(userIds);
+                    Map<Integer, UserProfile> userProfileMap = Maps.newHashMap();
+                    if (userProfiles != null) {
+                        for (UserProfile userProfile : userProfiles) {
+                            userProfileMap.put(userProfile.getUserId(), userProfile);
+                        }
+                    }
+
         			for (ShowMoneyHistory hist : list) {
         				JsonObject moneyObj = new JsonObject();
         				if (hist.getConsumeAmount() != null) {
         					moneyObj.addProperty("amount", hist.getConsumeAmount());
         				}
         				if (hist.getToUserId() != null && hist.getToUserId() > 0) {
-        				    KkUserService kkUserService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
-        				    UserProfile userProfile = kkUserService.getUserProfile(hist.getToUserId());
+
+        				    UserProfile userProfile = userProfileMap.get(hist.getToUserId());
         					if (userProfile != null && userProfile.getNickName() != null) {
         						moneyObj.addProperty("nickname", userProfile.getNickName());
         					}
@@ -2780,6 +2769,7 @@ public class ProfileFunctions {
         				}
         				moneyList.add(moneyObj);
         			}
+
         		}
         	}
         } else {
@@ -2810,7 +2800,7 @@ public class ProfileFunctions {
         long startTime, endTime;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-            startTime = CommonUtil.getJsonParamLong(jsonObject, "startTime", 0, "10006004", DateUtil.getDayBeginTime(System.currentTimeMillis()) - 180 * 24 * 3600 * 1000l, Long.MAX_VALUE);
+            startTime = CommonUtil.getJsonParamLong(jsonObject, "startTime", 0, "10006004", DateUtil.getDayBeginTime(System.currentTimeMillis()) - 180 * 24 * 3600 * 1000L, Long.MAX_VALUE);
             endTime = CommonUtil.getJsonParamLong(jsonObject, "endTime", 0, "10006006", startTime, Long.MAX_VALUE);
             start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, "10006008", 0, Integer.MAX_VALUE);
             offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 10, "10006008", 1, Integer.MAX_VALUE);
@@ -2831,14 +2821,32 @@ public class ProfileFunctions {
         		list = pageShowMoneyHistory.getPageList();
         		result.addProperty("listCount", pageShowMoneyHistory.getPageCount());
         		if (list != null && list.size() > 0) {
+
+                    List<Integer> userIds  = Lists.newArrayList();
+                    for(ShowMoneyHistory hist : list) {
+                        if(hist.getToUserId() != null) {
+                            userIds.add(hist.getToUserId());
+                        }
+                    }
+
+                    // 获取用户信息列表
+                    KkUserService kkUserService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
+                    List<UserProfile> userProfiles = kkUserService.getUserProfileBatch(userIds);
+                    Map<Integer, UserProfile> userProfileMap = Maps.newHashMap();
+                    if (userProfiles != null) {
+                        for (UserProfile userProfile : userProfiles) {
+                            userProfileMap.put(userProfile.getUserId(), userProfile);
+                        }
+                    }
+
         			for (ShowMoneyHistory hist : list) {
         				JsonObject moneyObj = new JsonObject();
         				if (hist.getIncomeAmount() != null) {
         					moneyObj.addProperty("amount", hist.getIncomeAmount());
         				}
         				if (hist.getUserId() != null && hist.getUserId() > 0) {
-        				    KkUserService kkUserService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
-        				    UserProfile userProfile = kkUserService.getUserProfile(hist.getUserId());
+
+        				    UserProfile userProfile = userProfileMap.get(hist.getUserId());
         					if (userProfile != null && userProfile.getNickName()!= null) {
         						moneyObj.addProperty("nickname", userProfile.getNickName());
         					}
@@ -2892,7 +2900,7 @@ public class ProfileFunctions {
         long startTime, endTime;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-            startTime = CommonUtil.getJsonParamLong(jsonObject, "startTime", 0, "10006004", DateUtil.getDayBeginTime(System.currentTimeMillis()) - 180 * 24 * 3600 * 1000l, Long.MAX_VALUE);
+            startTime = CommonUtil.getJsonParamLong(jsonObject, "startTime", 0, "10006004", DateUtil.getDayBeginTime(System.currentTimeMillis()) - 180 * 24 * 3600 * 1000L, Long.MAX_VALUE);
             endTime = CommonUtil.getJsonParamLong(jsonObject, "endTime", 0, "10006006", startTime, Long.MAX_VALUE);
             pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {

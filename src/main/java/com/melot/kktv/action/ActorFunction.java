@@ -389,11 +389,16 @@ public class ActorFunction {
             return result;
         }
 
+        if(StringUtils.isEmpty(bizNo) || StringUtils.isEmpty(certNo)) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_MISSING);
+            return result;
+        }
+
         // 芝麻认证校验
         ZhimaCustomerCertificationQueryResponse response = ZmxyService.getResult(bizNo);
         boolean verifyResult = false;
         String certName = "";
-        if(response.isSuccess() && Boolean.parseBoolean(response.getPassed())) {
+        if(response != null && response.isSuccess() && Boolean.parseBoolean(response.getPassed())) {
 
             ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
             ZmrzApply zmrzApply = applyActorService.getZmrzApplyByBizNo(bizNo);
