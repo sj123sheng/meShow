@@ -13,6 +13,7 @@ import com.melot.content.config.utils.IdPicStatusEnum;
 import com.melot.content.config.utils.VerifyTypeEnum;
 import com.melot.content.config.utils.ZmrzStatusEnum;
 import com.melot.family.driver.domain.FamilyInfo;
+import com.melot.family.driver.service.FamilyOperatorService;
 import com.melot.game.config.sdk.utils.StringUtils;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.api.UserStaticInfo;
@@ -587,17 +588,29 @@ public class ActorFunction {
             applyActor.setGender(StringUtil.parseFromStr(identityId.substring(16, 17), 0) % 2);
             applyActor.setIdPicStatus(IdPicStatusEnum.UNLOAD.getId());
             applyActor.setVerifyType(VerifyTypeEnum.ZM_VERIFY.getId());
+            int status = 0;
             if (familyId > 0) {
                 applyActor.setApplyFamilyId(familyId);
-                applyActor.setStatus(Constants.APPLY_TEST_ACTOR_IN_FAMILY_PLAYING);
+                status = Constants.APPLY_TEST_ACTOR_IN_FAMILY_PLAYING;
             } else {
                 //自由主播
                 applyActor.setApplyFamilyId(11222);
-                applyActor.setStatus(Constants.APPLY_ACTOR_INFO_CHECK_SUCCESS);
+                status = Constants.APPLY_ACTOR_INFO_CHECK_SUCCESS;
             }
 
             ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
             boolean saveResult = applyActorService.saveApplyActorV2(applyActor);
+            
+            if (saveResult) {
+                try {
+                    FamilyOperatorService familyOperatorService = (FamilyOperatorService) MelotBeanFactory.getBean("familyOperatorService");
+                    saveResult = familyOperatorService.checkActorApply(userId, familyId, status, null, null, appId);
+                } catch (Exception e) {
+                    saveResult = false;
+                    logger.error("familyOperatorService.checkActorApply(" + userId + ", " + familyId + ", " + status + ") execute exception", e);
+                }
+            }
+            
             if (saveResult) {
                 result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             } else {
