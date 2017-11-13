@@ -984,7 +984,9 @@ public class UserService {
             com.melot.kkcore.user.service.KkUserService userService = (com.melot.kkcore.user.service.KkUserService) MelotBeanFactory.getBean("kkUserService");
             if (userService != null) {
                 UserGameAssets  userGameAssets  = userService.getUserGameAssets(userId);
-                return userGameAssets != null ? userGameAssets.getGameMoney() : 0;
+                if (userGameAssets != null && userGameAssets.getGameMoney() != null) {
+                    return userGameAssets.getGameMoney(); 
+                }
             }
         } catch (Exception e) {
             logger.error("fail to execute KkUserService.getUserGameAssets, userId: " + userId, e);
