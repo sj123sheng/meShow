@@ -2768,7 +2768,8 @@ public class FamilyAction {
                     FamilyOperatorService familyOperatorService = (FamilyOperatorService) MelotBeanFactory.getBean("familyOperatorService");
                     boolean isSuccess = familyOperatorService.checkActorApply(actorId, familyId, state, checkReason, null, AppIdEnum.AMUSEMENT);
                     if (isSuccess) {
-                        if (state == Constants.APPLY_ACTOR_INFO_CHECK_SUCCESS && FamilyService.checkBecomeFamilyMember(actorId, Constants.APPLY_ACTOR_OFFICIAL_CHECK_SUCCESS, AppIdEnum.AMUSEMENT)) {
+                        if (state == Constants.APPLY_FAIL ||
+                                (state == Constants.APPLY_ACTOR_INFO_CHECK_SUCCESS && FamilyService.checkBecomeFamilyMember(actorId, Constants.APPLY_ACTOR_OFFICIAL_CHECK_SUCCESS, AppIdEnum.AMUSEMENT))) {
                             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
                         } else {
                             result.addProperty("TagCode", "5104010205");
