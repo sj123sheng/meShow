@@ -2757,18 +2757,22 @@ public class FamilyAction {
             FamilyMember familyMember = FamilyService.getFamilyMemberInfo(userId, familyId, 0);
             if (familyMember != null && familyMember.getMemberGrade() == FamilyMemberEnum.GRADE_LEADER) {
                 FamilyAdminService familyAdminService = (FamilyAdminService) MelotBeanFactory.getBean("familyAdminService");
-                int count = familyAdminService.getFamilyPilotsCount(familyId, actorId, AppIdEnum.AMUSEMENT, Constants.APPLY_INIT_STATUS);
+                int count = familyAdminService.getFamilyPilotsCount(familyId, actorId, AppIdEnum.AMUSEMENT, Constants.APPLY_TEST_ACTOR_IN_FAMILY_PLAYING);
                 if (count > 0) {
                     int state = 0;
                     if (type == 1) {
-                        state = 5;
+                        state = Constants.APPLY_ACTOR_INFO_CHECK_SUCCESS;
                     } else if (type == 2) {
-                        state = -1;
+                        state = Constants.APPLY_FAIL;
                     }
                     FamilyOperatorService familyOperatorService = (FamilyOperatorService) MelotBeanFactory.getBean("familyOperatorService");
                     boolean isSuccess = familyOperatorService.checkActorApply(actorId, familyId, state, checkReason, null, AppIdEnum.AMUSEMENT);
                     if (isSuccess) {
-                        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                        if (FamilyService.checkBecomeFamilyMember(actorId, Constants.APPLY_ACTOR_OFFICIAL_CHECK_SUCCESS, AppIdEnum.AMUSEMENT)) {
+                            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                        } else {
+                            result.addProperty("TagCode", "5104010205");
+                        }
                     } else {
                         result.addProperty("TagCode", "5104010205");
                     }
