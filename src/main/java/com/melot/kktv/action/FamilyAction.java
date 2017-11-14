@@ -2765,8 +2765,7 @@ public class FamilyAction {
                     } else if (type == 2) {
                         state = Constants.APPLY_TEST_ACTOR_NO_PASS;
                     }
-                    FamilyOperatorService familyOperatorService = (FamilyOperatorService) MelotBeanFactory.getBean("familyOperatorService");
-                    boolean isSuccess = familyOperatorService.checkActorApply(actorId, familyId, state, checkReason, null, AppIdEnum.AMUSEMENT);
+                    boolean isSuccess = familyAdminService.checkfamilyPilotsApply(actorId, familyId, state, checkReason, null, AppIdEnum.AMUSEMENT);
                     if (isSuccess) {
                         if (state == Constants.APPLY_TEST_ACTOR_NO_PASS ||
                                 (state == Constants.APPLY_ACTOR_INFO_CHECK_SUCCESS && FamilyService.checkBecomeFamilyMember(actorId, Constants.APPLY_ACTOR_OFFICIAL_CHECK_SUCCESS, AppIdEnum.AMUSEMENT))) {
