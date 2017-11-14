@@ -10,6 +10,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import com.melot.kk.module.resource.domain.Resource;
+import com.melot.kk.module.resource.service.ResourceNewService;
+import com.melot.kktv.base.Result;
 import org.apache.log4j.Logger;
 
 import com.google.gson.Gson;
@@ -40,7 +43,7 @@ import com.melot.news.domain.NewsCommentHist;
 import com.melot.news.model.NewsInfo;
 import com.melot.news.model.WhiteUser;
 import com.melot.qiniu.common.QiniuService;
-import com.melot.resource.domain.Resource;
+//import com.melot.resource.domain.Resource;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import com.upyun.api.UpYun;
 
@@ -1174,12 +1177,13 @@ public class NewsService {
 			JsonObject mediaSourceJson = new JsonObject();
 			int resId = Integer.valueOf(Pattern.compile("\\{|\\}").matcher(newsInfo.getRefVideo()).replaceAll(""));
 
-			Resource resVideo = ResourceService.getResource(resId, 3);
+			ResourceNewService resourceNewService = (ResourceNewService) MelotBeanFactory.getBean("resourceNewService");
+			Resource resVideo = resourceNewService.getResourceById(resId).getData();
 			int mediaFrom = 2;
-			if (resVideo != null && resVideo.getTitle() != null) {
-				mediaSourceJson.addProperty("mediaFrom", Integer.valueOf(resVideo.getTitle()));
-				mediaFrom = Integer.valueOf(resVideo.getTitle());
-			}
+//			if (resVideo != null && resVideo.getTitle() != null) {
+//				mediaSourceJson.addProperty("mediaFrom", Integer.valueOf(resVideo.getTitle()));
+//				mediaFrom = Integer.valueOf(resVideo.getTitle());
+//			}
 			if (resVideo != null && resVideo.getImageUrl() != null) {
 				if (mediaFrom == 1) {
 					// 分平台返回不同尺寸图片
@@ -1252,7 +1256,8 @@ public class NewsService {
 			
 			json.add("mediaSource", mediaSourceJson);
 		} else if (newsInfo.getRefImage() != null) {
-			List<Resource> resImage = ResourceService.getResourceList(Pattern.compile("\\{|\\}").matcher(newsInfo.getRefImage()).replaceAll(""));
+			ResourceNewService resourceNewService = (ResourceNewService) MelotBeanFactory.getBean("resourceNewService");
+			List<Resource> resImage = resourceNewService.getResourcesByIds(Pattern.compile("\\{|\\}").matcher(newsInfo.getRefImage()).replaceAll("")).getData();
 			if (resImage != null && resImage.size() > 0) {
 				JsonArray picArray = new JsonArray();
 				for (Resource resource : resImage) {
