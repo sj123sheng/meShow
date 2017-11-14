@@ -2763,12 +2763,12 @@ public class FamilyAction {
                     if (type == 1) {
                         state = Constants.APPLY_ACTOR_INFO_CHECK_SUCCESS;
                     } else if (type == 2) {
-                        state = Constants.APPLY_FAIL;
+                        state = Constants.APPLY_TEST_ACTOR_NO_PASS;
                     }
                     FamilyOperatorService familyOperatorService = (FamilyOperatorService) MelotBeanFactory.getBean("familyOperatorService");
                     boolean isSuccess = familyOperatorService.checkActorApply(actorId, familyId, state, checkReason, null, AppIdEnum.AMUSEMENT);
                     if (isSuccess) {
-                        if (state == Constants.APPLY_FAIL ||
+                        if (state == Constants.APPLY_TEST_ACTOR_NO_PASS ||
                                 (state == Constants.APPLY_ACTOR_INFO_CHECK_SUCCESS && FamilyService.checkBecomeFamilyMember(actorId, Constants.APPLY_ACTOR_OFFICIAL_CHECK_SUCCESS, AppIdEnum.AMUSEMENT))) {
                             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
                         } else {
