@@ -599,11 +599,9 @@ public class LiveVideoService {
             VideoService videoService = (VideoService) MelotBeanFactory.getBean("videoService");
             if (videoService != null) {
                return videoService.checkingPortrait(userId);
-            } else {
-                logger.error("LiveVideoService.delTempUserResourceById exception (videoService is null)");
             }
         } catch (Exception e) {
-            logger.error("LiveVideoService.delTempUserResourceById exception, userId : " + userId, e);
+            logger.error("videoService.checkingPortrait execute exception, userId : " + userId, e);
         }
         return false;
     }
