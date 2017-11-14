@@ -2680,10 +2680,10 @@ public class FamilyAction {
                 FamilyAdminService familyAdminService = (FamilyAdminService) MelotBeanFactory.getBean("familyAdminService");
                 int count = familyAdminService.getFamilyPilotsCount(familyId, null, AppIdEnum.AMUSEMENT, Constants.APPLY_TEST_ACTOR_IN_FAMILY_PLAYING);
                 result.addProperty("count", count);
+                JsonArray actorList = new JsonArray();
                 if (count > 0) {
                     start = (pageIndex - 1) * countPerPage;
                     List<ApplyActor> actorApplyList = familyAdminService.getFamilyPilots(familyId, null, AppIdEnum.AMUSEMENT, Constants.APPLY_TEST_ACTOR_IN_FAMILY_PLAYING, start, countPerPage);
-                    JsonArray actorList = new JsonArray();
                     if (actorApplyList != null && actorApplyList.size() > 0) {
                         for (ApplyActor applyActor : actorApplyList) {
                              JsonObject jsonObj = new JsonObject();
@@ -2704,10 +2704,10 @@ public class FamilyAction {
                              }
                              actorList.add(jsonObj);
                         }
-                        result.add("actorList", actorList);
-                        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
                     }
                 }
+                result.add("actorList", actorList);
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             } else {
                 result.addProperty("TagCode", "5104010101");
             }
