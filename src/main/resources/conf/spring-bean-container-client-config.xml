@@ -31,7 +31,7 @@
 	<kkrpc:reference id="activityMedalService" interface="com.melot.module.medal.driver.service.ActivityMedalService" version="1.0.1"></kkrpc:reference>
 	<kkrpc:reference id="userMedalService" interface="com.melot.module.medal.driver.service.UserMedalService" version="1.0.1"></kkrpc:reference>
 	<kkrpc:reference id="familyMedalService" interface="com.melot.module.medal.driver.service.FamilyMedalService" version="1.0.1"></kkrpc:reference>
-	<kkrpc:reference id="kkUserService" interface="com.melot.kkcore.user.service.KkUserService" version="1.1.7"></kkrpc:reference>
+	<kkrpc:reference id="kkUserService" interface="com.melot.kkcore.user.service.KkUserService" version="1.1.8"></kkrpc:reference>
 	<kkrpc:reference id="kkAccountService" interface="com.melot.kkcore.account.service.AccountService" version="1.0.7"></kkrpc:reference>
 	<kkrpc:reference id="kkUserRelationService" interface="com.melot.kkcore.relation.service.UserRelationService" version="1.0.1"></kkrpc:reference>
 	<kkrpc:reference id="kkActorRelationService" interface="com.melot.kkcore.relation.service.ActorRelationService" version="1.0.1"></kkrpc:reference>
@@ -59,6 +59,7 @@
 	<kkrpc:reference id="ticketService" interface="com.melot.module.packagegift.driver.service.TicketService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="vipService" interface="com.melot.module.packagegift.driver.service.VipService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="xmanService" interface="com.melot.module.packagegift.driver.service.XmanService" version="1.0.0"></kkrpc:reference>
+	<kkrpc:reference id="mallService" interface="com.melot.module.packagegift.driver.service.MallService" version="1.0.0"></kkrpc:reference>
 	<!-- 家族模块 -->
 	<kkrpc:reference id="newFamilyInfoService" interface="com.melot.family.driver.service.FamilyInfoService" version="1.0.7"></kkrpc:reference>
 	<kkrpc:reference id="familyAdminService" interface="com.melot.family.driver.service.FamilyAdminService" version="1.0.7"></kkrpc:reference>

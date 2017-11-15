@@ -1549,7 +1549,7 @@ public class ActivityFunctions {
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
             sharePlatform = CommonUtil.getJsonParamInt(jsonObject, "sharePlatform", 1, TagCodeEnum.ROOMID_MISSING, 1, Integer.MAX_VALUE);
-            shareSourceId = CommonUtil.getJsonParamInt(jsonObject, "shareSourceId", 0, TagCodeEnum.ROOMID_MISSING, 1, Integer.MAX_VALUE);
+            shareSourceId = CommonUtil.getJsonParamInt(jsonObject, "shareSourceId", 0, null, 1, Integer.MAX_VALUE);
             shareType = CommonUtil.getJsonParamInt(jsonObject, "shareType", 0, TagCodeEnum.ROOMID_MISSING, 1, Integer.MAX_VALUE);
         
             shareReason = CommonUtil.getJsonParamString(jsonObject, "shareReason", null, null, 1, Integer.MAX_VALUE);
