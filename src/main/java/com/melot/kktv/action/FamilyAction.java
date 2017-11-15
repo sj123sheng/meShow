@@ -35,7 +35,6 @@ import com.melot.family.driver.domain.RespMsg;
 import com.melot.family.driver.service.FamilyAdminNewService;
 import com.melot.family.driver.service.FamilyAdminService;
 import com.melot.family.driver.service.FamilyInfoService;
-import com.melot.family.driver.service.FamilyOperatorService;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcx.model.RecentFamilyMatch;
 import com.melot.kkcx.service.FamilyService;
@@ -2758,17 +2757,21 @@ public class FamilyAction {
             if (familyMember != null && familyMember.getMemberGrade() == FamilyMemberEnum.GRADE_LEADER) {
                 FamilyAdminService familyAdminService = (FamilyAdminService) MelotBeanFactory.getBean("familyAdminService");
                 int count = familyAdminService.getFamilyPilotsCount(familyId, actorId, AppIdEnum.AMUSEMENT, Constants.APPLY_TEST_ACTOR_IN_FAMILY_PLAYING);
+                ApplyActor applyActor = new ApplyActor();
+                ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
                 if (count > 0) {
                     int state = 0;
                     if (type == 1) {
-                        state = Constants.APPLY_ACTOR_INFO_CHECK_SUCCESS;
+                        state = Constants.APPLY_TEST_ACTOR_PASSED;
+                        applyActor.setActorId(actorId);
+                        applyActor.setStatus(Constants.APPLY_ACTOR_INFO_CHECK_SUCCESS);
                     } else if (type == 2) {
                         state = Constants.APPLY_TEST_ACTOR_NO_PASS;
                     }
-                    boolean isSuccess = familyAdminService.checkfamilyPilotsApply(actorId, familyId, state, checkReason, null, AppIdEnum.AMUSEMENT);
+                    boolean isSuccess = familyAdminService.checkFamilyPilots(actorId, familyId, state, checkReason, null, 40, AppIdEnum.AMUSEMENT);
                     if (isSuccess) {
-                        if (state == Constants.APPLY_TEST_ACTOR_NO_PASS ||
-                                (state == Constants.APPLY_ACTOR_INFO_CHECK_SUCCESS && FamilyService.checkBecomeFamilyMember(actorId, Constants.APPLY_ACTOR_OFFICIAL_CHECK_SUCCESS, AppIdEnum.AMUSEMENT))) {
+                        if (state == Constants.APPLY_TEST_ACTOR_NO_PASS || (state == Constants.APPLY_TEST_ACTOR_PASSED 
+                                && applyActorService.updateApplyActorByActorId(applyActor) && FamilyService.checkBecomeFamilyMember(actorId, Constants.APPLY_ACTOR_OFFICIAL_CHECK_SUCCESS, AppIdEnum.AMUSEMENT))) {
                             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
                         } else {
                             result.addProperty("TagCode", "5104010205");
