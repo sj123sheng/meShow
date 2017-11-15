@@ -216,7 +216,7 @@ public class TimMsgAction extends ActionSupport {
 		try {
 			return Integer.parseInt(account.replace("bang_", ""));
 		} catch (NumberFormatException ex) {
-			logger.error("timMsgCallback,getBangUserId,account:" + account + "", ex);
+			logger.info("timMsgCallback,getBangUserId,account:" + account + "", ex);
 			return 0;
 		}
 	}
