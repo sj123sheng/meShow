@@ -40,7 +40,7 @@
 	
 	<bean id="admin4" class="com.melot.kkcx.model.ImAdmin">
 		<property name="userId"   value="4" />
-		<property name="nickName" value="家族主播申请管理" />
+		<property name="nickName" value="家族主播管理" />
 		<property name="portrait" value="/imadmin/8.png" />
 	</bean>
 	
