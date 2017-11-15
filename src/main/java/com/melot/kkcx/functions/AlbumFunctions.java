@@ -1017,7 +1017,7 @@ public class AlbumFunctions {
 		}
 
 		// 验证参数
-		int userId, familyId = 0,pictureType, resId;
+		int userId, pictureType, resId,familyId = 0;
 		String fileUrl, pictureName;
 
 		try {
@@ -1051,6 +1051,11 @@ public class AlbumFunctions {
 				result = AlbumServices.addPortraitNew(resId, userId, fileUrl, pictureName);
 			} else if(pictureType == 2) { // 2:相册图片
 				result = AlbumServices.addPictureNewV2(resId, userId, pictureType, fileUrl, pictureName);
+			} else if (pictureType == PictureTypeEnum.family_poster) { // 5:家族海报
+				FamilyPoster familyPoster = new FamilyPoster();
+				familyPoster.setPath_original(fileUrl);
+				FamilyAction familyAction = MelotBeanFactory.getBean("familyFunction", FamilyAction.class);
+				result = familyAction.setFamilyPoster(userId, familyId, familyPoster);
 			}
 			else if (pictureType == PictureTypeEnum.family_poster) { // 5:家族海报
 				FamilyPoster familyPoster = new FamilyPoster();
