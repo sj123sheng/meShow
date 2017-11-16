@@ -2698,7 +2698,8 @@ public class FamilyAction {
                                  if (userProfile.getPortrait() != null) {
                                      jsonObj.addProperty("portrait_path_original", userProfile.getPortrait());
                                  }
-                                 jsonObj.addProperty("actorLevel", userProfile.getUserLevel());
+                                 jsonObj.addProperty("actorLevel", userProfile.getActorLevel());
+                                 jsonObj.addProperty("richLevel", userProfile.getUserLevel());
                                  jsonObj.addProperty("fansCount", UserRelationService.getFansCount(applyActor.getActorId()));
                              }
                              actorList.add(jsonObj);
@@ -2781,6 +2782,16 @@ public class FamilyAction {
                     }
                 } else {
                     result.addProperty("TagCode", "5104010204");
+                    applyActor = applyActorService.getApplyActorByActorIdV2(actorId);
+                    if (applyActor != null && applyActor.getApplyFamilyId().equals(familyId)) {
+                        //家族长已拒绝
+                        if (applyActor.getStatus().equals(Constants.APPLY_TEST_ACTOR_NO_PASS)) {
+                            result.addProperty("TagCode", "5104010206");
+                        } else if(applyActor.getStatus() > Constants.APPLY_TEST_ACTOR_NO_PASS) {
+                            //家族长已同意
+                            result.addProperty("TagCode", "5104010207");
+                        }
+                    }
                 }
             } else {
                 result.addProperty("TagCode", "5104010202");

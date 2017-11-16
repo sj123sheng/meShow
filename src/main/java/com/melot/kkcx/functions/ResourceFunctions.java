@@ -71,8 +71,7 @@ public class ResourceFunctions {
             resourceUploadConfParam.setVframeSeconds(vframeSeconds);
             resourceUploadConfParam.setTranscoding(transcoding);
             Result<ResourceUpLoadConf> conf = resourceNewService.getUpLoadConf(resourceUploadConfParam);
-            if(conf.getCode().equals(CommonStateCode.SUCCESS)){
-                result.add("config",new Gson().toJsonTree(conf.getData()));
+            if(conf != null && conf.getCode() != null && conf.getCode().equals(CommonStateCode.SUCCESS)){
                 ResourceUpLoadConf config = conf.getData();
                 if(configService.getResourceType().contains(","+ resType+",")){
                     config.setResUpload(1);
