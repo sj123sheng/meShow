@@ -2701,6 +2701,7 @@ public class FamilyAction {
                                  jsonObj.addProperty("actorLevel", userProfile.getActorLevel());
                                  jsonObj.addProperty("richLevel", userProfile.getUserLevel());
                                  jsonObj.addProperty("fansCount", UserRelationService.getFansCount(applyActor.getActorId()));
+                                 jsonObj.addProperty("gender", userProfile.getGender());
                              }
                              actorList.add(jsonObj);
                         }
