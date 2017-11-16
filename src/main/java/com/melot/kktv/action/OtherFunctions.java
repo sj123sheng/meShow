@@ -239,7 +239,12 @@ public class OtherFunctions {
 			map.put("costMoney", ((Number) costMoney).intValue());
 		} else if (sendType == 1) {
 			//使用喇叭券发送喇叭，先扣除券
-			flag = ticketService.insertUseTicket(userId, ticketId, GiftPackageEnum.TICKET_USE, 1, "用户" + userId + "使用喇叭券" + ticketId);
+		    try {
+		        flag = ticketService.insertUseTicket(userId, ticketId, GiftPackageEnum.TICKET_USE, 1, "用户" + userId + "使用喇叭券" + ticketId);
+		    } catch (Exception e) {
+		        logger.info("使用喇叭券扣券异常", e);
+		    }
+			
 			if (!flag) {
 				result.addProperty("TagCode", "20020004");
 				return result;
