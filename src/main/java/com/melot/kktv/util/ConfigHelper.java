@@ -171,6 +171,8 @@ public class ConfigHelper {
     private static String sdk_appid;
     private static String expire_after;
     
+    private static String httpdirUp;
+    
     /**
      * KK自己维护的资源服务器域名
      */
@@ -354,6 +356,8 @@ public class ConfigHelper {
 			expire_after = root.getChildText("expire_after");
 			
 			kkDomain = root.getChildText("kkDomain");
+			
+			httpdirUp = root.getChildText("httpdirUp");
             
 		} catch (Exception e) {
 			logger.error("读取配置文件config.xml异常!", e);
@@ -1086,4 +1090,13 @@ public class ConfigHelper {
     public static void setKkDomain(String kkDomain) {
         ConfigHelper.kkDomain = kkDomain;
     }
+
+    public static String getHttpdirUp() {
+        return httpdirUp;
+    }
+
+    public static void setHttpdirUp(String httpdirUp) {
+        ConfigHelper.httpdirUp = httpdirUp;
+    }
+    
 }
