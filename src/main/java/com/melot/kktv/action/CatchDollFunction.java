@@ -820,11 +820,12 @@ public class CatchDollFunction {
             return result;
         }
 
-        int roomId, userId, platform;
+        int roomId, userId, platform, version;
         try {
             roomId = CommonUtil.getJsonParamInt(jsonObject, "roomId", 0, null, 1, Integer.MAX_VALUE);
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
             platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, 1, Integer.MAX_VALUE);
+            version = CommonUtil.getJsonParamInt(jsonObject, "v", 0, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -835,6 +836,11 @@ public class CatchDollFunction {
 
         if(roomId == 0 || userId == 0 || platform == 0) {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_MISSING);
+            return result;
+        }
+
+        if(version < 145 && platform == PlatformEnum.IPHONE) {
+            result.addProperty("TagCode", TagCodeEnum.LOW_VERSION_EXCEPTION);
             return result;
         }
 
