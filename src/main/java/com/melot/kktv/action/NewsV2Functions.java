@@ -12,10 +12,7 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 
 import com.google.common.collect.Lists;
-import com.melot.kk.module.resource.constant.CommonConstant;
-import com.melot.kk.module.resource.constant.ECloudTypeConstant;
-import com.melot.kk.module.resource.constant.FileTypeConstant;
-import com.melot.kk.module.resource.constant.ResourceStateConstant;
+import com.melot.kk.module.resource.constant.*;
 import com.melot.kk.module.resource.domain.Resource;
 import com.melot.kk.module.resource.service.ResourceNewService;
 import com.melot.kktv.base.CommonStateCode;
@@ -175,6 +172,7 @@ public class NewsV2Functions {
             }
             resource.setSpecificUrl(mediaUrl);
             resource.setDuration(Long.valueOf(mediaDur));
+            resource.setResType(ResTypeConstant.resource);
             // 获取分辨率,添加分辨率信息
             VideoInfo videoInfo = getVideoInfoByHttp(mediaUrl);
             if (videoInfo != null) {
@@ -215,18 +213,22 @@ public class NewsV2Functions {
             String[] imageList = imageUrl.split(",");
             List<Resource> resourceList = new ArrayList<Resource>();
             for (String tempUrl : imageList) {
-                Resource resource = new Resource();
-                resource.setState(ResourceStateConstant.uncheck);
-                resource.setMimeType(FileTypeConstant.image);
-                if (!StringUtil.strIsNull(tempUrl)) {
-                    tempUrl = tempUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
-                    if(!imageUrl.startsWith(SEPARATOR)) {
-                        tempUrl = SEPARATOR + tempUrl;
+                if(StringUtil.strIsNull(tempUrl)){
+                    Resource resource = new Resource();
+                    resource.setState(ResourceStateConstant.uncheck);
+                    resource.setMimeType(FileTypeConstant.image);
+                    resource.setResType(ResTypeConstant.resource);
+                    resource.seteCloudType(ECloudTypeConstant.aliyun);
+                    if (!StringUtil.strIsNull(tempUrl)) {
+                        tempUrl = tempUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
+                        if(!imageUrl.startsWith(SEPARATOR)) {
+                            tempUrl = SEPARATOR + tempUrl;
+                        }
+                        tempUrl = tempUrl.replaceFirst("/kktv", "");
                     }
-                    tempUrl = tempUrl.replaceFirst("/kktv", "");
+                    resource.setImageUrl(tempUrl);
+                    resourceList.add(resource);
                 }
-                resource.setImageUrl(tempUrl);
-                resourceList.add(resource);
             }
             Result<List<Integer>> resIdsResult = resourceNewService.addResources(resourceList);
             if(resIdsResult != null && resIdsResult.getCode() != null && resIdsResult.getCode().equals(CommonStateCode.SUCCESS)){
