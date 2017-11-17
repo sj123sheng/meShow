@@ -213,7 +213,7 @@ public class NewsV2Functions {
             String[] imageList = imageUrl.split(",");
             List<Resource> resourceList = new ArrayList<Resource>();
             for (String tempUrl : imageList) {
-                if(StringUtil.strIsNull(tempUrl)){
+                if(!StringUtil.strIsNull(tempUrl)){
                     Resource resource = new Resource();
                     resource.setState(ResourceStateConstant.uncheck);
                     resource.setMimeType(FileTypeConstant.image);
