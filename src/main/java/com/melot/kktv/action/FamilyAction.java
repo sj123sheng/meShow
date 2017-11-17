@@ -2696,7 +2696,7 @@ public class FamilyAction {
                                      jsonObj.addProperty("nickName", userProfile.getNickName());
                                  }
                                  if (userProfile.getPortrait() != null) {
-                                     jsonObj.addProperty("portrait_path_original", userProfile.getPortrait());
+                                     jsonObj.addProperty("portrait_path_original", ConfigHelper.getHttpdir() + userProfile.getPortrait());
                                  }
                                  jsonObj.addProperty("actorLevel", userProfile.getActorLevel());
                                  jsonObj.addProperty("richLevel", userProfile.getUserLevel());
