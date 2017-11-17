@@ -1245,7 +1245,9 @@ public class ActivityFunctions {
                 paramJson.addProperty("version", version);
             }
             MissionService missionService = (MissionService) MelotBeanFactory.getBean("missionService");
-            result = missionService.getVisiableActivityByVersion(paramJson);
+            if (missionService != null) {
+                result = missionService.getVisiableActivityByVersion(paramJson);
+            }
         } catch (Exception e) {
             logger.error("调用MissionService模块异常", e);
         }
