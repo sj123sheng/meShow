@@ -642,7 +642,7 @@ public class BountyFunctions {
                 Page<ShareRedPacket> page = pageResult.getData();
                 JsonArray redPackets = new JsonArray();
                 result.addProperty("redPacketDate", (String)page.getCommonInfo().get("redPacketDate"));
-                result.addProperty("maxRedPacket", (String)page.getCommonInfo().get("maxRedPacket"));
+                result.addProperty("maxRedPacket", (Long)page.getCommonInfo().get("maxRedPacket"));
                 if (page.getList() != null) {
                     for (ShareRedPacket packet : page.getList()) {
                         JsonObject packetJson = new JsonObject();
