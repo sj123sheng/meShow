@@ -40,6 +40,8 @@ public class ConfigService {
      */
     private String resourceType;
 
+    private String checkUnpassPoster;
+
     @DisconfFileItem(name = "challenger.family", associateField = "challengerFamily")
     public String getChallengerFamily() {
         return challengerFamily;
@@ -110,5 +112,14 @@ public class ConfigService {
 
     public void setResourceType(String resourceType) {
         this.resourceType = resourceType;
+    }
+
+    @DisconfFileItem(name = "poster.checkunpass", associateField = "checkUnpassPoster")
+    public String getCheckUnpassPoster() {
+        return checkUnpassPoster;
+    }
+
+    public void setCheckUnpassPoster(String checkUnpassPoster) {
+        this.checkUnpassPoster = checkUnpassPoster;
     }
 }

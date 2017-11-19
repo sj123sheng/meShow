@@ -9,6 +9,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.melot.kk.module.resource.constant.ResourceStateConstant;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -643,9 +644,17 @@ public class AlbumFunctions {
 					JsonObject json = new JsonObject();
 					json.addProperty("resId", post.getResId());
 					json.addProperty("state", post.getState());
-					json.addProperty("posterPath", post.getPathPrefix() + post.getUrl());
-					json.addProperty("posterPath_256", post.getPathPrefix() + post.getUrl() + "!256");
-					json.addProperty("posterPath_128", post.getPathPrefix() + post.getUrl() + "!128");
+					if(post.getState() == ResourceStateConstant.firstcheckunpass || post.getState() == ResourceStateConstant.secendcheckunpass){
+						json.addProperty("posterPath", configService.getCheckUnpassPoster());
+						json.addProperty("posterPath_256", configService.getCheckUnpassPoster() + "!256");
+						json.addProperty("posterPath_128", configService.getCheckUnpassPoster() + "!128");
+					}
+					else {
+						json.addProperty("posterPath", post.getPathPrefix() + post.getUrl());
+						json.addProperty("posterPath_256", post.getPathPrefix() + post.getUrl() + "!256");
+						json.addProperty("posterPath_128", post.getPathPrefix() + post.getUrl() + "!128");
+					}
+
 					if (post.getReason() != null) {
 						json.addProperty("reason", post.getReason());
 					}
