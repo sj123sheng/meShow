@@ -171,6 +171,7 @@ public class NewsV2Functions {
                 resource.setMimeType(FileTypeConstant.video);
             }
             resource.setSpecificUrl(mediaUrl);
+            resource.setUserId(userId);
             resource.setDuration(Long.valueOf(mediaDur));
             resource.setResType(ResTypeConstant.resource);
             // 获取分辨率,添加分辨率信息
@@ -219,6 +220,7 @@ public class NewsV2Functions {
                     resource.setMimeType(FileTypeConstant.image);
                     resource.setResType(ResTypeConstant.resource);
                     resource.seteCloudType(ECloudTypeConstant.aliyun);
+                    resource.setUserId(userId);
                     if (!StringUtil.strIsNull(tempUrl)) {
                         tempUrl = tempUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
                         if(!imageUrl.startsWith(SEPARATOR)) {
