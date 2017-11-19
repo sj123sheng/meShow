@@ -1181,7 +1181,7 @@ public class NewsService {
 			Resource resVideo = resourceNewService.getResourceById(resId).getData();
 			int mediaFrom = 2;
 //			if (resVideo != null && resVideo.getTitle() != null) {
-//				mediaSourceJson.addProperty("mediaFrom", Integer.valueOf(resVideo.getTitle()));
+				mediaSourceJson.addProperty("mediaFrom", mediaFrom);
 //				mediaFrom = Integer.valueOf(resVideo.getTitle());
 //			}
 			if (resVideo != null && resVideo.getImageUrl() != null) {
