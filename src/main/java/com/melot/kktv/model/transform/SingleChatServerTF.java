@@ -4,7 +4,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.melot.kk.module.resource.domain.Resource;
 import com.melot.kktv.service.ConfigService;
+import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.StringUtil;
+import com.melot.sdk.core.util.MelotBeanFactory;
 import com.melot.singlechat.driver.domain.SingleChatLabel;
 import com.melot.singlechat.driver.domain.SingleChatServer;
 
@@ -23,8 +25,6 @@ public class SingleChatServerTF {
     private SingleChatServerTF() {}
     
     public static JsonObject serverInfoToJson(SingleChatServer server) {
-        ConfigService configService = new ConfigService();
-        
         JsonObject result = new JsonObject();
         result.addProperty("serverId", server.getServerId());
         result.addProperty("actorId", server.getUserId());
@@ -52,7 +52,7 @@ public class SingleChatServerTF {
                 
                 // 审核失败，给个默认图片
                 if (resource.getState().intValue() == 2 || resource.getState().intValue() == 3) {
-                    resource.setImageUrl(configService.getCheckUnpassPoster());
+                    resource.setImageUrl(getDefaultImg());
                 }
                 
                 if (!StringUtil.strIsNull(resource.getImageUrl())) {
@@ -79,7 +79,7 @@ public class SingleChatServerTF {
                 
                 // 审核失败，给个默认图片
                 if (resource.getState().intValue() == 2 || resource.getState().intValue() == 3) {
-                    resource.setImageUrl(configService.getCheckUnpassPoster());
+                    resource.setImageUrl(getDefaultImg());
                 }
                 
                 JsonObject audioJson = new JsonObject();
@@ -101,7 +101,7 @@ public class SingleChatServerTF {
                 
                 // 审核失败，给个默认图片
                 if (resource.getState().intValue() == 2 || resource.getState().intValue() == 3) {
-                    resource.setImageUrl(configService.getCheckUnpassPoster());
+                    resource.setImageUrl(getDefaultImg());
                 }
                 
                 JsonObject imageJson = new JsonObject();
@@ -179,5 +179,19 @@ public class SingleChatServerTF {
             default:
                 return eCloudType;
         }
+    }
+    
+    private static String getDefaultImg() {
+        ConfigService configService = (ConfigService) MelotBeanFactory.getBean("configService");
+        String img = configService.getCheckUnpassPoster();
+        
+        if (img == null) {
+            return null;
+        }
+        
+        img = img.replaceAll(ConfigHelper.getHttpdir().replaceAll("/kktv", ""), "");
+        img = img.replaceAll(ConfigHelper.getHttpdirUp().replaceAll("/kktv", ""), "");
+        
+        return img;
     }
 }
