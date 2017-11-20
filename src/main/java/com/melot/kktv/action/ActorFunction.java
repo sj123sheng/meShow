@@ -594,16 +594,22 @@ public class ActorFunction {
                 status = Constants.APPLY_TEST_ACTOR_IN_FAMILY_PLAYING;
             } else {
                 //自由主播
+                familyId = 11222;
                 applyActor.setApplyFamilyId(11222);
                 status = Constants.APPLY_ACTOR_INFO_CHECK_SUCCESS;
             }
 
-            boolean saveResult = false;
-            try {
-                  FamilyOperatorService familyOperatorService = (FamilyOperatorService) MelotBeanFactory.getBean("familyOperatorService");
-                  saveResult = familyOperatorService.checkActorApply(userId, familyId, status, null, null, appId);                     
-            } catch (Exception e) {
-                 logger.error("familyOperatorService.checkActorApply(" + userId + ", " + familyId + ", " + status + ") execute exception", e);
+            ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
+            boolean saveResult = applyActorService.saveApplyActorV2(applyActor);
+            
+            if (saveResult) {
+                try {
+                    FamilyOperatorService familyOperatorService = (FamilyOperatorService) MelotBeanFactory.getBean("familyOperatorService");
+                    saveResult = familyOperatorService.checkActorApply(userId, familyId, status, null, null, appId);
+                } catch (Exception e) {
+                    saveResult = false;
+                    logger.error("familyOperatorService.checkActorApply(" + userId + ", " + familyId + ", " + status + ") execute exception", e);
+                }
             }
             
             if (saveResult) {
