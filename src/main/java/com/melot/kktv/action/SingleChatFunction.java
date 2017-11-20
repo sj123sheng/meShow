@@ -565,18 +565,21 @@ public class SingleChatFunction {
         // 处理视频资源域名
         if (!StringUtil.strIsNull(resVideo)) {
             resVideo = replaceDomain(resVideo, ConfigHelper.getVideoURL(), "");
+            resVideo = replaceDomain(resVideo, ConfigHelper.getHttpdirUp(), "");
             resVideo = replaceDomain(resVideo, "/kktv", "");
         }
         
         // 处理音频资源域名
         if (!StringUtil.strIsNull(resAudio)) {
             resAudio = replaceDomain(resAudio, ConfigHelper.getMediahttpdir(), "");
+            resAudio = replaceDomain(resAudio, ConfigHelper.getHttpdirUp(), "");
             resAudio = replaceDomain(resAudio, "/kktv", "");
         }
         
         // 处理图片资源域名
         if (!StringUtil.strIsNull(resImage)) {
             resImage = replaceDomain(resImage, ConfigHelper.getHttpdir(), "");
+            resImage = replaceDomain(resImage, ConfigHelper.getHttpdirUp(), "");
             resImage = replaceDomain(resImage, "/kktv", "");
         }
         

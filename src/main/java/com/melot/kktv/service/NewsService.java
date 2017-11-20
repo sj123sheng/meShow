@@ -10,6 +10,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import com.melot.kk.module.resource.domain.Resource;
+import com.melot.kk.module.resource.service.ResourceNewService;
+import com.melot.kktv.base.Result;
 import org.apache.log4j.Logger;
 
 import com.google.gson.Gson;
@@ -40,7 +43,7 @@ import com.melot.news.domain.NewsCommentHist;
 import com.melot.news.model.NewsInfo;
 import com.melot.news.model.WhiteUser;
 import com.melot.qiniu.common.QiniuService;
-import com.melot.resource.domain.Resource;
+//import com.melot.resource.domain.Resource;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import com.upyun.api.UpYun;
 
@@ -88,7 +91,6 @@ public class NewsService {
 	/**
 	 *  获取用户关注动态
 	 * @param userId 用户Id
-	 * @param platform 平台Id
 	 * @param min 起始位置
 	 * @param max 结束位置
 	 * @return
@@ -859,7 +861,6 @@ public class NewsService {
 	
 	/**
 	 * 删除人工推荐动态
-	 * @param newsId
 	 */
 	public static void delManualNews(String index) {
 		NewsSource.delManualNews(index);
@@ -1175,12 +1176,14 @@ public class NewsService {
 			//{"mediaUrl":"/2014/3/25/1008198_36000.mp4","imageUrl":"/2014/3/25/1008198_36000.jpg","mediaSize":2048,"mediaDur":60000}
 			JsonObject mediaSourceJson = new JsonObject();
 			int resId = Integer.valueOf(Pattern.compile("\\{|\\}").matcher(newsInfo.getRefVideo()).replaceAll(""));
-			Resource resVideo = ResourceService.getResource(resId, 3);
+
+			ResourceNewService resourceNewService = (ResourceNewService) MelotBeanFactory.getBean("resourceNewService");
+			Resource resVideo = resourceNewService.getResourceById(resId).getData();
 			int mediaFrom = 2;
-			if (resVideo != null && resVideo.getTitle() != null) {
-				mediaSourceJson.addProperty("mediaFrom", Integer.valueOf(resVideo.getTitle()));
-				mediaFrom = Integer.valueOf(resVideo.getTitle());
-			}
+//			if (resVideo != null && resVideo.getTitle() != null) {
+				mediaSourceJson.addProperty("mediaFrom", mediaFrom);
+//				mediaFrom = Integer.valueOf(resVideo.getTitle());
+//			}
 			if (resVideo != null && resVideo.getImageUrl() != null) {
 				if (mediaFrom == 1) {
 					// 分平台返回不同尺寸图片
@@ -1253,7 +1256,8 @@ public class NewsService {
 			
 			json.add("mediaSource", mediaSourceJson);
 		} else if (newsInfo.getRefImage() != null) {
-			List<Resource> resImage = ResourceService.getResourceList(Pattern.compile("\\{|\\}").matcher(newsInfo.getRefImage()).replaceAll(""));
+			ResourceNewService resourceNewService = (ResourceNewService) MelotBeanFactory.getBean("resourceNewService");
+			List<Resource> resImage = resourceNewService.getResourcesByIds(Pattern.compile("\\{|\\}").matcher(newsInfo.getRefImage()).replaceAll("")).getData();
 			if (resImage != null && resImage.size() > 0) {
 				JsonArray picArray = new JsonArray();
 				for (Resource resource : resImage) {

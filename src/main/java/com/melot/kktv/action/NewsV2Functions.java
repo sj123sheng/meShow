@@ -11,6 +11,12 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.google.common.collect.Lists;
+import com.melot.kk.module.resource.constant.*;
+import com.melot.kk.module.resource.domain.Resource;
+import com.melot.kk.module.resource.service.ResourceNewService;
+import com.melot.kktv.base.CommonStateCode;
+import com.melot.kktv.base.Result;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
@@ -36,7 +42,7 @@ import com.melot.kktv.redis.NewsSource;
 import com.melot.kktv.redis.NewsV2Source;
 import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.NewsService;
-import com.melot.kktv.service.ResourceService;
+//import com.melot.kktv.service.ResourceService;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
@@ -48,7 +54,7 @@ import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.news.domain.NewsCommentHist;
 import com.melot.news.model.NewsInfo;
-import com.melot.resource.domain.Resource;
+//import com.melot.resource.domain.Resource;
 
 import redis.clients.jedis.Tuple;
 
@@ -57,6 +63,9 @@ public class NewsV2Functions {
     private static Logger logger = Logger.getLogger(NewsV2Functions.class);
 
     private static String SEPARATOR = "/";
+
+    @javax.annotation.Resource
+    ResourceNewService resourceNewService;
 
     @Autowired
     ConfigService configService;
@@ -154,68 +163,117 @@ public class NewsV2Functions {
 
         if (mediaType == NewsMediaTypeEnum.AUDIO || mediaType == NewsMediaTypeEnum.VIDEO) {
             Resource resource = new Resource();
-            resource.setState(0);
-            resource.setType(mediaType);
+            resource.setState(ResourceStateConstant.uncheck);
+            if(mediaType == NewsMediaTypeEnum.AUDIO){
+                resource.setMimeType(FileTypeConstant.audio);
+            }
+            else {
+                resource.setMimeType(FileTypeConstant.video);
+            }
             resource.setSpecificUrl(mediaUrl);
-            resource.setDuration(mediaDur);
+            resource.setUserId(userId);
+            resource.setDuration(Long.valueOf(mediaDur));
+            resource.setResType(ResTypeConstant.resource);
             // 获取分辨率,添加分辨率信息
             VideoInfo videoInfo = getVideoInfoByHttp(mediaUrl);
             if (videoInfo != null) {
                 resource.setFileHeight(videoInfo.getHeight());
                 resource.setFileWidth(videoInfo.getWidth());
             }
-            resource.setTitle(String.valueOf(mediaFrom));
-            if(!imageUrl.startsWith(SEPARATOR)) {
-                imageUrl = SEPARATOR + imageUrl;
-            }
             if (!StringUtil.strIsNull(imageUrl)) {
                 imageUrl = imageUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
+                if(!imageUrl.startsWith(SEPARATOR)) {
+                    imageUrl = SEPARATOR + imageUrl;
+                }
                 imageUrl = imageUrl.replaceFirst("/kktv", "");
             }
+            resource.seteCloudType(ECloudTypeConstant.qiniu);
             resource.setImageUrl(imageUrl != null ? imageUrl : Pattern.compile("mp4$").matcher(mediaUrl).replaceAll("jpg"));
-            int resId = ResourceService.addResource(resource);
-            if (resId > 0) {
-                if (mediaType == NewsMediaTypeEnum.AUDIO) {
-                    newsInfo.setRefAudio(String.valueOf(resId));
-                } else if (mediaType == NewsMediaTypeEnum.VIDEO) {
-                    newsInfo.setRefVideo(String.valueOf(resId));
+            Result<Integer> resIdResult = resourceNewService.addResource(resource);
+            if(resIdResult != null && resIdResult.getCode() != null && resIdResult.getCode().equals(CommonStateCode.SUCCESS)){
+                Integer resId = resIdResult.getData();
+                if (resId > 0) {
+                    if (mediaType == NewsMediaTypeEnum.AUDIO) {
+                        newsInfo.setRefAudio(String.valueOf(resId));
+                    } else if (mediaType == NewsMediaTypeEnum.VIDEO) {
+                        newsInfo.setRefVideo(String.valueOf(resId));
+                    }
+                } else {
+                    // 插入资源失败
+                    result.addProperty("TagCode", "06020009");
+                    return result;
                 }
-            } else {
+            }else {
                 // 插入资源失败
                 result.addProperty("TagCode", "06020009");
                 return result;
             }
+
         } else {
             // multi picture
             String[] imageList = imageUrl.split(",");
             List<Resource> resourceList = new ArrayList<Resource>();
             for (String tempUrl : imageList) {
-                Resource resource = new Resource();
-                resource.setState(0);
-                resource.setType(mediaType);
-                if (!StringUtil.strIsNull(tempUrl)) {
-                    if(!imageUrl.startsWith(SEPARATOR)) {
-                        tempUrl = SEPARATOR + tempUrl;
+                if(!StringUtil.strIsNull(tempUrl)){
+                    Resource resource = new Resource();
+                    resource.setState(ResourceStateConstant.uncheck);
+                    resource.setMimeType(FileTypeConstant.image);
+                    resource.setResType(ResTypeConstant.resource);
+                    resource.seteCloudType(ECloudTypeConstant.aliyun);
+                    resource.setUserId(userId);
+                    if (!StringUtil.strIsNull(tempUrl)) {
+                        tempUrl = tempUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
+                        if(!imageUrl.startsWith(SEPARATOR)) {
+                            tempUrl = SEPARATOR + tempUrl;
+                        }
+                        tempUrl = tempUrl.replaceFirst("/kktv", "");
                     }
-                    tempUrl = tempUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
-                    tempUrl = tempUrl.replaceFirst("/kktv", "");
+                    resource.setImageUrl(tempUrl);
+                    resourceList.add(resource);
                 }
-                resource.setImageUrl(tempUrl);
-                resourceList.add(resource);
             }
-            String resIds = ResourceService.addResources(resourceList);
-            if (resIds != null) {
-                newsInfo.setRefImage(resIds);
-            } else {
+            Result<List<Integer>> resIdsResult = resourceNewService.addResources(resourceList);
+            if(resIdsResult != null && resIdsResult.getCode() != null && resIdsResult.getCode().equals(CommonStateCode.SUCCESS)){
+                String resIds = "";
+                for (Integer i : resIdsResult.getData()) {
+                    resIds = resIds + "," + i;
+                }
+                resIds =  Pattern.compile("^,*").matcher(resIds).replaceAll("");
+                if (resIds != null) {
+                    newsInfo.setRefImage(resIds);
+                } else {
+                    // 插入资源失败
+                    result.addProperty("TagCode", "06020009");
+                    return result;
+                }
+            }
+            else {
                 // 插入资源失败
                 result.addProperty("TagCode", "06020009");
                 return result;
             }
+
         }
 
         if (NewsService.isWhiteUser(userId)) {
             newsInfo.setState(1);
+            if(mediaType == NewsMediaTypeEnum.AUDIO && !StringUtil.strIsNull(newsInfo.getRefAudio())){
+                resourceNewService.checkResource(Lists.newArrayList(Integer.parseInt(newsInfo.getRefAudio())),ResourceStateConstant.checkpass,"动态白名单",1);
+            }
+            else if(mediaType == NewsMediaTypeEnum.VIDEO && !StringUtil.strIsNull(newsInfo.getRefVideo())){
+                resourceNewService.checkResource(Lists.newArrayList(Integer.parseInt(newsInfo.getRefVideo())),ResourceStateConstant.checkpass,"动态白名单",1);
+            }
+            else if(mediaType == NewsMediaTypeEnum.IMAGE && !StringUtil.strIsNull(newsInfo.getRefImage())){
+                List<Integer> resIds = Lists.newArrayList();
+                for(String id:newsInfo.getRefImage().split(",")){
+                    if(!StringUtil.strIsNull(id)){
+                        resIds.add(Integer.parseInt(id));
+                    }
+                }
+                resourceNewService.checkResource(resIds,ResourceStateConstant.checkpass,"动态白名单",1);
+            }
         }
+
         int newsId = NewsService.addNews(newsInfo, topic);
         if (newsId > 0) {
             result.addProperty("newsId", newsId);
@@ -270,7 +328,14 @@ public class NewsV2Functions {
         if (NewsService.deleteNews(newsId, userId)) {
             NewsV2Source.delHotRef(String.valueOf(newsId));
             // NewsV2Source.delHot(newsId);
-            ResourceService.delResource(newsInfo);
+            if (newsInfo.getRefVideo() != null) {
+                resourceNewService.delResource(Integer.valueOf(Pattern.compile("\\{|\\}").matcher(newsInfo.getRefVideo()).replaceAll("")));
+            } else if (newsInfo.getRefImage() != null) {
+                String[] resIds = Pattern.compile("\\{|\\}").matcher(newsInfo.getRefImage()).replaceAll("").split(",");
+                for (String resId : resIds) {
+                    resourceNewService.delResource(Integer.valueOf(resId));
+                }
+            }
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
         } else {
@@ -1555,7 +1620,7 @@ public class NewsV2Functions {
     /**
      * 获取推荐动态（用户关注）列表 （20000403）
      *
-     * @param paramJsonObject
+     * @param
      * @return
      */
     public JsonObject getRecNewsList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {

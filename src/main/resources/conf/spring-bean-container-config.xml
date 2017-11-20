@@ -35,4 +35,8 @@
 	<bean id="singleChatActiveDefaultDesc" class="java.lang.String">
 		<constructor-arg type="java.lang.String" value="你有免费体验券可以领取" />
 	</bean>
+	
+	<bean id="httpdirUp" class="java.lang.String">
+		<constructor-arg type="java.lang.String" value="${httpdirUp}" />
+	</bean>
 </beans>
