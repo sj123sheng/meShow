@@ -3,6 +3,7 @@ package com.melot.kktv.model.transform;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.melot.kk.module.resource.domain.Resource;
+import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.util.StringUtil;
 import com.melot.singlechat.driver.domain.SingleChatLabel;
 import com.melot.singlechat.driver.domain.SingleChatServer;
@@ -22,6 +23,8 @@ public class SingleChatServerTF {
     private SingleChatServerTF() {}
     
     public static JsonObject serverInfoToJson(SingleChatServer server) {
+        ConfigService configService = new ConfigService();
+        
         JsonObject result = new JsonObject();
         result.addProperty("serverId", server.getServerId());
         result.addProperty("actorId", server.getUserId());
@@ -46,6 +49,12 @@ public class SingleChatServerTF {
                 videoJson.addProperty("videoFrom", eCloudTypeTF(resource.geteCloudType()));
                 videoJson.addProperty("videoWidth", resource.getFileWidth());
                 videoJson.addProperty("videoHeight", resource.getFileHeight());
+                
+                // 审核失败，给个默认图片
+                if (resource.getState().intValue() == 2 || resource.getState().intValue() == 3) {
+                    resource.setImageUrl(configService.getCheckUnpassPoster());
+                }
+                
                 if (!StringUtil.strIsNull(resource.getImageUrl())) {
                     videoJson.addProperty("imgUrl_400", resource.getImageUrl() + "?imageView2/1/w/400/h/225");
                     videoJson.addProperty("imgUrl", resource.getImageUrl());
@@ -67,6 +76,12 @@ public class SingleChatServerTF {
                 if (StringUtil.strIsNull(resource.getSpecificUrl())) {
                     continue;
                 }
+                
+                // 审核失败，给个默认图片
+                if (resource.getState().intValue() == 2 || resource.getState().intValue() == 3) {
+                    resource.setImageUrl(configService.getCheckUnpassPoster());
+                }
+                
                 JsonObject audioJson = new JsonObject();
                 audioJson.addProperty("audioUrl", resource.getSpecificUrl());
                 audioJson.addProperty("imgUrl_400", resource.getImageUrl() + "!400");
@@ -83,6 +98,12 @@ public class SingleChatServerTF {
                 if (StringUtil.strIsNull(resource.getImageUrl())) {
                     continue;
                 }
+                
+                // 审核失败，给个默认图片
+                if (resource.getState().intValue() == 2 || resource.getState().intValue() == 3) {
+                    resource.setImageUrl(configService.getCheckUnpassPoster());
+                }
+                
                 JsonObject imageJson = new JsonObject();
                 imageJson.addProperty("imgUrl", resource.getImageUrl());
                 imageJson.addProperty("imgUrl_1280", resource.getImageUrl() + "!1280");
