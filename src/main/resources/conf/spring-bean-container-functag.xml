@@ -392,6 +392,7 @@
 	<bean id="10005007" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="profileFunction" />
 		<constructor-arg name="methodName" value="getUserSendGiftList" />
+        <constructor-arg name="cacheType" value="60" />
 	</bean>
 	<!-- 获取用户收到的礼物列表 -->
 	<!-- 
@@ -855,6 +856,16 @@
 		<constructor-arg name="methodName" value="getFamilyInfoList" />
 		<constructor-arg name="cacheType" value="180" />
 		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
+	</bean>
+	<!-- 获取家族待审核主播列表 -->
+	<bean id="51040101" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="familyFunction" />
+		<constructor-arg name="methodName" value="getFamilyApplyActorList" />
+	</bean>
+	<!-- 家族长审核主播 -->
+	<bean id="51040102" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="familyFunction" />
+		<constructor-arg name="methodName" value="auditFamilyApplyActor" />
 	</bean>
 	
 	<!-- 个人财产(道具汽车靓号)相关接口 -->
@@ -2478,6 +2489,7 @@
     <bean id="51020101" class="com.melot.sdk.core.function.GenericFunction">
         <constructor-arg name="t" ref="actorKKTVFunction" />
         <constructor-arg name="methodName" value="getRepresentList" />
+        <constructor-arg name="cacheType" value="60" />
     </bean>
     <!-- 更新H5页面上的 UV 数据 -->
     <bean id="51020102" class="com.melot.sdk.core.function.GenericFunction">
@@ -2698,5 +2710,28 @@
         <constructor-arg name="t" ref="mallFunctions" />
         <constructor-arg name="methodName" value="exchangeGameGift" />
     </bean>
-
+	
+	<!-- 获取奖励金分享红包列表 -->
+	<bean id="52050209" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="bountyFunctions" />
+		<constructor-arg name="methodName" value="getSharRedPacketList" />
+	</bean>
+	
+	<!-- 开启分享红包 -->
+	<bean id="52050210" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="bountyFunctions" />
+		<constructor-arg name="methodName" value="openSharRedPacket" />
+	</bean>
+	
+	<!-- 获取分享红包题目信息 -->
+	<bean id="51050211" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="bountyFunctions" />
+		<constructor-arg name="methodName" value="getSharQuestionInfo" />
+	</bean>
+	
+	<!-- 获取分享红包状态 -->
+	<bean id="52050212" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="bountyFunctions" />
+		<constructor-arg name="methodName" value="getSharRedPacketState" />
+	</bean>
 </beans>

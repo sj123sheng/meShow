@@ -1,45 +1,78 @@
 package com.melot.kktv.action;
 
+import java.io.UnsupportedEncodingException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.io.Charsets;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.google.common.collect.Sets;
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.blacklist.service.BlacklistService;
 import com.melot.content.config.apply.service.ApplyActorService;
 import com.melot.content.config.domain.ApplyActor;
+import com.melot.content.config.utils.Constants;
 import com.melot.family.driver.domain.ActorTransferHistV2;
 import com.melot.family.driver.domain.ApplyFamilyHist;
 import com.melot.family.driver.domain.FamilyInfo;
 import com.melot.family.driver.domain.RespMsg;
 import com.melot.family.driver.service.FamilyAdminNewService;
+import com.melot.family.driver.service.FamilyAdminService;
 import com.melot.family.driver.service.FamilyInfoService;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcx.model.RecentFamilyMatch;
-import com.melot.kkcx.service.*;
+import com.melot.kkcx.service.FamilyService;
+import com.melot.kkcx.service.RoomService;
+import com.melot.kkcx.service.UserAssetServices;
+import com.melot.kkcx.service.UserService;
 import com.melot.kkcx.transform.RoomTF;
 import com.melot.kktv.domain.Honour;
 import com.melot.kktv.domain.PreviewAct;
-import com.melot.kktv.model.*;
+import com.melot.kktv.model.Family;
+import com.melot.kktv.model.FamilyApplicant;
+import com.melot.kktv.model.FamilyHonor;
+import com.melot.kktv.model.FamilyMatchChampion;
+import com.melot.kktv.model.FamilyMatchRank;
+import com.melot.kktv.model.FamilyMember;
+import com.melot.kktv.model.FamilyPoster;
 import com.melot.kktv.redis.FamilyApplySource;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.MatchSource;
 import com.melot.kktv.redis.MedalSource;
 import com.melot.kktv.service.ConfigService;
-import com.melot.kktv.util.*;
+import com.melot.kktv.service.UserRelationService;
+import com.melot.kktv.util.AppIdEnum;
+import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
+import com.melot.kktv.util.ConfigHelper;
+import com.melot.kktv.util.Constant;
+import com.melot.kktv.util.FamilyMemberEnum;
+import com.melot.kktv.util.FamilyRankingEnum;
+import com.melot.kktv.util.PaginationUtil;
+import com.melot.kktv.util.PlatformEnum;
+import com.melot.kktv.util.StringUtil;
+import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.module.medal.driver.domain.ResultByFamilyMedal;
 import com.melot.module.medal.driver.service.FamilyMedalService;
 import com.melot.sdk.core.util.MelotBeanFactory;
-import org.apache.commons.io.Charsets;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.servlet.http.HttpServletRequest;
-import java.io.UnsupportedEncodingException;
-import java.sql.SQLException;
-import java.util.*;
 
 /**
  * 家族相关接口
@@ -2602,6 +2635,170 @@ public class FamilyAction {
             }
         } catch(Exception e) {
             logger.error("familyInfoService.getFamilyInfoListByFamilyIdKey(" + familyId + ") return exception.", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+        }
+        
+        return result;
+    }
+    
+    /**
+     * 获取家族待审核主播列表（51040101）
+     * 
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getFamilyApplyActorList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+        
+        int userId, familyId, pageIndex, countPerPage, start = 0;
+        
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 0, Integer.MAX_VALUE);
+            familyId = CommonUtil.getJsonParamInt(jsonObject, "familyId", 0, TagCodeEnum.FAMILYID_MISSING, 0, Integer.MAX_VALUE);
+            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
+            countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 5, null, 0, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        try {
+            // 判断用户是否为家族长
+            FamilyMember familyMember = FamilyService.getFamilyMemberInfo(userId, familyId, 0);
+            if (familyMember != null && familyMember.getMemberGrade() == FamilyMemberEnum.GRADE_LEADER) {
+                FamilyAdminService familyAdminService = (FamilyAdminService) MelotBeanFactory.getBean("familyAdminService");
+                int count = familyAdminService.getFamilyPilotsCount(familyId, null, AppIdEnum.AMUSEMENT, Constants.APPLY_TEST_ACTOR_IN_FAMILY_PLAYING);
+                result.addProperty("count", count);
+                JsonArray actorList = new JsonArray();
+                if (count > 0) {
+                    start = (pageIndex - 1) * countPerPage;
+                    List<ApplyActor> actorApplyList = familyAdminService.getFamilyPilots(familyId, null, AppIdEnum.AMUSEMENT, Constants.APPLY_TEST_ACTOR_IN_FAMILY_PLAYING, start, countPerPage);
+                    if (actorApplyList != null && actorApplyList.size() > 0) {
+                        for (ApplyActor applyActor : actorApplyList) {
+                             JsonObject jsonObj = new JsonObject();
+                             jsonObj.addProperty("userId", applyActor.getActorId());
+                             jsonObj.addProperty("realName", applyActor.getRealName());
+                             jsonObj.addProperty("applyTime", applyActor.getCreateTime().getTime());
+                             jsonObj.addProperty("state", applyActor.getStatus());
+                             UserProfile userProfile = UserService.getUserInfoNew(applyActor.getActorId());
+                             if (userProfile != null) {
+                                 if (userProfile.getNickName() != null) {
+                                     jsonObj.addProperty("nickName", userProfile.getNickName());
+                                 }
+                                 if (userProfile.getPortrait() != null) {
+                                     jsonObj.addProperty("portrait_path_original", ConfigHelper.getHttpdir() + userProfile.getPortrait());
+                                 }
+                                 jsonObj.addProperty("actorLevel", userProfile.getActorLevel());
+                                 jsonObj.addProperty("richLevel", userProfile.getUserLevel());
+                                 jsonObj.addProperty("fansCount", UserRelationService.getFansCount(applyActor.getActorId()));
+                                 jsonObj.addProperty("gender", userProfile.getGender());
+                             }
+                             actorList.add(jsonObj);
+                        }
+                    }
+                }
+                result.add("actorList", actorList);
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            } else {
+                result.addProperty("TagCode", "5104010101");
+            }
+        } catch(Exception e) {
+            logger.error("familyInfoService.getFamilyPilots(" + familyId + ", null, 1, 5, " + start + ", " + countPerPage + ") return exception.", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+        }
+        
+        return result;
+    }
+    
+    /**
+     * 家族长审核主播（51040102）
+     * 
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject auditFamilyApplyActor(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+        
+        int userId, familyId, actorId, type;
+        String checkReason;
+        
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 0, Integer.MAX_VALUE);
+            familyId = CommonUtil.getJsonParamInt(jsonObject, "familyId", 0, TagCodeEnum.FAMILYID_MISSING, 0, Integer.MAX_VALUE);
+            actorId = CommonUtil.getJsonParamInt(jsonObject, "actorId", 1, "5104010201", 1, Integer.MAX_VALUE);
+            type = CommonUtil.getJsonParamInt(jsonObject, "type", 5, "5104010203", 1, 2);
+            checkReason = CommonUtil.getJsonParamString(jsonObject, "checkReason", null, null, 1, 100);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        try {
+            // 判断用户是否为家族长
+            FamilyMember familyMember = FamilyService.getFamilyMemberInfo(userId, familyId, 0);
+            if (familyMember != null && familyMember.getMemberGrade() == FamilyMemberEnum.GRADE_LEADER) {
+                FamilyAdminService familyAdminService = (FamilyAdminService) MelotBeanFactory.getBean("familyAdminService");
+                int count = familyAdminService.getFamilyPilotsCount(familyId, actorId, AppIdEnum.AMUSEMENT, Constants.APPLY_TEST_ACTOR_IN_FAMILY_PLAYING);
+                ApplyActor applyActor = new ApplyActor();
+                ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
+                if (count > 0) {
+                    int state = 0;
+                    if (type == 1) {
+                        state = Constants.APPLY_TEST_ACTOR_PASSED;
+                        applyActor.setActorId(actorId);
+                        applyActor.setStatus(Constants.APPLY_ACTOR_INFO_CHECK_SUCCESS);
+                    } else if (type == 2) {
+                        state = Constants.APPLY_TEST_ACTOR_NO_PASS;
+                    }
+                    boolean isSuccess = familyAdminService.checkFamilyPilots(actorId, familyId, state, checkReason, null, 40, AppIdEnum.AMUSEMENT);
+                    if (isSuccess) {
+                        if (state == Constants.APPLY_TEST_ACTOR_NO_PASS || (state == Constants.APPLY_TEST_ACTOR_PASSED 
+                                && applyActorService.updateApplyActorByActorId(applyActor) && FamilyService.checkBecomeFamilyMember(actorId, Constants.APPLY_ACTOR_OFFICIAL_CHECK_SUCCESS, AppIdEnum.AMUSEMENT))) {
+                            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                        } else {
+                            result.addProperty("TagCode", "5104010205");
+                        }
+                    } else {
+                        result.addProperty("TagCode", "5104010205");
+                    }
+                } else {
+                    result.addProperty("TagCode", "5104010204");
+                    applyActor = applyActorService.getApplyActorByActorIdV2(actorId);
+                    if (applyActor != null && applyActor.getApplyFamilyId().equals(familyId)) {
+                        //家族长已拒绝
+                        if (applyActor.getStatus().equals(Constants.APPLY_TEST_ACTOR_NO_PASS)) {
+                            result.addProperty("TagCode", "5104010206");
+                        } else if(applyActor.getStatus() > Constants.APPLY_TEST_ACTOR_NO_PASS) {
+                            //家族长已同意
+                            result.addProperty("TagCode", "5104010207");
+                        }
+                    }
+                }
+            } else {
+                result.addProperty("TagCode", "5104010202");
+            }
+        } catch(Exception e) {
+            logger.error("FamilyAction.auditFamilyApplyActor() execute exception.", e);
             result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
         }
         

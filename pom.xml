@@ -10,8 +10,7 @@
 	
 	<artifactId>meShow</artifactId>
 	<packaging>war</packaging>
-	<version>2.2.11.70</version>
-	
+	<version>2.2.11.71</version>
 	<name>meShow</name>
 	<url>http://maven.apache.org</url>
 	
@@ -259,7 +258,7 @@
 		<dependency>
 			<groupId>com.melot.module.driver.msgbuilder</groupId>
 			<artifactId>family-module-msgbuilder</artifactId>
-			<version>1.0.11</version><!--$NO-MVN-MAN-VER$-->
+			<version>1.0.12</version><!--$NO-MVN-MAN-VER$-->
 		</dependency>
 		<dependency>
 		  	<groupId>com.melot.module.driver.msgbuilder</groupId>
@@ -562,7 +561,7 @@
         <dependency>
 		  <groupId>com.melot.kk.module</groupId>
 		  <artifactId>kk-bounty-api</artifactId>
-		  <version>0.0.4</version>
+		  <version>0.0.5</version>
 		</dependency>
 
         <dependency>

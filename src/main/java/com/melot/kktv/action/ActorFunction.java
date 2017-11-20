@@ -588,17 +588,24 @@ public class ActorFunction {
             applyActor.setGender(StringUtil.parseFromStr(identityId.substring(16, 17), 0) % 2);
             applyActor.setIdPicStatus(IdPicStatusEnum.UNLOAD.getId());
             applyActor.setVerifyType(VerifyTypeEnum.ZM_VERIFY.getId());
+            int status = 0;
             if (familyId > 0) {
                 applyActor.setApplyFamilyId(familyId);
-                applyActor.setStatus(Constants.APPLY_TEST_ACTOR_IN_FAMILY_PLAYING);
+                status = Constants.APPLY_TEST_ACTOR_IN_FAMILY_PLAYING;
             } else {
                 //自由主播
                 applyActor.setApplyFamilyId(11222);
-                applyActor.setStatus(Constants.APPLY_ACTOR_INFO_CHECK_SUCCESS);
+                status = Constants.APPLY_ACTOR_INFO_CHECK_SUCCESS;
             }
 
-            ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
-            boolean saveResult = applyActorService.saveApplyActorV2(applyActor);
+            boolean saveResult = false;
+            try {
+                  FamilyOperatorService familyOperatorService = (FamilyOperatorService) MelotBeanFactory.getBean("familyOperatorService");
+                  saveResult = familyOperatorService.checkActorApply(userId, familyId, status, null, null, appId);                     
+            } catch (Exception e) {
+                 logger.error("familyOperatorService.checkActorApply(" + userId + ", " + familyId + ", " + status + ") execute exception", e);
+            }
+            
             if (saveResult) {
                 result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             } else {
