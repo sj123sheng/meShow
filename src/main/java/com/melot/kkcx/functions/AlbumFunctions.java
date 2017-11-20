@@ -644,7 +644,7 @@ public class AlbumFunctions {
 					JsonObject json = new JsonObject();
 					json.addProperty("resId", post.getResId());
 					json.addProperty("state", post.getState());
-					if(post.getState() == ResourceStateConstant.firstcheckunpass || post.getState() == ResourceStateConstant.secendcheckunpass){
+					if(post.getState() == 3){
 						json.addProperty("posterPath", configService.getCheckUnpassPoster());
 						json.addProperty("posterPath_256", configService.getCheckUnpassPoster() + "!256");
 						json.addProperty("posterPath_128", configService.getCheckUnpassPoster() + "!128");
