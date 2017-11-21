@@ -2824,8 +2824,8 @@ public class ProfileFunctions {
 
                     List<Integer> userIds  = Lists.newArrayList();
                     for(ShowMoneyHistory hist : list) {
-                        if(hist.getToUserId() != null) {
-                            userIds.add(hist.getToUserId());
+                        if(hist.getUserId() != null) {
+                            userIds.add(hist.getUserId());
                         }
                     }
 
