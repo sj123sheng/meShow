@@ -835,6 +835,7 @@ public class NewsV2Functions {
                         if (json.has("imageUrl")) {
                             String imageUrl = json.get("imageUrl").getAsString();
                             if (v > 130) {
+                                imageUrl = imageUrl.replaceFirst(ConfigHelper.getHttpdirUp(), "");
                                 imageUrl = imageUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
                             }
                             result.addProperty("imageUrl", imageUrl + "!400");
@@ -1522,6 +1523,7 @@ public class NewsV2Functions {
                     if (json.has("imageUrl")) {
                         String imageUrl = json.get("imageUrl").getAsString();
                         if (v > 130) {
+                            imageUrl = imageUrl.replaceFirst(ConfigHelper.getHttpdirUp(), "");
                             imageUrl = imageUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
                         }
                         json.addProperty("imageUrl", imageUrl + "!400");
