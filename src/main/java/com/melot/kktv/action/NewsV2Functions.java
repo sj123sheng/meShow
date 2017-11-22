@@ -834,6 +834,7 @@ public class NewsV2Functions {
                     if (json.get("topicId").getAsInt() == topicId) {
                         if (json.has("imageUrl")) {
                             String imageUrl = json.get("imageUrl").getAsString();
+                            imageUrl = imageUrl.replaceFirst(ConfigHelper.getHttpdirUp(), ConfigHelper.getHttpdir());
                             if (v > 130) {
                                 imageUrl = imageUrl.replaceFirst(ConfigHelper.getHttpdirUp(), "");
                                 imageUrl = imageUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
@@ -1522,6 +1523,7 @@ public class NewsV2Functions {
                     JsonObject json = new JsonParser().parse(str).getAsJsonObject();
                     if (json.has("imageUrl")) {
                         String imageUrl = json.get("imageUrl").getAsString();
+                        imageUrl = imageUrl.replaceFirst(ConfigHelper.getHttpdirUp(), ConfigHelper.getHttpdir());
                         if (v > 130) {
                             imageUrl = imageUrl.replaceFirst(ConfigHelper.getHttpdirUp(), "");
                             imageUrl = imageUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
@@ -1814,6 +1816,7 @@ public class NewsV2Functions {
                 JsonObject json = new JsonParser().parse(temp).getAsJsonObject();
                 if (json.has("imageUrl")) {
                     String imageUrl = json.get("imageUrl").getAsString();
+                    imageUrl = imageUrl.replaceFirst(ConfigHelper.getHttpdirUp(), ConfigHelper.getHttpdir());
                     if (v > 130) {
                         imageUrl = imageUrl.replaceFirst(ConfigHelper.getHttpdirUp(), "");
                         imageUrl = imageUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
