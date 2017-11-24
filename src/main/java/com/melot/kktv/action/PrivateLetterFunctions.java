@@ -12,7 +12,10 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.melot.kktv.base.CommonStateCode;
+import com.melot.kktv.base.Result;
 import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.ParameterKeys;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
 import com.melot.letter.driver.domain.PrivateLetterSysConfig;
@@ -54,7 +57,7 @@ public class PrivateLetterFunctions {
 		
 		// 该接口需要验证token,未验证的返回错误码
 		if (!checkTag) {
-			result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+			result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_NOT_CHECKED);
 			return result;
 		}
 		
@@ -65,7 +68,7 @@ public class PrivateLetterFunctions {
 			richLevel = CommonUtil.getJsonParamInt(jsonObject, "richLevel", 1, null, 0, Integer.MAX_VALUE);
 			actorLevel = CommonUtil.getJsonParamInt(jsonObject, "actorLevel", 1, null, 0, Integer.MAX_VALUE);
 		} catch (ErrorGetParameterException e) {
-			result.addProperty("TagCode", e.getErrCode());
+			result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
 			return result;
 		}
 		
@@ -78,7 +81,7 @@ public class PrivateLetterFunctions {
 			logger.error("PrivateLetterService.setPrivateLetterConfig is errer!", e);
 		}
 		// 返回结果
-		result.addProperty("TagCode", status?TagCodeEnum.SUCCESS:"55100002");
+		result.addProperty(ParameterKeys.TAG_CODE, status?TagCodeEnum.SUCCESS:"55100002");
 		return result;
 		
 	}
@@ -98,7 +101,7 @@ public class PrivateLetterFunctions {
 		
 		// 该接口需要验证token,未验证的返回错误码
 		if (!checkTag) {
-			result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+			result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_NOT_CHECKED);
 			return result;
 		}
 		
@@ -106,7 +109,7 @@ public class PrivateLetterFunctions {
 		try {
 			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
 		} catch (ErrorGetParameterException e) {
-			result.addProperty("TagCode", e.getErrCode());
+			result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
 			return result;
 		}
 		
@@ -119,7 +122,7 @@ public class PrivateLetterFunctions {
 		}
 		
 		// 返回结果
-		result.addProperty("TagCode", result.has("userId")?TagCodeEnum.SUCCESS:"55100003");
+		result.addProperty(ParameterKeys.TAG_CODE, result.has("userId")?TagCodeEnum.SUCCESS:"55100003");
 		return result;
 		
 	}
@@ -138,7 +141,7 @@ public class PrivateLetterFunctions {
 		
 		// 该接口需要验证token,未验证的返回错误码
 		if (!checkTag) {
-			result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+			result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_NOT_CHECKED);
 			return result;
 		}
 		
@@ -146,7 +149,7 @@ public class PrivateLetterFunctions {
 		try {
 			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
 		} catch (ErrorGetParameterException e) {
-			result.addProperty("TagCode", e.getErrCode());
+			result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
 			return result;
 		}
 		
@@ -159,7 +162,7 @@ public class PrivateLetterFunctions {
 		if (mapSession.containsKey(GENERAL_SESSION_KEY)) {
 			result.add("generalSessionList",mapSession.get(GENERAL_SESSION_KEY));
 		}
-		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+		result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
 		return result;
 	}
 	
@@ -178,7 +181,7 @@ public class PrivateLetterFunctions {
 		
 		// 该接口需要验证token,未验证的返回错误码
 		if (!checkTag) {
-			result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+			result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_NOT_CHECKED);
 			return result;
 		}
 		
@@ -187,7 +190,7 @@ public class PrivateLetterFunctions {
 			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
 			topUserId = CommonUtil.getJsonParamInt(jsonObject, "topUserId", 0, TagCodeEnum.TOP_USERID_MISSING, 1, Integer.MAX_VALUE);
 		} catch (ErrorGetParameterException e) {
-			result.addProperty("TagCode", e.getErrCode());
+			result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
 			return result;
 		}
 		
@@ -195,7 +198,7 @@ public class PrivateLetterFunctions {
         PrivateLetterService privateLetterService = (PrivateLetterService)MelotBeanFactory.getBean("privateLetterService");
         privateLetterService.setTopPrivateSession(userId, topUserId);
         
-		result.addProperty("TagCode",TagCodeEnum.SUCCESS);
+		result.addProperty(ParameterKeys.TAG_CODE,TagCodeEnum.SUCCESS);
 		return result;
 		
 	}
@@ -241,7 +244,7 @@ public class PrivateLetterFunctions {
 		
 		// 该接口需要验证token,未验证的返回错误码
 		if (!checkTag) {
-			result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+			result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_NOT_CHECKED);
 			return result;
 		}
 		
@@ -250,7 +253,7 @@ public class PrivateLetterFunctions {
 			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
 			topUserId = CommonUtil.getJsonParamInt(jsonObject, "topUserId", 0, TagCodeEnum.TOP_USERID_MISSING, 1, Integer.MAX_VALUE);
 		} catch (ErrorGetParameterException e) {
-			result.addProperty("TagCode", e.getErrCode());
+			result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
 			return result;
 		}
 		 // 调用模块接口
@@ -258,7 +261,7 @@ public class PrivateLetterFunctions {
 		
         privateLetterService.removeTopPrivateSession(userId, topUserId);
 		
-		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+		result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
 		return result;
 		
 	}
@@ -278,7 +281,7 @@ public class PrivateLetterFunctions {
 		
 		// 该接口需要验证token,未验证的返回错误码
 		if (!checkTag) {
-			result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+			result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_NOT_CHECKED);
 			return result;
 		}
 		
@@ -287,7 +290,7 @@ public class PrivateLetterFunctions {
 			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
 			toUserId = CommonUtil.getJsonParamInt(jsonObject, "toUserId", 0, TagCodeEnum.TOP_USERID_MISSING, 1, Integer.MAX_VALUE);
 		} catch (ErrorGetParameterException e) {
-			result.addProperty("TagCode", e.getErrCode());
+			result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
 			return result;
 		}
 		
@@ -296,7 +299,7 @@ public class PrivateLetterFunctions {
         
         privateLetterService.refreshPrivateSession(userId, toUserId);
 		
-		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+		result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
 		return result;
 		
 	}
@@ -316,7 +319,7 @@ public class PrivateLetterFunctions {
 		
 		// 该接口需要验证token,未验证的返回错误码
 		if (!checkTag) {
-			result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+			result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_NOT_CHECKED);
 			return result;
 		}
 		
@@ -325,7 +328,7 @@ public class PrivateLetterFunctions {
 			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
 			toUserId = CommonUtil.getJsonParamInt(jsonObject, "toUserId", 0, TagCodeEnum.TOP_USERID_MISSING, 1, Integer.MAX_VALUE);
 		} catch (ErrorGetParameterException e) {
-			result.addProperty("TagCode", e.getErrCode());
+			result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
 			return result;
 		}
 		
@@ -334,8 +337,100 @@ public class PrivateLetterFunctions {
         
         privateLetterService.removePrivateSession(userId, toUserId);
 		
-		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+		result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
 		return result;
-		
 	}
+	
+    /**
+     * 主播群发IM消息【51110101】
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject massSendIMInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+            
+            // 定义使用的参数
+            int userId = 0;
+            String text = "";
+            String image = "";
+            // 定义返回结果
+            JsonObject result = new JsonObject();
+            
+            // 该接口需要验证token,未验证的返回错误码
+            if (!checkTag) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_INCORRECT);
+                return result;
+            }
+            
+            try {
+                userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+                text = CommonUtil.getJsonParamString(jsonObject, "text", null, "5111010101", 0, Integer.MAX_VALUE);
+                image = CommonUtil.getJsonParamString(jsonObject, "image", null, null, 0, Integer.MAX_VALUE);
+            } catch (ErrorGetParameterException e) {
+                result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
+                return result;
+            }
+            
+            try {
+                PrivateLetterService privateLetterService = (PrivateLetterService) MelotBeanFactory.getBean("privateLetterService");
+                Result<Boolean> massSendIMInfoResult = privateLetterService.massSendIMInfo(userId, text, image);
+                if (massSendIMInfoResult == null || CommonStateCode.FAIL.equals(massSendIMInfoResult.getCode())) {
+                    result.addProperty(ParameterKeys.TAG_CODE, "5111010102");
+                } else {
+                    result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+                }
+            } catch (Exception e) {
+                logger.error(String.format("Module Error privateLetterService.massSendIMInfo(%s, %s, %s)", userId, text, image), e);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            }
+            
+            return result;
+    }
+
+
+    /**
+     * 获取主播倒计时时间【51110102】
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getNextCountdown(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+            
+            // 定义使用的参数
+            int userId = 0;
+            // 定义返回结果
+            JsonObject result = new JsonObject();
+            
+            // 该接口需要验证token,未验证的返回错误码
+            if (!checkTag) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_INCORRECT);
+                return result;
+            }
+            
+            try {
+                userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            } catch (ErrorGetParameterException e) {
+                result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
+                return result;
+            }
+            
+            try {
+                PrivateLetterService privateLetterService = (PrivateLetterService) MelotBeanFactory.getBean("privateLetterService");
+                Result<Long> countdownResult = privateLetterService.getNextSendTime(userId);
+                if (countdownResult == null || CommonStateCode.FAIL.equals(countdownResult.getCode())) {
+                    result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+                } else {
+                    long countdown = countdownResult.getData() / 1000;
+                    result.addProperty("countdown", countdown < 0 ? 0 : countdown);
+                    result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+                }
+            } catch (Exception e) {
+                logger.error(String.format("Module Error privateLetterService.getNextSendTime(%s)", userId), e);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            }
+            
+            return result;
+    }
 }

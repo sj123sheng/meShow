@@ -474,7 +474,7 @@
 		<dependency>
 		  	<groupId>com.melot.module.driver.msgbuilder</groupId>
 		  	<artifactId>private-letter-msgbuilder</artifactId>
-		  	<version>1.0.3</version>
+		  	<version>1.0.4-SNAPSHOT</version>
 		</dependency>
 		<dependency>
   			<groupId>com.melot.module.driver.msgbuilder</groupId>

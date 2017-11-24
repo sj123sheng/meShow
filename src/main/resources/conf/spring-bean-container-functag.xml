@@ -2744,4 +2744,17 @@
 		<constructor-arg name="t" ref="bountyFunctions" />
 		<constructor-arg name="methodName" value="getSharRedPacketState" />
 	</bean>
+	
+	<!-- 主播群发私聊消息接口 -->
+	<bean id="51110101" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="privateLetterFunction" />
+		<constructor-arg name="methodName" value="massSendIMInfo" />
+	</bean>
+	
+	<!-- 主播下次发送倒计时 -->
+	<bean id="51110102" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="privateLetterFunction" />
+		<constructor-arg name="methodName" value="getNextCountdown" />
+	</bean>
+	
 </beans>
