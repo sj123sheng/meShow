@@ -1,6 +1,5 @@
 package com.melot.kkcx.functions;
 
-import com.alibaba.fastjson.JSONArray;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.melot.common.driver.base.Result;

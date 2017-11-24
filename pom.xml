@@ -504,7 +504,7 @@
         <dependency>
             <groupId>com.melot.module.driver.msgbuilder</groupId>
             <artifactId>kk-module-msgbuilder</artifactId>
-            <version>1.2.2-SNAPSHOT</version>
+            <version>1.2.4</version>
 		</dependency>
 		<dependency>
             <groupId>com.melot</groupId>
