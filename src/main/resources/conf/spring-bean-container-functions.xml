@@ -176,4 +176,7 @@
     
     <bean id="mallFunctions" class="com.melot.kkcx.functions.MallFunctions" />
 
+    <!-- 一起玩大厅相关接口 -->
+    <bean id="playTogetherFunction" class="com.melot.kktv.action.PlayTogetherFunction" />
+
 </beans>

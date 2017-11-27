@@ -2756,5 +2756,16 @@
 		<constructor-arg name="t" ref="privateLetterFunction" />
 		<constructor-arg name="methodName" value="getNextCountdown" />
 	</bean>
+
+    <!-- 一起玩大厅接口 -->
+    <bean id="51070201" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="playTogetherFunction" />
+        <constructor-arg name="methodName" value="getTitleList" />
+        <constructor-arg name="cacheType" value="180" />
+    </bean>
+    <bean id="51070202" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="playTogetherFunction" />
+        <constructor-arg name="methodName" value="getCatchDollRoomList" />
+    </bean>
 	
 </beans>
