@@ -372,6 +372,11 @@ public class PrivateLetterFunctions {
                 return result;
             }
             
+            if (com.melot.kkcx.service.GeneralService.hasSensitiveWords(userId, text)) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5111010103");
+                return result;
+            }
+            
             try {
                 PrivateLetterService privateLetterService = (PrivateLetterService) MelotBeanFactory.getBean("privateLetterService");
                 Result<Boolean> massSendIMInfoResult = privateLetterService.massSendIMInfo(userId, text, image);
