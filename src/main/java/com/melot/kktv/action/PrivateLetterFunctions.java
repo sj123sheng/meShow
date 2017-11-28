@@ -12,6 +12,8 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.melot.kkcore.actor.api.RoomInfo;
+import com.melot.kkcore.actor.service.ActorService;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.util.CommonUtil;
@@ -377,6 +379,18 @@ public class PrivateLetterFunctions {
                 return result;
             }
             
+            try {
+                ActorService actorService = (ActorService) MelotBeanFactory.getBean("actorService");
+                RoomInfo roomInfo = actorService.getRoomInfoById(userId);
+                if (roomInfo == null || roomInfo.getLiveEndTime() != null) {
+                    result.addProperty(ParameterKeys.TAG_CODE, "5111010104");
+                    return result;
+                }
+            } catch (Exception e) {
+                logger.error(String.format("actorService.getRoomInfoById(%s)", userId), e);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+                return result;
+            }
             try {
                 PrivateLetterService privateLetterService = (PrivateLetterService) MelotBeanFactory.getBean("privateLetterService");
                 Result<Boolean> massSendIMInfoResult = privateLetterService.massSendIMInfo(userId, text, image);
