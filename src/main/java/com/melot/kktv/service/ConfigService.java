@@ -42,6 +42,16 @@ public class ConfigService {
 
     private String checkUnpassPoster;
 
+    /**
+     * 一起玩大厅配置信息
+     */
+    private String playTogetherConfig;
+
+    @DisconfFileItem(name = "playTogether.config", associateField = "playTogetherConfig")
+    public String getPlayTogetherConfig() {
+        return playTogetherConfig;
+    }
+
     @DisconfFileItem(name = "challenger.family", associateField = "challengerFamily")
     public String getChallengerFamily() {
         return challengerFamily;
