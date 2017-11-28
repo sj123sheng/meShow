@@ -2767,5 +2767,24 @@
         <constructor-arg name="t" ref="playTogetherFunction" />
         <constructor-arg name="methodName" value="getCatchDollRoomList" />
     </bean>
+
+    <!-- 欢乐跳舞机接口 -->
+    <bean id="51060301" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="danceMachineFunction" />
+        <constructor-arg name="methodName" value="getReadyGameInfo" />
+        <constructor-arg name="cacheType" value="60" />
+    </bean>
+    <bean id="51060302" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="danceMachineFunction" />
+        <constructor-arg name="methodName" value="getRankingList" />
+    </bean>
+    <bean id="51060303" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="danceMachineFunction" />
+        <constructor-arg name="methodName" value="getSingleRankingList" />
+    </bean>
+    <bean id="51060304" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="danceMachineFunction" />
+        <constructor-arg name="methodName" value="saveGameResult" />
+    </bean>
 	
 </beans>
