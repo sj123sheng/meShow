@@ -181,5 +181,8 @@
 
     <!-- 欢乐跳舞机相关接口 -->
     <bean id="danceMachineFunction" class="com.melot.kktv.action.DanceMachineFunction" />
+    
+    <!-- 用户任务相关接口 -->
+    <bean id="userTaskFunction" class="com.melot.kkcx.functions.UserTaskFunctions" />
 
 </beans>
