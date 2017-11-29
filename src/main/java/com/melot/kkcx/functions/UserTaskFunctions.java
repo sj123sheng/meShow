@@ -270,7 +270,7 @@ public class UserTaskFunctions {
                     
                     taskArr.add(task.toJsonObject());
                 }
-                result.add("taskList", taskArr);
+                result.add("userTaskList", taskArr);
             }
             
             for (Map.Entry<String, ConfCheckInReward> entry : resp.getCheckinRewardList().entrySet()) {
