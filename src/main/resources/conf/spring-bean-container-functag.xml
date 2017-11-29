@@ -2695,6 +2695,11 @@
         <constructor-arg name="t" ref="mallFunctions" />
         <constructor-arg name="methodName" value="exchangeGameGift" />
     </bean>
+    <!-- 获取当前用户金币 -->
+    <bean id="51030106" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="mallFunctions" />
+        <constructor-arg name="methodName" value="getUserGoldCoin" />
+    </bean>
 	
 	<!-- 获取奖励金分享红包列表 -->
 	<bean id="52050209" class="com.melot.sdk.core.function.GenericFunction">

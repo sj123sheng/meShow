@@ -278,5 +278,38 @@ public class MallFunctions {
         
         return result;
     }
+    
+    /**
+     * 获取当前用户金币 (51030106)
+     * 
+     * @param jsonObject 请求对象
+     * @param checkTag 是否验证token标记
+     * @return 
+     */
+    public JsonObject getUserGoldCoin(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+        
+        int userId;
+        
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+        } catch(CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch(Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        result.addProperty("goldCoin", UserService.getUserGoldCoin(userId));
+        
+        return result;
+    }
 
 }

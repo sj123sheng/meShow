@@ -580,6 +580,11 @@
 			<artifactId>kk-resource-api</artifactId>
 			<version>1.0.2</version>
 		</dependency>
+		<dependency>
+  			<groupId>com.melot.module.driver.msgbuilder</groupId>
+  			<artifactId>goldcoin-module-server</artifactId>
+  			<version>1.0.1-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
  	
 </project>

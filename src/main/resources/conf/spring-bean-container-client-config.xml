@@ -129,5 +129,8 @@
     <kkrpc:reference id="actorService" interface="com.melot.kkcore.actor.service.ActorService" version="1.0.9" />
 
 	<kkrpc:reference id="bountyQuestionService" interface="com.melot.kk.bounty.api.service.BountyQuestionService" version="1.0.0" />
+	
+	<!-- 金币模块 -->
+	<kkrpc:reference id="goldcoinService" interface="com.melot.goldcoin.service.GoldcoinService" version="1.0.1"></kkrpc:reference>
 
 </beans>

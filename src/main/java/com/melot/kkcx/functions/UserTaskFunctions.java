@@ -18,7 +18,6 @@ import org.apache.log4j.Logger;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.melot.kktv.model.Task;
 import com.melot.kktv.util.AppIdEnum;
@@ -42,7 +41,7 @@ import com.melot.sdk.core.util.MelotBeanFactory;
  * 
  * @author 林端端<a href="mailto:duanduan.lin@melot.cn" />
  * @version V1.0
- * @since 2017年11月28日 下午4:37:34
+ * @since 2017年11月27日 下午4:37:34
  */
 public class UserTaskFunctions {
     
