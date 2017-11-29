@@ -306,6 +306,10 @@ public class RoomTF {
         if (roomInfo.getRegisterCity() != null) {
             roomObject.addProperty("cityId", Math.abs(roomInfo.getRegisterCity()));
         }
+        
+        if (roomInfo.getPortrait() != null) {
+            roomObject.addProperty("portrait", roomInfo.getPortrait());
+        }
 	}
 	
 	/**
