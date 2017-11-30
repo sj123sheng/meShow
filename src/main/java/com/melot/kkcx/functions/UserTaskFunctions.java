@@ -121,7 +121,7 @@ public class UserTaskFunctions {
                 break;
             
             case 102:
-                // 该任务不看完成
+                // 该任务不可完成
                 result.addProperty("TagCode", "5101030203");
                 break;
 
@@ -199,7 +199,7 @@ public class UserTaskFunctions {
 
             case 105:
                 // 奖励已经发放
-                result.addProperty("TagCode", "该用户任务奖励已领取");
+                result.addProperty("TagCode", "5101030304");
                 break;
 
             default:
