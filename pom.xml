@@ -412,7 +412,7 @@
 		<dependency>
   			<groupId>com.melot.module.driver.msgbuilder</groupId>
   			<artifactId>kkActivity-module-msgbuilder</artifactId>
-  			<version>1.0.9</version>
+  			<version>1.0.11-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 		    <groupId>com.melot.module</groupId>

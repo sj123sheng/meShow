@@ -131,6 +131,8 @@
 	<kkrpc:reference id="bountyQuestionService" interface="com.melot.kk.bounty.api.service.BountyQuestionService" version="1.0.0" />
 	
 	<!-- 金币模块 -->
-	<kkrpc:reference id="goldcoinService" interface="com.melot.goldcoin.service.GoldcoinService" version="1.0.1"></kkrpc:reference>
+	<kkrpc:reference id="goldcoinService" interface="com.melot.goldcoin.service.GoldcoinService" version="1.0.1"/>
 
+	<!-- 新手引导模块 -->
+	<kkrpc:reference id="newUserTaskService" interface="com.melot.kkactivity.driver.service.NewUserTaskService" version="1.0.0"/>
 </beans>

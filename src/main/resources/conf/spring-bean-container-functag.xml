@@ -2782,5 +2782,16 @@
         <constructor-arg name="t" ref="userTaskFunction" />
         <constructor-arg name="methodName" value="getReward" />
     </bean>
-	
+    
+	<!-- 【新手引导】获取用户新手任务状态 -->
+	<bean id="52050301" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="newUserTaskFunctions" />
+        <constructor-arg name="methodName" value="getNewUserTasks" />
+    </bean>
+    
+    <!-- 【新手引导】完成新手任务 -->
+    <bean id="52050302" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="newUserTaskFunctions" />
+        <constructor-arg name="methodName" value="finishNewUserTask" />
+    </bean>
 </beans>
