@@ -586,12 +586,6 @@
   			<version>1.0.1-SNAPSHOT</version>
 		</dependency>
 
-        <!-- 大数据模块 -->
-        <dependency>
-            <groupId>com.melot.datacenter</groupId>
-            <artifactId>RcmdInterface</artifactId>
-            <version>1.0.1</version>
-        </dependency>
 	</dependencies>
  	
 </project>

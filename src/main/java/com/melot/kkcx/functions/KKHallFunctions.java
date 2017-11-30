@@ -327,22 +327,52 @@ public class KKHallFunctions {
     }
 
     // 推荐算法A
-    private List<RoomInfo> getRecommendAlgorithmA(JsonObject result, int appId, int start, int offset, int platform, int userId, int firstView, int roomListIndex) {
+    private void getRecommendAlgorithmA(JsonObject result, int appId, int start, int offset, int platform, int userId, int firstView, int roomListIndex) {
 
         int roomCount;
         JsonArray roomArray = new JsonArray();
-        List<RoomInfo> roomList = Lists.newArrayList();
         try {
 
+            // 从大数据推荐算法接口中获取推荐房间总数和推荐房间id列表
+            roomCount = 20; // TODO
+            List<Integer> roomIdList = Lists.newArrayList(); // TODO
+            RoomInfoService roomInfoServie = MelotBeanFactory.getBean("roomInfoService", RoomInfoService.class);
+            String roomIds = StringUtils.join(roomIdList.toArray(), ",");
+            List<RoomInfo> roomInfos = roomInfoServie.getRoomListByRoomIds(roomIds);
 
-            List<RoomInfo> roomInfos = getRecommendAlgorithmB(result, appId, start, offset, platform, userId, firstView, roomListIndex);
+            // 如果大数据给的推荐主播列表总数小于等于一页显示的数量，总数从现有推荐算法中获取，剩下的推荐主播列表从现有的推荐算法中补齐
+            if (roomInfos != null && roomInfos.size() > 0) {
 
+                int roomInfoCount = roomInfos.size();
 
+                if (roomCount <= offset) {
+
+                    List<RoomInfo> roomList = getRecommendAlgorithmB(result, appId, start, offset, platform, userId, firstView, roomListIndex);
+
+                    // 查询第一页时 将大数据的推荐算法查询的数据插入现有的推荐房间列表中
+                    if (start == 0) {
+                        int insufficientCount = offset - roomInfoCount;
+
+                        for(int i = 0 ; i < insufficientCount ; i++) {
+                            roomList.add(roomInfos.get(i));
+                        }
+                        for (int j = 0 ; j < offset ; j++) {
+                            roomArray.add(RoomTF.roomInfoToJson(roomList.get(j), platform));
+                        }
+                        result.add("roomList", roomArray);
+                    }
+                } else {
+
+                    for (RoomInfo roomInfo : roomInfos) {
+                        roomArray.add(RoomTF.roomInfoToJson(roomInfo, platform));
+                    }
+                    result.add("roomList", roomArray);
+                    result.addProperty("roomTotal", roomCount);
+                }
+            }
         } catch (Exception e) {
             logger.error("Fail to call firstPageHandler.getKKRecommendRooms(" + userId + ", " + appId + ", " + start + ", " + offset + ")", e);
         }
-
-        return roomList;
     }
 
     // 推荐算法B
