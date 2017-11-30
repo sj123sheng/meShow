@@ -47,6 +47,26 @@ public class ConfigService {
      */
     private String playTogetherConfig;
 
+    /**
+     * 推荐列表 为了对比多个推荐算法的优劣 用于测试的渠道号列表
+     */
+    private String recommendChannelIds;
+
+    /**
+     * 推荐列表 为了对比多个推荐算法的优劣 指定开始注册时间后的用户用于测试 时间戳(单位:毫秒)
+     */
+    private String recommendRegistrationTime;
+
+    @DisconfFileItem(name = "recommend.channelIds", associateField = "recommendChannelIds")
+    public String getRecommendChannelIds() {
+        return recommendChannelIds;
+    }
+
+    @DisconfFileItem(name = "recommend.registrationTime", associateField = "recommendRegistrationTime")
+    public String getRecommendRegistrationTime() {
+        return recommendRegistrationTime;
+    }
+
     @DisconfFileItem(name = "playTogether.config", associateField = "playTogetherConfig")
     public String getPlayTogetherConfig() {
         return playTogetherConfig;

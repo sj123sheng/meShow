@@ -38,6 +38,11 @@ public class RecommendAlgorithmSource {
      */
     private static final String RECOMMEND_ALGORITHM_PREFEX = "recommend_algorithm_";
 
+    /**
+     * 推荐主播缓存(最原始的推荐主播列表 即直接按照S\A\B\C\D排序 等级一样按照热度排序)
+     */
+    public static final String SIMPLE_RECOMMENDED_ROOM_KEY = "simple_recommended_room_key";
+
     private static Jedis getInstance() {
         return RedisConfigHelper.getJedis(SOURCE_NAME);
     }
@@ -67,15 +72,19 @@ public class RecommendAlgorithmSource {
     }
 
     /**
-     * 设置用户的推荐算法
+     * 设置用户的推荐算法 返回用户的推荐算法
      */
-    public static void setUserRecommendAlgorithm(int userId) {
+    public static String setUserRecommendAlgorithm(int userId) {
         Jedis jedis = null;
         String key = RECOMMEND_ALGORITHM_PREFEX + userId;
         try {
             jedis = getInstance();
             if (jedis != null) {
-                jedis.set(key, getNextRecommendAlgorithm());
+
+                String userRecommendAlgorithm = getNextRecommendAlgorithm();
+                jedis.set(key, userRecommendAlgorithm);
+
+                return userRecommendAlgorithm;
             }
         } catch (Exception e) {
         } finally {
@@ -83,6 +92,7 @@ public class RecommendAlgorithmSource {
                 freeInstance(jedis);
             }
         }
+        return null;
     }
     
     /**
@@ -106,7 +116,26 @@ public class RecommendAlgorithmSource {
     }
 
     /**
-     * 获取下一次的推荐算法
+     * 设置当前的推荐算法
+     */
+    public static void setCurrentRecommendAlgorithm(String algorithm) {
+        Jedis jedis = null;
+        String key = CURRENT_RECOMMEND_ALGORITHM;
+        try {
+            jedis = getInstance();
+            if (jedis != null) {
+                jedis.set(key, algorithm);
+            }
+        } catch (Exception e) {
+        } finally {
+            if (jedis != null) {
+                freeInstance(jedis);
+            }
+        }
+    }
+
+    /**
+     * 获取下一次的推荐算法 同时更新当前的推荐算法
      */
     public static String getNextRecommendAlgorithm() {
 
@@ -126,6 +155,7 @@ public class RecommendAlgorithmSource {
 
             nextRecommendAlgorithm = "A";
         }
+        setCurrentRecommendAlgorithm(nextRecommendAlgorithm);
 
         return nextRecommendAlgorithm;
     }
