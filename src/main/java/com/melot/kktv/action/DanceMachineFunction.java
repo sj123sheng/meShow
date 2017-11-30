@@ -155,6 +155,7 @@ public class DanceMachineFunction {
                 result.addProperty("singer", danceMusic.getSinger());
                 result.addProperty("musicLength", danceMusic.getMusicLength());
                 result.add("roomList", new Gson().toJsonTree(danceMusic.getRankList()));
+                result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
                 result.addProperty("TagCode", TagCodeEnum.SUCCESS);
                 return result;
             }
