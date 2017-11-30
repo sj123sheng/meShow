@@ -8,6 +8,7 @@ import com.melot.kk.dance.api.service.DanceService;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.SecurityFunctions;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.sdk.core.util.MelotBeanFactory;
@@ -105,6 +106,7 @@ public class DanceMachineFunction {
                 result.addProperty("count", danceMusicPage.getCount());
                 result.add("musicList", new Gson().toJsonTree(danceMusicPage.getMusicList()));
                 result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
                 return result;
             }
             else {
@@ -216,6 +218,7 @@ public class DanceMachineFunction {
             hisDance.setUserId(userId);
             hisDance.setScore(totalScore);
             hisDance.setCombo(combo);
+            hisDance.setDanceMode(1);
             Result<DanceResult> danceResult = danceService.addHisDance(hisDance);
             if(danceResult != null && danceResult.getCode().equals(CommonStateCode.SUCCESS) && danceResult.getData() != null){
                 result.addProperty("ranking", danceResult.getData().getRanking());
