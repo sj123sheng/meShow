@@ -585,6 +585,11 @@
   			<artifactId>goldcoin-module-server</artifactId>
   			<version>1.0.1-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>com.melot.module</groupId>
+			<artifactId>kk-dance-api</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
  	
 </project>

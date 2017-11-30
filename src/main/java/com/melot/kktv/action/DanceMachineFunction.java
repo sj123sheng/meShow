@@ -1,10 +1,16 @@
 package com.melot.kktv.action;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.melot.kk.dance.api.domain.*;
+import com.melot.kk.dance.api.service.DanceService;
+import com.melot.kktv.base.CommonStateCode;
+import com.melot.kktv.base.Result;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.SecurityFunctions;
 import com.melot.kktv.util.TagCodeEnum;
+import com.melot.sdk.core.util.MelotBeanFactory;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -36,28 +42,34 @@ public class DanceMachineFunction {
             return result;
         }
 
-        int userId;
-        try {
-            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
-        } catch (CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
-            return result;
-        } catch (Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-            return result;
-        }
+//        int userId;
+//        try {
+//            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
+//        } catch (CommonUtil.ErrorGetParameterException e) {
+//            result.addProperty("TagCode", e.getErrCode());
+//            return result;
+//        } catch (Exception e) {
+//            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+//            return result;
+//        }
 
         try {
-
-            JsonArray musicList = new JsonArray();
-
-            result.addProperty("gameDownloadUrl", "");
-            result.addProperty("gameVersion", "1.0.0");
-            result.add("musicList", musicList);
-            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-            return result;
+            DanceService danceService = (DanceService)MelotBeanFactory.getBean("danceService");
+            Result<DanceGameInfo> danceGameInfoResult = danceService.getDanceGameInfo();
+            if(danceGameInfoResult != null && danceGameInfoResult.getCode().equals(CommonStateCode.SUCCESS) && danceGameInfoResult.getData() != null){
+                DanceGameInfo danceGameInfo = danceGameInfoResult.getData();
+                result.addProperty("gameDownloadUrl", danceGameInfo.getGameDownloadUrl());
+                result.addProperty("gameVersion", danceGameInfo.getGameVersion());
+                result.add("musicList", new Gson().toJsonTree(danceGameInfo.getMusicList()));
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                return result;
+            }
+            else {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
         } catch (Exception e) {
-            logger.error("Error getTitleList()", e);
+            logger.error("Error getReadyGameInfo()", e);
             result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
             return result;
         }
@@ -72,8 +84,11 @@ public class DanceMachineFunction {
 
         int pageIndex, countPerPage;
         try {
-            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
             countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 10, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            if(pageIndex == 0){
+                pageIndex = 1;
+            }
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -83,15 +98,22 @@ public class DanceMachineFunction {
         }
 
         try {
+            DanceService danceService = (DanceService)MelotBeanFactory.getBean("danceService");
+            Result<DanceMusicPage> danceMusicPageResult = danceService.getRankingList(countPerPage*(pageIndex -1),countPerPage);
+            if(danceMusicPageResult != null && danceMusicPageResult.getCode().equals(CommonStateCode.SUCCESS) && danceMusicPageResult.getData() != null){
+                DanceMusicPage danceMusicPage = danceMusicPageResult.getData();
+                result.addProperty("count", danceMusicPage.getCount());
+                result.add("musicList", new Gson().toJsonTree(danceMusicPage.getMusicList()));
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                return result;
+            }
+            else {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
 
-            JsonArray musicList = new JsonArray();
-
-            result.addProperty("count", 0);
-            result.add("musicList", musicList);
-            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-            return result;
         } catch (Exception e) {
-            logger.error("Error getCatchDollRoomList()", e);
+            logger.error("Error getRankingList()", e);
             result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
             return result;
         }
@@ -122,18 +144,24 @@ public class DanceMachineFunction {
 
         try {
 
-
-            JsonArray singleRankingList = new JsonArray();
-
-            result.addProperty("musicId", musicId);
-            result.addProperty("musicName", "");
-            result.addProperty("singer", "");
-            result.addProperty("musicLength", 100);
-            result.add("roomList", singleRankingList);
-            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-            return result;
+            DanceService danceService = (DanceService)MelotBeanFactory.getBean("danceService");
+            Result<DanceMusic> danceMusicResult =  danceService.getSingleRankingList(musicId);
+            if(danceMusicResult != null && danceMusicResult.getCode().equals(CommonStateCode.SUCCESS) && danceMusicResult.getData() != null){
+                DanceMusic danceMusic = danceMusicResult.getData();
+                result.addProperty("musicId", danceMusic.getMusicId());
+                result.addProperty("musicName", danceMusic.getMusicName());
+                result.addProperty("singer", danceMusic.getSinger());
+                result.addProperty("musicLength", danceMusic.getMusicLength());
+                result.add("roomList", new Gson().toJsonTree(danceMusic.getRankList()));
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                return result;
+            }
+            else {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
         } catch (Exception e) {
-            logger.error("Error getCatchDollRoomList()", e);
+            logger.error("Error getSingleRankingList()", e);
             result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
             return result;
         }
@@ -146,7 +174,7 @@ public class DanceMachineFunction {
 
         JsonObject result = new JsonObject();
 
-        // 该接口需要验证token,未验证的返回错误码
+//        // 该接口需要验证token,未验证的返回错误码
         if (!checkTag) {
             result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
             return result;
@@ -171,25 +199,36 @@ public class DanceMachineFunction {
             return result;
         }
 
-        JsonObject rtJO = null;
-        try {
-            rtJO = SecurityFunctions.checkSignedValue(jsonObject);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        if(rtJO != null) {
-            return rtJO;
-        }
+//        JsonObject rtJO = null;
+//        try {
+//            rtJO = SecurityFunctions.checkSignedValue(jsonObject);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        if(rtJO != null) {
+//            return rtJO;
+//        }
 
         try {
-
-            result.addProperty("ranking", 10);
-            result.addProperty("newRecord", true);
-            result.addProperty("percentage", 95);
-            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            DanceService danceService = (DanceService)MelotBeanFactory.getBean("danceService");
+            HisDance hisDance = new HisDance();
+            hisDance.setMusicId(musicId);
+            hisDance.setUserId(userId);
+            hisDance.setScore(totalScore);
+            hisDance.setCombo(combo);
+            Result<DanceResult> danceResult = danceService.addHisDance(hisDance);
+            if(danceResult != null && danceResult.getCode().equals(CommonStateCode.SUCCESS) && danceResult.getData() != null){
+                result.addProperty("ranking", danceResult.getData().getRanking());
+                result.addProperty("newRecord", danceResult.getData().getNewRecord());
+                result.addProperty("percentage", danceResult.getData().getPercentage());
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            }
+            else{
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            }
             return result;
         } catch (Exception e) {
-            logger.error("Error getCatchDollRoomList()", e);
+            logger.error("Error saveGameResult()", e);
             result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
             return result;
         }
