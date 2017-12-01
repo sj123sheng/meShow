@@ -295,6 +295,7 @@ public class UserTaskFunctions {
                 }
                 jObj.addProperty("checkedDays", confCheckInReward.getCheckedDays());
                 jObj.addProperty("indexDay", confCheckInReward.getIndexDay());
+                jObj.addProperty("isSuspend", confCheckInReward.getSignOffDays());
                 result.add("checkIn_" + taskId + "_info", jObj);
             }
         }
