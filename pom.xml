@@ -412,7 +412,7 @@
 		<dependency>
   			<groupId>com.melot.module.driver.msgbuilder</groupId>
   			<artifactId>kkActivity-module-msgbuilder</artifactId>
-  			<version>1.0.9</version>
+  			<version>1.0.11</version>
 		</dependency>
 		<dependency>
 		    <groupId>com.melot.module</groupId>
@@ -474,7 +474,7 @@
 		<dependency>
 		  	<groupId>com.melot.module.driver.msgbuilder</groupId>
 		  	<artifactId>private-letter-msgbuilder</artifactId>
-		  	<version>1.0.4-SNAPSHOT</version>
+		  	<version>1.0.4</version>
 		</dependency>
 		<dependency>
   			<groupId>com.melot.module.driver.msgbuilder</groupId>
@@ -585,7 +585,11 @@
   			<artifactId>goldcoin-module-server</artifactId>
   			<version>1.0.1-SNAPSHOT</version>
 		</dependency>
-
+		<dependency>
+			<groupId>com.melot.module</groupId>
+			<artifactId>kk-dance-api</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
  	
 </project>

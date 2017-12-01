@@ -16,15 +16,23 @@ import org.apache.log4j.Logger;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.melot.goldcoin.domain.GoldcoinHistory;
+import com.melot.goldcoin.domain.UserGoldAssets;
+import com.melot.goldcoin.service.GoldcoinService;
 import com.melot.kkcx.service.UserService;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.TagCodeEnum;
+import com.melot.module.medal.driver.service.ActivityMedalService;
 import com.melot.module.packagegift.driver.domain.CatalogGift;
+import com.melot.module.packagegift.driver.domain.InsertCarMap;
 import com.melot.module.packagegift.driver.domain.ShopCatalog;
 import com.melot.module.packagegift.driver.domain.UserMultiAsset;
+import com.melot.module.packagegift.driver.service.CarService;
 import com.melot.module.packagegift.driver.service.MallService;
 import com.melot.sdk.core.util.MelotBeanFactory;
+import com.melot.storehouse.domain.RespMsg;
+import com.melot.storehouse.service.StorehouseService;
 
 /**
  * Title: MallFunctions
@@ -308,6 +316,122 @@ public class MallFunctions {
         
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         result.addProperty("goldCoin", UserService.getUserGoldCoin(userId));
+        
+        return result;
+    }
+    
+    /**
+     * 金币商城 兑换道具 (51030107)
+     * 
+     * @param jsonObject 请求对象
+     * @param checkTag 是否验证token标记
+     * @return 
+     */
+    public JsonObject exchangeCoinProp(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+        
+        int userId, propId, propType, amount;
+        
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            propId = CommonUtil.getJsonParamInt(jsonObject, "propId", 0, "5103010701", 1, Integer.MAX_VALUE);
+            propType = CommonUtil.getJsonParamInt(jsonObject, "propType", 0, "5103010702", 1, 3);
+            amount = CommonUtil.getJsonParamInt(jsonObject, "amount", 1, null, 1, Integer.MAX_VALUE);
+        } catch(CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch(Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        try {
+            long singlePrice = 0;
+            long requiredCoin = 0;
+            long goldCoin = UserService.getUserGoldCoin(userId);
+            GoldcoinService goldcoinService = (GoldcoinService) MelotBeanFactory.getBean("goldcoinService");
+            if (propType == 1) {
+                //兑换礼物
+                if (propId == 40001157) {
+                    singlePrice = 50;
+                } else if (propId == 40001155) {
+                    singlePrice = 66;
+                } else if (propId == 40001156) {
+                    singlePrice = 100;
+                } else if (propId == 40001084) {
+                    singlePrice = 200;
+                } else if (propId == 40001085) {
+                    singlePrice = 20000;
+                } else if (propId == 40001036) {
+                    singlePrice = 100000;
+                } else {
+                    result.addProperty("TagCode", "5103010703");
+                    return result;
+                }
+            } else if (propType == 2){
+                //兑换勋章
+                if (propId == 4235) {
+                    singlePrice = 1500;
+                } else {
+                    result.addProperty("TagCode", "5103010703");
+                    return result;
+                }
+            } else {
+                //兑换座驾
+                if (propId == 1555) {
+                    singlePrice = 150000;
+                } else {
+                    result.addProperty("TagCode", "5103010703");
+                    return result;
+                }
+            }
+            
+            requiredCoin = singlePrice * amount;
+            if (goldCoin >= requiredCoin) {
+                GoldcoinHistory goldCoinHistory = new GoldcoinHistory();
+                UserGoldAssets userGoldAssets = goldcoinService.decUserGoldAssets(userId, requiredCoin, goldCoinHistory);
+                if (userGoldAssets == null) {
+                    result.addProperty("TagCode", "5103010704");
+                } else {
+                    if (propType == 1) {
+                        StorehouseService storehouseService = (StorehouseService) MelotBeanFactory.getBean("storehouseService");
+                        RespMsg respMsg = storehouseService.addUserStorehouse(propId, userId, amount, 16, "金币兑换礼物");
+                        if (respMsg == null || respMsg.getRespCode() != 0) {
+                            logger.error("用户" + userId + "金币兑换添加库存礼物[" + propId + "]失败，数量为：" + amount);
+                            result.addProperty("TagCode", "5103010705");
+                            return result;
+                        }
+                    } else if (propType == 2) {
+                        ActivityMedalService activityMedalService = (ActivityMedalService) MelotBeanFactory.getBean("activityMedalService");
+                        if (!activityMedalService.insertOperatorSendActivityMedalNew(String.valueOf(userId), propId, 0, 1, 0, 1, "金币兑换勋章", 0)) {
+                            logger.error("用户" + userId + "金币兑换添加勋章[" + propId + "]失败，数量为：" + amount);
+                            result.addProperty("TagCode", "5103010705");
+                            return result;
+                        }
+                    } else {
+                        CarService carService = (CarService) MelotBeanFactory.getBean("carService");
+                        InsertCarMap insertCarMap = carService.insertSendCar(userId, propId, 15, 7, "金币兑换座驾");
+                        if (insertCarMap == null || insertCarMap.getEndTime() <= 0) {
+                            logger.error("用户userId: " + userId + "金币兑换座驾：carId: " + propId + ",days: 15 失败");
+                            result.addProperty("TagCode", "5103010705");
+                            return result;
+                        }
+                    }
+                    result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                    result.addProperty("goldCoin", userGoldAssets.getGoldCoin());
+                }
+            } else {
+                result.addProperty("TagCode", "5103010704");
+            }
+        } catch (Exception e) {
+            logger.error("MallFunctions.exchangeCoinProp(userId: " + userId + ", propId: " + propId + ", propType:" + propType + ", amount:" + amount + ") return exception.", e);
+            result.addProperty("TagCode", "5103010705");
+        }
         
         return result;
     }

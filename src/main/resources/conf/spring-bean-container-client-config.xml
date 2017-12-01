@@ -60,6 +60,7 @@
 	<kkrpc:reference id="vipService" interface="com.melot.module.packagegift.driver.service.VipService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="xmanService" interface="com.melot.module.packagegift.driver.service.XmanService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="mallService" interface="com.melot.module.packagegift.driver.service.MallService" version="1.0.0"></kkrpc:reference>
+	<kkrpc:reference id="storehouseService" interface="com.melot.storehouse.service.StorehouseService" version="1.0.2"></kkrpc:reference>
 	<!-- 家族模块 -->
 	<kkrpc:reference id="newFamilyInfoService" interface="com.melot.family.driver.service.FamilyInfoService" version="1.0.7"></kkrpc:reference>
 	<kkrpc:reference id="familyAdminService" interface="com.melot.family.driver.service.FamilyAdminService" version="1.0.7"></kkrpc:reference>
@@ -125,12 +126,15 @@
     <kkrpc:reference id="dollMachineService" interface="com.melot.kk.doll.api.service.DollMachineService" version="1.0.0" />
     <kkrpc:reference id="catchDollRecordService" interface="com.melot.kk.doll.api.service.CatchDollRecordService" version="1.0.0" />
 
+	<kkrpc:reference id="danceService" interface="com.melot.kk.dance.api.service.DanceService" version="1.0.0" />
     <!-- 主播模块 -->
     <kkrpc:reference id="actorService" interface="com.melot.kkcore.actor.service.ActorService" version="1.0.9" />
 
 	<kkrpc:reference id="bountyQuestionService" interface="com.melot.kk.bounty.api.service.BountyQuestionService" version="1.0.0" />
 	
 	<!-- 金币模块 -->
-	<kkrpc:reference id="goldcoinService" interface="com.melot.goldcoin.service.GoldcoinService" version="1.0.1"></kkrpc:reference>
+	<kkrpc:reference id="goldcoinService" interface="com.melot.goldcoin.service.GoldcoinService" version="1.0.1"/>
 
+	<!-- 新手引导模块 -->
+	<kkrpc:reference id="newUserTaskService" interface="com.melot.kkactivity.driver.service.NewUserTaskService" version="1.0.0"/>
 </beans>

@@ -17,7 +17,7 @@
 	
 	<!-- 通用过期接口 -->
 	<bean id="10006005"
-		name="10001040,10004010,10004011,40000013,20010308,20010502,20010503,20010504,20010506,20010507,20010508,50001015,10002039,10002040,20010403,20010402,10002072,10001042,10002009,10002010,10005022,10005020,10005021,50005002,40000006"
+		name="10001040,10004010,10004011,40000013,20010308,20010502,20010503,20010504,20010506,20010507,20010508,50001015,10002039,10002040,20010403,20010402,10002072,10001042,10002009,10002010"
 		class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="otherFunction" />
 		<constructor-arg name="methodName" value="lowVersionExcute" />
@@ -406,10 +406,30 @@
 		<constructor-arg name="t" ref="profileFunction" />
 		<constructor-arg name="methodName" value="getUserLiveList" />
 	</bean>
+	<!-- 获取新注册任务列表 -->
+	<bean id="10005020" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="profileFunction" />
+		<constructor-arg name="methodName" value="getNewUserTaskList" />
+	</bean>
+	<!-- 完成任务列表中的任务 -->
+	<bean id="10005021" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="profileFunction" />
+		<constructor-arg name="methodName" value="finishTask" />
+	</bean>
+	<!-- 7日签到补签 -->
+	<bean id="50005002" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="profileFunction" />
+		<constructor-arg name="methodName" value="replenishSignIn" />
+	</bean>
 	<!-- 7日签到抽奖资格校验 -->
 	<bean id="50005004" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="profileFunction" />
 		<constructor-arg name="methodName" value="isWeeklyLotteryDraw" />
+	</bean>
+	<!-- 领取任务奖励 -->
+	<bean id="10005022" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="profileFunction" />
+		<constructor-arg name="methodName" value="getReward" />
 	</bean>
 	<!-- 获取用户中奖记录列表 -->
 	<bean id="10005024" class="com.melot.sdk.core.function.GenericFunction">
@@ -1353,6 +1373,11 @@
 	<bean id="40000018" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="profileSecurityFunction" />
 		<constructor-arg name="methodName" value="grabRedEvelopeViaIdentity" />
+	</bean>
+	<!-- 领取任务奖励 -->
+	<bean id="40000006" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="profileSecurityFunction" />
+		<constructor-arg name="methodName" value="getReward" />
 	</bean>
 	<!-- 七日签到抽奖 -->
 	<bean id="40000023" class="com.melot.sdk.core.function.GenericFunction">
@@ -2700,6 +2725,11 @@
         <constructor-arg name="t" ref="mallFunctions" />
         <constructor-arg name="methodName" value="getUserGoldCoin" />
     </bean>
+    <!-- 金币商城 兑换道具 -->
+    <bean id="51030107" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="mallFunctions" />
+        <constructor-arg name="methodName" value="exchangeCoinProp" />
+    </bean>
 	
 	<!-- 获取奖励金分享红包列表 -->
 	<bean id="52050209" class="com.melot.sdk.core.function.GenericFunction">
@@ -2762,7 +2792,7 @@
         <constructor-arg name="t" ref="danceMachineFunction" />
         <constructor-arg name="methodName" value="getSingleRankingList" />
     </bean>
-    <bean id="51060304" class="com.melot.sdk.core.function.GenericFunction">
+    <bean id="52060304" class="com.melot.sdk.core.function.GenericFunction">
         <constructor-arg name="t" ref="danceMachineFunction" />
         <constructor-arg name="methodName" value="saveGameResult" />
     </bean>
@@ -2782,5 +2812,16 @@
         <constructor-arg name="t" ref="userTaskFunction" />
         <constructor-arg name="methodName" value="getReward" />
     </bean>
-	
+    
+	<!-- 【新手引导】获取用户新手任务状态 -->
+	<bean id="52050301" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="newUserTaskFunctions" />
+        <constructor-arg name="methodName" value="getNewUserTasks" />
+    </bean>
+    
+    <!-- 【新手引导】完成新手任务 -->
+    <bean id="52050302" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="newUserTaskFunctions" />
+        <constructor-arg name="methodName" value="finishNewUserTask" />
+    </bean>
 </beans>
