@@ -1,19 +1,6 @@
 package com.melot.kkcx.functions;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.log4j.Logger;
-
+import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -27,19 +14,23 @@ import com.melot.api.menu.sdk.service.RoomInfoService;
 import com.melot.kkcore.relation.api.ActorRelation;
 import com.melot.kkcore.relation.api.RelationType;
 import com.melot.kkcore.relation.service.ActorRelationService;
+import com.melot.kkcore.user.api.UserRegistry;
+import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.service.RoomService;
 import com.melot.kkcx.transform.RoomTF;
+import com.melot.kktv.redis.RecommendAlgorithmSource;
+import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.UserRelationService;
-import com.melot.kktv.util.AppIdEnum;
-import com.melot.kktv.util.CityUtil;
-import com.melot.kktv.util.CommonUtil;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.PlatformEnum;
-import com.melot.kktv.util.StringUtil;
-import com.melot.kktv.util.TagCodeEnum;
+import com.melot.kktv.util.*;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.sdk.core.util.MelotBeanFactory;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.*;
 
 /**
  * Title: HallFunctions
@@ -56,6 +47,9 @@ public class KKHallFunctions {
     private static Logger logger = Logger.getLogger(KKHallFunctions.class);
 
     private static final String KK_USER_ROOM_CACHE_KEY = "KKHallFunctions.getKKUserRelationRoomList.%s.%s";
+
+    @Autowired
+    private ConfigService configService;
 
     /**
      * 获取用户有关的房间列表接口（55000001）：守护+管理+关注
@@ -277,7 +271,7 @@ public class KKHallFunctions {
     public JsonObject getKKRecommendedList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
         JsonObject result = new JsonObject();
 
-        int appId, start, offset, platform, userId, firstView, roomListIndex;
+        int appId, start, offset, platform, userId, firstView, roomListIndex, channel;
         try {
             platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, TagCodeEnum.PLATFORM_MISSING, 1, Integer.MAX_VALUE);
             appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 0, Integer.MAX_VALUE);
@@ -288,6 +282,8 @@ public class KKHallFunctions {
             firstView = CommonUtil.getJsonParamInt(jsonObject, "firstView", 1, null, 0, Integer.MAX_VALUE);
             //回传当时随机获取的是10个列表中的哪个列表（第一次进来查看和第一次下拉刷新是没有该值的）
             roomListIndex = CommonUtil.getJsonParamInt(jsonObject, "roomListIndex", -1, null, 0, Integer.MAX_VALUE);
+            // 渠道号
+            channel = CommonUtil.getJsonParamInt(jsonObject, "c", AppChannelEnum.KK, null, 0, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -296,12 +292,101 @@ public class KKHallFunctions {
             return result;
         }
 
-        appId = 0;
+        boolean meetResult = WhetherMeetTheTestRequirements(userId, channel);
 
+        // 满足推荐列表推荐算法测试需求
+        if(meetResult) {
+
+            String userRecommendAlgorithm = RecommendAlgorithmSource.getUserRecommendAlgorithm(userId);
+
+            if(StringUtils.isEmpty(userRecommendAlgorithm)) {
+
+                userRecommendAlgorithm = RecommendAlgorithmSource.setUserRecommendAlgorithm(userId);
+            }
+
+            if(userRecommendAlgorithm.equals("A")) {
+
+                getRecommendAlgorithmA(result, appId, start, offset, platform, userId, firstView, roomListIndex);
+            }else if(userRecommendAlgorithm.equals("B")) {
+
+                getRecommendAlgorithmB(result, appId, start, offset, platform, userId, firstView, roomListIndex);
+            }else if(userRecommendAlgorithm.equals("C")) {
+
+                getRecommendAlgorithmC(result, appId, start, offset, platform, userId);
+            }
+
+        }else {
+
+            getRecommendAlgorithmB(result, appId, start, offset, platform, userId, firstView, roomListIndex);
+        }
+
+        result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+
+        return result;
+    }
+
+    // 推荐算法A
+    private void getRecommendAlgorithmA(JsonObject result, int appId, int start, int offset, int platform, int userId, int firstView, int roomListIndex) {
+
+        int roomCount;
         JsonArray roomArray = new JsonArray();
-        int roomCount = 0;
-
         try {
+
+            // 从大数据推荐算法接口中获取推荐房间总数和推荐房间id列表
+            roomCount = 20; // TODO
+            List<Integer> roomIdList = Lists.newArrayList(); // TODO
+
+            // 如果大数据给的推荐主播列表总数小于等于一页显示的数量，总数从现有推荐算法中获取，剩下的推荐主播列表从现有的推荐算法中补齐
+            if (roomIdList != null && roomIdList.size() > 0) {
+
+                RoomInfoService roomInfoServie = MelotBeanFactory.getBean("roomInfoService", RoomInfoService.class);
+                String roomIds = StringUtils.join(roomIdList.toArray(), ",");
+                List<RoomInfo> roomInfos = roomInfoServie.getRoomListByRoomIds(roomIds);
+                if(roomInfos != null && roomInfos.size() > 0) {
+
+                    if (roomCount <= offset) {
+                        List<RoomInfo> roomList = getRecommendAlgorithmB(result, appId, start, offset, platform, userId, firstView, roomListIndex);
+                        // 查询第一页时 将大数据的推荐算法查询的数据插入现有的推荐房间列表中
+                        if (start == 0) {
+                            if(roomList == null) {
+                                roomList = Lists.newArrayList();
+                            }
+                            for (int i = 0; i < roomInfos.size(); i++) {
+                                roomList.add(roomInfos.get(i));
+                            }
+                            int size = roomList.size() < offset ? roomList.size() : offset;
+                            for (int j = 0; j < size; j++) {
+                                roomArray.add(RoomTF.roomInfoToJson(roomList.get(j), platform));
+                            }
+                            result.add("roomList", roomArray);
+                        }
+                    } else {
+                        for (RoomInfo roomInfo : roomInfos) {
+                            roomArray.add(RoomTF.roomInfoToJson(roomInfo, platform));
+                        }
+                        result.add("roomList", roomArray);
+                        result.addProperty("roomTotal", roomCount);
+                    }
+                }else {
+                    getRecommendAlgorithmB(result, appId, start, offset, platform, userId, firstView, roomListIndex);
+                }
+            }else {
+                getRecommendAlgorithmB(result, appId, start, offset, platform, userId, firstView, roomListIndex);
+            }
+        } catch (Exception e) {
+            logger.error("Fail to call firstPageHandler.getRecommendAlgorithmA(" + userId + ", " + appId + ", " + start + ", " + offset + ")", e);
+        }
+    }
+
+    // 推荐算法B
+    private List<RoomInfo> getRecommendAlgorithmB(JsonObject result, int appId, int start, int offset, int platform, int userId, int firstView, int roomListIndex) {
+
+        int roomCount;
+        JsonArray roomArray = new JsonArray();
+        List<RoomInfo> roomList = Lists.newArrayList();
+        try {
+
             FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
             String recommendRoomKey = KKHallSource.KK_FIRST_RECOMMENDED_ROOMLIST_CACHE_KEY;
             if(firstView == 0) {
@@ -312,23 +397,76 @@ public class KKHallFunctions {
             }
             recommendRoomKey = String.format(recommendRoomKey, roomListIndex);
             roomCount = firstPageHandler.getKKRecommendRoomCount(userId, appId, recommendRoomKey);
-            List<RoomInfo> roomList = firstPageHandler.getKKRecommendRooms(userId, appId, start, offset, recommendRoomKey);
+            roomList = firstPageHandler.getKKRecommendRooms(userId, appId, start, offset, recommendRoomKey);
             if (roomList != null && roomList.size() > 0) {
                 for (RoomInfo roomInfo : roomList) {
                     roomArray.add(RoomTF.roomInfoToJson(roomInfo, platform));
                 }
             }
+
+            result.addProperty("roomListIndex", roomListIndex);
+            result.add("roomList", roomArray);
+            result.addProperty("roomTotal", roomCount < 1 ? roomArray.size() : roomCount);
         } catch (Exception e) {
-            logger.error("Fail to call firstPageHandler.getKKRecommendRooms(" + userId + ", " + appId + ", " + start + ", " + offset + ")", e);
+            logger.error("Fail to call firstPageHandler.getRecommendAlgorithmB(" + userId + ", " + appId + ", " + start + ", " + offset + ")", e);
         }
 
-        result.add("roomList", roomArray);
-        result.addProperty("roomListIndex", roomListIndex);
-        result.addProperty("roomTotal", roomCount < 1 ? roomArray.size() : roomCount);
-        result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
-        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return roomList;
+    }
 
-        return result;
+    // 推荐算法C
+    private void getRecommendAlgorithmC(JsonObject result, int appId, int start, int offset, int platform, int userId) {
+
+        int roomCount;
+        JsonArray roomArray = new JsonArray();
+        try {
+
+            FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
+            String simpleRecommendedRoomKey = RecommendAlgorithmSource.SIMPLE_RECOMMENDED_ROOM_KEY;
+
+            roomCount = firstPageHandler.getKKRecommendRoomCount(userId, appId, simpleRecommendedRoomKey);
+            List<RoomInfo> roomList = firstPageHandler.getKKRecommendRooms(userId, appId, start, offset, simpleRecommendedRoomKey);
+            if (roomList != null && roomList.size() > 0) {
+                for (RoomInfo roomInfo : roomList) {
+                    roomArray.add(RoomTF.roomInfoToJson(roomInfo, platform));
+                }
+            }
+
+            result.add("roomList", roomArray);
+            result.addProperty("roomTotal", roomCount < 1 ? roomArray.size() : roomCount);
+        } catch (Exception e) {
+            logger.error("Fail to call firstPageHandler.getRecommendAlgorithmC(" + userId + ", " + appId + ", " + start + ", " + offset + ")", e);
+        }
+    }
+
+    private boolean WhetherMeetTheTestRequirements(int userId, int channel) {
+
+        if(userId == 0) {
+            return false;
+        }
+
+        // 为了对比多个推荐算法的优劣 用于测试的渠道号列表
+        String[] recommendChannelIdArray = configService.getRecommendChannelIds().trim().split(",");
+        List<Integer> recommendChannelIds = Lists.newArrayList();
+        for(String recommendChannelId : recommendChannelIdArray) {
+            recommendChannelIds.add(Integer.parseInt(recommendChannelId));
+        }
+
+        // 为了对比多个推荐算法的优劣 指定开始注册时间后的用户用于测试 时间戳(单位:毫秒)
+        Long recommendRegistrationTime = Long.parseLong(configService.getRecommendRegistrationTime());
+        KkUserService userService = MelotBeanFactory.getBean("kkUserService", KkUserService.class);
+        UserRegistry userRegistry = userService.getUserRegistry(userId);
+        if(userRegistry == null) {
+            return false;
+        }
+
+        long registerTime =  userRegistry.getRegisterTime();
+
+        if(recommendChannelIds.contains(channel) && registerTime >= recommendRegistrationTime) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -767,10 +905,13 @@ public class KKHallFunctions {
     public JsonObject getTrumpRoomList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
 
-        int platform, offset;
+        int platform, offset, userId, channel;
         try {
             platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, TagCodeEnum.PLATFORM_MISSING, 1, Integer.MAX_VALUE);
             offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 3, null, 1, Integer.MAX_VALUE);
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
+            // 渠道号
+            channel = CommonUtil.getJsonParamInt(jsonObject, "c", AppChannelEnum.KK, null, 0, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -780,9 +921,29 @@ public class KKHallFunctions {
         }
 
         List<RoomInfo> trumpRoomList = null;
+
         try {
+
             FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
-            trumpRoomList = firstPageHandler.getTrumpRooms(offset);
+
+            boolean meetResult = WhetherMeetTheTestRequirements(userId, channel);
+
+            if(meetResult) {
+
+                String userRecommendAlgorithm = RecommendAlgorithmSource.getUserRecommendAlgorithm(userId);
+                if(StringUtils.isEmpty(userRecommendAlgorithm)) {
+
+                    userRecommendAlgorithm = RecommendAlgorithmSource.setUserRecommendAlgorithm(userId);
+                }
+
+                if(userRecommendAlgorithm.equals("B")) {
+
+                    trumpRoomList = firstPageHandler.getTrumpRooms(offset);
+                }
+            }else {
+                trumpRoomList = firstPageHandler.getTrumpRooms(offset);
+            }
+
         } catch (Exception e) {
             logger.error("Fail to call firstPageHandler.getTrumpRooms offset:" + offset, e);
         }
