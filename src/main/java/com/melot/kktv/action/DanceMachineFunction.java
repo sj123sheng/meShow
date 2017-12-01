@@ -3,6 +3,7 @@ package com.melot.kktv.action;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.melot.kk.dance.api.constant.DanceModeConstant;
 import com.melot.kk.dance.api.domain.*;
 import com.melot.kk.dance.api.service.DanceService;
 import com.melot.kktv.base.CommonStateCode;
@@ -154,7 +155,7 @@ public class DanceMachineFunction {
                 result.addProperty("musicName", danceMusic.getMusicName());
                 result.addProperty("singer", danceMusic.getSinger());
                 result.addProperty("musicLength", danceMusic.getMusicLength());
-                result.add("roomList", new Gson().toJsonTree(danceMusic.getRankList()));
+                result.add("singleRankingList", new Gson().toJsonTree(danceMusic.getRankList()));
                 result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
                 result.addProperty("TagCode", TagCodeEnum.SUCCESS);
                 return result;
@@ -202,15 +203,15 @@ public class DanceMachineFunction {
             return result;
         }
 
-//        JsonObject rtJO = null;
-//        try {
-//            rtJO = SecurityFunctions.checkSignedValue(jsonObject);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        if(rtJO != null) {
-//            return rtJO;
-//        }
+        JsonObject rtJO = null;
+        try {
+            rtJO = SecurityFunctions.checkSignedValue(jsonObject);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if(rtJO != null) {
+            return rtJO;
+        }
 
         try {
             DanceService danceService = (DanceService)MelotBeanFactory.getBean("danceService");
@@ -219,7 +220,7 @@ public class DanceMachineFunction {
             hisDance.setUserId(userId);
             hisDance.setScore(totalScore);
             hisDance.setCombo(combo);
-            hisDance.setDanceMode(1);
+            hisDance.setDanceMode(DanceModeConstant.Single);
             Result<DanceResult> danceResult = danceService.addHisDance(hisDance);
             if(danceResult != null && danceResult.getCode().equals(CommonStateCode.SUCCESS) && danceResult.getData() != null){
                 result.addProperty("ranking", danceResult.getData().getRanking());

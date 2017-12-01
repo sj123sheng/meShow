@@ -2762,7 +2762,7 @@
         <constructor-arg name="t" ref="danceMachineFunction" />
         <constructor-arg name="methodName" value="getSingleRankingList" />
     </bean>
-    <bean id="51060304" class="com.melot.sdk.core.function.GenericFunction">
+    <bean id="52060304" class="com.melot.sdk.core.function.GenericFunction">
         <constructor-arg name="t" ref="danceMachineFunction" />
         <constructor-arg name="methodName" value="saveGameResult" />
     </bean>
