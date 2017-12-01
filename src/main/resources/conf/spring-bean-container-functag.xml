@@ -2570,6 +2570,11 @@
 		<constructor-arg name="methodName" value="checkPhrase" />
 	</bean>
 
+	<bean id="51100101" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="videoBgmFunction" />
+		<constructor-arg name="methodName" value="getVideoBgmList" />
+	</bean>
+
 	<!-- 获取平台可用游戏列表 -->
 	<bean id="51050101" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="activityFunction" />

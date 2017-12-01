@@ -170,6 +170,8 @@
     <!-- 微信提现相关接口 -->
     <bean id="wechatCashFunctions" class="com.melot.kkcx.functions.WechatCashFunctions" />
 
+	<bean id="videoBgmFunction" class="com.melot.kkcx.functions.VideoBgmFunctions" />
+
     <bean id="catchDollFunction" class="com.melot.kktv.action.CatchDollFunction" />
     
     <bean id="mallFunctions" class="com.melot.kkcx.functions.MallFunctions" />
