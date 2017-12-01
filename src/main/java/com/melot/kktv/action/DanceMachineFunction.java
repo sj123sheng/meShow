@@ -203,15 +203,15 @@ public class DanceMachineFunction {
             return result;
         }
 
-        JsonObject rtJO = null;
-        try {
-            rtJO = SecurityFunctions.checkSignedValue(jsonObject);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        if(rtJO != null) {
-            return rtJO;
-        }
+//        JsonObject rtJO = null;
+//        try {
+//            rtJO = SecurityFunctions.checkSignedValue(jsonObject);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        if(rtJO != null) {
+//            return rtJO;
+//        }
 
         try {
             DanceService danceService = (DanceService)MelotBeanFactory.getBean("danceService");
