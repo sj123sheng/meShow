@@ -336,42 +336,46 @@ public class KKHallFunctions {
             // 从大数据推荐算法接口中获取推荐房间总数和推荐房间id列表
             roomCount = 20; // TODO
             List<Integer> roomIdList = Lists.newArrayList(); // TODO
-            RoomInfoService roomInfoServie = MelotBeanFactory.getBean("roomInfoService", RoomInfoService.class);
-            String roomIds = StringUtils.join(roomIdList.toArray(), ",");
-            List<RoomInfo> roomInfos = roomInfoServie.getRoomListByRoomIds(roomIds);
 
             // 如果大数据给的推荐主播列表总数小于等于一页显示的数量，总数从现有推荐算法中获取，剩下的推荐主播列表从现有的推荐算法中补齐
-            if (roomInfos != null && roomInfos.size() > 0) {
+            if (roomIdList != null && roomIdList.size() > 0) {
 
-                int roomInfoCount = roomInfos.size();
+                RoomInfoService roomInfoServie = MelotBeanFactory.getBean("roomInfoService", RoomInfoService.class);
+                String roomIds = StringUtils.join(roomIdList.toArray(), ",");
+                List<RoomInfo> roomInfos = roomInfoServie.getRoomListByRoomIds(roomIds);
+                if(roomInfos != null && roomInfos.size() > 0) {
 
-                if (roomCount <= offset) {
-
-                    List<RoomInfo> roomList = getRecommendAlgorithmB(result, appId, start, offset, platform, userId, firstView, roomListIndex);
-
-                    // 查询第一页时 将大数据的推荐算法查询的数据插入现有的推荐房间列表中
-                    if (start == 0) {
-                        int insufficientCount = offset - roomInfoCount;
-
-                        for(int i = 0 ; i < insufficientCount ; i++) {
-                            roomList.add(roomInfos.get(i));
+                    if (roomCount <= offset) {
+                        List<RoomInfo> roomList = getRecommendAlgorithmB(result, appId, start, offset, platform, userId, firstView, roomListIndex);
+                        // 查询第一页时 将大数据的推荐算法查询的数据插入现有的推荐房间列表中
+                        if (start == 0) {
+                            if(roomList == null) {
+                                roomList = Lists.newArrayList();
+                            }
+                            for (int i = 0; i < roomInfos.size(); i++) {
+                                roomList.add(roomInfos.get(i));
+                            }
+                            int size = roomList.size() < offset ? roomList.size() : offset;
+                            for (int j = 0; j < size; j++) {
+                                roomArray.add(RoomTF.roomInfoToJson(roomList.get(j), platform));
+                            }
+                            result.add("roomList", roomArray);
                         }
-                        for (int j = 0 ; j < offset ; j++) {
-                            roomArray.add(RoomTF.roomInfoToJson(roomList.get(j), platform));
+                    } else {
+                        for (RoomInfo roomInfo : roomInfos) {
+                            roomArray.add(RoomTF.roomInfoToJson(roomInfo, platform));
                         }
                         result.add("roomList", roomArray);
+                        result.addProperty("roomTotal", roomCount);
                     }
-                } else {
-
-                    for (RoomInfo roomInfo : roomInfos) {
-                        roomArray.add(RoomTF.roomInfoToJson(roomInfo, platform));
-                    }
-                    result.add("roomList", roomArray);
-                    result.addProperty("roomTotal", roomCount);
+                }else {
+                    getRecommendAlgorithmB(result, appId, start, offset, platform, userId, firstView, roomListIndex);
                 }
+            }else {
+                getRecommendAlgorithmB(result, appId, start, offset, platform, userId, firstView, roomListIndex);
             }
         } catch (Exception e) {
-            logger.error("Fail to call firstPageHandler.getKKRecommendRooms(" + userId + ", " + appId + ", " + start + ", " + offset + ")", e);
+            logger.error("Fail to call firstPageHandler.getRecommendAlgorithmA(" + userId + ", " + appId + ", " + start + ", " + offset + ")", e);
         }
     }
 
@@ -404,7 +408,7 @@ public class KKHallFunctions {
             result.add("roomList", roomArray);
             result.addProperty("roomTotal", roomCount < 1 ? roomArray.size() : roomCount);
         } catch (Exception e) {
-            logger.error("Fail to call firstPageHandler.getKKRecommendRooms(" + userId + ", " + appId + ", " + start + ", " + offset + ")", e);
+            logger.error("Fail to call firstPageHandler.getRecommendAlgorithmB(" + userId + ", " + appId + ", " + start + ", " + offset + ")", e);
         }
 
         return roomList;
@@ -431,7 +435,7 @@ public class KKHallFunctions {
             result.add("roomList", roomArray);
             result.addProperty("roomTotal", roomCount < 1 ? roomArray.size() : roomCount);
         } catch (Exception e) {
-            logger.error("Fail to call firstPageHandler.getKKRecommendRooms(" + userId + ", " + appId + ", " + start + ", " + offset + ")", e);
+            logger.error("Fail to call firstPageHandler.getRecommendAlgorithmC(" + userId + ", " + appId + ", " + start + ", " + offset + ")", e);
         }
     }
 
