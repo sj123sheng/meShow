@@ -2700,6 +2700,11 @@
         <constructor-arg name="t" ref="mallFunctions" />
         <constructor-arg name="methodName" value="getUserGoldCoin" />
     </bean>
+    <!-- 金币商城 兑换道具 -->
+    <bean id="51030107" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="mallFunctions" />
+        <constructor-arg name="methodName" value="exchangeCoinProp" />
+    </bean>
 	
 	<!-- 获取奖励金分享红包列表 -->
 	<bean id="52050209" class="com.melot.sdk.core.function.GenericFunction">
