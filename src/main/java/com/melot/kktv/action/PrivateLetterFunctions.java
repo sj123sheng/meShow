@@ -367,7 +367,7 @@ public class PrivateLetterFunctions {
             
             try {
                 userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-                text = CommonUtil.getJsonParamString(jsonObject, "text", null, "5111010101", 0, 30);
+                text = CommonUtil.getJsonParamString(jsonObject, "text", null, "5111010101", 0, Integer.MAX_VALUE);
                 image = CommonUtil.getJsonParamString(jsonObject, "image", null, null, 0, Integer.MAX_VALUE);
             } catch (ErrorGetParameterException e) {
                 result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
