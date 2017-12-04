@@ -137,4 +137,8 @@
 
 	<!-- 新手引导模块 -->
 	<kkrpc:reference id="newUserTaskService" interface="com.melot.kkactivity.driver.service.NewUserTaskService" version="1.0.0"/>
+
+    <!-- 大数据推荐算法模块 -->
+    <kkrpc:reference id="newRcmdService" interface="com.melot.kk.demo.api.service.NewRcmdService" version="1.0.0"></kkrpc:reference>
+
 </beans>
