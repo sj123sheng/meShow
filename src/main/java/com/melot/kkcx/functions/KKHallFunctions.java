@@ -11,6 +11,7 @@ import com.melot.api.menu.sdk.dao.domain.SysMenu;
 import com.melot.api.menu.sdk.handler.FirstPageHandler;
 import com.melot.api.menu.sdk.redis.KKHallSource;
 import com.melot.api.menu.sdk.service.RoomInfoService;
+import com.melot.kk.demo.api.service.NewRcmdService;
 import com.melot.kkcore.relation.api.ActorRelation;
 import com.melot.kkcore.relation.api.RelationType;
 import com.melot.kkcore.relation.service.ActorRelationService;
@@ -334,8 +335,10 @@ public class KKHallFunctions {
         try {
 
             // 从大数据推荐算法接口中获取推荐房间总数和推荐房间id列表
-            roomCount = 20; // TODO
-            List<Integer> roomIdList = Lists.newArrayList(); // TODO
+            NewRcmdService newRcmdService = MelotBeanFactory.getBean("newRcmdService", NewRcmdService.class);
+            roomCount = newRcmdService.getRcmdActornum(userId);
+            int pageIndex = (start == 0 ? 1 : start / offset);
+            List<Integer> roomIdList = newRcmdService.getRcmdActorList(userId, pageIndex, offset);
 
             // 如果大数据给的推荐主播列表总数小于等于一页显示的数量，总数从现有推荐算法中获取，剩下的推荐主播列表从现有的推荐算法中补齐
             if (roomIdList != null && roomIdList.size() > 0) {
@@ -353,13 +356,16 @@ public class KKHallFunctions {
                                 roomList = Lists.newArrayList();
                             }
                             for (int i = 0; i < roomInfos.size(); i++) {
-                                roomList.add(roomInfos.get(i));
+                                roomList.add(i, roomInfos.get(i));
                             }
                             int size = roomList.size() < offset ? roomList.size() : offset;
                             for (int j = 0; j < size; j++) {
                                 roomArray.add(RoomTF.roomInfoToJson(roomList.get(j), platform));
                             }
                             result.add("roomList", roomArray);
+                            if(size < offset || roomList.size() - roomInfos.size() < offset) {
+                                result.addProperty("roomTotal", size);
+                            }
                         }
                     } else {
                         for (RoomInfo roomInfo : roomInfos) {
