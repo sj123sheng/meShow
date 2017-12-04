@@ -94,7 +94,7 @@ public class PlayTogetherFunction {
         roomObject.addProperty("subTitle", "多人联网玩游戏");
         roomObject.addProperty("type", PlayTogetherCataTypeEnum.INTERACTIVE_GAME);
         roomObject.addProperty("hall_poster", "/poster/offical/cata/interactive_game.png");
-        roomObject.addProperty("title_poster", "/poster/offical/cata/interactive_game.jpg");
+        roomObject.addProperty("title_poster", "/poster/offical/interactive_game.jpg");
         roomObject.addProperty("initialWeightValue", 5);
         roomObject.addProperty("showActorPoster", false);
         roomObject.addProperty("isTop", false);
@@ -106,7 +106,7 @@ public class PlayTogetherFunction {
         roomObject.addProperty("subTitle", "刺激匹配 下一个还有谁");
         roomObject.addProperty("type", PlayTogetherCataTypeEnum.NATIONAL_PK);
         roomObject.addProperty("hall_poster", "/poster/offical/cata/national_pk.png");
-        roomObject.addProperty("title_poster", "/poster/offical/cata/national_pk.png");
+        roomObject.addProperty("title_poster", "/poster/offical/national_pk.jpg");
         roomObject.addProperty("initialWeightValue", 4);
         roomObject.addProperty("showActorPoster", false);
         roomObject.addProperty("isTop", false);
