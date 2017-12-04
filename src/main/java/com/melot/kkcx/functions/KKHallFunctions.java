@@ -337,7 +337,7 @@ public class KKHallFunctions {
             // 从大数据推荐算法接口中获取推荐房间总数和推荐房间id列表
             NewRcmdService newRcmdService = MelotBeanFactory.getBean("newRcmdService", NewRcmdService.class);
             roomCount = newRcmdService.getRcmdActornum(userId);
-            int pageIndex = (start == 0 ? 1 : start / offset);
+            int pageIndex = start / offset + 1;
             List<Integer> roomIdList = newRcmdService.getRcmdActorList(userId, pageIndex, offset);
 
             // 如果大数据给的推荐主播列表总数小于等于一页显示的数量，总数从现有推荐算法中获取，剩下的推荐主播列表从现有的推荐算法中补齐
