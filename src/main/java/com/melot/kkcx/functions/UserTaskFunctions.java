@@ -22,6 +22,7 @@ import com.google.gson.JsonObject;
 import com.melot.goldcoin.domain.RespUserPrize;
 import com.melot.goldcoin.domain.UserLotteryPrize;
 import com.melot.goldcoin.service.GoldcoinService;
+import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kktv.model.Task;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
@@ -428,6 +429,10 @@ public class UserTaskFunctions {
                 for (UserLotteryPrize userLotteryPrize : userLotteryPrizeList) {
                     JsonObject jsonObj = new JsonObject();
                     jsonObj.addProperty("userId", userLotteryPrize.getUserId());
+                    UserProfile userProfile = com.melot.kktv.service.UserService.getUserInfoV2(userLotteryPrize.getUserId());
+                    if (userProfile != null && userProfile.getNickName() != null) {
+                        jsonObj.addProperty("nickName", userProfile.getNickName());
+                    }
                     jsonObj.addProperty("prizeId", userLotteryPrize.getPrizeId());
                     jsonObj.addProperty("prizeCount", userLotteryPrize.getPrizeCount());
                     jsonObj.addProperty("prizeName", userLotteryPrize.getPrizeName());
