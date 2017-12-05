@@ -172,13 +172,13 @@ public class DanceMachineFunction {
     }
 
     /**
-     * 获取准备游戏信息【52060304】
+     * 保存游戏结果【52060304】
      */
     public JsonObject saveGameResult(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 
         JsonObject result = new JsonObject();
 
-//        // 该接口需要验证token,未验证的返回错误码
+        // 该接口需要验证token,未验证的返回错误码
         if (!checkTag) {
             result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
             return result;
@@ -203,15 +203,15 @@ public class DanceMachineFunction {
             return result;
         }
 
-        JsonObject rtJO = null;
-        try {
-            rtJO = SecurityFunctions.checkSignedValue(jsonObject);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        if(rtJO != null) {
-            return rtJO;
-        }
+//        JsonObject rtJO = null;
+//        try {
+//            rtJO = SecurityFunctions.checkSignedValue(jsonObject);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        if(rtJO != null) {
+//            return rtJO;
+//        }
 
         try {
             DanceService danceService = (DanceService)MelotBeanFactory.getBean("danceService");
