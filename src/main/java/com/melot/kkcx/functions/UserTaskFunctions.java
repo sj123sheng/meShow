@@ -19,6 +19,9 @@ import org.apache.log4j.Logger;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.melot.goldcoin.domain.RespUserPrize;
+import com.melot.goldcoin.domain.UserLotteryPrize;
+import com.melot.goldcoin.service.GoldcoinService;
 import com.melot.kktv.model.Task;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
@@ -299,6 +302,150 @@ public class UserTaskFunctions {
                 result.add("checkIn_" + taskId + "_info", jObj);
             }
         }
+        return result;
+    }
+    
+    /**
+     * 任务抽奖(充值)(51010304)
+     * 
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject lottery(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+        
+        // 获取参数
+        int userId;
+        boolean isDraw = false;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+        } catch(CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch(Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        try {
+            TaskInterfaceService taskInterfaceService = (TaskInterfaceService) MelotBeanFactory.getBean("taskInterfaceService");
+            isDraw = taskInterfaceService.isDraw(userId);
+            if (isDraw && TagCodeEnum.SUCCESS.equals(taskInterfaceService.updateDraw(userId))){
+                GoldcoinService goldcoinService = (GoldcoinService) MelotBeanFactory.getBean("goldcoinService");
+                RespUserPrize respUserPrize = goldcoinService.lottery(userId);
+                if (respUserPrize!= null && respUserPrize.getTagCode().equals(TagCodeEnum.SUCCESS)) {
+                    result.addProperty("prizeId", respUserPrize.getPrizeId());
+                    result.addProperty("prizeName", respUserPrize.getPrizeName());
+                    result.addProperty("prizeCount", respUserPrize.getPrizeCount());
+                    result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                } else {
+                    result.addProperty("TagCode", "5101030402");
+                }
+            } else {
+                result.addProperty("TagCode", "5101030401");
+            }
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+        }
+        
+        return result;
+    }
+    
+    /**
+     * 充值抽奖资格校验(51010306)
+     * 
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject isChargeLotteryDraw(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+        
+        // 获取参数
+        int userId;
+        boolean isDraw;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+        } catch(CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch(Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        try {
+            TaskInterfaceService taskInterfaceService = (TaskInterfaceService) MelotBeanFactory.getBean("taskInterfaceService");
+            isDraw = taskInterfaceService.isDraw(userId);
+            result.addProperty("isDraw", isDraw ? 1:0);
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+        }
+        
+        return result;
+    }
+    
+    /**
+     * 获取充值抽奖列表 (51010307)
+     * 
+     * @param jsonObject 请求对象
+     * @param checkTag 是否验证token标记
+     * @return 
+     */
+    public JsonObject getLotteryPrizeList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        int count;
+        
+        JsonObject result = new JsonObject();
+        try {
+            count = CommonUtil.getJsonParamInt(jsonObject, "count", 10, null, 1, Integer.MAX_VALUE);
+        } catch(CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch(Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        try {
+            GoldcoinService goldcoinService = (GoldcoinService) MelotBeanFactory.getBean("goldcoinService");
+            JsonArray lotteryPrizeList = new JsonArray();
+            List<UserLotteryPrize> userLotteryPrizeList = goldcoinService.getUserLotteryPrizeList(count);
+            if (userLotteryPrizeList != null) {
+                for (UserLotteryPrize userLotteryPrize : userLotteryPrizeList) {
+                    JsonObject jsonObj = new JsonObject();
+                    jsonObj.addProperty("userId", userLotteryPrize.getUserId());
+                    jsonObj.addProperty("prizeId", userLotteryPrize.getPrizeId());
+                    jsonObj.addProperty("prizeCount", userLotteryPrize.getPrizeCount());
+                    jsonObj.addProperty("prizeName", userLotteryPrize.getPrizeName());
+                    if (userLotteryPrize.getPrizeDesc() != null) {
+                        jsonObj.addProperty("prizeDesc", userLotteryPrize.getPrizeDesc());
+                    }
+                    jsonObj.addProperty("lotteryDate", userLotteryPrize.getLotteryDate().getTime());
+                    lotteryPrizeList.add(jsonObj);
+                }
+            }
+           
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            result.add("lotteryPrizeList", lotteryPrizeList);
+        } catch (Exception e) {
+            logger.error("goldcoinService.getUserLotteryPrizeList(" + count + ") return exception.", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+        }
+        
         return result;
     }
 

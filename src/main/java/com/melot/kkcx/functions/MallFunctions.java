@@ -8,6 +8,7 @@
  */
 package com.melot.kkcx.functions;
 
+import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -21,6 +22,7 @@ import com.melot.goldcoin.domain.UserGoldAssets;
 import com.melot.goldcoin.service.GoldcoinService;
 import com.melot.kkcx.service.UserService;
 import com.melot.kktv.base.Result;
+import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.module.medal.driver.service.ActivityMedalService;
@@ -394,6 +396,13 @@ public class MallFunctions {
             requiredCoin = singlePrice * amount;
             if (goldCoin >= requiredCoin) {
                 GoldcoinHistory goldCoinHistory = new GoldcoinHistory();
+                goldCoinHistory.setAppid(AppIdEnum.AMUSEMENT);
+                goldCoinHistory.setPlatform(1);
+                goldCoinHistory.setNtype(2);
+                goldCoinHistory.setUserid(userId);
+                goldCoinHistory.setConsAmount((int) requiredCoin);
+                goldCoinHistory.setDtime(new Date());
+                goldCoinHistory.setTypedesc("金币兑换道具");
                 UserGoldAssets userGoldAssets = goldcoinService.decUserGoldAssets(userId, requiredCoin, goldCoinHistory);
                 if (userGoldAssets == null) {
                     result.addProperty("TagCode", "5103010704");

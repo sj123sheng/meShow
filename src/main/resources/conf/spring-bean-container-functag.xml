@@ -2812,6 +2812,21 @@
         <constructor-arg name="t" ref="userTaskFunction" />
         <constructor-arg name="methodName" value="getReward" />
     </bean>
+     <!-- 任务抽奖(充值)-->
+    <bean id="51010304" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="userTaskFunction" />
+        <constructor-arg name="methodName" value="lottery" />
+    </bean>
+    <!-- 充值抽奖资格校验 -->
+    <bean id="51010306" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="userTaskFunction" />
+        <constructor-arg name="methodName" value="isChargeLotteryDraw" />
+    </bean>
+    <!-- 获取充值抽奖列表 -->
+    <bean id="51010307" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="userTaskFunction" />
+        <constructor-arg name="methodName" value="getLotteryPrizeList" />
+    </bean>
     
 	<!-- 【新手引导】获取用户新手任务状态 -->
 	<bean id="52050301" class="com.melot.sdk.core.function.GenericFunction">
