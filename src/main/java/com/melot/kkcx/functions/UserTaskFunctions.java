@@ -244,34 +244,37 @@ public class UserTaskFunctions {
                 JsonArray taskArr = new JsonArray();
                 Task task;
                 for (UserTask userTask : list) {
-                    task = new Task();
-                    if (userTask.getTaskOrder() != null) {
-                        task.setOrder(userTask.getTaskOrder());
-                    }
-                    if (userTask.getTaskName() != null) {
-                        task.setTaskDesc(userTask.getTaskName());
-                    }
-                    if (userTask.getTaskId() != null) {
-                        task.setTaskId(userTask.getTaskId());
-                        if (userTask.getStatus() != null) {
-                            task.setStatus(userTask.getStatus());
+                    //充值抽奖任务前端不显示
+                    if (10000029 != userTask.getTaskId()) {
+                        task = new Task();
+                        if (userTask.getTaskOrder() != null) {
+                            task.setOrder(userTask.getTaskOrder());
                         }
-                    }
-                    if (userTask.getTaskReward() != null) {
-                        if (userTask.getTaskId() == 10000027 || userTask.getTaskId() == 10000028) {
-                            task.setTaskReward(userTask.getGetGoldCoin() + userTask.getTaskReward());
-                        } else {
-                            task.setTaskReward(userTask.getTaskReward());
+                        if (userTask.getTaskName() != null) {
+                            task.setTaskDesc(userTask.getTaskName());
                         }
+                        if (userTask.getTaskId() != null) {
+                            task.setTaskId(userTask.getTaskId());
+                            if (userTask.getStatus() != null) {
+                                task.setStatus(userTask.getStatus());
+                            }
+                        }
+                        if (userTask.getTaskReward() != null) {
+                            if (userTask.getTaskId() == 10000027 || userTask.getTaskId() == 10000028) {
+                                task.setTaskReward(userTask.getGetGoldCoin() + userTask.getTaskReward());
+                            } else {
+                                task.setTaskReward(userTask.getTaskReward());
+                            }
+                        }
+                        if (userTask.getVersionCode() != null) {
+                            task.setVersionCode(userTask.getVersionCode());
+                        }
+                        if (userTask.getGetGoldCoin() != null) {
+                            task.setGetGoldCoin(userTask.getGetGoldCoin());
+                        }
+                        
+                        taskArr.add(task.toJsonObject());
                     }
-                    if (userTask.getVersionCode() != null) {
-                        task.setVersionCode(userTask.getVersionCode());
-                    }
-                    if (userTask.getGetGoldCoin() != null) {
-                        task.setGetGoldCoin(userTask.getGetGoldCoin());
-                    }
-                    
-                    taskArr.add(task.toJsonObject());
                 }
                 result.add("userTaskList", taskArr);
             }
