@@ -65,7 +65,7 @@ public class PlayTogetherFunction {
 
 
         roomObject = new JsonObject();
-        roomObject.addProperty("cataId", 3791);
+        roomObject.addProperty("cataId", 1222);
         roomObject.addProperty("title", "欢乐跳舞机");
         roomObject.addProperty("subTitle", "用你的表情来跳舞");
         roomObject.addProperty("type", PlayTogetherCataTypeEnum.HAPPY_DANCE_MACHINE);
@@ -77,7 +77,7 @@ public class PlayTogetherFunction {
         roomArray.add(roomObject);
 
         roomObject = new JsonObject();
-        roomObject.addProperty("cataId", 3739);
+        roomObject.addProperty("cataId", 1210);
         roomObject.addProperty("title", "开心抓娃娃");
         roomObject.addProperty("subTitle", "直播抓娃娃 包邮送到家");
         roomObject.addProperty("type", PlayTogetherCataTypeEnum.HAPPY_CATCH_DOLL);
@@ -89,7 +89,7 @@ public class PlayTogetherFunction {
         roomArray.add(roomObject);
 
         roomObject = new JsonObject();
-        roomObject.addProperty("cataId", 3787);
+        roomObject.addProperty("cataId", 1220);
         roomObject.addProperty("title", "互动游戏");
         roomObject.addProperty("subTitle", "多人联网玩游戏");
         roomObject.addProperty("type", PlayTogetherCataTypeEnum.INTERACTIVE_GAME);
@@ -101,7 +101,7 @@ public class PlayTogetherFunction {
         roomArray.add(roomObject);
 
         roomObject = new JsonObject();
-        roomObject.addProperty("cataId", 3790);
+        roomObject.addProperty("cataId", 1226);
         roomObject.addProperty("title", "欢乐PK");
         roomObject.addProperty("subTitle", "刺激匹配 下一个还有谁");
         roomObject.addProperty("type", PlayTogetherCataTypeEnum.NATIONAL_PK);
@@ -113,7 +113,7 @@ public class PlayTogetherFunction {
         roomArray.add(roomObject);
 
         roomObject = new JsonObject();
-        roomObject.addProperty("cataId", 3771);
+        roomObject.addProperty("cataId", 1205);
         roomObject.addProperty("title", "情感电台");
         roomObject.addProperty("subTitle", "声控声优的聚集地");
         roomObject.addProperty("type", PlayTogetherCataTypeEnum.EMOTIONAL_RADIO);
@@ -124,7 +124,7 @@ public class PlayTogetherFunction {
         roomArray.add(roomObject);
 
         roomObject = new JsonObject();
-        roomObject.addProperty("cataId", 3781);
+        roomObject.addProperty("cataId", 1027);
         roomObject.addProperty("title", "相亲交友");
         roomObject.addProperty("subTitle", "虚拟相亲 真实交友");
         roomObject.addProperty("type", PlayTogetherCataTypeEnum.FRIENDSHIP_DATING);
