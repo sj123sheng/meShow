@@ -462,7 +462,7 @@ public class KKHallFunctions {
         Long recommendRegistrationTime = Long.parseLong(configService.getRecommendRegistrationTime());
         KkUserService userService = MelotBeanFactory.getBean("kkUserService", KkUserService.class);
         UserRegistry userRegistry = userService.getUserRegistry(userId);
-        if(userRegistry == null) {
+        if(userRegistry == null || userRegistry.getOpenPlatform() == 0 || userRegistry.getOpenPlatform() == -5) {
             return false;
         }
 
