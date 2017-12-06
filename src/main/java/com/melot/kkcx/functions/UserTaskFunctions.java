@@ -243,6 +243,8 @@ public class UserTaskFunctions {
             if (list != null && list.size() > 0) {
                 JsonArray taskArr = new JsonArray();
                 Task task;
+                List<Task> unFinishTasks = new ArrayList<>();
+                List<Task> receivedTasks = new ArrayList<>();
                 for (UserTask userTask : list) {
                     //充值抽奖任务前端不显示
                     if (10000029 != userTask.getTaskId()) {
@@ -272,10 +274,31 @@ public class UserTaskFunctions {
                         if (userTask.getGetGoldCoin() != null) {
                             task.setGetGoldCoin(userTask.getGetGoldCoin());
                         }
-                        
-                        taskArr.add(task.toJsonObject());
+                        //任务列表显示顺序   可领取（status=1），未完成（status=0），已领取（status=2）
+                        if (1 == userTask.getStatus()) {
+                            taskArr.add(task.toJsonObject());
+                        } else{
+                            if (0 == userTask.getStatus()) {
+                                unFinishTasks.add(task);
+                            } else {
+                                receivedTasks.add(task);
+                            }
+                        }
                     }
                 }
+                
+                if (unFinishTasks.size() > 0) {
+                    for (Task unFinishTask : unFinishTasks) {
+                        taskArr.add(unFinishTask.toJsonObject());
+                    }
+                }
+                
+                if (receivedTasks.size() > 0) {
+                    for (Task receivedTask : receivedTasks) {
+                        taskArr.add(receivedTask.toJsonObject());
+                    }
+                }
+                
                 result.add("userTaskList", taskArr);
             }
             
