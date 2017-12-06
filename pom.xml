@@ -10,7 +10,7 @@
 	
 	<artifactId>meShow</artifactId>
 	<packaging>war</packaging>
-	<version>2.2.11.73</version>
+	<version>2.2.11.74</version>
 	<name>meShow</name>
 	<url>http://maven.apache.org</url>
 	
@@ -474,7 +474,7 @@
 		<dependency>
 		  	<groupId>com.melot.module.driver.msgbuilder</groupId>
 		  	<artifactId>private-letter-msgbuilder</artifactId>
-		  	<version>1.0.3</version>
+		  	<version>1.0.4</version>
 		</dependency>
 		<dependency>
   			<groupId>com.melot.module.driver.msgbuilder</groupId>
