@@ -44,10 +44,10 @@ public class ResourceFunctions {
      */
     public JsonObject getUpLoadConf(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
         String tagCode_prefix = "52080101";
-//        JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
-//        if (rtJO != null) {
-//            return rtJO;
-//        }
+        JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
+        if (rtJO != null) {
+            return rtJO;
+        }
         JsonObject result = new JsonObject();
         try {
             Integer userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, tagCode_prefix+"01", 1, Integer.MAX_VALUE);
@@ -65,6 +65,13 @@ public class ResourceFunctions {
             resourceUploadConfParam.setAbroad(abroad);
             resourceUploadConfParam.setResType(resType);
             resourceUploadConfParam.setMimeType(mimeType);
+            int index = suffix.lastIndexOf(".");
+            if(index == -1){
+                result.addProperty("TagCode", tagCode_prefix + "04");
+                return result;
+            }else {
+                suffix = suffix.substring(index);
+            }
             resourceUploadConfParam.setSuffix(suffix);
             resourceUploadConfParam.setAppId(appId);
             resourceUploadConfParam.setResumeUp(resumeUp);
