@@ -2104,39 +2104,39 @@ public class ProfileFunctions {
             return result;
         }
         
-        try {
-            UserProfile userProfile = com.melot.kktv.service.UserService.getUserInfoV2(userId);
-            if (userProfile == null || userProfile.getIdentifyPhone() == null) {
-                result.addProperty("TagCode", "05030003");
-            } else {
-                TaskInterfaceService taskInterfaceService = (TaskInterfaceService) MelotBeanFactory.getBean("taskInterfaceService");
-                isDraw = taskInterfaceService.isDraw(userId);
-                if (isDraw && TagCodeEnum.SUCCESS.equals(taskInterfaceService.updateDraw(userId))){
-                    String awardRulesId = "lotteryAtweeklyCheckIn";
-                    
-                    //抽奖
-                    Map<String, Object> retMap = LotteryArithmetic.lottery(awardRulesId, userId, null, null);
-                    if (retMap != null && !retMap.isEmpty()) {
-                        int prizeId = Integer.parseInt((String) retMap.get(LotteryArithmeticCache.SERVICE_KEY_giftId));
-                        result.addProperty("prizeId", prizeId);
-                        result.addProperty("prizeName", (String) retMap.get(LotteryArithmeticCache.SERVICE_KEY_giftName));
-                        result.addProperty("prizeCount", (Integer) retMap.get(LotteryArithmeticCache.SERVICE_KEY_giftCount));
-                        LotteryPrizeList lotteryPrizeArray = MelotBeanFactory.getBean("lotteryPrizeList", LotteryPrizeList.class);
-                        Map<Integer, LotteryPrize> lotteryPrizeList = lotteryPrizeArray.getList();
-                        result.addProperty("prizeIcon", lotteryPrizeList.get(prizeId).getPrizeIcon());
-                        result.addProperty("prizeDesc", lotteryPrizeList.get(prizeId).getPrizeDesc());
-                        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-                    } else {
-                        result.addProperty("TagCode", "05030002");
-                    }
-                } else {
-                    result.addProperty("TagCode", "05030001");
-                }
-            }
-        } catch (Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
-        }
-        
+//        try {
+//            UserProfile userProfile = com.melot.kktv.service.UserService.getUserInfoV2(userId);
+//            if (userProfile == null || userProfile.getIdentifyPhone() == null) {
+//                result.addProperty("TagCode", "05030003");
+//            } else {
+//                TaskInterfaceService taskInterfaceService = (TaskInterfaceService) MelotBeanFactory.getBean("taskInterfaceService");
+//                isDraw = taskInterfaceService.isDraw(userId);
+//                if (isDraw && TagCodeEnum.SUCCESS.equals(taskInterfaceService.updateDraw(userId))){
+//                    String awardRulesId = "lotteryAtweeklyCheckIn";
+//                    
+//                    //抽奖
+//                    Map<String, Object> retMap = LotteryArithmetic.lottery(awardRulesId, userId, null, null);
+//                    if (retMap != null && !retMap.isEmpty()) {
+//                        int prizeId = Integer.parseInt((String) retMap.get(LotteryArithmeticCache.SERVICE_KEY_giftId));
+//                        result.addProperty("prizeId", prizeId);
+//                        result.addProperty("prizeName", (String) retMap.get(LotteryArithmeticCache.SERVICE_KEY_giftName));
+//                        result.addProperty("prizeCount", (Integer) retMap.get(LotteryArithmeticCache.SERVICE_KEY_giftCount));
+//                        LotteryPrizeList lotteryPrizeArray = MelotBeanFactory.getBean("lotteryPrizeList", LotteryPrizeList.class);
+//                        Map<Integer, LotteryPrize> lotteryPrizeList = lotteryPrizeArray.getList();
+//                        result.addProperty("prizeIcon", lotteryPrizeList.get(prizeId).getPrizeIcon());
+//                        result.addProperty("prizeDesc", lotteryPrizeList.get(prizeId).getPrizeDesc());
+//                        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+//                    } else {
+//                        result.addProperty("TagCode", "05030002");
+//                    }
+//                } else {
+//                    result.addProperty("TagCode", "05030001");
+//                }
+//            }
+//        } catch (Exception e) {
+//            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+//        }
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
     
@@ -2171,8 +2171,8 @@ public class ProfileFunctions {
         
         try {
             TaskInterfaceService taskInterfaceService = (TaskInterfaceService) MelotBeanFactory.getBean("taskInterfaceService");
-            isDraw = taskInterfaceService.isDraw(userId);
-            result.addProperty("isDraw", isDraw ? 1:0);
+//            isDraw = taskInterfaceService.isDraw(userId);
+//            result.addProperty("isDraw", isDraw ? 1:0);
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         } catch (Exception e) {
             result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);

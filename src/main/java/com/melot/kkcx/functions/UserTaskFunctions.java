@@ -350,7 +350,7 @@ public class UserTaskFunctions {
         
         // 获取参数
         int userId;
-        boolean isDraw = false;
+        int isDraw = 0;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
         } catch(CommonUtil.ErrorGetParameterException e) {
@@ -364,7 +364,7 @@ public class UserTaskFunctions {
         try {
             TaskInterfaceService taskInterfaceService = (TaskInterfaceService) MelotBeanFactory.getBean("taskInterfaceService");
             isDraw = taskInterfaceService.isDraw(userId);
-            if (isDraw && TagCodeEnum.SUCCESS.equals(taskInterfaceService.updateDraw(userId))){
+            if (isDraw == 1 && TagCodeEnum.SUCCESS.equals(taskInterfaceService.updateDraw(userId))){
                 GoldcoinService goldcoinService = (GoldcoinService) MelotBeanFactory.getBean("goldcoinService");
                 RespUserPrize respUserPrize = goldcoinService.lottery(userId);
                 if (respUserPrize!= null && respUserPrize.getTagCode().equals(TagCodeEnum.SUCCESS)) {
@@ -403,7 +403,7 @@ public class UserTaskFunctions {
         
         // 获取参数
         int userId;
-        boolean isDraw;
+        int isDraw;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
         } catch(CommonUtil.ErrorGetParameterException e) {
@@ -417,7 +417,7 @@ public class UserTaskFunctions {
         try {
             TaskInterfaceService taskInterfaceService = (TaskInterfaceService) MelotBeanFactory.getBean("taskInterfaceService");
             isDraw = taskInterfaceService.isDraw(userId);
-            result.addProperty("isDraw", isDraw ? 1:0);
+            result.addProperty("isDraw", isDraw);
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         } catch (Exception e) {
             result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
