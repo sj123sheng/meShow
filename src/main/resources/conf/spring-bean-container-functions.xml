@@ -175,5 +175,8 @@
     <bean id="catchDollFunction" class="com.melot.kktv.action.CatchDollFunction" />
     
     <bean id="mallFunctions" class="com.melot.kkcx.functions.MallFunctions" />
+    
+    <!-- 用户任务相关接口 -->
+    <bean id="userTaskFunction" class="com.melot.kkcx.functions.UserTaskFunctions" />
 
 </beans>

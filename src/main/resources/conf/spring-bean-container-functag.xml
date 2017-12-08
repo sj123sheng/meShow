@@ -2715,6 +2715,16 @@
         <constructor-arg name="t" ref="mallFunctions" />
         <constructor-arg name="methodName" value="exchangeGameGift" />
     </bean>
+    <!-- 获取当前用户金币 -->
+    <bean id="51030106" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="mallFunctions" />
+        <constructor-arg name="methodName" value="getUserGoldCoin" />
+    </bean>
+    <!-- 金币商城 兑换道具 -->
+    <bean id="51030107" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="mallFunctions" />
+        <constructor-arg name="methodName" value="exchangeCoinProp" />
+    </bean>
 	
 	<!-- 获取奖励金分享红包列表 -->
 	<bean id="52050209" class="com.melot.sdk.core.function.GenericFunction">
@@ -2751,4 +2761,36 @@
 		<constructor-arg name="t" ref="privateLetterFunction" />
 		<constructor-arg name="methodName" value="getNextCountdown" />
 	</bean>
+    
+    <!-- 获取用户任务列表 -->
+    <bean id="51010301" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="userTaskFunction" />
+        <constructor-arg name="methodName" value="getUserTaskList" />
+    </bean>
+    <!-- 完成任务列表中的任务-->
+    <bean id="51010302" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="userTaskFunction" />
+        <constructor-arg name="methodName" value="finishTask" />
+    </bean>
+    <!-- 领取任务奖励 -->
+    <bean id="51010303" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="userTaskFunction" />
+        <constructor-arg name="methodName" value="getReward" />
+    </bean>
+     <!-- 任务抽奖(充值)-->
+    <bean id="51010304" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="userTaskFunction" />
+        <constructor-arg name="methodName" value="lottery" />
+    </bean>
+    <!-- 充值抽奖资格校验 -->
+    <bean id="51010306" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="userTaskFunction" />
+        <constructor-arg name="methodName" value="isChargeLotteryDraw" />
+    </bean>
+    <!-- 获取充值抽奖列表 -->
+    <bean id="51010307" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="userTaskFunction" />
+        <constructor-arg name="methodName" value="getLotteryPrizeList" />
+    </bean>
+
 </beans>

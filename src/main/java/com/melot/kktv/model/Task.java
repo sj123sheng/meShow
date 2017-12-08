@@ -21,6 +21,7 @@ public class Task implements Comparable {
 	private String taskDesc;
 	private Integer getMoney;
 	private Integer versionCode;
+	private Integer getGoldCoin;
 	private String taskReward;
 	private Date rewardTime;
 	
@@ -76,8 +77,10 @@ public class Task implements Comparable {
 		jObject.addProperty("status", this.getStatus());
 		jObject.addProperty("taskdesc", this.getTaskDesc());
 		jObject.addProperty("taskReward", this.getTaskReward());
-		jObject.addProperty("getMoney", this.getGetMoney());
 		jObject.addProperty("versionCode", this.getVersionCode());
+		jObject.addProperty("getGoldCoin", this.getGetGoldCoin());
+		jObject.addProperty("finishTimes", this.getStatus() > 0 ? 1 : 0);
+		jObject.addProperty("times", 1);
 		return jObject;
 	}
 	
@@ -144,8 +147,16 @@ public class Task implements Comparable {
 	public void setRewardTime(Date rewardTime) {
 		this.rewardTime = rewardTime;
 	}
+	
+    public Integer getGetGoldCoin() {
+        return getGoldCoin;
+    }
 
-	@Override
+    public void setGetGoldCoin(Integer getGoldCoin) {
+        this.getGoldCoin = getGoldCoin;
+    }
+
+    @Override
 	public int compareTo(Object o) {
 		return this.order - ((Task) o).getOrder();
 	}

@@ -15,7 +15,8 @@ import org.apache.log4j.Logger;
 import com.esotericsoftware.reflectasm.MethodAccess;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.common.driver.service.StarService;
-import com.melot.kkcore.user.api.UserAssets;
+import com.melot.goldcoin.domain.UserGoldAssets;
+import com.melot.goldcoin.service.GoldcoinService;
 import com.melot.kkcore.user.api.UserGameAssets;
 import com.melot.kkcore.user.api.UserInfoDetail;
 import com.melot.kkcore.user.api.UserLevel;
@@ -990,6 +991,26 @@ public class UserService {
             }
         } catch (Exception e) {
             logger.error("fail to execute KkUserService.getUserGameAssets, userId: " + userId, e);
+        }
+        return 0;
+    }
+    
+    /**
+     * 获取用户金币
+     * @param userId
+     * @return
+     */
+    public static long getUserGoldCoin(int userId) {
+        try {
+            GoldcoinService goldcoinService = (GoldcoinService) MelotBeanFactory.getBean("goldcoinService");
+            if (goldcoinService != null) {
+                UserGoldAssets  userGoldAssets  = goldcoinService.getUserGoldAssets(userId);
+                if (userGoldAssets != null) {
+                    return userGoldAssets.getGoldCoin(); 
+                }
+            }
+        } catch (Exception e) {
+            logger.error("fail to execute goldcoinService.getUserGoldAssets, userId: " + userId, e);
         }
         return 0;
     }
