@@ -23,6 +23,7 @@ import com.melot.goldcoin.domain.RespUserPrize;
 import com.melot.goldcoin.domain.UserLotteryPrize;
 import com.melot.goldcoin.service.GoldcoinService;
 import com.melot.kkcore.user.api.UserProfile;
+import com.melot.kkcx.service.UserService;
 import com.melot.kktv.model.Task;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
@@ -375,6 +376,10 @@ public class UserTaskFunctions {
                 RespUserPrize respUserPrize = goldcoinService.lottery(userId);
                 if (respUserPrize!= null && respUserPrize.getTagCode().equals(TagCodeEnum.SUCCESS)) {
                     result.addProperty("prizeId", respUserPrize.getPrizeId());
+                    //奖品为金币返回金币总额
+                    if (respUserPrize.getPrizeId() < 100) {
+                        result.addProperty("goldCoin", UserService.getUserGoldCoin(userId));
+                    }
                     result.addProperty("prizeName", respUserPrize.getPrizeName());
                     result.addProperty("prizeCount", respUserPrize.getPrizeCount());
                     result.addProperty("TagCode", TagCodeEnum.SUCCESS);
