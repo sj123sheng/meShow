@@ -2511,6 +2511,11 @@
         <constructor-arg name="t" ref="actorKKTVFunction" />
         <constructor-arg name="methodName" value="verifyAuthResult" />
     </bean>
+    <!-- 校验第三方主播是否有开播权限 -->
+	<bean id="51020203" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="actorKKTVFunction"/>
+		<constructor-arg name="methodName" value="getThirdPlatformActorBroadcastState"/>
+	</bean>
 
 	<!-- 发布技能服务 -->
 	<bean id="51060101" class="com.melot.sdk.core.function.GenericFunction">

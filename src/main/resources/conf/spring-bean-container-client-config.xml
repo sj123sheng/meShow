@@ -127,7 +127,7 @@
     <kkrpc:reference id="catchDollRecordService" interface="com.melot.kk.doll.api.service.CatchDollRecordService" version="1.0.0" />
 
     <!-- 主播模块 -->
-    <kkrpc:reference id="actorService" interface="com.melot.kkcore.actor.service.ActorService" version="1.0.8" />
+    <kkrpc:reference id="actorService" interface="com.melot.kkcore.actor.service.ActorService" version="1.0.9" />
 
 	<kkrpc:reference id="bountyQuestionService" interface="com.melot.kk.bounty.api.service.BountyQuestionService" version="1.0.0" />
 	

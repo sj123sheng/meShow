@@ -573,7 +573,7 @@
         <dependency>
             <groupId>com.melot.module</groupId>
             <artifactId>kkcore-actor-api</artifactId>
-            <version>1.0.8</version>
+            <version>1.0.9</version>
         </dependency>
 		<dependency>
 			<groupId>com.melot.module</groupId>
@@ -582,7 +582,7 @@
 		</dependency>
 		<dependency>
   			<groupId>com.melot.module.driver.msgbuilder</groupId>
-  			<artifactId>goldcoin-module-server</artifactId>
+  			<artifactId>goldcoin-module-msgbuilder</artifactId>
   			<version>1.0.1</version>
 		</dependency>
 
