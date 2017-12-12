@@ -51,18 +51,7 @@ public class PlayTogetherFunction {
 
         JsonArray roomArray = new JsonArray();
 
-        JsonObject roomObject = new JsonObject();
-        roomObject.addProperty("cataId", 0);
-        roomObject.addProperty("title", "1V1视频");
-        roomObject.addProperty("subTitle", "与心仪的TA视频畅聊");
-        roomObject.addProperty("type", PlayTogetherCataTypeEnum.SINGLE_CHAT);
-        roomObject.addProperty("hall_poster", "/poster/offical/cata/single_chat.png");
-        roomObject.addProperty("title_poster", "/poster/offical/cata/single_chat.png");
-        roomObject.addProperty("initialWeightValue", 7);
-        roomObject.addProperty("showActorPoster", true);
-        roomObject.addProperty("isTop", true);
-        roomArray.add(roomObject);
-
+        JsonObject roomObject;
 
         roomObject = new JsonObject();
         roomObject.addProperty("cataId", 1222);
@@ -71,9 +60,9 @@ public class PlayTogetherFunction {
         roomObject.addProperty("type", PlayTogetherCataTypeEnum.HAPPY_DANCE_MACHINE);
         roomObject.addProperty("hall_poster", "/poster/offical/cata/dance_machine.png");
         roomObject.addProperty("title_poster", "/poster/offical/dance.jpg");
-        roomObject.addProperty("initialWeightValue", 8);
-        roomObject.addProperty("showActorPoster", false);
-        roomObject.addProperty("isTop", false);
+        roomObject.addProperty("initialWeightValue", 7);
+        roomObject.addProperty("showActorPoster", true);
+        roomObject.addProperty("isTop", true);
         roomArray.add(roomObject);
 
         roomObject = new JsonObject();
@@ -102,7 +91,7 @@ public class PlayTogetherFunction {
 
         roomObject = new JsonObject();
         roomObject.addProperty("cataId", 1226);
-        roomObject.addProperty("title", "欢乐PK");
+        roomObject.addProperty("title", "全民PK");
         roomObject.addProperty("subTitle", "刺激匹配 下一个还有谁");
         roomObject.addProperty("type", PlayTogetherCataTypeEnum.NATIONAL_PK);
         roomObject.addProperty("hall_poster", "/poster/offical/cata/national_pk.png");
@@ -129,6 +118,18 @@ public class PlayTogetherFunction {
         roomObject.addProperty("subTitle", "虚拟相亲 真实交友");
         roomObject.addProperty("type", PlayTogetherCataTypeEnum.FRIENDSHIP_DATING);
         roomObject.addProperty("hall_poster", "/poster/offical/cata/friendship_dating.png");
+        roomObject.addProperty("initialWeightValue", 1);
+        roomObject.addProperty("showActorPoster", false);
+        roomObject.addProperty("isTop", false);
+        roomArray.add(roomObject);
+
+        roomObject = new JsonObject();
+        roomObject.addProperty("cataId", 0);
+        roomObject.addProperty("title", "1V1视频");
+        roomObject.addProperty("subTitle", "与心仪的TA视频畅聊");
+        roomObject.addProperty("type", PlayTogetherCataTypeEnum.SINGLE_CHAT);
+        roomObject.addProperty("hall_poster", "/poster/offical/cata/single_chat.png");
+        roomObject.addProperty("title_poster", "/poster/offical/cata/single_chat.png");
         roomObject.addProperty("initialWeightValue", 1);
         roomObject.addProperty("showActorPoster", false);
         roomObject.addProperty("isTop", false);
