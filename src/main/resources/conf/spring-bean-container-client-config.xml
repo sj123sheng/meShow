@@ -126,6 +126,7 @@
     <kkrpc:reference id="dollMachineService" interface="com.melot.kk.doll.api.service.DollMachineService" version="1.0.0" />
     <kkrpc:reference id="catchDollRecordService" interface="com.melot.kk.doll.api.service.CatchDollRecordService" version="1.0.0" />
 
+	<kkrpc:reference id="danceService" interface="com.melot.kk.dance.api.service.DanceService" version="1.0.0" />
     <!-- 主播模块 -->
     <kkrpc:reference id="actorService" interface="com.melot.kkcore.actor.service.ActorService" version="1.0.9" />
 
@@ -133,6 +134,9 @@
 	
 	<!-- 金币模块 -->
 	<kkrpc:reference id="goldcoinService" interface="com.melot.goldcoin.service.GoldcoinService" version="1.0.1"/>
+
+	<!-- 新手引导模块 -->
+	<kkrpc:reference id="newUserTaskService" interface="com.melot.kkactivity.driver.service.NewUserTaskService" version="1.0.0"/>
 
     <!-- 大数据推荐算法模块 -->
     <kkrpc:reference id="newRcmdService" interface="com.melot.kk.demo.api.service.NewRcmdService" version="1.0.0"></kkrpc:reference>

@@ -422,7 +422,6 @@ public class HallFunctions {
 		
 		try {
 			FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
-			sysMenuList = firstPageHandler.getAllSysMenuList(appId);
 			if(platform != PlatformEnum.IPAD){
                 sysMenuList = firstPageHandler.getAllSysMenuList(appId);
             }else{ //pad版本需要返回栏目下房间人数
@@ -457,6 +456,9 @@ public class HallFunctions {
                     }
                     if(temp.getIcon() != null){
                         json.addProperty("icon", temp.getIcon());
+                    }
+                    if(temp.getWebIcon() != null){
+                        json.addProperty("webIcon", temp.getWebIcon());
                     }
                     if(temp.getPeopleInRoom() != null) {
                         json.addProperty("cataPeople", temp.getPeopleInRoom());
@@ -668,6 +670,7 @@ public class HallFunctions {
                 json.addProperty("cdnState", temp.getCdnState());
                 json.addProperty("icon", ConstantEnum.FUN_ICON_HOME + temp.getDetailId()+".png");
                 json.addProperty("cataIcon", temp.getIcon());
+                json.addProperty("webIcon", temp.getWebIcon());
                 if (temp.getSubTitle() != null) {
                     json.addProperty("subTitle", temp.getSubTitle());
                 }
@@ -793,6 +796,10 @@ public class HallFunctions {
                 if (hp.getIcon() != null) {
                     // 栏目图标
                     json.addProperty("icon", hp.getIcon());
+                }
+                if (hp.getWebIcon() != null) {
+                    // 栏目图标
+                    json.addProperty("webIcon", hp.getWebIcon());
                 }
                 if (hp.getCdnState() != null) {
                     // 栏目是否做CND缓存

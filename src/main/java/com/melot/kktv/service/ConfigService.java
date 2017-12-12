@@ -43,6 +43,11 @@ public class ConfigService {
     private String checkUnpassPoster;
 
     /**
+     * 一起玩大厅配置信息
+     */
+    private String playTogetherConfig;
+
+    /**
      * 推荐列表 为了对比多个推荐算法的优劣 用于测试的渠道号列表
      */
     private String recommendChannelIds;
@@ -60,6 +65,11 @@ public class ConfigService {
     @DisconfFileItem(name = "recommend.registrationTime", associateField = "recommendRegistrationTime")
     public String getRecommendRegistrationTime() {
         return recommendRegistrationTime;
+    }
+
+    @DisconfFileItem(name = "playTogether.config", associateField = "playTogetherConfig")
+    public String getPlayTogetherConfig() {
+        return playTogetherConfig;
     }
 
     @DisconfFileItem(name = "challenger.family", associateField = "challengerFamily")
