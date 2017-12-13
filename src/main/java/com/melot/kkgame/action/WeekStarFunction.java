@@ -29,6 +29,7 @@ import com.melot.kkgame.redis.support.RedisException;
 import com.melot.kkgame.service.KgGiftService;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.DateUtil;
 
 /**
@@ -213,8 +214,8 @@ public class WeekStarFunction extends BaseAction{
                 json.addProperty("userId", userId);
                 json.addProperty("giftId", giftInfo.getGiftId());
                 json.addProperty("giftName", giftInfo.getGiftName());
-                json.addProperty("androidIcon", "http://rescdn.kktv8.com/kktv/icon/android/gift/icon/" + giftInfo.getGiftId() + ".png");
-                json.addProperty("iphoneIcon", "http://rescdn.kktv8.com/kktv/icon/iphone/gift/icon/" + giftInfo.getGiftId() + ".png");
+                json.addProperty("androidIcon", ConfigHelper.getKkDomain() + "/icon/android/gift/icon/" + giftInfo.getGiftId() + ".png");
+                json.addProperty("iphoneIcon", ConfigHelper.getKkDomain() + "/icon/iphone/gift/icon/" + giftInfo.getGiftId() + ".png");
                 jsons.add(json);
             }
             Collections.sort(jsons, new Comparator<JsonObject>() {

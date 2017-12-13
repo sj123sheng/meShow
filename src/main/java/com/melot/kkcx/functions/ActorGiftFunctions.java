@@ -15,6 +15,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.melot.kktv.model.ActorGift;
 import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.PlatformEnum;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.db.DB;
@@ -252,7 +253,7 @@ public class ActorGiftFunctions {
         itemJson4.addProperty("giftId", 40000915);
         itemJson4.addProperty("animationPackName", "40000915_icecream");
         itemJson4.addProperty("animationPackVersion", 2);
-        itemJson4.addProperty("animationPackUrl", "http://rescdn.kktv8.com/kktv/animation/40000915_icecream.zip");
+        itemJson4.addProperty("animationPackUrl", ConfigHelper.getKkDomain() + "/animation/40000915_icecream.zip");
         JsonObject itemJson5 = new JsonObject();
         itemJson5.addProperty("giftId", 40000916);
         itemJson5.addProperty("animationPackName", "40000916_meet");
@@ -334,9 +335,9 @@ public class ActorGiftFunctions {
             itemJson.addProperty("animationPackName", String.valueOf(giftId));
             itemJson.addProperty("animationPackVersion", 1);
             if (platform == PlatformEnum.ANDROID) {
-                itemJson.addProperty("animationPackUrl", "http://rescdn.kktv8.com/kktv/icon/android/gift/zip/" + giftId + ".zip");
+                itemJson.addProperty("animationPackUrl", ConfigHelper.getKkDomain() + "/icon/android/gift/zip/" + giftId + ".zip");
             } else {
-                itemJson.addProperty("animationPackUrl", "http://rescdn.kktv8.com/kktv/icon/iphone/gift/zip/" + giftId + ".zip");
+                itemJson.addProperty("animationPackUrl", ConfigHelper.getKkDomain() + "/icon/iphone/gift/zip/" + giftId + ".zip");
             }
             animations.add(itemJson);
         }

@@ -118,8 +118,9 @@ public class UserFunctions {
 			}
 			username = CommonUtil.getJsonParamString(jsonObject, "username", null, "01020001", 3, 16);
 			nickname = username.trim();
-			// 昵称长度 最多10个字符，多余的位数自动丢弃
+			// 昵称长度 最多（国内：10， 海外：20)个字符，多余的位数自动丢弃
 			// 如果昵称中有数字，不管是连续还是不连续，都只保留6个，多余的丢弃
+			int nickNameLength = configService.getIsAbroad() ? 20 : 10;
 			int digitCount = 0;
 			StringBuffer sb = new StringBuffer();
 			for (int i = 0; i < nickname.length(); i++) {
@@ -127,12 +128,12 @@ public class UserFunctions {
 					digitCount++;
 					if (digitCount <= 6) {
 						sb.append(nickname.charAt(i));
-						if (sb.length() >= 10)
+						if (sb.length() >= nickNameLength)
 							break;
 					}
 				} else {
 					sb.append(nickname.charAt(i));
-					if (sb.length() >= 10)
+					if (sb.length() >= nickNameLength)
 						break;
 				}
 			}
@@ -654,6 +655,7 @@ public class UserFunctions {
 				}
 				// 昵称长度 最多10个字符，多余的位数自动丢弃
 				// 如果昵称中有数字，不管是连续还是不连续，都只保留6个，多余的丢弃
+				int nickNameLength = configService.getIsAbroad() ? 20 : 10;
 				int digitCount = 0;
 				StringBuffer sb = new StringBuffer();
 				for (int i = 0; i < nickname.length(); i++) {
@@ -661,12 +663,12 @@ public class UserFunctions {
 						digitCount++;
 						if (digitCount <= 6) {
 							sb.append(nickname.charAt(i));
-							if (sb.length() >= 10)
+							if (sb.length() >= nickNameLength)
 								break;
 						}
 					} else {
 						sb.append(nickname.charAt(i));
-						if (sb.length() >= 10)
+						if (sb.length() >= nickNameLength)
 							break;
 					}
 				}

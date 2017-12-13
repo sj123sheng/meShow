@@ -52,6 +52,10 @@ public class ConfigService {
      */
     private String recommendChannelIds;
 
+    //是否关闭手机号校验  1：关闭 
+    private String closeCheckPhone;
+    
+
     /**
      * 推荐列表 为了对比多个推荐算法的优劣 指定开始注册时间后的用户用于测试 时间戳(单位:毫秒)
      */
@@ -151,5 +155,14 @@ public class ConfigService {
 
     public void setCheckUnpassPoster(String checkUnpassPoster) {
         this.checkUnpassPoster = checkUnpassPoster;
+    }
+
+    @DisconfFileItem(name = "global.closeCheckPhone", associateField = "closeCheckPhone")
+    public String getCloseCheckPhone() {
+        return closeCheckPhone;
+    }
+    
+    public void setCloseCheckPhone(String closeCheckPhone) {
+        this.closeCheckPhone = closeCheckPhone;
     }
 }

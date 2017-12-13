@@ -89,7 +89,7 @@ public class AllActivities {
 		jObject.addProperty("startDate", this.getStartDate().getTime());
 		jObject.addProperty("endDate", this.getEndDate().getTime());
 		if (this.getImgURL()!=null) {
-			jObject.addProperty("imgURL", this.getImgURL().replaceFirst("http://rescdn.kktv8.com/kktv", "")
+			jObject.addProperty("imgURL", this.getImgURL().replaceFirst(ConfigHelper.getKkDomain(), "")
 					.replaceFirst("http://ures.kktv8.com/kktv", ""));
 		} else {
 			jObject.addProperty("imgURL", this.getImgURL());
