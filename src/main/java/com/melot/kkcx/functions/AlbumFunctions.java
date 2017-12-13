@@ -996,7 +996,10 @@ public class AlbumFunctions {
 					// 动态图片不保存在user_picture中
 					result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 					result.addProperty("pictureId", 1); // 必须返回一个值否则客户端会报错
-				} else {
+				} else if(pictureType == 8){
+					result = AlbumServices.addPictureNew(userId, pictureType, url, pictureName);
+				}
+				else {
 					result = AlbumServices.addPictureNewV2(resId,userId, pictureType, url, pictureName);
 				}
 			} catch (Exception e) {
