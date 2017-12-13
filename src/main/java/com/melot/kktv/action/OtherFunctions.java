@@ -35,6 +35,7 @@ import com.melot.content.config.facepack.service.GalleryOrderRecordService;
 import com.melot.content.config.live.upload.impl.YouPaiService;
 import com.melot.content.config.report.service.RecordProcessedRecordService;
 import com.melot.content.config.utils.Constants;
+import com.melot.content.config.utils.VerifyTypeEnum;
 import com.melot.family.driver.domain.FamilyInfo;
 import com.melot.kk.module.report.dbo.ReportFlowRecord;
 import com.melot.kk.module.report.service.ReportFlowService;

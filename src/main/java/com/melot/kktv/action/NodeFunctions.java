@@ -21,6 +21,7 @@ import com.google.gson.JsonParser;
 import com.melot.api.menu.sdk.dao.domain.RoomExtraInfo;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.api.menu.sdk.service.RoomInfoService;
+import com.melot.api.menu.sdk.utils.RoomInfoUtils;
 import com.melot.common.driver.domain.CharmUserInfo;
 import com.melot.common.driver.service.RoomExtendConfService;
 import com.melot.common.driver.service.ShareService;
