@@ -184,7 +184,7 @@
 		<dependency>
 		  	<groupId>com.melot</groupId>
 		  	<artifactId>melot-api-common</artifactId>
-		  	<version>0.0.38</version>
+		  	<version>0.0.39-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.melot.module.api</groupId>
@@ -511,6 +511,11 @@
             <artifactId>family-define-activity-driver</artifactId>
             <version>1.0.18</version>
         </dependency>
+        <dependency>
+			<groupId>com.github.scribejava</groupId>
+			<artifactId>scribejava-apis</artifactId>
+			<version>4.2.0</version>
+		</dependency>
         
         <!-- 房间礼物配置信息 -->
         <dependency>

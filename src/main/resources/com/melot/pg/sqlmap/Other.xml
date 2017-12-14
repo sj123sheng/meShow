@@ -126,4 +126,9 @@
 		 select roomid from conf_room_broadcast where room_source = #roomSource#
 	</select>
 	
+	<!-- 获取roomSource白名单-->
+	<select id="getCityDefaultChannel" parameterClass="java.lang.Integer" resultClass="java.lang.Integer">
+		 select channel from conf_city_default_channel t where t.cityId = #cityId#
+	</select>
+	
 </sqlMap>

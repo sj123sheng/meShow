@@ -2839,4 +2839,15 @@
         <constructor-arg name="t" ref="newUserTaskFunctions" />
         <constructor-arg name="methodName" value="finishNewUserTask" />
     </bean>
+
+    <!-- 获取主播收益列表 -->
+    <bean id="51020201" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="actorKKTVFunction" />
+        <constructor-arg name="methodName" value="getProfitList" />
+    </bean>
+    <!-- 主播K豆兑换秀币-->
+    <bean id="51020202" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="actorKKTVFunction" />
+        <constructor-arg name="methodName" value="exchangeKbi" />
+    </bean>
 </beans>

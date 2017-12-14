@@ -26,12 +26,15 @@ import com.melot.game.config.sdk.utils.StringUtils;
 import com.melot.kkcore.actor.api.ActorInfo;
 import com.melot.kkcore.actor.service.ActorService;
 import com.melot.kkcore.user.api.UserProfile;
+import com.melot.kkcore.user.api.ShowMoneyHistory;
+import com.melot.kkcore.user.api.UserAssets;
 import com.melot.kkcore.user.api.UserStaticInfo;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.service.FamilyService;
 import com.melot.kktv.redis.GiftRecordSource;
 import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.UserService;
+import com.melot.kkcx.model.ActorProfit;
 import com.melot.kktv.third.service.ZmxyService;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.BizCodeEnum;
@@ -58,7 +61,7 @@ import com.melot.share.driver.service.ShareActivityService;
 public class ActorFunction {
 
     private static Logger logger = Logger.getLogger(ActorFunction.class);
-    
+        
     @Autowired
     private ConfigService configService;
 
@@ -678,6 +681,140 @@ public class ActorFunction {
        
         result.addProperty("state", state);
         result.addProperty("TagCode",  TagCodeEnum.SUCCESS);
+        return result;
+    }
+
+    /**
+     * 获取主播收益列表（51020201）
+     * 
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getProfitList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+        
+        int userId;
+        int pageIndex;
+        int countPerPage;
+        
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
+            countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 10, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        try {
+            int profitListCount = com.melot.kkcx.service.UserService.getActorProfitCount(userId);
+            JsonArray profitList = new JsonArray();
+            if (profitListCount > 0) {
+                int offset = (pageIndex - 1) * countPerPage;
+                if (offset < profitListCount) {
+                    List<ActorProfit> actorProfitList = com.melot.kkcx.service.UserService.getActorProfitList(userId, offset, countPerPage);
+                    for (ActorProfit actorProfit : actorProfitList) {
+                        JsonObject jsonObj = new JsonObject();
+                        jsonObj.addProperty("liveDuration", actorProfit.getTotalLiveTime());
+                        jsonObj.addProperty("kbi", actorProfit.getTotalRsv());
+                        jsonObj.addProperty("month", actorProfit.getMonthTime());
+                        profitList.add(jsonObj);
+                    }
+                }
+            }
+            
+            result.addProperty("count", profitListCount);
+            result.add("profitList", profitList);
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        } catch(Exception e) {
+            logger.error("UserService.getActorProfitList(" + userId + ", " + pageIndex + ", " + countPerPage + ") return exception.", e);
+            result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
+        }
+        
+        return result;
+    }
+    
+    /**
+     * 主播K豆兑换秀币（51020202）
+     * 
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject exchangeKbi(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+        
+        int userId;
+        int exchangeAmount;
+        
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            exchangeAmount = CommonUtil.getJsonParamInt(jsonObject, "exchangeAmount", 1, "5102020201", 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        try {
+            Long actorKbi = com.melot.kkcx.service.UserService.getActorKbi(userId);
+            if (actorKbi >= exchangeAmount && com.melot.kkcx.service.UserService.exchangeKbi(userId, exchangeAmount)) {
+                KkUserService kkuserService= (KkUserService) MelotBeanFactory.getBean("kkUserService");
+                if (kkuserService != null) {
+                    try {
+                        ShowMoneyHistory hist = new ShowMoneyHistory();
+                        hist.setType(11);
+                        hist.setUserId(userId);
+                        hist.setToUserId(userId);
+                        hist.setIncomeAmount(exchangeAmount);
+                        hist.setAppId(AppIdEnum.AMUSEMENT);
+                        hist.setProductDesc("主播K豆兑换");
+                        hist.setDtime(new Date());
+                        
+                        UserAssets userAset = kkuserService.addAndGetUserAssets(userId, exchangeAmount, false, hist);
+                        if(userAset == null) {
+                            logger.error("kkuserService.addAndGetUserAssets(" + userId + ", " + exchangeAmount + ") 秀币发放异常");
+                            result.addProperty("TagCode", "5102020202");
+                        } else {
+                            result.addProperty("kbi", actorKbi - exchangeAmount);
+                            result.addProperty("showMoney", userAset.getShowMoney());
+                            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                        }
+                        
+                        com.melot.kkcx.service.UserService.insertKbiHist(userId, exchangeAmount);
+                    } catch (Exception e) {
+                        logger.error("kkuserService.addAndGetUserAssets(" + userId + ", " + exchangeAmount + ") 秀币发放异常");
+                    }
+                } else {
+                    result.addProperty("TagCode", "5102020202");
+                    logger.error("ActorFunction.exchangeKbi(" + userId + ", " + exchangeAmount + ") 兑币发放异常");
+                }
+            } else {
+                result.addProperty("TagCode", "5102020202");
+            }
+        } catch(Exception e) {
+            logger.error("ActorFunction.exchangeKbi(" + userId + ", " + exchangeAmount + ") return exception.", e);
+            result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
+        }
+        
         return result;
     }
 
