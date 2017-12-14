@@ -10,6 +10,7 @@
  */
 package com.melot.kktv.redis;
 
+import com.melot.kktv.util.DateUtil;
 import com.melot.kktv.util.redis.RedisConfigHelper;
 import org.apache.commons.lang.StringUtils;
 import redis.clients.jedis.Jedis;
@@ -42,6 +43,11 @@ public class RecommendAlgorithmSource {
      * 推荐主播缓存(最原始的推荐主播列表 即直接按照S\A\B\C\D排序 等级一样按照热度排序)
      */
     public static final String SIMPLE_RECOMMENDED_ROOM_KEY = "simple_recommended_room_key";
+
+    /**
+     * 统计每种推荐算法的用户列表
+     */
+    public static final String RECOMMEND_ALGORITHM_KEY = "recommend_algorithm_%s_%s";
 
     private static Jedis getInstance() {
         return RedisConfigHelper.getJedis(SOURCE_NAME);
@@ -83,6 +89,8 @@ public class RecommendAlgorithmSource {
 
                 String userRecommendAlgorithm = getNextRecommendAlgorithm();
                 jedis.set(key, userRecommendAlgorithm);
+
+                statisticsRecommendAlgorithm(userId, userRecommendAlgorithm, jedis);
 
                 return userRecommendAlgorithm;
             }
@@ -158,6 +166,23 @@ public class RecommendAlgorithmSource {
         setCurrentRecommendAlgorithm(nextRecommendAlgorithm);
 
         return nextRecommendAlgorithm;
+    }
+
+    /**
+     * 统计每种推荐算法的用户列表
+     */
+    public static void statisticsRecommendAlgorithm(int userId, String algorithm, Jedis jedis) {
+
+        String key = String.format(RECOMMEND_ALGORITHM_KEY, algorithm, DateUtil.getDateName());
+        try {
+
+            if (jedis != null) {
+
+                jedis.sadd(key, String.valueOf(userId));
+                jedis.expire(key, 7 * 24 * 3600);
+            }
+        } catch (Exception e) {
+        }
     }
 
 }

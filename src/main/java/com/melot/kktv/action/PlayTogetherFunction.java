@@ -54,7 +54,7 @@ public class PlayTogetherFunction {
         JsonObject roomObject;
 
         roomObject = new JsonObject();
-        roomObject.addProperty("cataId", 1222);
+        roomObject.addProperty("cataId", 1081);
         roomObject.addProperty("title", "欢乐跳舞机");
         roomObject.addProperty("subTitle", "用你的表情来跳舞");
         roomObject.addProperty("type", PlayTogetherCataTypeEnum.HAPPY_DANCE_MACHINE);
@@ -66,7 +66,7 @@ public class PlayTogetherFunction {
         roomArray.add(roomObject);
 
         roomObject = new JsonObject();
-        roomObject.addProperty("cataId", 1210);
+        roomObject.addProperty("cataId", 1071);
         roomObject.addProperty("title", "开心抓娃娃");
         roomObject.addProperty("subTitle", "直播抓娃娃 包邮送到家");
         roomObject.addProperty("type", PlayTogetherCataTypeEnum.HAPPY_CATCH_DOLL);
@@ -78,7 +78,7 @@ public class PlayTogetherFunction {
         roomArray.add(roomObject);
 
         roomObject = new JsonObject();
-        roomObject.addProperty("cataId", 1220);
+        roomObject.addProperty("cataId", 1087);
         roomObject.addProperty("title", "互动游戏");
         roomObject.addProperty("subTitle", "多人联网玩游戏");
         roomObject.addProperty("type", PlayTogetherCataTypeEnum.INTERACTIVE_GAME);
@@ -90,7 +90,7 @@ public class PlayTogetherFunction {
         roomArray.add(roomObject);
 
         roomObject = new JsonObject();
-        roomObject.addProperty("cataId", 1226);
+        roomObject.addProperty("cataId", 1101);
         roomObject.addProperty("title", "全民PK");
         roomObject.addProperty("subTitle", "刺激匹配 下一个还有谁");
         roomObject.addProperty("type", PlayTogetherCataTypeEnum.NATIONAL_PK);
@@ -102,7 +102,7 @@ public class PlayTogetherFunction {
         roomArray.add(roomObject);
 
         roomObject = new JsonObject();
-        roomObject.addProperty("cataId", 1205);
+        roomObject.addProperty("cataId", 1066);
         roomObject.addProperty("title", "情感电台");
         roomObject.addProperty("subTitle", "声控声优的聚集地");
         roomObject.addProperty("type", PlayTogetherCataTypeEnum.EMOTIONAL_RADIO);
