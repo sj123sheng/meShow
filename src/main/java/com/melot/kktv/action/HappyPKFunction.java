@@ -111,6 +111,12 @@ public class HappyPKFunction {
 
                 result.addProperty("userId", userId);
                 if(userProfile != null) {
+                    int isActor = userProfile.getIsActor();
+                    // 如果该用户不是主播 返回错误码
+                    if(isActor == 0) {
+                        result.addProperty("TagCode", TagCodeEnum.NOT_ACTOR);
+                        return result;
+                    }
                     result.addProperty("portrait", userProfile.getPortrait());
                     result.addProperty("nickname", userProfile.getNickName());
                 }
