@@ -598,6 +598,13 @@
             <version>1.0.1</version>
         </dependency>
 
+        <!-- 欢乐PK -->
+        <dependency>
+            <groupId>com.melot.module</groupId>
+            <artifactId>kk-nationalPK-api</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+
 	</dependencies>
  	
 </project>
