@@ -141,4 +141,9 @@
     <!-- 大数据推荐算法模块 -->
     <kkrpc:reference id="newRcmdService" interface="com.melot.kk.demo.api.service.NewRcmdService" version="1.0.0"></kkrpc:reference>
 
+    <!-- 欢乐PK模块 -->
+    <kkrpc:reference id="confLadderMatchService" interface="com.melot.kk.nationalPK.api.service.ConfLadderMatchService" version="1.0.0"></kkrpc:reference>
+    <kkrpc:reference id="resActorLadderMatchService" interface="com.melot.kk.nationalPK.api.service.ResActorLadderMatchService" version="1.0.0"></kkrpc:reference>
+    <kkrpc:reference id="histActorLadderMatchService" interface="com.melot.kk.nationalPK.api.service.HistActorLadderMatchService" version="1.0.0"></kkrpc:reference>
+
 </beans>
