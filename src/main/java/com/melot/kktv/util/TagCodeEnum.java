@@ -521,5 +521,7 @@ public class TagCodeEnum {
     public static final String LADDER_MATCH_UNDERCARRIAGE = "5106040101";
     /**天梯赛活动暂未配置*/
     public static final String LADDER_MATCH_UN_CONF = "5106040102";
+    /**不是主播*/
+    public static final String NOT_ACTOR = "5106040201";
 
 }
