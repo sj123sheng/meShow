@@ -305,7 +305,10 @@ public class KKHallFunctions {
                 userRecommendAlgorithm = RecommendAlgorithmSource.setUserRecommendAlgorithm(userId);
             }
 
-            if(userRecommendAlgorithm.equals("A")) {
+            if(StringUtils.isEmpty(userRecommendAlgorithm)) {
+
+                getRecommendAlgorithmB(result, appId, start, offset, platform, userId, firstView, roomListIndex);
+            }else if(userRecommendAlgorithm.equals("A")) {
 
                 getRecommendAlgorithmA(result, appId, start, offset, platform, userId, firstView, roomListIndex);
             }else if(userRecommendAlgorithm.equals("B")) {
@@ -943,7 +946,7 @@ public class KKHallFunctions {
                     userRecommendAlgorithm = RecommendAlgorithmSource.setUserRecommendAlgorithm(userId);
                 }
 
-                if(userRecommendAlgorithm.equals("B")) {
+                if(StringUtils.isNotEmpty(userRecommendAlgorithm) && userRecommendAlgorithm.equals("B")) {
 
                     trumpRoomList = firstPageHandler.getTrumpRooms(offset);
                 }

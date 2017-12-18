@@ -39,6 +39,8 @@ public class RecommendAlgorithmSource {
      */
     private static final String RECOMMEND_ALGORITHM_PREFEX = "recommend_algorithm_";
 
+    private static final String RECOMMEND_ALGORITHM_PREFEX_NUM = "recommend_algorithm_num_";
+
     /**
      * 推荐主播缓存(最原始的推荐主播列表 即直接按照S\A\B\C\D排序 等级一样按照热度排序)
      */
@@ -83,16 +85,22 @@ public class RecommendAlgorithmSource {
     public static String setUserRecommendAlgorithm(int userId) {
         Jedis jedis = null;
         String key = RECOMMEND_ALGORITHM_PREFEX + userId;
+        String key1 = RECOMMEND_ALGORITHM_PREFEX_NUM + userId;
         try {
             jedis = getInstance();
             if (jedis != null) {
 
-                String userRecommendAlgorithm = getNextRecommendAlgorithm();
-                jedis.set(key, userRecommendAlgorithm);
+                Long num = jedis.incrBy(key1, 1);
+                jedis.expire(key1, 10);
+                if(num == 1) {
 
-                statisticsRecommendAlgorithm(userId, userRecommendAlgorithm, jedis);
+                    String userRecommendAlgorithm = getNextRecommendAlgorithm();
+                    jedis.set(key, userRecommendAlgorithm);
 
-                return userRecommendAlgorithm;
+                    statisticsRecommendAlgorithm(userId, userRecommendAlgorithm, jedis);
+
+                    return userRecommendAlgorithm;
+                }
             }
         } catch (Exception e) {
         } finally {
