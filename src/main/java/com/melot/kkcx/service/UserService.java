@@ -25,12 +25,15 @@ import com.melot.kkcore.user.api.UserRegistry;
 import com.melot.kkcore.user.api.UserStaticInfo;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.model.ActorLevel;
+import com.melot.kkcx.model.ActorProfit;
 import com.melot.kkcx.model.RichLevel;
 import com.melot.kkcx.model.StarInfo;
 import com.melot.kktv.domain.UserInfo;
+import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConstantEnum;
 import com.melot.kktv.util.StringUtil;
+import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.module.packagegift.driver.service.VipService;
@@ -867,6 +870,77 @@ public class UserService {
         }
         
         return kbi;
+    }
+    
+    /**
+     * 获取主播收益列表
+     * @param actorId
+     * @param offset
+     * @param count
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public static List<ActorProfit> getActorProfitList(int actorId, int offset, int count) {
+        List<ActorProfit> result = new ArrayList<>();
+        try {
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("actorId", actorId);
+            map.put("offset", offset);
+            map.put("count", count);
+            result = (List<ActorProfit>) SqlMapClientHelper.getInstance(com.melot.kktv.util.DBEnum.KKCX_PG).queryForList("Actor.getActorProfitList", map);
+        } catch(Exception e) {
+            logger.error("fail to execute sql (Actor.getActorProfitList, actorId :" + actorId + "offset:" + offset + "count:" + count + ")", e);
+        }
+        
+        return result;
+    }
+    
+    /**
+     * 获取主播收益列表总数
+     * @param actorId
+     * @return
+     */
+    public static int getActorProfitCount(int actorId) {
+        int count = 0;
+        try {
+            count = (int) SqlMapClientHelper.getInstance(com.melot.kktv.util.DBEnum.KKCX_PG).queryForObject("Actor.getActorProfitCount", actorId);
+        } catch (SQLException e) {
+            logger.error("fail to execute sql (Actor.getActorProfitCount), actorId :" + actorId, e);
+        }
+        
+        return count;
+    }
+    
+    public static boolean exchangeKbi(int actorId, int exchangeAmount) {
+        boolean result = false;
+        try {
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("actorId", actorId);
+            map.put("exchangeAmount", exchangeAmount);
+            String tagcode = null;
+            tagcode = (String) SqlMapClientHelper.getInstance(com.melot.kktv.util.DBEnum.KKCX_PG).queryForObject("Actor.exchangeKbi", map);
+            if (TagCodeEnum.SUCCESS.equals(tagcode)) {
+                result = true;
+            }
+        } catch (SQLException e) {
+            logger.error("fail to execute Actor.exchangeKbi(actorId :" + actorId + ", " + "exchangeAmount:" + exchangeAmount + ")", e);
+        }
+        
+        return result;
+    }
+    
+    public static void insertKbiHist(int userId, int exchangeAmount) {
+        try {
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("userId", userId);
+            map.put("kbi", exchangeAmount);
+            map.put("toUser", userId);
+            map.put("note", "主播K豆兑换");
+            map.put("appId", AppIdEnum.AMUSEMENT);
+            SqlMapClientHelper.getInstance(DB.MASTER).insert("User.insertHist", map);
+        } catch(Exception e) {
+            logger.error("User.insertHist(userId:" + userId + "kbi:" + exchangeAmount + ") return exception.", e);
+        }
     }
 	
 	/**

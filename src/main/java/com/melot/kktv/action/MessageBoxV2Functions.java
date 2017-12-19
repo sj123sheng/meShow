@@ -7,11 +7,14 @@ import com.melot.kkcx.service.UserService;
 import com.melot.kktv.model.*;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.UserMessageSource;
+import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.util.*;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.kktv.util.message.Message;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import redis.clients.jedis.Jedis;
 
 import javax.servlet.http.HttpServletRequest;
@@ -28,6 +31,9 @@ public class MessageBoxV2Functions {
     
     private static ActivityMessage actMessage = new ActivityMessage();
     private static RecommendMessage recMessage = new RecommendMessage();
+    
+    @Autowired
+    ConfigService configService;
     
     /**
      * 获取用户消息列表(50006101)
@@ -421,7 +427,7 @@ public class MessageBoxV2Functions {
 
         switch (msgType) {
         case Message.MSGTYPE_DYNAMIC: 
-             result = MessageBoxV2Functions.getUserNewsCommentMsg(userId, platform, perPageCount, curPage, startTime, lastReadTime);
+             result = getUserNewsCommentMsg(userId, platform, perPageCount, curPage, startTime, lastReadTime);
              break;
         case Message.MSGTYPE_SYSTEM:
              result = MessageBoxV2Functions.getKkSystemRecord(userId, perPageCount, curPage, startTime, platform, lastReadTime);
@@ -430,7 +436,7 @@ public class MessageBoxV2Functions {
              result = recMessage.fetchRecommendedMsg(userId, perPageCount, curPage, startTime, platform, lastReadTime);
              break;
         case Message.MSGTYPE_PRAISE: 
-             result = MessageBoxV2Functions.getNewsPraiseMsg(userId, platform, perPageCount, curPage, startTime, lastReadTime);
+             result = getNewsPraiseMsg(userId, platform, perPageCount, curPage, startTime, lastReadTime);
              break;
         }
         
@@ -650,7 +656,7 @@ public class MessageBoxV2Functions {
     }
     
     @SuppressWarnings("unchecked")
-    private static JsonObject getUserNewsCommentMsg(int userId, int platform, int perPageCount, int currentPage, long startTime, long lastReadTime) throws Exception {
+    private JsonObject getUserNewsCommentMsg(int userId, int platform, int perPageCount, int currentPage, long startTime, long lastReadTime) throws Exception {
         JsonObject result = new JsonObject();
         Date startTimer = new Date(startTime);
         Date lastReadTimer = new Date(lastReadTime);
@@ -685,7 +691,7 @@ public class MessageBoxV2Functions {
                     }
                 }
                 jsonObj.addProperty("userId", obj.getUserId());
-                jsonObj.addProperty("message", "发起了短评");
+                jsonObj.addProperty("message", configService.getIsAbroad() ? " commented on your status" : "发起了短评");
                 jsonObj.addProperty("commentContent", obj.getContent());
                 if (lastReadTime <= obj.getCommentTime().getTime()) {
                     jsonObj.addProperty("isnew", Integer.valueOf(1));
@@ -724,7 +730,7 @@ public class MessageBoxV2Functions {
     }
     
     @SuppressWarnings("unchecked")
-    private static JsonObject getNewsPraiseMsg(int userId, int platform, int perPageCount, int currentPage, long startTime, long lastReadTime) throws Exception {
+    private JsonObject getNewsPraiseMsg(int userId, int platform, int perPageCount, int currentPage, long startTime, long lastReadTime) throws Exception {
         JsonObject result = new JsonObject();
         Date startTimer = new Date(startTime);
         Date lastReadTimer = new Date(lastReadTime);
@@ -759,9 +765,9 @@ public class MessageBoxV2Functions {
                 }
                 jsonObj.addProperty("userId", obj.getUserId());
                 if (userId == obj.getUserIdBelong()) {
-                    jsonObj.addProperty("message","赞了您动态下的短评");
+                    jsonObj.addProperty("message",configService.getIsAbroad() ? " liked your comment" : "赞了您动态下的短评");
                 } else {
-                    jsonObj.addProperty("message","赞了您发起的短评");
+                    jsonObj.addProperty("message", configService.getIsAbroad() ? " liked your comment" : "赞了您发起的短评");
                 }
                 jsonObj.addProperty("commentContent", obj.getCommentContent());
                 if (lastReadTime <= obj.getPraiseTime().getTime()) {

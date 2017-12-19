@@ -1225,7 +1225,7 @@ public class IndexFunctions {
 						weeklyGiftJson.addProperty("giftCount", entry.getValue());
 						weeklyGiftJson.addProperty("giftId", giftId);
 						weeklyGiftJson.addProperty("giftWorth", entry.getValue() * singlePrice);
-						weeklyGiftJson.addProperty("giftPic", "http://rescdn.kktv8.com/kktv/icon/web/gift/png/" + giftId + ".png");
+						weeklyGiftJson.addProperty("giftPic", ConfigHelper.getKkDomain() + "/icon/web/gift/png/" + giftId + ".png");
 						if (liveActorList.contains(userId)) {
 							//正在直播
 							if (!liveJsonMap.containsKey(userId) || (liveJsonMap.containsKey(userId) && liveJsonMap.get(userId).get("giftWorth").getAsLong() < entry.getValue() * singlePrice)) {
@@ -1470,7 +1470,7 @@ public class IndexFunctions {
 								tempJson.addProperty("giftName", giftName);
 								tempJson.addProperty("giftId", giftId);
 								tempJson.addProperty("giftWorth", giftWorth);
-								tempJson.addProperty("giftPic", "http://rescdn.kktv8.com/kktv/icon/web/gift/png/" + giftId + ".png");
+								tempJson.addProperty("giftPic", ConfigHelper.getKkDomain() + "/icon/web/gift/png/" + giftId + ".png");
 								giftMap.put(tempId, tempJson);
 								filterGiftList.add(giftId);
 								break;
@@ -1481,7 +1481,7 @@ public class IndexFunctions {
 							tempJson.addProperty("giftName", giftName);
 							tempJson.addProperty("giftId", giftId);
 							tempJson.addProperty("giftWorth", giftWorth);
-							tempJson.addProperty("giftPic", "http://rescdn.kktv8.com/kktv/icon/web/gift/png/" + giftId + ".png");
+							tempJson.addProperty("giftPic", ConfigHelper.getKkDomain() + "/icon/web/gift/png/" + giftId + ".png");
 							allGiftMap.put(tempId, tempJson);
 							flag = false;
 						}
@@ -1581,7 +1581,7 @@ public class IndexFunctions {
 					wholeJson.addProperty("giftId", giftId);
 					wholeJson.addProperty("giftName", giftName);
 					wholeJson.addProperty("giftPrice", singlePrice);
-					wholeJson.addProperty("giftPic", "http://rescdn.kktv8.com/kktv/icon/android/gift/icon/" + giftId + ".png");
+					wholeJson.addProperty("giftPic", ConfigHelper.getKkDomain() + "/icon/android/gift/icon/" + giftId + ".png");
 					actorGiftRankMap = WeekGiftSource.getWeekGiftRank(String.valueOf(weekTime), relationGiftId != null && relationGiftId > 0 ? giftId + "_" + relationGiftId : String.valueOf(giftId), 3);
 					if (actorGiftRankMap != null && !actorGiftRankMap.isEmpty()) {
 						JsonArray actorArray = new JsonArray();

@@ -2040,15 +2040,15 @@ public class OtherFunctions {
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
             appId = CommonUtil.getJsonParamInt(jsonObject, "a", 0, TagCodeEnum.APPID_MISSING, 1, Integer.MAX_VALUE);
-            realName = CommonUtil.getJsonParamString(jsonObject, "realName", null, TagCodeEnum.REALNAME_MISSING, 1, 20);
-            identityId = CommonUtil.getJsonParamString(jsonObject, "identityNumber", null, TagCodeEnum.IDENTITY_MISSING, 1, 50);
+            realName = CommonUtil.getJsonParamString(jsonObject, "realName", null, TagCodeEnum.REALNAME_MISSING, 1, configService.getIsAbroad() ? 128 : 20);
+            identityId = CommonUtil.getJsonParamString(jsonObject, "identityNumber", null, TagCodeEnum.IDENTITY_MISSING, 1, configService.getIsAbroad() ? 64 : 50);
             idPicOnHand =  CommonUtil.getJsonParamString(jsonObject, "identityPictureOnHand", null, TagCodeEnum.IDPICONHAND_MISSING, 1, 200);
             
             gender = CommonUtil.getJsonParamInt(jsonObject, "gender", -1, null, 0, Integer.MAX_VALUE);
             if (gender < 0 && identityId.length() == 18) {
                 gender = StringUtil.parseFromStr(identityId.substring(16, 17), 0) % 2;
             }
-            mobileNum = CommonUtil.getJsonParamString(jsonObject, "mobile", null, null, 5 , 20);
+            mobileNum = CommonUtil.getJsonParamString(jsonObject, "mobile", null, null, 5 , configService.getIsAbroad() ?  32 : 20);
             qqNum =  CommonUtil.getJsonParamString(jsonObject, "qqNumber", null, null, 1, 50);
             wechatNum =  CommonUtil.getJsonParamString(jsonObject, "wechatNumber", null, null, 1, 50);
             
@@ -2127,7 +2127,7 @@ public class OtherFunctions {
             try {
                 KkUserService userService = MelotBeanFactory.getBean("kkUserService", KkUserService.class);
                 UserProfile userProfile = userService.getUserProfile(userId);
-                if (userProfile == null || userProfile.getIdentifyPhone() == null) {
+                if (userProfile == null || userProfile.getIdentifyPhone() == null && !"1".equals(configService.getCloseCheckPhone())) {
                   result.addProperty("TagCode", "01200002");
                   return result;
                 } else {

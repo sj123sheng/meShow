@@ -806,11 +806,11 @@ public class NodeFunctions {
 		}
 				
 		// 视频区域默认海报  WEB
-		result.addProperty("videoWebPoster_480", "http://ures.kktv8.com/kktv/picture/offical/wdisplayImage.png");
+		result.addProperty("videoWebPoster_480", ConfigHelper.getHttpdir() + "/picture/offical/wdisplayImage.png");
 		// Andriod
-		result.addProperty("videoAdrPoster_480", "http://ures.kktv8.com/kktv/picture/offical/wdisplayImage.png");
+		result.addProperty("videoAdrPoster_480", ConfigHelper.getHttpdir() + "/picture/offical/wdisplayImage.png");
 		// Iphone
-		result.addProperty("videoIphPoster_640", "http://ures.kktv8.com/kktv/picture/offical/wdisplayImage.png");
+		result.addProperty("videoIphPoster_640", ConfigHelper.getHttpdir() + "/picture/offical/wdisplayImage.png");
 		
 		// 返回结果
 		return result;

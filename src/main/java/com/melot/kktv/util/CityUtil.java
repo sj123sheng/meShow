@@ -42,6 +42,7 @@ public class CityUtil {
 	private static final Integer DEFAULT_CITY_ID = 1;
 	private static final Integer OVERSEA = 35;
 	private static final String CENTRAL_CITY = "上海,北京,重庆,天津";
+    public static final int DEFAULT_CHANNEL = 1;
 	private static final Map<Integer, String> CENTRAL_CITY_ID = new HashMap<Integer, String>();
  	private static ConcurrentHashMap<Integer, String> cityMap = new ConcurrentHashMap<Integer, String>();
     private static ConcurrentHashMap<Integer, Integer> parentMap = new ConcurrentHashMap<Integer, Integer>();
@@ -246,4 +247,21 @@ public class CityUtil {
         }
 		return cityMap.containsKey(Math.abs(cityId));
 	}
+	
+    /**
+     * 判断城市ID是否在数据库中存在（省市都可以）
+     * @param cityId
+     * @return
+     */
+    public static int getCityDefaultChannel(int cityId) {
+        try {
+            Integer result = (Integer) SqlMapClientHelper.getInstance(DB.SLAVE_PG).queryForObject("Other.getCityDefaultChannel", cityId);
+            if (result != null) {
+                return result;
+            }
+        } catch (SQLException e) {
+            logger.error("fail to execute sql getCityDefaultChannel, cityId : " + cityId, e);
+        }
+        return DEFAULT_CHANNEL;
+    }
 }

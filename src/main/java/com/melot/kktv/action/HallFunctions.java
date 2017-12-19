@@ -11,6 +11,7 @@ import java.util.Random;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -20,12 +21,15 @@ import com.melot.api.menu.sdk.dao.domain.HotRoomInfo;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.api.menu.sdk.dao.domain.SysMenu;
 import com.melot.api.menu.sdk.handler.FirstPageHandler;
+import com.melot.api.menu.sdk.service.HomeService;
 import com.melot.content.config.domain.GameTagConfig;
 import com.melot.content.config.game.service.GameTagService;
 import com.melot.kkcx.service.GeneralService;
 import com.melot.kkcx.transform.RoomTF;
+import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.RoomService;
 import com.melot.kktv.util.AppIdEnum;
+import com.melot.kktv.util.CityUtil;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.ConstantEnum;
@@ -40,6 +44,9 @@ import com.melot.sdk.core.util.MelotBeanFactory;
  *
  */
 public class HallFunctions {
+
+    @Autowired
+    private ConfigService configService;
 	
 	private static Logger logger = Logger.getLogger(HallFunctions.class);
 	
@@ -761,9 +768,13 @@ public class HallFunctions {
         
         int appId;
         int channel;
+        int city = 0;
+        int platform = 0;
         try {
             appId = CommonUtil.getJsonParamInt(jsonObject, "a", 0, TagCodeEnum.APPID_MISSING, 0, Integer.MAX_VALUE);
             channel = CommonUtil.getJsonParamInt(jsonObject, "c", 0, TagCodeEnum.CHANNEL_MISSING, 0, Integer.MAX_VALUE);
+            city = CommonUtil.getJsonParamInt(jsonObject, "city", 0, null, 0, Integer.MAX_VALUE);
+            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, TagCodeEnum.PLATFORM_MISSING, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -775,8 +786,19 @@ public class HallFunctions {
         List<HomePage> titleList = null;
         
         try {
-            FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
-            titleList = firstPageHandler.getSquareTitleList(appId, channel);
+            if (configService.getIsAbroad()) {
+                // 根据city获取默认渠道ID
+                if (city == 0) {
+                    String clientIp = com.melot.kktv.service.GeneralService.getIpAddr(request, appId, platform, null);
+                    city = CityUtil.getCityIdByIpAddr(clientIp);
+                 }
+                 int defaultChannel = CityUtil.getCityDefaultChannel(city);
+                 HomeService homeService = MelotBeanFactory.getBean("homeService", HomeService.class);
+                 titleList = homeService.getPartListInHome(appId, channel, defaultChannel);
+            } else {
+                FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
+                titleList = firstPageHandler.getSquareTitleList(appId, channel);
+            }
         } catch(Exception e) {
             logger.error("Fail to call firstPageHandler.getFistPagelist ", e);
         }
