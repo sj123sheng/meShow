@@ -117,7 +117,7 @@ public class HappyPKFunction {
                         result.addProperty("TagCode", TagCodeEnum.NOT_ACTOR);
                         return result;
                     }
-                    result.addProperty("portrait", userProfile.getPortrait() == null ? null : userProfile.getPortrait() + "!60");
+                    result.addProperty("portrait", getPortrait(userProfile));
                     result.addProperty("nickname", userProfile.getNickName());
                 }
 
@@ -192,7 +192,7 @@ public class HappyPKFunction {
 
                     ladderMatchRecord.addProperty("opponentUserId", opponentUserId);
                     if(userProfile != null) {
-                        ladderMatchRecord.addProperty("opponentPortrait", userProfile.getPortrait());
+                        ladderMatchRecord.addProperty("opponentPortrait", getPortrait(userProfile));
                         ladderMatchRecord.addProperty("opponentNickname", userProfile.getNickName());
                     }
                     ladderMatchRecord.addProperty("ladderMatchResult", histActorLadderMatchDO.getLadderMatchResult());
@@ -252,7 +252,7 @@ public class HappyPKFunction {
 
                     resActorLadderMatch.addProperty("userId", actorId);
                     if(userProfile != null) {
-                        resActorLadderMatch.addProperty("portrait", userProfile.getPortrait());
+                        resActorLadderMatch.addProperty("portrait", getPortrait(userProfile));
                         resActorLadderMatch.addProperty("nickname", userProfile.getNickName());
                     }
                     resActorLadderMatch.addProperty("ranking", resActorLadderMatchDO.getRanking());
@@ -278,6 +278,10 @@ public class HappyPKFunction {
             result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             return result;
         }
+    }
+
+    private String getPortrait(UserProfile userProfile) {
+        return userProfile.getPortrait() == null ? null : userProfile.getPortrait() + "!60";
     }
 
 }
