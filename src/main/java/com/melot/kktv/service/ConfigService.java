@@ -54,12 +54,21 @@ public class ConfigService {
 
     //是否关闭手机号校验  1：关闭 
     private String closeCheckPhone;
-    
 
     /**
      * 推荐列表 为了对比多个推荐算法的优劣 指定开始注册时间后的用户用于测试 时间戳(单位:毫秒)
      */
     private String recommendRegistrationTime;
+
+    /**
+     * 抓娃娃栏目id
+     */
+    private String catchDollCataId;
+
+    @DisconfFileItem(name = "catchDoll.cataId", associateField = "catchDollCataId")
+    public String getCatchDollCataId() {
+        return catchDollCataId;
+    }
 
     @DisconfFileItem(name = "recommend.channelIds", associateField = "recommendChannelIds")
     public String getRecommendChannelIds() {
