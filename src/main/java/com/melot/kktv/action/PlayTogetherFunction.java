@@ -1,9 +1,6 @@
 package com.melot.kktv.action;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.api.menu.sdk.dao.domain.SysMenu;
 import com.melot.api.menu.sdk.handler.FirstPageHandler;
@@ -14,10 +11,7 @@ import com.melot.kkcx.transform.RoomTF;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.service.ConfigService;
-import com.melot.kktv.util.CommonUtil;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.PlayTogetherCataTypeEnum;
-import com.melot.kktv.util.TagCodeEnum;
+import com.melot.kktv.util.*;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import org.apache.commons.io.Charsets;
 import org.apache.log4j.Logger;
@@ -53,13 +47,36 @@ public class PlayTogetherFunction {
     public JsonObject getTitleList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 
         JsonObject result = new JsonObject();
+        int channel;
 
+        try {
+            // 渠道号
+            channel = CommonUtil.getJsonParamInt(jsonObject, "c", AppChannelEnum.KK, null, 0, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
         try {
 
             String playTogetherConfig = new String(configService.getPlayTogetherConfig().getBytes(encode), decode);
             JsonArray roomArray = new JsonParser().parse(playTogetherConfig).getAsJsonArray();
+            if(channel == 70152) {
+                JsonArray roomArray1 = new JsonArray();
+                String catchDollCataId = configService.getCatchDollCataId();
+                for (JsonElement roomObject : roomArray) {
+                    String cataId = roomObject.getAsJsonObject().get("cataId").getAsString();
+                    if(!cataId.equals(catchDollCataId)) {
+                        roomArray1.add(roomObject);
+                    }
+                }
+                result.add("cataList", roomArray1);
+            }else {
+                result.add("cataList", roomArray);
+            }
 
-            result.add("cataList", roomArray);
             result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
