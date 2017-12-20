@@ -520,7 +520,7 @@ public class MallFunctions {
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
             propId = CommonUtil.getJsonParamInt(jsonObject, "propId", 0, "5103010901", 1, Integer.MAX_VALUE);
-            propType = CommonUtil.getJsonParamInt(jsonObject, "propType", 0, "5103010902", 0, 3);
+            propType = CommonUtil.getJsonParamInt(jsonObject, "propType", 0, "5103010902", 0, 4);
             amount = CommonUtil.getJsonParamInt(jsonObject, "amount", 1, null, 1, Integer.MAX_VALUE);
         } catch(CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
