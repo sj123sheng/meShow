@@ -21,7 +21,6 @@ import com.google.gson.JsonParseException;
 import com.melot.kkcx.model.MsgBody;
 import com.melot.kkcx.model.TimContent;
 import com.melot.kkcx.service.TimService;
-import com.melot.kkcx.util.Constant;
 import com.melot.kktv.util.CollectionUtils;
 import com.melot.letter.driver.service.PrivateLetterService;
 import com.melot.sdk.core.util.MelotBeanFactory;
@@ -81,16 +80,16 @@ public class TimMsgAction extends ActionSupport {
 		msgTypeList.add("TIMCustomElem");
 
 		String callbackCommand = request.getParameter("CallbackCommand");
-		String sdkAppid = request.getParameter("SdkAppid");
-		if (StringUtils.isEmpty(sdkAppid) 
-		        || (!Constant.TIM_SdkAppId.equals(sdkAppid) 
-		                && !Constant.TIM_SdkAppIdTest.equals(sdkAppid))) {
-			result.addProperty("ActionStatus", "FAIL");
-			result.addProperty("ErrorCode", 1);
-			result.addProperty("ErrorInfo", "sdkAppid不匹配");
-			out.println(result.toString());
-			return null;
-		}
+//		String sdkAppid = request.getParameter("SdkAppid");
+//		if (StringUtils.isEmpty(sdkAppid) 
+//		        || (!Constant.TIM_SdkAppId.equals(sdkAppid) 
+//		                && !Constant.TIM_SdkAppIdTest.equals(sdkAppid))) {
+//			result.addProperty("ActionStatus", "FAIL");
+//			result.addProperty("ErrorCode", 1);
+//			result.addProperty("ErrorInfo", "sdkAppid不匹配");
+//			out.println(result.toString());
+//			return null;
+//		}
 		String msgBody = "";
 		try {
 			msgBody = getBodyString(request.getReader());
@@ -102,7 +101,7 @@ public class TimMsgAction extends ActionSupport {
 			out.println(result.toString());
 			return null;
 		}
-		logger.info("timMsgCallback,callbackCommand:" + callbackCommand + ",sdkAppid:" + sdkAppid + ",msgContent:" + msgBody + "");
+//		logger.info("timMsgCallback,callbackCommand:" + callbackCommand + ",sdkAppid:" + sdkAppid + ",msgContent:" + msgBody + "");
 
 		if (StringUtils.isEmpty(msgBody)) {
 			result.addProperty("ActionStatus", "FAIL");
