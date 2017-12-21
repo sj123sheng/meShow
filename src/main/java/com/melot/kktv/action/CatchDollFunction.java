@@ -301,7 +301,7 @@ public class CatchDollFunction {
                 dollMachineStatus = dollMachineDO.getStatus();
             }
 
-            if((dollMachineStatus == DollMachineStatusEnum.Play || dollMachineStatus == DollMachineStatusEnum.Wait_Coin) && userId != null) {
+            if((dollMachineStatus == DollMachineStatusEnum.PLAY || dollMachineStatus == DollMachineStatusEnum.WAIT_COIN) && userId != null) {
                 KkUserService userService = MelotBeanFactory.getBean("kkUserService", KkUserService.class);
                 UserProfile userProfile = userService.getUserProfile(userId);
                 if(userProfile != null) {
@@ -502,7 +502,7 @@ public class CatchDollFunction {
 
             AppRecordQueryDO queryDO = new AppRecordQueryDO();
             queryDO.setUserId(userId);
-            queryDO.setExchangeStatus(ExchangeStatusEnum.UnExchange);
+            queryDO.setExchangeStatus(ExchangeStatusEnum.UNEXCHANGE);
 
             queryDO.setPageIndex(pageIndex);
             queryDO.setCountPerPage(countPerPage);
@@ -784,12 +784,12 @@ public class CatchDollFunction {
             int roomId = catchDollRecordDO.getRoomId();
             int status = catchDollRecordDO.getStatus();
 
-            if(status == CatchDollRecordStatusEnum.Not_Coin && userId == catchDollRecordDO.getUserId()) {
+            if(status == CatchDollRecordStatusEnum.NOT_COIN && userId == catchDollRecordDO.getUserId()) {
                 // 更新游戏记录状态为投币失败
-                catchDollRecordService.updateRecordStatus(catchDollRecordId, CatchDollRecordStatusEnum.Coin_Fail);
+                catchDollRecordService.updateRecordStatus(catchDollRecordId, CatchDollRecordStatusEnum.COIN_FAIL);
 
                 // 更新娃娃机状态为准备就绪(空闲中) 并通知房间所有用户
-                dollMachineService.updateRedisDollMachineStatus(roomId, DollMachineStatusEnum.Ready);
+                dollMachineService.updateRedisDollMachineStatus(roomId, DollMachineStatusEnum.READY);
             }
 
             // 添加返回信息
@@ -906,10 +906,10 @@ public class CatchDollFunction {
             RedisDollMachineDO redisDollMachineDO = dollMachineService.getRedisDollMachineDO(roomId).getData();
             Integer status = redisDollMachineDO.getStatus();
             Integer recentStartGameUserId = redisDollMachineDO.getRecentStartGameUserId();
-            if(status != null && status == DollMachineStatusEnum.Wait_Coin && recentStartGameUserId != null && recentStartGameUserId == userId) {
+            if(status != null && status == DollMachineStatusEnum.WAIT_COIN && recentStartGameUserId != null && recentStartGameUserId == userId) {
 
                // 更新娃娃机缓存状态为准备就绪(空闲中) 并通知房间所有用户
-               dollMachineService.updateRedisDollMachineStatus(roomId, DollMachineStatusEnum.Ready);
+               dollMachineService.updateRedisDollMachineStatus(roomId, DollMachineStatusEnum.READY);
             }
 
             //添加返回信息
@@ -1032,8 +1032,8 @@ public class CatchDollFunction {
             // 更新娃娃机状态为游戏结束等待投币
             RedisDollMachineDO redisDollMachineDO = dollMachineService.getRedisDollMachineDO(roomId).getData();
             Integer status = redisDollMachineDO.getStatus();
-            if(status != null && status == DollMachineStatusEnum.Play) {
-                dollMachineService.updateRedisDollMachineStatus(roomId, DollMachineStatusEnum.Wait_Coin);
+            if(status != null && status == DollMachineStatusEnum.PLAY) {
+                dollMachineService.updateRedisDollMachineStatus(roomId, DollMachineStatusEnum.WAIT_COIN);
             }
 
             //添加返回信息
