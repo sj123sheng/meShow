@@ -119,6 +119,7 @@ public class QuizFunctions {
                 return result;
             }
             QuizActivity quizActivity = quizActivityResult.getData();
+            result.addProperty("activityState", quizActivity.getState());
             if (quizActivity.getState() == 0) {
                 JsonObject noticeInfo = new JsonObject();
                 // 组装活动预告信息
