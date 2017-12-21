@@ -32,6 +32,7 @@ import com.melot.kktv.domain.UserInfo;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConstantEnum;
+import com.melot.kktv.util.LoginTypeEnum;
 import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.db.DB;
@@ -1087,5 +1088,32 @@ public class UserService {
             logger.error("fail to execute goldcoinService.getUserGoldAssets, userId: " + userId, e);
         }
         return 0;
+    }
+    
+    public static boolean checkUserIdentify(int userId) {
+        boolean result = false;
+        try {
+            KkUserService userService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
+            UserInfoDetail userInfoDetail = userService.getUserDetailInfo(userId);
+            UserProfile userProfile = null;
+            UserRegistry userRegistry = null;
+            if (userInfoDetail != null) {
+                userProfile = userInfoDetail.getProfile();
+                userRegistry = userInfoDetail.getRegisterInfo();
+            }
+            if (userProfile == null || StringUtil.strIsNull(userProfile.getIdentifyPhone())) {
+                if (userRegistry != null) {
+                    int openPlatform = userRegistry.getOpenPlatform();
+                    if (openPlatform == LoginTypeEnum.QQ || openPlatform == LoginTypeEnum.WEIBO || openPlatform == LoginTypeEnum.WEIXIN || openPlatform == LoginTypeEnum.ALIPAY) {
+                        result = true;
+                    }
+                }
+            } else {
+                result = true;
+            }
+        } catch (Exception e) {
+            logger.error("call KkUserService getUserStaticInfo catched exception, userId : " + userId, e);
+        }
+        return result;
     }
 }
