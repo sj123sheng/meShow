@@ -159,19 +159,11 @@ public class PlayTogetherFunction {
             String playTogetherConfig = new String(configService.getPlayTogetherConfig().getBytes(encode), decode);
             JsonArray roomArray = new JsonParser().parse(playTogetherConfig).getAsJsonArray();
             if(channel == 70152) {
-                JsonArray roomArray1 = new JsonArray();
-                String catchDollCataId = configService.getCatchDollCataId();
-                for (JsonElement roomObject : roomArray) {
-                    String cataId = roomObject.getAsJsonObject().get("cataId").getAsString();
-                    if(!cataId.equals(catchDollCataId)) {
-                        roomArray1.add(roomObject);
-                    }
-                }
-                result.add("cataList", roomArray1);
-            }else {
-                result.add("cataList", roomArray);
+                String playTogetherSpecialChannelConfig = new String(configService.getPlayTogetherSpecialChannelConfig().getBytes(encode), decode);
+                roomArray = new JsonParser().parse(playTogetherSpecialChannelConfig).getAsJsonArray();
             }
 
+            result.add("cataList", roomArray);
             result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;

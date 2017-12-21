@@ -65,6 +65,16 @@ public class ConfigService {
      */
     private String catchDollCataId;
 
+    /**
+     * 一起玩大厅特殊渠道配置
+     */
+    private String playTogetherSpecialChannelConfig;
+
+    @DisconfFileItem(name = "playTogether.specialChannel.config", associateField = "playTogetherSpecialChannelConfig")
+    public String getPlayTogetherSpecialChannelConfig() {
+        return playTogetherSpecialChannelConfig;
+    }
+
     @DisconfFileItem(name = "catchDoll.cataId", associateField = "catchDollCataId")
     public String getCatchDollCataId() {
         return catchDollCataId;
