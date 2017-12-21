@@ -483,7 +483,12 @@ public class MallFunctions {
                         jsonObj.addProperty("vaildDay", mallProp.getVaildDay());
                         jsonObj.addProperty("price", mallProp.getPrice());
                         jsonObj.addProperty("defaultAmount", mallProp.getDefaultAmount());
-                        jsonObj.addProperty("position", mallProp.getPosition());
+                        if (mallProp.getPosition() != null) {
+                            jsonObj.addProperty("position", mallProp.getPosition());
+                        }
+                        if (mallProp.getIconUrl() != null) {
+                            jsonObj.addProperty("iconUrl", mallProp.getIconUrl());
+                        }
                         propList.add(jsonObj);
                     }
                 }
