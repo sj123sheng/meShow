@@ -69,6 +69,21 @@ public class ConfigService {
      * 一起玩大厅特殊渠道配置
      */
     private String playTogetherSpecialChannelConfig;
+    
+    /**
+     * 答题比赛首页图标是否显示
+     */
+    private int isShow;
+    
+    /**
+     * 首页图标缩略图
+     */
+    private String activityThumbnail;
+    
+    /**
+     * 首页大图
+     */
+    private String activityPicture;
 
     @DisconfFileItem(name = "playTogether.specialChannel.config", associateField = "playTogetherSpecialChannelConfig")
     public String getPlayTogetherSpecialChannelConfig() {
@@ -184,4 +199,20 @@ public class ConfigService {
     public void setCloseCheckPhone(String closeCheckPhone) {
         this.closeCheckPhone = closeCheckPhone;
     }
+
+    @DisconfFileItem(name = "quiz.isShow", associateField = "isShow")
+    public int getIsShow() {
+        return isShow;
+    }
+    
+    @DisconfFileItem(name = "quiz.activityThumbnail", associateField = "activityThumbnail")
+    public String getActivityThumbnail() {
+        return activityThumbnail;
+    }
+    
+    @DisconfFileItem(name = "quiz.activityPicture", associateField = "activityPicture")
+    public String getActivityPicture() {
+        return activityPicture;
+    }
+    
 }
