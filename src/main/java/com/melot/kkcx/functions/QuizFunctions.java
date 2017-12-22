@@ -121,7 +121,7 @@ public class QuizFunctions {
                 // 组装活动预告信息
                 noticeInfo.addProperty("activityPoster", quizActivity.getQuizActivityPoster());
                 noticeInfo.addProperty("activityName", quizActivity.getQuizActivityTitle());
-                
+                noticeInfo.addProperty("systemTime", System.currentTimeMillis());
                 if (quizActivity.getStartTime() != null) {
                     noticeInfo.addProperty("nextTime", quizActivity.getStartTime().getTime());
                 }
