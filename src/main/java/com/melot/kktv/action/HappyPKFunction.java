@@ -281,7 +281,7 @@ public class HappyPKFunction {
     }
 
     private String getPortrait(UserProfile userProfile) {
-        return userProfile.getPortrait() == null ? null : userProfile.getPortrait() + "!60";
+        return userProfile.getPortrait() == null ? null : userProfile.getPortrait() + "!128";
     }
 
 }
