@@ -63,16 +63,12 @@ public class QuizFunctions {
             Result<QuizActivity> quizActivityResult = quizActivityService.getQuizActivity();
             if (quizActivityResult != null && !CommonStateCode.SUCCESS.equals(quizActivityResult.getCode())) {
                 QuizActivity quizActivity = quizActivityResult.getData();
-                if (quizActivity == null) {
-                    result.addProperty("bonus", 1000000);
-                } else {
-                    result.addProperty("bonus", quizActivity.getBonus());
-                    result.addProperty("systemTime", System.currentTimeMillis());
-                    if (quizActivity.getState() == 1) {
-                        result.addProperty("nextTime", 0);
-                    } else {
-                        result.addProperty("nextTime", quizActivity.getStartTime().getTime());
-                    }
+                result.addProperty("bonus", quizActivity.getBonus());
+                result.addProperty("systemTime", System.currentTimeMillis());
+                if (quizActivity.getState() == 1) {
+                    result.addProperty("nextTime", 0);
+                } else if (quizActivity.getStartTime() != null) {
+                    result.addProperty("nextTime", quizActivity.getStartTime().getTime());
                 }
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
             }else {
@@ -125,7 +121,10 @@ public class QuizFunctions {
                 // 组装活动预告信息
                 noticeInfo.addProperty("activityPoster", quizActivity.getQuizActivityPoster());
                 noticeInfo.addProperty("activityName", quizActivity.getQuizActivityTitle());
-                noticeInfo.addProperty("nextTime", quizActivity.getStartTime().getTime());
+                
+                if (quizActivity.getStartTime() != null) {
+                    noticeInfo.addProperty("nextTime", quizActivity.getStartTime().getTime());
+                }
                 noticeInfo.addProperty("bonus", quizActivity.getBonus());
                 
                 // 组装用户信息
@@ -201,9 +200,13 @@ public class QuizFunctions {
             Result<Page<QuizRankingList>> rankingListResult = quizActivityService.getQuizActivityRankingList(type, start, num);
             if (rankingListResult != null && CommonStateCode.SUCCESS.equals(rankingListResult.getCode())) {
                 Page<QuizRankingList> page = rankingListResult.getData();
-                JsonArray quizRankingList = new JsonParser().parse(new Gson().toJson(page.getList())).getAsJsonArray();
-                result.addProperty("count", page.getCount());
-                result.add("quizRankingList", quizRankingList);
+                if (page != null && page.getList() != null && !page.getList().isEmpty()) {
+                    JsonArray quizRankingList = new JsonParser().parse(new Gson().toJson(page.getList())).getAsJsonArray();
+                    result.addProperty("count", page.getCount());
+                    result.add("quizRankingList", quizRankingList);
+                } else {
+                    result.addProperty("count", 0);
+                }
             }else {
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
                 return result;
@@ -221,6 +224,8 @@ public class QuizFunctions {
                     return result;
                 }
             }
+            
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
         } catch (Exception e) {
             log.error("Module Error:", e);
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
@@ -242,17 +247,17 @@ public class QuizFunctions {
         
         QuizActivityService quizActivityService = (QuizActivityService) MelotBeanFactory.getBean("quizActivityService");
         try {
-            Result<QuizActivity> quizActivityResult = quizActivityService.getQuizActivity();
+            Result<QuizActivity> quizActivityResult = quizActivityService.getNextQuizActivity();
             if (quizActivityResult != null && CommonStateCode.SUCCESS.equals(quizActivityResult.getCode())) {
                 QuizActivity quizActivity = quizActivityResult.getData();
-                if (quizActivity == null) {
-                    result.addProperty("bonus", 1000000);
-                } else {
-                    result.addProperty("bonus", quizActivity.getBonus());
+                result.addProperty("bonus", quizActivity.getBonus());
+                
+                if (quizActivity.getStartTime() != null) {
                     result.addProperty("nextTime", quizActivity.getStartTime().getTime());
-                    result.addProperty("activityName", quizActivity.getQuizActivityTitle());
-                    result.addProperty("activityPoster", quizActivity.getQuizActivityPoster());
                 }
+                
+                result.addProperty("activityName", quizActivity.getQuizActivityTitle());
+                result.addProperty("activityPoster", quizActivity.getQuizActivityPoster());
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
             }else {
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
