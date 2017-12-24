@@ -14,6 +14,7 @@ import com.ibatis.sqlmap.client.SqlMapClient;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.ParameterKeys;
 import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
@@ -94,6 +95,7 @@ public class QuizFunctions {
         result.addProperty("nickname", userProfile.getNickName());
         if (userProfile.getPortrait() != null) {
             result.addProperty("portrait", userProfile.getPortrait());
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
         }
         result.addProperty("gender", userProfile.getGender());
         
