@@ -616,12 +616,6 @@
 			<version>1.2.17-cat-error</version>
 		</dependency>
 		
-		<dependency>
-		  <groupId>com.melot.module</groupId>
-		  <artifactId>kk-quiz-api</artifactId>
-		  <version>1.0.0-SNAPSHOT</version>
-		</dependency>
-
 	</dependencies>
  	
 </project>

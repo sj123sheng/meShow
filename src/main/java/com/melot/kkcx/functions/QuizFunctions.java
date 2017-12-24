@@ -1,25 +1,21 @@
 package com.melot.kkcx.functions;
 
+import java.util.Date;
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
+import com.dianping.cat.Cat;
+import com.dianping.cat.message.Transaction;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.melot.kk.quiz.api.domain.QuizActivity;
-import com.melot.kk.quiz.api.domain.QuizActivityRoomInfo;
-import com.melot.kk.quiz.api.domain.QuizRankingList;
-import com.melot.kk.quiz.api.domain.QuizUserInfo;
-import com.melot.kk.quiz.api.domain.base.Page;
-import com.melot.kk.quiz.api.service.QuizActivityService;
-import com.melot.kktv.base.CommonStateCode;
-import com.melot.kktv.base.Result;
-import com.melot.kktv.service.ConfigService;
+import com.ibatis.sqlmap.client.SqlMapClient;
+import com.melot.kkcore.user.api.UserProfile;
+import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ParameterKeys;
+import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.sdk.core.util.MelotBeanFactory;
 
@@ -34,66 +30,36 @@ import com.melot.sdk.core.util.MelotBeanFactory;
  * @since 2017年12月21日 上午10:18:42
  */
 public class QuizFunctions {
-    private static final Logger log = Logger.getLogger(QuizFunctions.class);
     
-    @Autowired
-    private ConfigService configService;
+    private static final Logger LOGGER = Logger.getLogger(QuizFunctions.class);
     
     /**
-     * 获取答题活动信息【51050401】
+     * 获取答题用户信息【51050405】
+     * 
+     *      userId
+     *      nickname
+     *      portrait
+     *      gender
+     *      registerTime
+     *      parentId
+     * 
      * @param jsonObject
      * @param checkTag
      * @param request
      * @return
      * @throws Exception
      */
-    public JsonObject getQuizActivityInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
-        JsonObject result = new JsonObject();
-        int isShow = configService.getIsShow();
-        result.addProperty("isShow", isShow);
+    public JsonObject getQuizUserInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
         
-        if (isShow == 0) {
+        JsonObject result = new JsonObject();
+        if (!checkTag) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_NOT_CHECKED);
             return result;
         }
         
-        result.addProperty("activityPicture", configService.getActivityPicture());
-        result.addProperty("activityThumbnail", configService.getActivityThumbnail());
-        QuizActivityService quizActivityService = (QuizActivityService) MelotBeanFactory.getBean("quizActivityService");
-        try {
-            Result<QuizActivity> quizActivityResult = quizActivityService.getQuizActivity();
-            if (quizActivityResult != null && !CommonStateCode.SUCCESS.equals(quizActivityResult.getCode())) {
-                QuizActivity quizActivity = quizActivityResult.getData();
-                result.addProperty("bonus", quizActivity.getBonus());
-                result.addProperty("systemTime", System.currentTimeMillis());
-                if (quizActivity.getState() == 1) {
-                    result.addProperty("nextTime", 0);
-                } else if (quizActivity.getStartTime() != null) {
-                    result.addProperty("nextTime", quizActivity.getStartTime().getTime());
-                }
-                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
-            }else {
-                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
-            }
-        } catch (Exception e) {
-            log.error("Module Error:", e);
-            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
-        }
-        return result;
-    }
-    
-    /**
-     * 获取答题活动状态，进行中：返回房间地址等信息；未开始：返回预告信息【51050402】
-     * @param jsonObject
-     * @param checkTag
-     * @param request
-     * @return
-     * @throws Exception
-     */
-    public JsonObject getQuizInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
-        JsonObject result = new JsonObject();
         int userId;
         try {
-            userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, null, 1, Integer.MAX_VALUE);
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
             return result;
@@ -101,171 +67,54 @@ public class QuizFunctions {
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-        
-        // 传了userId的需要校验token信息
-        if (userId > 0 && !checkTag) {
-            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_INCORRECT);
-            return result;
-        }
-        QuizActivityService quizActivityService = (QuizActivityService) MelotBeanFactory.getBean("quizActivityService");
+
+        Transaction t;
+
+        // 获取用户基本信息
+        UserProfile userProfile = null;
+        t = Cat.getProducer().newTransaction("MCall", "com.melot.kkcore.user.service.KkUserService.getUserProfile");
         try {
-            Result<QuizActivity> quizActivityResult = quizActivityService.getQuizActivity();
-            if (quizActivityResult == null || !CommonStateCode.SUCCESS.equals(quizActivityResult.getCode())) {
-                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
-                return result;
-            }
-            QuizActivity quizActivity = quizActivityResult.getData();
-            result.addProperty("activityState", quizActivity.getState());
-            if (quizActivity.getState() == 0) {
-                JsonObject noticeInfo = new JsonObject();
-                // 组装活动预告信息
-                noticeInfo.addProperty("activityPoster", quizActivity.getQuizActivityPoster());
-                noticeInfo.addProperty("activityName", quizActivity.getQuizActivityTitle());
-                noticeInfo.addProperty("systemTime", System.currentTimeMillis());
-                if (quizActivity.getStartTime() != null) {
-                    noticeInfo.addProperty("nextTime", quizActivity.getStartTime().getTime());
-                }
-                noticeInfo.addProperty("bonus", quizActivity.getBonus());
-                
-                // 组装用户信息
-                if (userId > 0) {
-                    Result<QuizUserInfo> quizUserInfoResult = quizActivityService.getQuizUserInfo(userId);
-                    if (quizUserInfoResult != null && CommonStateCode.SUCCESS.equals(quizUserInfoResult.getCode())) {
-                        QuizUserInfo quizUserInfo = quizUserInfoResult.getData();
-                        noticeInfo.addProperty("amount", quizUserInfo.getAmount());
-                        noticeInfo.addProperty("totalAmount", quizUserInfo.getTotalAmount());
-                        noticeInfo.addProperty("revivalCount", quizUserInfo.getRevivalCount());
-                    }
-                    // 获取排名信息
-                    Result<QuizRankingList> userQuizRankingResult = quizActivityService.getUserQuizRanking(0, userId);
-                    if (userQuizRankingResult != null && CommonStateCode.SUCCESS.equals(userQuizRankingResult.getCode())) {
-                        QuizRankingList quizRankingList = userQuizRankingResult.getData();
-                        noticeInfo.addProperty("weeklyRanking", quizRankingList.getRanking());
-                    }
-                }
-                result.add("noticeInfo", noticeInfo);
-            } else {
-                JsonObject roomInfo = new JsonObject();
-                // 组装活动信息
-                roomInfo.addProperty("activityPoster", quizActivity.getQuizActivityPoster());
-                roomInfo.addProperty("activityName", quizActivity.getQuizActivityTitle());
-                
-                // 房间地址信息
-                Result<QuizActivityRoomInfo> quizRoomInfoResult = quizActivityService.getQuizActivityRoomInfo();
-                if (quizRoomInfoResult != null && CommonStateCode.SUCCESS.equals(quizRoomInfoResult.getCode())) {
-                    QuizActivityRoomInfo quizActivityRoomInfo = quizRoomInfoResult.getData();
-                    roomInfo.addProperty("liveAddress", quizActivityRoomInfo.getLivePushAddr());
-                    roomInfo.addProperty("nodeAddress", quizActivityRoomInfo.getSocketAddr());
-                }
-                result.add("roomInfo", roomInfo);
-            }
+            KkUserService kkUserService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
+            userProfile = kkUserService.getUserProfile(userId);
+            t.setStatus(Transaction.SUCCESS);
         } catch (Exception e) {
-            log.error("Module Error:", e);
-            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
+            t.setStatus(e);
+        } finally {
+            t.complete();
+        }
+        if (userProfile == null || StringUtil.strIsNull(userProfile.getNickName())) {
+            JsonObject reResult = new JsonObject();
+            reResult.addProperty("TagCode", TagCodeEnum.USER_NOT_EXIST);
+            return reResult;
         }
         
         result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
-        return result;
-    }
-    
-    /**
-     * 获取答题比赛榜单【51050403】
-     * @param jsonObject
-     * @param checkTag
-     * @param request
-     * @return
-     * @throws Exception
-     */
-    public JsonObject getQuizRankingList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
-        JsonObject result = new JsonObject();
-        int userId;
-        int type;
-        int start;
-        int num;
-        try {
-            userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, null, 1, Integer.MAX_VALUE);
-            type = CommonUtil.getJsonParamInt(jsonObject, "type", 0, null, 0, Integer.MAX_VALUE);
-            start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, null, 0, Integer.MAX_VALUE);
-            num = CommonUtil.getJsonParamInt(jsonObject, "num", 0, null, 20, Integer.MAX_VALUE);
-        } catch (CommonUtil.ErrorGetParameterException e) {
-            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
-            return result;
-        } catch (Exception e) {
-            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
-            return result;
+        result.addProperty("userId", userId);
+        result.addProperty("nickname", userProfile.getNickName());
+        if (userProfile.getPortrait() != null) {
+            result.addProperty("portrait", userProfile.getPortrait());
         }
+        result.addProperty("gender", userProfile.getGender());
         
-        QuizActivityService quizActivityService = (QuizActivityService) MelotBeanFactory.getBean("quizActivityService");
+        // 获取用户注册的分享者信息
         try {
-            Result<Page<QuizRankingList>> rankingListResult = quizActivityService.getQuizActivityRankingList(type, start, num);
-            if (rankingListResult != null && CommonStateCode.SUCCESS.equals(rankingListResult.getCode())) {
-                Page<QuizRankingList> page = rankingListResult.getData();
-                if (page != null && page.getList() != null && !page.getList().isEmpty()) {
-                    JsonArray quizRankingList = new JsonParser().parse(new Gson().toJson(page.getList())).getAsJsonArray();
-                    result.addProperty("count", page.getCount());
-                    result.add("quizRankingList", quizRankingList);
-                } else {
-                    result.addProperty("count", 0);
+            SqlMapClient kkgameSqlMapClient = (SqlMapClient) MelotBeanFactory.getBean("sqlMapClient_pg_kkgame");
+            @SuppressWarnings("unchecked")
+            Map<String, Object> map = (Map<String, Object>) kkgameSqlMapClient.queryForObject("User.getUserFeedbackRelationInfo", userId);
+            if (map != null && !map.isEmpty()) {
+                if (map.containsKey("parentId") && map.get("parentId") != null) {
+                    result.addProperty("parentId", (Integer) map.get("parentId"));
                 }
-            }else {
-                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
-                return result;
-            }
-            
-            if (userId > 0) {
-                Result<QuizRankingList> userRankingResult = quizActivityService.getUserQuizRanking(0, userId);
-                if (userRankingResult != null && CommonStateCode.SUCCESS.equals(userRankingResult.getCode())) {
-                    QuizRankingList userRanking = userRankingResult.getData();
-                    result.addProperty("nickname", userRanking.getNickname());
-                    result.addProperty("portrait", userRanking.getPortrait());
-                    result.addProperty("ranking", userRanking.getRanking());
-                }else {
-                    result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
-                    return result;
+                if (map.containsKey("registerTime") && map.get("registerTime") != null) {
+                    result.addProperty("registerTime", ((Date) map.get("registerTime")).getTime());
                 }
             }
-            
-            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
         } catch (Exception e) {
-            log.error("Module Error:", e);
-            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            LOGGER.error("getUserFeedbackRelationInfo exception: " + userId, e);
         }
         
         return result;
     }
     
-    /**
-     * 获取答题比赛预告信息[H5用]【51050404】
-     * @param jsonObject
-     * @param checkTag
-     * @param request
-     * @return
-     * @throws Exception
-     */
-    public JsonObject getQuizNextInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
-        JsonObject result = new JsonObject();
-        
-        QuizActivityService quizActivityService = (QuizActivityService) MelotBeanFactory.getBean("quizActivityService");
-        try {
-            Result<QuizActivity> quizActivityResult = quizActivityService.getNextQuizActivity();
-            if (quizActivityResult != null && CommonStateCode.SUCCESS.equals(quizActivityResult.getCode())) {
-                QuizActivity quizActivity = quizActivityResult.getData();
-                result.addProperty("bonus", quizActivity.getBonus());
-                
-                if (quizActivity.getStartTime() != null) {
-                    result.addProperty("nextTime", quizActivity.getStartTime().getTime());
-                }
-                
-                result.addProperty("activityName", quizActivity.getQuizActivityTitle());
-                result.addProperty("activityPoster", quizActivity.getQuizActivityPoster());
-                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
-            }else {
-                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
-            }
-        } catch (Exception e) {
-            log.error("Module Error:", e);
-            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
-        }
-        return result;
-    }
 }
