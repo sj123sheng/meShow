@@ -2170,7 +2170,7 @@ public class ProfileFunctions {
         }
         
         try {
-            TaskInterfaceService taskInterfaceService = (TaskInterfaceService) MelotBeanFactory.getBean("taskInterfaceService");
+//            TaskInterfaceService taskInterfaceService = (TaskInterfaceService) MelotBeanFactory.getBean("taskInterfaceService");
 //            isDraw = taskInterfaceService.isDraw(userId);
 //            result.addProperty("isDraw", isDraw ? 1:0);
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);

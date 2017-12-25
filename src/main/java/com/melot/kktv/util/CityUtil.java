@@ -39,7 +39,6 @@ public class CityUtil {
 	/**
 	 * 默认城市id：1，北京市
 	 */
-	
 	private static final Integer DEFAULT_CITY_ID = 1;
 	private static final Integer OVERSEA = 35;
 	private static final String CENTRAL_CITY = "上海,北京,重庆,天津";

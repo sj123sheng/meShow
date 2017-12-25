@@ -61,7 +61,7 @@ import com.melot.share.driver.service.ShareActivityService;
 public class ActorFunction {
 
     private static Logger logger = Logger.getLogger(ActorFunction.class);
-        
+    
     @Autowired
     private ConfigService configService;
 
@@ -608,6 +608,7 @@ public class ActorFunction {
                 status = Constants.APPLY_TEST_ACTOR_IN_FAMILY_PLAYING;
             } else {
                 //自由主播
+                familyId = 11222;
                 applyActor.setApplyFamilyId(11222);
                 status = Constants.APPLY_ACTOR_INFO_CHECK_SUCCESS;
             }
