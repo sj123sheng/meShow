@@ -184,4 +184,5 @@ public class ConfigService {
     public void setCloseCheckPhone(String closeCheckPhone) {
         this.closeCheckPhone = closeCheckPhone;
     }
+    
 }

@@ -799,6 +799,7 @@ public class HallFunctions {
                 FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
                 titleList = firstPageHandler.getSquareTitleList(appId, channel);
             }
+            
         } catch(Exception e) {
             logger.error("Fail to call firstPageHandler.getFistPagelist ", e);
         }

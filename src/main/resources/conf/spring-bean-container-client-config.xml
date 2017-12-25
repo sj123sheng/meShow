@@ -141,4 +141,6 @@
     <!-- 大数据推荐算法模块 -->
     <kkrpc:reference id="newRcmdService" interface="com.melot.kk.demo.api.service.NewRcmdService" version="1.0.0"></kkrpc:reference>
 
+	<!-- 答题比赛模块 -->
+	<kkrpc:reference id="quizActivityService" interface="com.melot.kk.quiz.api.service.QuizActivityService" version="1.0.0"/>
 </beans>

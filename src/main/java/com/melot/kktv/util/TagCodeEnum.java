@@ -515,4 +515,13 @@ public class TagCodeEnum {
     /**分享连接为空*/
     public static final String SHARE_LINK_IS_NULL = "02012107";
     /*-------------------END----------------------*/
+
+    /*------全民PK-天梯赛接口 510604 -------*/
+    /**天梯赛活动已下架*/
+    public static final String LADDER_MATCH_UNDERCARRIAGE = "5106040101";
+    /**天梯赛活动暂未配置*/
+    public static final String LADDER_MATCH_UN_CONF = "5106040102";
+    /**不是主播*/
+    public static final String NOT_ACTOR = "5106040201";
+
 }
