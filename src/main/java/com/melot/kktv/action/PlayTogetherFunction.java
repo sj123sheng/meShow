@@ -126,9 +126,9 @@ public class PlayTogetherFunction {
                     }
                     Integer dollMachineStatus = redisDollMachineDO.getStatus();
                     if(dollMachineStatus == null) {
-                        dollMachineStatus = DollMachineStatusEnum.Ready;
-                    }else if(dollMachineStatus == DollMachineStatusEnum.Wait_Coin) {
-                        dollMachineStatus = DollMachineStatusEnum.Play;
+                        dollMachineStatus = DollMachineStatusEnum.READY;
+                    }else if(dollMachineStatus == DollMachineStatusEnum.WAIT_COIN) {
+                        dollMachineStatus = DollMachineStatusEnum.PLAY;
                     }
                     roomObject.addProperty("dollMachineStatus", dollMachineStatus);
                     roomObject.addProperty("graspCount", redisDollMachineDO.getGraspDollCount());
