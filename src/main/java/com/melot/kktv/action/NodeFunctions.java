@@ -5,7 +5,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -23,6 +22,7 @@ import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.api.menu.sdk.service.RoomInfoService;
 import com.melot.api.menu.sdk.utils.RoomInfoUtils;
 import com.melot.common.driver.domain.CharmUserInfo;
+import com.melot.common.driver.domain.WeekGiftRank;
 import com.melot.common.driver.service.RoomExtendConfService;
 import com.melot.common.driver.service.ShareService;
 import com.melot.content.config.apply.service.ApplyActorService;
@@ -43,11 +43,9 @@ import com.melot.kkcx.service.UserAssetServices;
 import com.melot.kkcx.service.UserService;
 import com.melot.kktv.model.FansRankingItem;
 import com.melot.kktv.model.MedalInfo;
-import com.melot.kktv.model.WeekStarGift;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.MedalSource;
 import com.melot.kktv.redis.QQVipSource;
-import com.melot.kktv.redis.WeekGiftSource;
 import com.melot.kktv.service.UserRelationService;
 import com.melot.kktv.util.AppChannelEnum;
 import com.melot.kktv.util.AppIdEnum;
@@ -55,7 +53,6 @@ import com.melot.kktv.util.CityUtil;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.Constant;
-import com.melot.kktv.util.DateUtil;
 import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.confdynamic.MedalConfig;
@@ -1417,28 +1414,23 @@ public class NodeFunctions {
 	 */
 	public JsonObject getLastWeekGiftRanking(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 		JsonObject result = new JsonObject();
-		
-		List<WeekStarGift> weekStarGiftList = ActorGiftService.getWeekStarGiftList(new Date(DateUtil.getWeekBeginTime(System.currentTimeMillis() - 7*24*3600*1000)));
 		JsonArray jsonArray = new JsonArray();
-		String weekTimeString;
-		Integer giftId, relationGiftId;
-		if (weekStarGiftList != null && !weekStarGiftList.isEmpty()) {
-			for (WeekStarGift weekStarGift : weekStarGiftList) {
-				giftId = weekStarGift.getGiftId();
-				relationGiftId = weekStarGift.getRelationGiftId();
-				weekTimeString = String.valueOf(weekStarGift.getStarttime().getTime());
-				Map<Integer, Long> giftRankMap = WeekGiftSource.getWeekGiftRank(weekTimeString, relationGiftId != null && relationGiftId > 0 ? giftId + "_" + relationGiftId : giftId.toString(), 1);
-				if (giftRankMap != null) {
-					for (Entry<Integer, Long> entry : giftRankMap.entrySet()) {
-						JsonObject json = new JsonObject();
-						json.addProperty("userId", entry.getKey());
-						json.addProperty("count", entry.getValue());
-						json.addProperty("giftId", giftId);
-						jsonArray.add(json);
-					}
-				}
-			}
-		}
+		
+		try {
+            RoomExtendConfService roomExtendConfService = (RoomExtendConfService) MelotBeanFactory.getBean("roomExtendConfService");
+            List<WeekGiftRank> weekGiftRankList = roomExtendConfService.getLastWeekGiftRanking();
+            if (!weekGiftRankList.isEmpty()) {
+                for (WeekGiftRank weekGiftRank : weekGiftRankList) {
+                    JsonObject json = new JsonObject();
+                    json.addProperty("userId", weekGiftRank.getUserId());
+                    json.addProperty("count", weekGiftRank.getCount());
+                    json.addProperty("giftId", weekGiftRank.getGiftId());
+                    jsonArray.add(json);
+                }
+            }
+        } catch (Exception e) {
+            logger.error("call roomExtendConfService getLastWeekGiftRanking catched exception", e);
+        }
 		
 		result.add("rankList", jsonArray);
 		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
@@ -1455,17 +1447,16 @@ public class NodeFunctions {
 	public JsonObject getCurrentWeekGift(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 		JsonObject result = new JsonObject();
 		
-		List<WeekStarGift> weekStarGiftList = ActorGiftService.getWeekStarGiftList(new Date(DateUtil.getWeekBeginTime(System.currentTimeMillis())));
-		List<Integer> giftIds = new ArrayList<>();
-		if (weekStarGiftList != null && !weekStarGiftList.isEmpty()) {
-			for (WeekStarGift weekStarGift : weekStarGiftList) {
-				giftIds.add(weekStarGift.getGiftId());
-			}
-		}
+		try {
+            RoomExtendConfService roomExtendConfService = (RoomExtendConfService) MelotBeanFactory.getBean("roomExtendConfService");
+            List<Integer> giftIds = roomExtendConfService.getCurrentWeekGift();
+            if (!giftIds.isEmpty()) {
+                result.add("giftIds", new JsonParser().parse(giftIds.toString()).getAsJsonArray());
+            }
+        } catch (Exception e) {
+            logger.error("call roomExtendConfService getCurrentWeekGift catched exception", e);
+        }
 		
-		if (!giftIds.isEmpty()) {
-			result.add("giftIds", new JsonParser().parse(giftIds.toString()).getAsJsonArray());
-		}
 		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 		return result;
 	}
