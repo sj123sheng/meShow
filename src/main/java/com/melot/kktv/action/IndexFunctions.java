@@ -545,7 +545,7 @@ public class IndexFunctions {
 	                        }
 	                        obj.add("validId", validVirtualId);
 	                    }
-	                    if (rankType == 2 || rankType == 4 || rankType == 5) {
+	                    if (rankType == 2 || rankType == 4 || rankType == 5 || rankType == 6 || rankType == 7) {
 	                    	obj.addProperty("amount", rankUser.getScore().longValue());
 	                    }
 	                    roomList.add(obj);
