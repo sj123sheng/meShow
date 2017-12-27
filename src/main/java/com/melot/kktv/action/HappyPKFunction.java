@@ -117,6 +117,7 @@ public class HappyPKFunction {
                         result.addProperty("TagCode", TagCodeEnum.NOT_ACTOR);
                         return result;
                     }
+                    result.addProperty("gender", userProfile.getGender());
                     result.addProperty("portrait", getPortrait(userProfile));
                     result.addProperty("nickname", userProfile.getNickName());
                 }
