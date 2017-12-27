@@ -192,6 +192,7 @@ public class HappyPKFunction {
 
                     ladderMatchRecord.addProperty("opponentUserId", opponentUserId);
                     if(userProfile != null) {
+                        ladderMatchRecord.addProperty("opponentGender", userProfile.getGender());
                         ladderMatchRecord.addProperty("opponentPortrait", getPortrait(userProfile));
                         ladderMatchRecord.addProperty("opponentNickname", userProfile.getNickName());
                     }
@@ -252,6 +253,7 @@ public class HappyPKFunction {
 
                     resActorLadderMatch.addProperty("userId", actorId);
                     if(userProfile != null) {
+                        resActorLadderMatch.addProperty("gender", userProfile.getGender());
                         resActorLadderMatch.addProperty("portrait", getPortrait(userProfile));
                         resActorLadderMatch.addProperty("nickname", userProfile.getNickName());
                     }
