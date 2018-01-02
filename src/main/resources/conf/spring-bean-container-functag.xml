@@ -2858,4 +2858,10 @@
         <constructor-arg name="methodName" value="getLadderChart" />
     </bean>
 
+    <!-- 答题比赛 -->
+    <bean id="51050405" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="quizFunctions" />
+        <constructor-arg name="methodName" value="getQuizUserInfo" />
+    </bean>
+
 </beans>
