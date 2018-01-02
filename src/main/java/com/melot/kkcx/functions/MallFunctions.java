@@ -471,9 +471,9 @@ public class MallFunctions {
         try {
             MallService mallService = (MallService) MelotBeanFactory.getBean("mallService");
             JsonArray propList = new JsonArray();
-            int count = mallService.getMallPropListCount(null, null);
+            int count = mallService.getMallPropListCount(null, null, 1);
             if (count > 0) {
-                List<MallProp> mallPropList = mallService.getMallPropList(null, null, pageIndex, countPerPage);
+                List<MallProp> mallPropList = mallService.getMallPropList(null, null, 1, pageIndex, countPerPage);
                 if (mallPropList != null) {
                     for (MallProp mallProp : mallPropList) {
                         JsonObject jsonObj = new JsonObject();
