@@ -10,4 +10,23 @@
 		select kbi from res_actor_info where actor_id = #actorId#
 	</select>
 		
+	<resultMap class="com.melot.kkcx.model.ActorProfit" id="actorProfitMap">
+	    <result property="totalLiveTime" column="total_livetime"/>
+		<result property="monthTime" column="month"/>
+		<result property="recordDate" column="record_date"/>
+		<result property="totalRsv" column="total_rsv"/>
+	</resultMap>
+	
+	<select id="getActorProfitList" parameterClass="java.util.Map" resultMap="actorProfitMap">
+		select total_livetime, month, record_date, total_rsv from p_show_actor_profit_getmonthlist(#actorId#, #offset#, #count#)
+	</select>
+	
+	<select id="getActorProfitCount" parameterClass="java.lang.Integer" resultClass="java.lang.Integer">
+		select * from p_show_actor_profit_getmonthcount(#actorId#)
+	</select>
+	
+	<select id="exchangeKbi" parameterClass="java.util.Map" resultClass="java.lang.String">
+		select * from p_res_actor_info_exchange(#actorId#, #exchangeAmount#)
+	</select>
+		
 </sqlMap>

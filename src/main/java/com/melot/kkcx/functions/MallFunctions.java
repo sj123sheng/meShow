@@ -28,6 +28,7 @@ import com.melot.kktv.util.TagCodeEnum;
 import com.melot.module.medal.driver.service.ActivityMedalService;
 import com.melot.module.packagegift.driver.domain.CatalogGift;
 import com.melot.module.packagegift.driver.domain.InsertCarMap;
+import com.melot.module.packagegift.driver.domain.MallProp;
 import com.melot.module.packagegift.driver.domain.ShopCatalog;
 import com.melot.module.packagegift.driver.domain.UserMultiAsset;
 import com.melot.module.packagegift.driver.service.CarService;
@@ -440,6 +441,116 @@ public class MallFunctions {
         } catch (Exception e) {
             logger.error("MallFunctions.exchangeCoinProp(userId: " + userId + ", propId: " + propId + ", propType:" + propType + ", amount:" + amount + ") return exception.", e);
             result.addProperty("TagCode", "5103010705");
+        }
+        
+        return result;
+    }
+    
+    /**
+     * 获取金币商城道具列表 (51030108)
+     * 
+     * @param jsonObject 请求对象
+     * @param checkTag 是否验证token标记
+     * @return 
+     */
+    public JsonObject getCoinPropList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        int pageIndex, countPerPage;
+        
+        JsonObject result = new JsonObject();
+        try {
+            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
+            countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 10, null, 1, Integer.MAX_VALUE);
+        } catch(CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch(Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        try {
+            MallService mallService = (MallService) MelotBeanFactory.getBean("mallService");
+            JsonArray propList = new JsonArray();
+            int count = mallService.getMallPropListCount(null, null);
+            if (count > 0) {
+                List<MallProp> mallPropList = mallService.getMallPropList(null, null, pageIndex, countPerPage);
+                if (mallPropList != null) {
+                    for (MallProp mallProp : mallPropList) {
+                        JsonObject jsonObj = new JsonObject();
+                        jsonObj.addProperty("propId", mallProp.getPropId());
+                        jsonObj.addProperty("propType", mallProp.getPropType());
+                        jsonObj.addProperty("propName", mallProp.getPropName());
+                        jsonObj.addProperty("vaildDay", mallProp.getVaildDay());
+                        jsonObj.addProperty("price", mallProp.getPrice());
+                        jsonObj.addProperty("defaultAmount", mallProp.getDefaultAmount());
+                        if (mallProp.getPosition() != null) {
+                            jsonObj.addProperty("position", mallProp.getPosition());
+                        }
+                        if (mallProp.getIconUrl() != null) {
+                            jsonObj.addProperty("iconUrl", mallProp.getIconUrl());
+                        }
+                        propList.add(jsonObj);
+                    }
+                }
+            }
+           
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            result.addProperty("count", count);
+            result.add("propList", propList);
+        } catch (Exception e) {
+            logger.error("mallService.getMallPropList(null, null, " + pageIndex + ", " + countPerPage + ") return exception.", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+        }
+        
+        return result;
+    }
+    
+    /**
+     * 兑换道具（金币商城 新版） (51030109)
+     * 
+     * @param jsonObject 请求对象
+     * @param checkTag 是否验证token标记
+     * @return 
+     */
+    public JsonObject exchangeGoldCoinProp(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+        
+        int userId, propId, propType, amount;
+        
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            propId = CommonUtil.getJsonParamInt(jsonObject, "propId", 0, "5103010901", 1, Integer.MAX_VALUE);
+            propType = CommonUtil.getJsonParamInt(jsonObject, "propType", 0, "5103010902", 0, 4);
+            amount = CommonUtil.getJsonParamInt(jsonObject, "amount", 1, null, 1, Integer.MAX_VALUE);
+        } catch(CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch(Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        try {
+            MallService mallService = (MallService) MelotBeanFactory.getBean("mallService");
+            long resp = mallService.exchangeCoinProp(userId, propId, propType, amount);
+            if (resp >= 0) {
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                result.addProperty("goldCoin", resp);
+            } else if (resp == -2) {
+                result.addProperty("TagCode", "5103010903");
+            } else if (resp == -3) {
+                result.addProperty("TagCode", "5103010904");
+            } else {
+                result.addProperty("TagCode", "5103010905");
+            }
+        } catch (Exception e) {
+            logger.error("mallService.exchangeCoinProp(userId: " + userId + ", propId: " + propId + ", propType:" + propType + ", amount:" + amount + ") return exception.", e);
+            result.addProperty("TagCode", "5103010905");
         }
         
         return result;

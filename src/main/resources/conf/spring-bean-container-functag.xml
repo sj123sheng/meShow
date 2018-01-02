@@ -2730,6 +2730,17 @@
         <constructor-arg name="t" ref="mallFunctions" />
         <constructor-arg name="methodName" value="exchangeCoinProp" />
     </bean>
+    <!-- 获取金币商城道具列表 -->
+    <bean id="51030108" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="mallFunctions" />
+        <constructor-arg name="methodName" value="getCoinPropList" />
+        <constructor-arg name="cacheType" value="180" />
+    </bean>
+    <!-- 兑换道具（金币商城 新版） -->
+    <bean id="51030109" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="mallFunctions" />
+        <constructor-arg name="methodName" value="exchangeGoldCoinProp" />
+    </bean>
 	
 	<!-- 获取奖励金分享红包列表 -->
 	<bean id="52050209" class="com.melot.sdk.core.function.GenericFunction">
@@ -2840,6 +2851,17 @@
         <constructor-arg name="methodName" value="finishNewUserTask" />
     </bean>
 
+    <!-- 获取主播收益列表 -->
+    <bean id="51020201" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="actorKKTVFunction" />
+        <constructor-arg name="methodName" value="getProfitList" />
+    </bean>
+    <!-- 主播K豆兑换秀币-->
+    <bean id="51020202" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="actorKKTVFunction" />
+        <constructor-arg name="methodName" value="exchangeKbi" />
+    </bean>
+
     <!-- 欢乐PK 天梯赛接口 -->
     <bean id="51060401" class="com.melot.sdk.core.function.GenericFunction">
         <constructor-arg name="t" ref="happyPKFunction" />
@@ -2858,8 +2880,8 @@
         <constructor-arg name="methodName" value="getLadderChart" />
     </bean>
 
-    <!-- 答题比赛 -->
-    <bean id="51050405" class="com.melot.sdk.core.function.GenericFunction">
+	<!-- 答题比赛 -->
+	<bean id="51050405" class="com.melot.sdk.core.function.GenericFunction">
         <constructor-arg name="t" ref="quizFunctions" />
         <constructor-arg name="methodName" value="getQuizUserInfo" />
     </bean>

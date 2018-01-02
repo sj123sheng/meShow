@@ -293,6 +293,11 @@ public class ProfileFunctions {
 		    result.addProperty("city", Math.abs(userInfoDetail.getRegisterInfo().getCityId()));
 		    result.addProperty("registerTime", userInfoDetail.getRegisterInfo().getRegisterTime());
 		    
+		    Integer adminType = ProfileServices.getUserAdminType(userId);
+            if (adminType != null && adminType != -1) {
+                result.addProperty("siteAdmin", adminType);
+            }
+		    
 		    Integer area = CityUtil.getParentCityIdNoDefault(userInfoDetail.getRegisterInfo().getCityId());
 		    if (area != null) {
 		        result.addProperty("area", area);
@@ -301,7 +306,12 @@ public class ProfileFunctions {
 		    if (userInfoDetail.getProfile().getNickName() != null) {
 	        	t = Cat.getProducer().newTransaction("MCall", "GeneralService.replaceSensitiveWords");
 				try {
-					result.addProperty("nickname", GeneralService.replaceSensitiveWords(userId, userInfoDetail.getProfile().getNickName()));
+				    String nickname = userInfoDetail.getProfile().getNickName();
+				    //非官方号昵称需敏感词过滤
+				    if (adminType == null || adminType == -1) {
+				        nickname = GeneralService.replaceSensitiveWords(userId, nickname);
+				    }
+					result.addProperty("nickname", nickname);
 					t.setStatus(Transaction.SUCCESS);
 				} catch (Exception e) {
 					Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
@@ -320,11 +330,6 @@ public class ProfileFunctions {
 		        result.addProperty("birthday", userInfoDetail.getProfile().getBirthday());
 		    }
 		    
-		    Integer adminType = ProfileServices.getUserAdminType(userId);
-            if (adminType != null && adminType != -1) {
-                result.addProperty("siteAdmin", adminType);
-            }
-			
 		    try {
 		        long consumeTotal = userInfoDetail.getAssets() == null ? 0 : userInfoDetail.getAssets().getConsumeTotal();
                 long earnTotal = userInfoDetail.getAssets() == null ? 0 : userInfoDetail.getAssets().getEarnTotal();
@@ -1679,14 +1684,27 @@ public class ProfileFunctions {
 		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
 			// 取出列表
 			@SuppressWarnings("unchecked")
-			List<Object> recordList = (ArrayList<Object>) map.get("recordList");
+			List<LiveRecord> recordList =  (List<LiveRecord>) map.get("recordList");
 
 			JsonObject result = new JsonObject();
 			result.addProperty("TagCode", TagCode);
 			result.addProperty("pageTotal", (Integer) map.get("pageTotal"));
 			JsonArray jRecordList = new JsonArray();
-			for (Object object : recordList) {
-				jRecordList.add(((LiveRecord) object).toJsonObject());
+			for (LiveRecord liveRecord : recordList) {
+				JsonObject jObject = new JsonObject();
+				long liveEndTime = System.currentTimeMillis();
+				long liveStartTime = liveRecord.getStartTime().getTime();
+		        jObject.addProperty("startTime", liveStartTime);
+		        if (liveRecord.getEndTime() != null) {
+		            liveEndTime = liveRecord.getEndTime().getTime();
+		            jObject.addProperty("endTime", liveEndTime);
+		        }
+		        if (liveEndTime > liveStartTime) {
+		            long duration = (liveEndTime - liveStartTime)/(60*1000);
+		            jObject.addProperty("duration", duration);
+		            jObject.addProperty("isValid", duration < 10 ? 0 : 1);
+		        }
+		        jRecordList.add(jObject);
 			}
 			result.add("recordList", jRecordList);
 
@@ -2170,7 +2188,7 @@ public class ProfileFunctions {
         }
         
         try {
-            TaskInterfaceService taskInterfaceService = (TaskInterfaceService) MelotBeanFactory.getBean("taskInterfaceService");
+//            TaskInterfaceService taskInterfaceService = (TaskInterfaceService) MelotBeanFactory.getBean("taskInterfaceService");
 //            isDraw = taskInterfaceService.isDraw(userId);
 //            result.addProperty("isDraw", isDraw ? 1:0);
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);

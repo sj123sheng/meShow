@@ -200,4 +200,12 @@
 	<insert id="insertGuestFirstRecord" parameterClass="java.util.Map">
 		insert into user_first_record(userid, newtime, appid, platform, channel, deviceuid) values(#userId#, #dtime#, #appId#, #platform#, #channelId#, #deviceUId#)
 	</insert>
+	
+	<insert id="insertHist" parameterClass="java.util.Map">
+	 	<selectKey keyProperty="histId" resultClass="java.lang.Integer">
+			select seq_hist_kbi_to_showmoney.nextval as histId from dual   
+		</selectKey>
+		insert into hist_kbi_to_showmoney (hist_id, user_id, kbi, showmoney, status, update_time, to_user, note,appId) 
+       		values (#histId#, #userId#, #kbi#, #kbi#,1,sysdate,#toUser#,#note#,#appId#)
+	</insert>
 </sqlMap>

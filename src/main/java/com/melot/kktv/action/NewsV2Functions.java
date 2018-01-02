@@ -11,12 +11,6 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.google.common.collect.Lists;
-import com.melot.kk.module.resource.constant.*;
-import com.melot.kk.module.resource.domain.Resource;
-import com.melot.kk.module.resource.service.ResourceNewService;
-import com.melot.kktv.base.CommonStateCode;
-import com.melot.kktv.base.Result;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
@@ -29,15 +23,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
+import com.melot.kk.module.resource.constant.ECloudTypeConstant;
+import com.melot.kk.module.resource.constant.FileTypeConstant;
+import com.melot.kk.module.resource.constant.ResTypeConstant;
+import com.melot.kk.module.resource.constant.ResourceStateConstant;
+import com.melot.kk.module.resource.domain.Resource;
+import com.melot.kk.module.resource.service.ResourceNewService;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcx.service.GeneralService;
 import com.melot.kkcx.service.RoomService;
+import com.melot.kkcx.service.UserService;
+import com.melot.kktv.base.CommonStateCode;
+import com.melot.kktv.base.Result;
 import com.melot.kktv.redis.NewsSource;
 import com.melot.kktv.redis.NewsV2Source;
 import com.melot.kktv.service.ConfigService;
@@ -487,11 +491,11 @@ public class NewsV2Functions {
             return result;
         }
         
-        //特殊时期接口暂停使用
-        if (configService.getIsSpecialTime()) {
-            result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
-            return result;
-        }
+//        //特殊时期接口暂停使用
+//        if (configService.getIsSpecialTime()) {
+//            result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+//            return result;
+//        }
 
         // 定义所需参数
         int userId, newsId, toUserId, platform;
@@ -514,6 +518,11 @@ public class NewsV2Functions {
             content = GeneralService.replaceSensitiveWords(userId, content);
         } catch (ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+        
+        if (!UserService.checkUserIdentify(userId)) {
+            result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
             return result;
         }
 

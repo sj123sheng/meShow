@@ -3,7 +3,6 @@ package com.melot.kkcx.service;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
@@ -11,7 +10,8 @@ import org.apache.log4j.Logger;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.reflect.TypeToken;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.melot.chat.domain.PrivateLetter;
 import com.melot.chat.service.PrivateChatAnalyzerService;
 import com.melot.client.api.TimSystemService;
@@ -156,42 +156,33 @@ public class TimService {
 	}
 
 	private static String getUserOnLine(String json) {
-		if (StringUtils.isEmpty(json)) {
-			return "Online";
-		}
-		Gson gson = new Gson();
-		int errorCode = 0;
-		String queryResult = "";
-		try {
-			Map<String, Object> map = gson.fromJson(json, new TypeToken<Map<String, Object>>() {
-			}.getType());
-			for (Entry<String, Object> entry : map.entrySet()) {
-				if (entry.getKey().equalsIgnoreCase("ErrorCode")) {
-					errorCode = (int) Double.parseDouble(entry.getValue().toString());
-				}
-				if (entry.getKey().equalsIgnoreCase("QueryResult")) {
-					queryResult = entry.getValue().toString();
-				}
-			}
-			if (errorCode == 0) {
-				JsonArray array = gson.fromJson(queryResult, JsonArray.class);
-				if (array != null && array.size() > 0) {
-					for (JsonElement jsonElement : array) {
-						Map<String, Object> resultMap = gson.fromJson(jsonElement, new TypeToken<Map<String, Object>>() {
-						}.getType());
-						for (Entry<String, Object> item : resultMap.entrySet()) {
-							if (item.getKey().equalsIgnoreCase("State")) {
-								return item.getValue().toString();
-							}
-						}
-					}
-				}
-			}
-		} catch (Exception ex) {
-			logger.error("Fail to getUserOnLine json:" + json + ",error", ex);
-		}
-		return "Online";
-	}
+        if (StringUtils.isEmpty(json)) {
+            return "Online";
+        }
+        int errorCode = -1;
+        JsonArray queryResult = null;
+        try {
+            JsonObject jsonObject = new JsonParser().parse(json).getAsJsonObject();
+            if (jsonObject.has("ErrorCode")) {
+                errorCode = jsonObject.get("ErrorCode").getAsInt();
+            }
+            if (jsonObject.has("QueryResult")) {
+                queryResult = jsonObject.get("QueryResult").getAsJsonArray();
+            }
+            if (errorCode == 0 && queryResult != null && queryResult.size() > 0) {
+                JsonObject object;
+                for (JsonElement jsonElement : queryResult) {
+                    object = jsonElement.getAsJsonObject();
+                    if (object.has("State")) {
+                        return object.get("State").getAsString();
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            logger.error("Fail to getUserOnLine json:" + json + ",error", ex);
+        }
+        return "Online";
+    }
 
 	private static int getRandomNumber(int min, int max) {
 		Random random = new Random();

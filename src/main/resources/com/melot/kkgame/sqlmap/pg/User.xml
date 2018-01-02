@@ -44,4 +44,16 @@
 		]]>
 	</select>
 	
+	<!-- 获取用户的分享者 -->
+	<resultMap class="java.util.HashMap" id="getUserFeedbackRelationInfoMap">
+		<result property="userId" column="user_id" javaType="java.lang.Integer" jdbcType="INTEGER" />
+		<result property="parentId" column="parent_id" javaType="java.lang.Integer" jdbcType="INTEGER" />
+		<result property="roomId" column="room_id" javaType="java.lang.Integer" jdbcType="INTEGER" />
+		<result property="registerTime" column="register_time" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+		<result property="state" column="state" javaType="java.lang.Integer" jdbcType="INTEGER" />
+	</resultMap>
+	<select id="getUserFeedbackRelationInfo" parameterClass="java.lang.Integer" resultMap="getUserFeedbackRelationInfoMap">
+		select t.user_id, t.parent_id, t.room_id, t.register_time, t.state from kkgame.kg_feedback_relation t where t.user_id = #userId# limit 1
+	</select>
+	
 </sqlMap>

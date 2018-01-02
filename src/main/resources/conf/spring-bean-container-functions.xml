@@ -191,4 +191,6 @@
     <!-- 欢乐PK(天梯赛)相关接口 -->
     <bean id="happyPKFunction" class="com.melot.kktv.action.HappyPKFunction" />
 
+	<!-- 答题比赛相关接口 -->
+    <bean id="quizFunctions" class="com.melot.kkcx.functions.QuizFunctions" />
 </beans>

@@ -19,6 +19,10 @@
 				<entry key="33" value-ref="sweetOrangeService" />
 				<entry key="34" value-ref="qunduiService" />
 				<entry key="37" value-ref="haofangService" />
+				<entry key="45" value-ref="faceBookService" />
+				<entry key="48" value-ref="googleService" />
+				<entry key="49" value-ref="twitterService" />
+				<entry key="50" value-ref="instagramService" />
 			</map>
 		</constructor-arg>
 		<constructor-arg name="ignoreSet">
@@ -104,6 +108,30 @@
 		<property name="thirdName" value="浩方"/>
 		<property name="openPlatform" value="37"/>
 		<property name="serverUrl" value="http://passport.cga.com.cn/login/service/LoginService.ashx"/>
+	</bean>
+	
+	<bean id="faceBookService" class="com.melot.kktv.third.service.FaceBookService">
+		<property name="thirdName" value="faceBook"/>
+		<property name="openPlatform" value="45"/>
+		<property name="serverUrl" value="https://graph.facebook.com/me/ids_for_business"/>
+	</bean>
+	
+	<bean id="googleService" class="com.melot.kktv.third.service.GoogleService">
+		<property name="thirdName" value="google"/>
+		<property name="openPlatform" value="48"/>
+		<property name="serverUrl" value="https://www.googleapis.com/oauth2/v3/tokeninfo"/>
+	</bean>
+	
+	<bean id="twitterService" class="com.melot.kktv.third.service.TwitterService">
+		<property name="thirdName" value="twitter"/>
+		<property name="openPlatform" value="49"/>
+		<property name="serverUrl" value="https://api.twitter.com/1.1/account/verify_credentials.json"/>
+	</bean>
+	
+	<bean id="instagramService" class="com.melot.kktv.third.service.InstagramService">
+		<property name="thirdName" value="instagram"/>
+		<property name="openPlatform" value="50"/>
+		<property name="serverUrl" value="https://api.instagram.com/v1/users/self"/>
 	</bean>
 	
 </beans>
