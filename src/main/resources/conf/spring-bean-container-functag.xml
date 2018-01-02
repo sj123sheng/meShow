@@ -2851,6 +2851,24 @@
         <constructor-arg name="methodName" value="exchangeKbi" />
     </bean>
 
+    <!-- 欢乐PK 天梯赛接口 -->
+    <bean id="51060401" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="happyPKFunction" />
+        <constructor-arg name="methodName" value="getCurrentSeasonInfo" />
+    </bean>
+    <bean id="51060402" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="happyPKFunction" />
+        <constructor-arg name="methodName" value="getMyLadderMatchRecord" />
+    </bean>
+    <bean id="51060403" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="happyPKFunction" />
+        <constructor-arg name="methodName" value="getMyRecentLadderMatch" />
+    </bean>
+    <bean id="51060404" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="happyPKFunction" />
+        <constructor-arg name="methodName" value="getLadderChart" />
+    </bean>
+
 	<!-- 答题比赛 -->
 	<bean id="51050405" class="com.melot.sdk.core.function.GenericFunction">
         <constructor-arg name="t" ref="quizFunctions" />

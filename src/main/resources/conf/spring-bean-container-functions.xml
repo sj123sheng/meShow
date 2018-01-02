@@ -188,6 +188,9 @@
     <!-- 新手引导相关接口 -->
 	<bean id="newUserTaskFunctions" class="com.melot.kkcx.functions.NewUserTaskFunctions" />
 
+    <!-- 欢乐PK(天梯赛)相关接口 -->
+    <bean id="happyPKFunction" class="com.melot.kktv.action.HappyPKFunction" />
+
 	<!-- 答题比赛相关接口 -->
     <bean id="quizFunctions" class="com.melot.kkcx.functions.QuizFunctions" />
 </beans>
