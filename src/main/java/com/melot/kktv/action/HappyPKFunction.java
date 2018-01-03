@@ -283,6 +283,46 @@ public class HappyPKFunction {
         }
     }
 
+    /**
+     * 保存天梯记录【51060405】
+     */
+    public JsonObject saveLadderMatchRecord(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        int actorId, opponentActorId, time;
+        long receiveShowMoney, opponentReceiveShowMoney;
+        try {
+            actorId = CommonUtil.getJsonParamInt(jsonObject, "actorId", 1, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            opponentActorId = CommonUtil.getJsonParamInt(jsonObject, "opponentActorId", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            time = CommonUtil.getJsonParamInt(jsonObject, "time", 1, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            receiveShowMoney = CommonUtil.getJsonParamLong(jsonObject, "receiveShowMoney", 0, null, Long.MIN_VALUE, Long.MAX_VALUE);
+            opponentReceiveShowMoney = CommonUtil.getJsonParamLong(jsonObject, "opponentReceiveShowMoney", 0, null, Long.MIN_VALUE, Long.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        try {
+
+            for(int i = 0 ; i < time ; i++) {
+                histActorLadderMatchService.addHistActorLadderMatch(actorId, opponentActorId, receiveShowMoney, opponentReceiveShowMoney, 1);
+            }
+
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+
+        } catch (Exception e) {
+            logger.error("Error getLadderChart()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
     private String getPortrait(UserProfile userProfile) {
         return userProfile.getPortrait() == null ? null : userProfile.getPortrait() + "!128";
     }
