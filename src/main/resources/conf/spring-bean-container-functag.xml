@@ -2730,6 +2730,17 @@
         <constructor-arg name="t" ref="mallFunctions" />
         <constructor-arg name="methodName" value="exchangeCoinProp" />
     </bean>
+    <!-- 获取金币商城道具列表 -->
+    <bean id="51030108" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="mallFunctions" />
+        <constructor-arg name="methodName" value="getCoinPropList" />
+        <constructor-arg name="cacheType" value="180" />
+    </bean>
+    <!-- 兑换道具（金币商城 新版） -->
+    <bean id="51030109" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="mallFunctions" />
+        <constructor-arg name="methodName" value="exchangeGoldCoinProp" />
+    </bean>
 	
 	<!-- 获取奖励金分享红包列表 -->
 	<bean id="52050209" class="com.melot.sdk.core.function.GenericFunction">

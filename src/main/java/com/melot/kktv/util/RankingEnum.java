@@ -16,6 +16,8 @@ public class RankingEnum {
 	public static final int RANKING_TYPE_FANS = 3; // 房间粉丝排行榜
 	public static final int RANKING_TYPE_ACTOR_POPULAR = 4; // 阳光排行榜
 	public static final int RANKING_TYPE_RICH_POPULAR = 5; // 阳光粉丝排行榜
+	public static final int RANKING_TYPE_RICH_GOLDCOIN = 6; //金币富豪排行榜
+    public static final int RANKING_TYPE_ACTOR_GOLDCOIN = 7; //金币明星排行榜
 
 	public static final int THIS_WEEK_GIFT_RANKING = 0; //本周礼物排行榜
 	public static final int LAST_WEEK_GIFT_RANKING = -1; //上周礼物排行榜
@@ -32,12 +34,16 @@ public class RankingEnum {
 			return getRichPopularCollection(slotType);
 		case RANKING_TYPE_FANS:
 			return getFansCollection(slotType);
+		case RANKING_TYPE_RICH_GOLDCOIN:
+            return getGoldCoinRichCollection(slotType);
+		case RANKING_TYPE_ACTOR_GOLDCOIN:
+            return getGoldCoinActorCollection(slotType);
 		default:
 			return null;
 		}
 	}
 
-	private static String getActorCollection(Integer slotType) {
+    private static String getActorCollection(Integer slotType) {
 		switch (slotType) {
 		case RANKING_DAILY:
 			return "dailyActorRankingNew";
@@ -101,4 +107,27 @@ public class RankingEnum {
 			return null;
 		}
 	}
+	
+    private static String getGoldCoinRichCollection(Integer slotType) {
+        switch (slotType) {
+        case RANKING_LAST_WEEK:
+            return "lastWeekGoldCoinRichRankingNew";
+        case RANKING_THIS_WEEK:
+            return "thisWeekGoldCoinRichRankingNew";
+        default:
+            return null;
+        }
+    }
+    
+    private static String getGoldCoinActorCollection(Integer slotType) {
+        switch (slotType) {
+        case RANKING_LAST_WEEK:
+            return "lastWeekGoldCoinActorRankingNew";
+        case RANKING_THIS_WEEK:
+            return "thisWeekGoldCoinActorRankingNew";
+        default:
+            return null;
+        }
+    }
+
 }
