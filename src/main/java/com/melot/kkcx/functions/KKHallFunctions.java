@@ -12,6 +12,8 @@ import com.melot.api.menu.sdk.handler.FirstPageHandler;
 import com.melot.api.menu.sdk.redis.KKHallSource;
 import com.melot.api.menu.sdk.service.RoomInfoService;
 import com.melot.kk.demo.api.service.NewRcmdService;
+import com.melot.kk.hall.api.domain.WebSkinConf;
+import com.melot.kk.hall.api.service.WebSkinConfService;
 import com.melot.kkcore.relation.api.ActorRelation;
 import com.melot.kkcore.relation.api.RelationType;
 import com.melot.kkcore.relation.service.ActorRelationService;
@@ -19,6 +21,8 @@ import com.melot.kkcore.user.api.UserRegistry;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.service.RoomService;
 import com.melot.kkcx.transform.RoomTF;
+import com.melot.kktv.base.CommonStateCode;
+import com.melot.kktv.base.Result;
 import com.melot.kktv.redis.RecommendAlgorithmSource;
 import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.UserRelationService;
@@ -971,6 +975,58 @@ public class KKHallFunctions {
         return result;
     }
 
+    /**
+     * 获取大厅首页皮肤配置信息[51070102]
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getWebSkinInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        try {
+            WebSkinConfService webSkinConfService = (WebSkinConfService) MelotBeanFactory.getBean("webSkinConfService");
+            Result<WebSkinConf> currentWebSkinConfResult = webSkinConfService.getCurrentWebSkinConf();
+            if (currentWebSkinConfResult != null 
+                    && CommonStateCode.SUCCESS.equals(currentWebSkinConfResult.getCode())) {
+                WebSkinConf webSkinConf = currentWebSkinConfResult.getData();
+                
+                // 当前没有皮肤数据
+                if (webSkinConf == null) {
+                    result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+                    return result;
+                }
+                
+                result.addProperty("skinName", webSkinConf.getSkinName());
+                result.addProperty("navigationBarLogo", webSkinConf.getNavigationBarLogo());
+                result.addProperty("navigationBarNomal", webSkinConf.getNavigationBarNomal());
+                result.addProperty("navigationBarHover", webSkinConf.getNavigationBarHover());
+                result.addProperty("navigationBackLeft", webSkinConf.getNavigationBackLeft());
+                result.addProperty("navigationBackMiddle", webSkinConf.getNavigationBackMiddle());
+                result.addProperty("navigationBackRight", webSkinConf.getNavigationBackRight());
+                result.addProperty("searchNomal", webSkinConf.getSearchNomal());
+                result.addProperty("searchHover", webSkinConf.getSearchHover());
+                result.addProperty("searchIconNomal", webSkinConf.getSearchIconNomal());
+                result.addProperty("searchIconHover", webSkinConf.getSearchIconHover());
+                result.addProperty("searchBox", webSkinConf.getSearchBox());
+                result.addProperty("backgroundBase", webSkinConf.getBackgroundBase());
+                result.addProperty("background1920", webSkinConf.getBackground1920());
+                result.addProperty("background1680", webSkinConf.getBackground1680());
+                result.addProperty("background1440", webSkinConf.getBackground1440());
+                result.addProperty("backgroundLink", webSkinConf.getBackgroundLink());
+                result.addProperty("indicatorNomal", webSkinConf.getIndicatorNomal());
+                result.addProperty("indicatorHover", webSkinConf.getIndicatorHover());
+                result.addProperty("indicatorBack", webSkinConf.getIndicatorBack());
+                result.addProperty("vertical", webSkinConf.getVertical());
+            }
+            
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
 }
 
 class RenqiRoomComparator implements Comparator<RoomInfo> {
