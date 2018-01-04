@@ -998,26 +998,85 @@ public class KKHallFunctions {
                 }
                 
                 result.addProperty("skinName", webSkinConf.getSkinName());
-                result.addProperty("navigationBarLogo", webSkinConf.getNavigationBarLogo());
-                result.addProperty("navigationBarNomal", webSkinConf.getNavigationBarNomal());
-                result.addProperty("navigationBarHover", webSkinConf.getNavigationBarHover());
-                result.addProperty("navigationBackLeft", webSkinConf.getNavigationBackLeft());
-                result.addProperty("navigationBackMiddle", webSkinConf.getNavigationBackMiddle());
-                result.addProperty("navigationBackRight", webSkinConf.getNavigationBackRight());
-                result.addProperty("searchNomal", webSkinConf.getSearchNomal());
-                result.addProperty("searchHover", webSkinConf.getSearchHover());
-                result.addProperty("searchIconNomal", webSkinConf.getSearchIconNomal());
-                result.addProperty("searchIconHover", webSkinConf.getSearchIconHover());
-                result.addProperty("searchBox", webSkinConf.getSearchBox());
-                result.addProperty("backgroundBase", webSkinConf.getBackgroundBase());
-                result.addProperty("background1920", webSkinConf.getBackground1920());
-                result.addProperty("background1680", webSkinConf.getBackground1680());
-                result.addProperty("background1440", webSkinConf.getBackground1440());
-                result.addProperty("backgroundLink", webSkinConf.getBackgroundLink());
-                result.addProperty("indicatorNomal", webSkinConf.getIndicatorNomal());
-                result.addProperty("indicatorHover", webSkinConf.getIndicatorHover());
-                result.addProperty("indicatorBack", webSkinConf.getIndicatorBack());
-                result.addProperty("vertical", webSkinConf.getVertical());
+                if (!StringUtil.strIsNull(webSkinConf.getNavigationBarLogo())) {
+                    result.addProperty("navigationBarLogo", webSkinConf.getNavigationBarLogo());
+                }
+
+                if (!StringUtil.strIsNull(webSkinConf.getNavigationBarNomal())) {
+                    result.addProperty("navigationBarNomal", webSkinConf.getNavigationBarNomal());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getNavigationBarHover())) {
+                    result.addProperty("navigationBarHover", webSkinConf.getNavigationBarHover());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getNavigationBackLeft())) {
+                    result.addProperty("navigationBackLeft", webSkinConf.getNavigationBackLeft());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getNavigationBackMiddle())) {
+                    result.addProperty("navigationBackMiddle", webSkinConf.getNavigationBackMiddle());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getNavigationBackRight())) {
+                    result.addProperty("navigationBackRight", webSkinConf.getNavigationBackRight());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getSearchNomal())) {
+                    result.addProperty("searchNomal", webSkinConf.getSearchNomal());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getSearchHover())) {
+                    result.addProperty("searchHover", webSkinConf.getSearchHover());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getSearchIconNomal())) {
+                    result.addProperty("searchIconNomal", webSkinConf.getSearchIconNomal());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getSearchIconHover())) {
+                    result.addProperty("searchIconHover", webSkinConf.getSearchIconHover());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getSearchBox())) {
+                    result.addProperty("searchBox", webSkinConf.getSearchBox());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getBackgroundBase())) {
+                    result.addProperty("backgroundBase", webSkinConf.getBackgroundBase());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getBackground1920())) {
+                    result.addProperty("background1920", webSkinConf.getBackground1920());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getBackground1680())) {
+                    result.addProperty("background1680", webSkinConf.getBackground1680());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getBackground1440())) {
+                    result.addProperty("background1440", webSkinConf.getBackground1440());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getBackgroundLink())) {
+                    result.addProperty("backgroundLink", webSkinConf.getBackgroundLink());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getIndicatorNomal())) {
+                    result.addProperty("indicatorNomal", webSkinConf.getIndicatorNomal());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getIndicatorHover())) {
+                    result.addProperty("indicatorHover", webSkinConf.getIndicatorHover());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getIndicatorBack())) {
+                    result.addProperty("indicatorBack", webSkinConf.getIndicatorBack());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getVertical())) {
+                    result.addProperty("vertical", webSkinConf.getVertical());
+                }
             }
             
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
