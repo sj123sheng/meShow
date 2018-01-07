@@ -185,6 +185,12 @@
 		  	<groupId>com.melot</groupId>
 		  	<artifactId>melot-api-common</artifactId>
 		  	<version>0.0.39</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>opus-module-api</artifactId>
+					<groupId>com.melot.module</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.melot.module.api</groupId>
@@ -550,11 +556,16 @@
             <version>1.0.2</version>
         </dependency>
 
-	    <dependency>
-		    <groupId>com.melot.module</groupId>
-		    <artifactId>opus-module-api</artifactId>
-		    <version>1.0.3</version>
-	    </dependency>
+	    <!--<dependency>-->
+		    <!--<groupId>com.melot.module</groupId>-->
+		    <!--<artifactId>opus-module-api</artifactId>-->
+		    <!--<version>1.0.3</version>-->
+	    <!--</dependency>-->
+		<dependency>
+			<groupId>com.melot.module</groupId>
+			<artifactId>kk-opus-api</artifactId>
+			<version>1.0.0</version>
+		</dependency>
 
         <dependency>
             <groupId>com.zmxy</groupId>
@@ -583,7 +594,7 @@
 		<dependency>
 			<groupId>com.melot.module</groupId>
 			<artifactId>kk-resource-api</artifactId>
-			<version>1.0.2</version>
+			<version>1.0.4-SNAPSHOT</version>
 		</dependency>
 		<dependency>
   			<groupId>com.melot.module.driver.msgbuilder</groupId>

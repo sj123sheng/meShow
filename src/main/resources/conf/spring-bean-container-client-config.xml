@@ -46,8 +46,7 @@
 	<kkrpc:reference id="familyDefineActivityService" interface="com.melot.kk.activity.service.FamilyDefineActivityService" version="1.0.18"></kkrpc:reference>
 	<kkrpc:reference id="giftHistoryBoardService" interface="com.melot.kk.activity.service.GiftHistoryBoardService" version="1.0.18"></kkrpc:reference>
 	<kkrpc:reference id="liveStreamConfigService" interface="com.melot.stream.driver.service.LiveStreamConfigService" version="1.0.0"></kkrpc:reference>
-	<kkrpc:reference id="videoService" interface="com.melot.opus.service.VideoService" version="1.0.0"></kkrpc:reference>
-	<kkrpc:reference id="basicService" interface="com.melot.opus.service.BasicService" version="1.0.0"></kkrpc:reference> 
+	<kkrpc:reference id="videoService" interface="com.melot.kk.opus.api.service.VideoService" version="1.0.1"></kkrpc:reference>
 	<!-- 商城模块 -->
 	<kkrpc:reference id="carService" interface="com.melot.module.packagegift.driver.service.CarService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="entranceTicketService" interface="com.melot.module.packagegift.driver.service.EntranceTicketService" version="1.0.0"></kkrpc:reference>

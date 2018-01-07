@@ -1,14 +1,14 @@
 package com.melot.kkcx.service;
 
 import com.google.gson.JsonObject;
+import com.melot.kk.opus.api.constant.OpusCostantEnum;
+import com.melot.kk.opus.api.domain.TempUserResource;
 import com.melot.kktv.service.LiveVideoService;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.Constant;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
-import com.melot.opus.domain.TempUserResource;
-import com.melot.opus.driver.enums.OpusCostantEnum;
 import com.upyun.api.UpYun;
 import org.apache.log4j.Logger;
 
