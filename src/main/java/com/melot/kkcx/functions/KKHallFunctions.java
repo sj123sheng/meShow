@@ -1077,6 +1077,10 @@ public class KKHallFunctions {
                 if (!StringUtil.strIsNull(webSkinConf.getVertical())) {
                     result.addProperty("vertical", webSkinConf.getVertical());
                 }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getNavigationBackBase())) {
+                    result.addProperty("navigationBackBase", webSkinConf.getNavigationBackBase());
+                }
             }
             
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
