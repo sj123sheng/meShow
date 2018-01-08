@@ -9,7 +9,8 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.melot.kk.module.resource.constant.ResourceStateConstant;
+import com.melot.kk.opus.api.constant.OpusCostantEnum;
+import com.melot.kk.opus.api.domain.TempUserResource;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -35,16 +36,12 @@ import com.melot.module.api.exceptions.MelotModuleException;
 import com.melot.module.poster.driver.domain.PosterInfo;
 import com.melot.module.poster.driver.domain.UpYunInfo;
 import com.melot.module.poster.driver.service.PosterService;
-import com.melot.opus.domain.TempUserResource;
-import com.melot.opus.driver.enums.OpusCostantEnum;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import com.upyun.api.UpYun;
 
 import javax.annotation.Resource;
 
 public class AlbumFunctions {
-
-	private static UpYun upyun = new UpYun(Constant.YOUPAI_BUCKET, Constant.YOUPAI_USER_NAME, Constant.YOUPAI_USER_PWD);
 
 	/** 日志记录对象 */
 	private static Logger logger = Logger.getLogger(AlbumFunctions.class);
@@ -1086,6 +1083,7 @@ public class AlbumFunctions {
 					result.addProperty("pictureId", 1); // 必须返回一个值否则客户端会报错
 				} else if(pictureType == 8){
 					result = AlbumServices.addPictureNew(userId, pictureType, fileUrl, pictureName);
+
 				} else {
 					result = AlbumServices.addPictureNewV2(resId, userId, pictureType, fileUrl, pictureName);
 				}

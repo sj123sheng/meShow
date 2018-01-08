@@ -11,7 +11,6 @@ import com.melot.kktv.model.News;
 import com.melot.kkcx.service.UserService;
 import com.melot.kktv.util.NewsMediaTypeEnum;
 import com.melot.kktv.util.PlatformEnum;
-import com.melot.opus.domain.UserNews;
 
 public class NewsTF {
 
@@ -215,42 +214,5 @@ public class NewsTF {
 			// 读取富豪等级
 			jObject.addProperty("richLevel", UserService.getRichLevel(news.getUserId()));
 			return jObject;
-	}
-	
-	/**
-	 * @param userNews
-	 * @return
-	 */
-	public static JsonObject toOpusJsonObject(UserNews userNews, int platform) {	
-		JsonObject jObject = new JsonObject();
-		try {
-			jObject.addProperty("newsId", userNews.getNewsId());
-			jObject.addProperty("title", userNews.getMediaTitle());
-			jObject.addProperty("content", userNews.getContent());
-			
-			JsonObject mediaSourceJson = new JsonParser().parse(userNews.getMediaSource()).getAsJsonObject();
-			if (mediaSourceJson.has("mediaUrl") && !mediaSourceJson.get("mediaUrl").isJsonNull()) {
-				jObject.addProperty("mediaUrl", mediaSourceJson.get("mediaUrl").getAsString());
-			}
-			if (mediaSourceJson.has("imageUrl") && !mediaSourceJson.get("imageUrl").isJsonNull()) {
-				switch (platform) {
-				case PlatformEnum.ANDROID:
-					jObject.addProperty("imageUrl_272", mediaSourceJson.get("imageUrl").getAsString() + "?imageView2/1/w/272/h/204");
-					break;
-				case PlatformEnum.IPHONE:
-					jObject.addProperty("imageUrl_272", mediaSourceJson.get("imageUrl").getAsString() + "?imageView2/1/w/272/h/204");
-					break;	
-				default:
-					jObject.addProperty("imageUrl_272", mediaSourceJson.get("imageUrl").getAsString() + "?imageView2/1/w/272/h/204");
-					//jObject.addProperty("imageUrl_1280", mediaSourceJson.get("imageUrl").getAsString());
-					break;
-				}
-			}
-		} catch (Exception e) {
-			logger.error("NewsTF.toOPusJsonObject exception, resId : " + userNews.getNewsId(), e);
-			return null;
-		}
-		
-		return jObject;
 	}
 }

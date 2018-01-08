@@ -10,6 +10,7 @@ import com.melot.content.config.apply.service.ApplyActorService;
 import com.melot.content.config.domain.ApplyActor;
 import com.melot.family.driver.domain.FamilyInfo;
 import com.melot.feedback.driver.service.FeedbackService;
+import com.melot.kk.opus.api.constant.OpusCostantEnum;
 import com.melot.kkcore.user.api.ProfileKeys;
 import com.melot.kkcore.user.api.UserInfoDetail;
 import com.melot.kkcore.user.api.UserProfile;
@@ -46,7 +47,6 @@ import com.melot.module.task.driver.domain.GetUserTaskListResp;
 import com.melot.module.task.driver.domain.GetUserTaskRewardResp;
 import com.melot.module.task.driver.domain.UserTask;
 import com.melot.module.task.driver.service.TaskInterfaceService;
-import com.melot.opus.driver.enums.OpusCostantEnum;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import com.melot.showmoney.driver.domain.PageShowMoneyHistory;
 import com.melot.showmoney.driver.domain.ShowMoneyHistory;
@@ -872,24 +872,6 @@ public class ProfileFunctions {
 			                }
 			                if (roomInfo != null && roomInfo.getType() != null) {
 			                    result.addProperty("roomType", roomInfo.getType());
-			                    if (roomInfo.getType().intValue() == AppIdEnum.GAME) {
-			                        GameUserInfo gameUserInfo = null;
-			        	        	t = Cat.getProducer().newTransaction("MCall", "com.melot.kkgame.service.UserService.getUserActorInfoByUserId");
-			        				try {
-			        					gameUserInfo = com.melot.kkgame.service.UserService.getUserActorInfoByUserId(userId);
-			        					t.setStatus(Transaction.SUCCESS);
-			        				} catch (Exception e) {
-			        					Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
-			        					t.setStatus(e);
-			        				} finally {
-			        					t.complete();
-			        				}
-			                        
-			        				if (gameUserInfo != null) {
-			        					// 新增用户作品数
-			        					result.addProperty("opusCount", gameUserInfo.getOpusCout() == null ? 0 : gameUserInfo.getOpusCout());
-									}
-			                    }
 			                    // 临时增加（主播勋章问题）
 			                    if (roomInfo.getType().intValue() == AppIdEnum.AMUSEMENT &&
 			                            result.get("userMedal").getAsJsonArray().size() == 0) {

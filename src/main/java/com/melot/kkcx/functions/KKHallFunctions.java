@@ -305,7 +305,6 @@ public class KKHallFunctions {
             String userRecommendAlgorithm = RecommendAlgorithmSource.getUserRecommendAlgorithm(userId);
 
             if(StringUtils.isEmpty(userRecommendAlgorithm)) {
-
                 userRecommendAlgorithm = RecommendAlgorithmSource.setUserRecommendAlgorithm(userId);
             }
 
