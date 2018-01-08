@@ -94,7 +94,7 @@
 	<kkrpc:reference id="giftListService" interface="com.melot.room.gift.service.GiftListService" version="1.0.2"></kkrpc:reference>
 	
 	<!-- 动态模块 -->
-	<kkrpc:reference id="newsCenter" interface="com.melot.news.service.NewsService" version="1.2.0"></kkrpc:reference>
+	<kkrpc:reference id="newsCenter" interface="com.melot.news.service.NewsService" version="1.2.1"></kkrpc:reference>
 	<!-- 资源模块 -->
 	<kkrpc:reference id="resourceCenter" interface="com.melot.resource.service.ResourceService" version="1.0.0"/>
 	<!-- 1v1视频聊天服务 -->

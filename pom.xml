@@ -184,13 +184,7 @@
 		<dependency>
 		  	<groupId>com.melot</groupId>
 		  	<artifactId>melot-api-common</artifactId>
-		  	<version>0.0.39</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>opus-module-api</artifactId>
-					<groupId>com.melot.module</groupId>
-				</exclusion>
-			</exclusions>
+		  	<version>0.0.40</version>
 		</dependency>
 		<dependency>
 			<groupId>com.melot.module.api</groupId>
