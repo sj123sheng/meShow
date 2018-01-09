@@ -146,6 +146,8 @@
     <kkrpc:reference id="resActorLadderMatchService" interface="com.melot.kk.nationalPK.api.service.ResActorLadderMatchService" version="1.0.0"></kkrpc:reference>
     <kkrpc:reference id="histActorLadderMatchService" interface="com.melot.kk.nationalPK.api.service.HistActorLadderMatchService" version="1.0.0"></kkrpc:reference>
 
+	<!-- WEB大厅皮肤服务 -->
+	<kkrpc:reference id="webSkinConfService" interface="com.melot.kk.hall.api.service.WebSkinConfService" version="1.0.0"/>
 	<!-- 答题比赛模块 -->
 	<kkrpc:reference id="quizActivityService" interface="com.melot.kk.quiz.api.service.QuizActivityService" version="1.0.0"/>
 </beans>

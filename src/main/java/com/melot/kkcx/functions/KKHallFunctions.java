@@ -12,6 +12,8 @@ import com.melot.api.menu.sdk.handler.FirstPageHandler;
 import com.melot.api.menu.sdk.redis.KKHallSource;
 import com.melot.api.menu.sdk.service.RoomInfoService;
 import com.melot.kk.demo.api.service.NewRcmdService;
+import com.melot.kk.hall.api.domain.WebSkinConf;
+import com.melot.kk.hall.api.service.WebSkinConfService;
 import com.melot.kkcore.relation.api.ActorRelation;
 import com.melot.kkcore.relation.api.RelationType;
 import com.melot.kkcore.relation.service.ActorRelationService;
@@ -19,6 +21,8 @@ import com.melot.kkcore.user.api.UserRegistry;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.service.RoomService;
 import com.melot.kkcx.transform.RoomTF;
+import com.melot.kktv.base.CommonStateCode;
+import com.melot.kktv.base.Result;
 import com.melot.kktv.redis.RecommendAlgorithmSource;
 import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.UserRelationService;
@@ -301,7 +305,6 @@ public class KKHallFunctions {
             String userRecommendAlgorithm = RecommendAlgorithmSource.getUserRecommendAlgorithm(userId);
 
             if(StringUtils.isEmpty(userRecommendAlgorithm)) {
-
                 userRecommendAlgorithm = RecommendAlgorithmSource.setUserRecommendAlgorithm(userId);
             }
 
@@ -971,6 +974,121 @@ public class KKHallFunctions {
         return result;
     }
 
+    /**
+     * 获取大厅首页皮肤配置信息[51070102]
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getWebSkinInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        try {
+            WebSkinConfService webSkinConfService = (WebSkinConfService) MelotBeanFactory.getBean("webSkinConfService");
+            Result<WebSkinConf> currentWebSkinConfResult = webSkinConfService.getCurrentWebSkinConf();
+            if (currentWebSkinConfResult != null 
+                    && CommonStateCode.SUCCESS.equals(currentWebSkinConfResult.getCode())) {
+                WebSkinConf webSkinConf = currentWebSkinConfResult.getData();
+                
+                // 当前没有皮肤数据
+                if (webSkinConf == null) {
+                    result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+                    return result;
+                }
+                
+                result.addProperty("skinName", webSkinConf.getSkinName());
+                if (!StringUtil.strIsNull(webSkinConf.getNavigationBarLogo())) {
+                    result.addProperty("navigationBarLogo", webSkinConf.getNavigationBarLogo());
+                }
+
+                if (!StringUtil.strIsNull(webSkinConf.getNavigationBarNomal())) {
+                    result.addProperty("navigationBarNomal", webSkinConf.getNavigationBarNomal());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getNavigationBarHover())) {
+                    result.addProperty("navigationBarHover", webSkinConf.getNavigationBarHover());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getNavigationBackLeft())) {
+                    result.addProperty("navigationBackLeft", webSkinConf.getNavigationBackLeft());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getNavigationBackMiddle())) {
+                    result.addProperty("navigationBackMiddle", webSkinConf.getNavigationBackMiddle());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getNavigationBackRight())) {
+                    result.addProperty("navigationBackRight", webSkinConf.getNavigationBackRight());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getSearchNomal())) {
+                    result.addProperty("searchNomal", webSkinConf.getSearchNomal());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getSearchHover())) {
+                    result.addProperty("searchHover", webSkinConf.getSearchHover());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getSearchIconNomal())) {
+                    result.addProperty("searchIconNomal", webSkinConf.getSearchIconNomal());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getSearchIconHover())) {
+                    result.addProperty("searchIconHover", webSkinConf.getSearchIconHover());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getSearchBox())) {
+                    result.addProperty("searchBox", webSkinConf.getSearchBox());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getBackgroundBase())) {
+                    result.addProperty("backgroundBase", webSkinConf.getBackgroundBase());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getBackground1920())) {
+                    result.addProperty("background1920", webSkinConf.getBackground1920());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getBackground1680())) {
+                    result.addProperty("background1680", webSkinConf.getBackground1680());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getBackground1440())) {
+                    result.addProperty("background1440", webSkinConf.getBackground1440());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getBackgroundLink())) {
+                    result.addProperty("backgroundLink", webSkinConf.getBackgroundLink());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getIndicatorNomal())) {
+                    result.addProperty("indicatorNomal", webSkinConf.getIndicatorNomal());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getIndicatorHover())) {
+                    result.addProperty("indicatorHover", webSkinConf.getIndicatorHover());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getIndicatorBack())) {
+                    result.addProperty("indicatorBack", webSkinConf.getIndicatorBack());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getVertical())) {
+                    result.addProperty("vertical", webSkinConf.getVertical());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getNavigationBackBase())) {
+                    result.addProperty("navigationBackBase", webSkinConf.getNavigationBackBase());
+                }
+            }
+            
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
 }
 
 class RenqiRoomComparator implements Comparator<RoomInfo> {

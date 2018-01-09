@@ -2886,4 +2886,10 @@
         <constructor-arg name="methodName" value="getQuizUserInfo" />
     </bean>
 
+	<!-- 获取大厅配置数据 -->
+	<bean id="51070102" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kkHallFunction" />
+		<constructor-arg name="methodName" value="getWebSkinInfo" />
+	</bean>
+
 </beans>
