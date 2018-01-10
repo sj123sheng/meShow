@@ -768,10 +768,20 @@ public class NodeFunctions {
 						int familyId = 0;
 						int actorRate = 0;
 						int familyRate = 0;
+						int officialRate = 40;
+		                try {
+		                    ConfigInfoService configInfoService = (ConfigInfoService) MelotBeanFactory.getBean("configInfoService");
+		                    ConfSystemInfo confSystemInfo = configInfoService.getConfSystemInfoByKey("official_rate");
+		                    if (confSystemInfo != null && confSystemInfo.getcValue() != null) {
+		                        officialRate = Integer.valueOf(confSystemInfo.getcValue());
+		                    }
+		                } catch (Exception e) {
+		                    logger.error("configInfoService.getConfSystemInfoByKey(actor_rate) execute exception", e);
+		                }
 						if (roomInfo.getFamilyId() != null && roomInfo.getFamilyId().intValue() > 0) {
 							familyId = roomInfo.getFamilyId().intValue();
 							if (familyId == 12345) {
-								actorRate = 60;
+								actorRate = 100 - officialRate;
 								familyRate = 0;
 							} else {
 								// 获取家族主播分成比例
@@ -788,11 +798,11 @@ public class NodeFunctions {
 								}
 								if (distributRate != null && distributRate.intValue() > 0) {
 									actorRate = distributRate.intValue();
-									familyRate = 60 - actorRate;
+									familyRate = 100 - officialRate - actorRate;
 								}
 								// 家族房家族得60%
 								if (actorRate == 0 && roomInfo.getRoomMode() != null && roomInfo.getRoomMode().intValue() == 3) {
-									familyRate = 60;
+									familyRate = 100 - officialRate;
 								}
 							}
 						}
