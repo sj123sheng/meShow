@@ -22,7 +22,9 @@ import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.api.menu.sdk.service.RoomInfoService;
 import com.melot.api.menu.sdk.utils.RoomInfoUtils;
 import com.melot.common.driver.domain.CharmUserInfo;
+import com.melot.common.driver.domain.ConfSystemInfo;
 import com.melot.common.driver.domain.WeekGiftRank;
+import com.melot.common.driver.service.ConfigInfoService;
 import com.melot.common.driver.service.RoomExtendConfService;
 import com.melot.common.driver.service.ShareService;
 import com.melot.content.config.apply.service.ApplyActorService;
@@ -1177,8 +1179,19 @@ public class NodeFunctions {
 				int familyId = 0;
 				int actorRate = 0;
 				int familyRate = 0;
+				int officialRate = 40;
+				try {
+                    ConfigInfoService configInfoService = (ConfigInfoService) MelotBeanFactory.getBean("configInfoService");
+                    ConfSystemInfo confSystemInfo = configInfoService.getConfSystemInfoByKey("official_rate");
+                    if (confSystemInfo != null && confSystemInfo.getcValue() != null) {
+                        officialRate = Integer.valueOf(confSystemInfo.getcValue());
+                    }
+                } catch (Exception e) {
+                    logger.error("configInfoService.getConfSystemInfoByKey(actor_rate) execute exception", e);
+                }
+				
 				if (roomType == 12) {
-					actorRate = 60;
+					actorRate = 100 - officialRate;
 					familyId = 12345;
 				} else {
 					ApplyContractInfo applyContractInfo = null;
@@ -1203,7 +1216,7 @@ public class NodeFunctions {
 						
 						// 家族房家族得60%
 						if (actorRate == 0 && roomInfo.getRoomMode() != null && roomInfo.getRoomMode().intValue() == 3) {
-							familyRate = 60;
+							familyRate = 100 - officialRate;
 						} else {
 							// 判断家族是否在本APP上开通，如未开通则家族分成为 0
 							FamilyInfo familyInfo = null;
@@ -1218,7 +1231,7 @@ public class NodeFunctions {
 								t.complete();
 							}
 							if (familyInfo != null && familyInfo.getAssess() != null && familyInfo.getAssess() == 1) {
-								familyRate = 60 - actorRate;
+								familyRate = 100 - officialRate - actorRate;
 							}
 						}
 					}
