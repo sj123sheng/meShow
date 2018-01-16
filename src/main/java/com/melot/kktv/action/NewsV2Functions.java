@@ -18,7 +18,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -44,9 +43,7 @@ import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.redis.NewsSource;
 import com.melot.kktv.redis.NewsV2Source;
-import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.NewsService;
-//import com.melot.kktv.service.ResourceService;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
@@ -58,7 +55,6 @@ import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.news.domain.NewsCommentHist;
 import com.melot.news.model.NewsInfo;
-//import com.melot.resource.domain.Resource;
 
 import redis.clients.jedis.Tuple;
 
@@ -71,9 +67,6 @@ public class NewsV2Functions {
     @javax.annotation.Resource
     ResourceNewService resourceNewService;
 
-    @Autowired
-    ConfigService configService;
-
     /**
      * 发布动态(20006002)
      *
@@ -83,7 +76,7 @@ public class NewsV2Functions {
      *            是否验证token标记
      * @return 结果字符串
      */
-    public JsonObject addNews(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+    public JsonObject addNews(JsonObject jsonObject, boolean checkTag) throws Exception {
         JsonObject result = new JsonObject();
 
         // 该接口需要验证token,未验证的返回错误码
@@ -93,9 +86,9 @@ public class NewsV2Functions {
         }
 
         // 验证参数
-        int userId, mediaType, appId, mediaFrom, platform;
+        int userId, mediaType, appId, platform;
         @SuppressWarnings("unused")
-        String content = null, mediaUrl = null, imageUrl = null, videoTitle = null, topic = null;
+        String content = null, mediaUrl = null, imageUrl = null, newsTitle = null, topic = null;
         Integer mediaDur = null, resType = null;
         try {
             appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 1, Integer.MAX_VALUE);
@@ -126,10 +119,10 @@ public class NewsV2Functions {
                 mediaDur = 0;
             }
 
-            videoTitle = CommonUtil.getJsonParamString(jsonObject, "videoTitle", null, null, 1, 40);
-
-            // 1-upyun 2-qiniu
-            mediaFrom = CommonUtil.getJsonParamInt(jsonObject, "mediaFrom", 1, null, 1, Integer.MAX_VALUE);
+            newsTitle = CommonUtil.getJsonParamString(jsonObject, "videoTitle", null, null, 1, 40);
+//
+//            // 1-upyun 2-qiniu
+//            mediaFrom = CommonUtil.getJsonParamInt(jsonObject, "mediaFrom", 1, null, 1, Integer.MAX_VALUE);
 
             resType = CommonUtil.getJsonParamInt(jsonObject, "newsType", 8, null, 1, Integer.MAX_VALUE);
 
@@ -156,6 +149,9 @@ public class NewsV2Functions {
         newsInfo.setPublishedTime(new Date());
         if (content != null) {
             newsInfo.setContent(content);
+        }
+        if (newsTitle != null) {
+            newsInfo.setNewsTitle(newsTitle);
         }
         newsInfo.setPlatform(platform);
         newsInfo.setAppId(appId);
