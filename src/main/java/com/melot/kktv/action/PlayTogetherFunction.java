@@ -156,10 +156,10 @@ public class PlayTogetherFunction {
         }
         try {
 
-            String playTogetherConfig = new String(configService.getPlayTogetherConfig().getBytes(encode), decode);
+            String playTogetherConfig = configService.getPlayTogetherConfig();
             JsonArray roomArray = new JsonParser().parse(playTogetherConfig).getAsJsonArray();
             if(channel == 70152) {
-                String playTogetherSpecialChannelConfig = new String(configService.getPlayTogetherSpecialChannelConfig().getBytes(encode), decode);
+                String playTogetherSpecialChannelConfig = configService.getPlayTogetherSpecialChannelConfig();
                 roomArray = new JsonParser().parse(playTogetherSpecialChannelConfig).getAsJsonArray();
             }
 

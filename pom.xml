@@ -15,9 +15,8 @@
 	<url>http://maven.apache.org</url>
 	
 	<properties>
-		<project.build.sourceEncoding>
-			UTF-8
-		</project.build.sourceEncoding>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <melot.common.version>1.1.1</melot.common.version>
 	</properties>
 
 	<build>
@@ -35,16 +34,6 @@
                 </excludes>
 			</resource>
 		</resources>
-		<!-- 
-		<testSourceDirectory>${basedir}/src/test/java</testSourceDirectory>
-		<testResources>
-			<testResource>
-				<directory>${basedir}/src/main/resources</directory>
-				<targetPath>.</targetPath>
-			</testResource>
-		</testResources>
-		<testOutputDirectory>${basedir}/target/test-classes</testOutputDirectory>
-		 -->
 		
 		<plugins>
 			<plugin>
@@ -85,27 +74,6 @@
 					</archive>
 				</configuration>
 			</plugin>
-
-			<!--<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<version>2.4</version>
-				<executions>
-					<execution>
-						<id>make-dir</id>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-						<configuration>
-							<skipAssembly>false</skipAssembly>
-							<descriptor>assembly.xml</descriptor>
-							<appendAssemblyId>false</appendAssemblyId>
-							<finalName>meShow</finalName>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>-->
 		</plugins>
 	</build>
 
@@ -156,11 +124,43 @@
 		</pluginRepository>
 	</pluginRepositories>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.melot</groupId>
+                <artifactId>melot-common-dependencies</artifactId>
+                <version>${melot.common.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
 	<dependencies>
 	    <dependency>
             <groupId>org.springframework</groupId>
-            <artifactId>spring-core</artifactId>
+            <artifactId>spring-aop</artifactId>
             <version>4.3.10.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>com.melot.module</groupId>
+            <artifactId>kkrpc-config</artifactId>
+            <version>1.1.7</version>
+        </dependency>
+        <dependency>
+            <groupId>com.melot.module</groupId>
+            <artifactId>kkrpc-common</artifactId>
+            <version>1.1.7</version>
+        </dependency>
+        <dependency>
+            <groupId>com.melot.module</groupId>
+            <artifactId>kkrpc-core</artifactId>
+            <version>1.1.7</version>
+        </dependency>
+        <dependency>
+            <groupId>com.melot.common</groupId>
+            <artifactId>melot-utils</artifactId>
+            <version>1.0.6</version>
         </dependency>
 		<dependency>
 			<groupId>com.melot.alipay</groupId>
@@ -174,7 +174,7 @@
 		<dependency>
 			<groupId>com.melot</groupId>
 			<artifactId>melot-sdk</artifactId>
-			<version>2.2.1</version>
+			<version>3.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.melot</groupId>
@@ -184,7 +184,7 @@
 		<dependency>
 		  	<groupId>com.melot</groupId>
 		  	<artifactId>melot-api-common</artifactId>
-		  	<version>0.0.41</version>
+		  	<version>1.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.melot.module.api</groupId>
@@ -312,15 +312,6 @@
 		<dependency>
 			<groupId>com.melot.module.driver</groupId>
 			<artifactId>common-driver</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.alibaba</groupId>
-			<artifactId>druid</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.melot</groupId>
-			<artifactId>melot-monitor-soa</artifactId>
-			<version>1.1.0</version><!--$NO-MVN-MAN-VER$-->
 	    </dependency>
 	    <dependency>
 			<groupId>com.melot</groupId>
@@ -385,21 +376,6 @@
   			<version>1.0.12</version>
 		</dependency>
 		<dependency>
-			<groupId>com.melot.module</groupId>
-			<artifactId>kkrpc-config</artifactId>
-			<version>1.0.9</version>
-		</dependency>
-		<dependency>
-			<groupId>com.melot.module</groupId>
-			<artifactId>kkrpc-common</artifactId>
-			<version>1.0.9</version>
-		</dependency>
-		<dependency>
-			<groupId>com.melot.module</groupId>
-			<artifactId>kkrpc-core</artifactId>
-			<version>1.0.9</version>
-		</dependency>
-		<dependency>
 		  	<groupId>com.melot.module</groupId>
 		  	<artifactId>kkcore-user-api</artifactId>
 		  	<version>1.1.8</version>
@@ -450,16 +426,11 @@
 			<artifactId>cat-client</artifactId>
 			<version>3.0.2</version>
     	</dependency>
-        <dependency>
-            <groupId>com.baidu.disconf</groupId>
-            <artifactId>disconf-core-melot</artifactId>
-            <version>2.6.33</version>
-        </dependency>
 
         <dependency>
             <groupId>com.baidu.disconf</groupId>
             <artifactId>disconf-client-melot</artifactId>
-            <version>2.6.33</version>
+            <version>2.6.36</version>
         </dependency>
     	<dependency>
   			<groupId>com.melot.module.driver.msgbuilder</groupId>
