@@ -110,9 +110,9 @@ public class FamilyAction {
         String[] goldMedalFamilyArr = configService.getGoldMedalFamily().trim().split(REGEX);
         String[] goldMedalFamilyIdsArr = configService.getGoldMedalFamilyIds().trim().split(REGEX);
 
-        String challengerFamilyName = new String(challengerFamilyArr[0].getBytes(encode), decode);
-        String trumpFamilyName = new String(trumpFamilyArr[0].getBytes(encode), decode);
-        String goldMedalFamilyName = new String(goldMedalFamilyArr[0].getBytes(encode), decode);
+        String challengerFamilyName = challengerFamilyArr[0];
+        String trumpFamilyName = trumpFamilyArr[0];
+        String goldMedalFamilyName = goldMedalFamilyArr[0];
 
         String challengerFamilyBackground = challengerFamilyArr[1];
         String trumpFamilyBackground = trumpFamilyArr[1];

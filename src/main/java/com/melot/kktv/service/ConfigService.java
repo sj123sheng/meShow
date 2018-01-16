@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
  * 2017/8/25           shengjian     1.0
  */
 @Service
-@DisconfFile(filename = "autoConfig.properties", copy2TargetDirPath = "conf")
+@DisconfFile(filename = "autoConfig.properties", targetDirPath = "conf")
 public class ConfigService {
 
     private String challengerFamily;
