@@ -1221,9 +1221,11 @@ public class ActivityFunctions {
         int roomId;
         int familyId;
         int platform;
+        int userId;
         String version;
         
         try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
             roomId = CommonUtil.getJsonParamInt(jsonObject, "roomId", 0, TagCodeEnum.ROOMID_MISSING, 1, Integer.MAX_VALUE);
             familyId = CommonUtil.getJsonParamInt(jsonObject, "familyId", 0, TagCodeEnum.FAMILYID_MISSING, 1, Integer.MAX_VALUE);
             platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, TagCodeEnum.PLATFORM_MISSING, 1, 10);
@@ -1244,6 +1246,10 @@ public class ActivityFunctions {
             if (version != null) {
                 paramJson.addProperty("version", version);
             }
+            if (userId > 0) {
+                paramJson.addProperty("userId", userId);
+            }
+            
             MissionService missionService = (MissionService) MelotBeanFactory.getBean("missionService");
             if (missionService != null) {
                 result = missionService.getVisiableActivityByVersion(paramJson);
