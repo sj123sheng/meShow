@@ -1160,6 +1160,24 @@
 		<constructor-arg name="t" ref="newsV2Function" />
 		<constructor-arg name="methodName" value="getPopularTopicList" />
 	</bean>
+	<bean id="51100102" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="newsV2Function" />
+		<constructor-arg name="methodName" value="editNews" />
+	</bean>
+	<bean id="51100103" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="newsV2Function" />
+		<constructor-arg name="methodName" value="getMyAudioList" />
+	</bean>
+
+	<bean id="51100104" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="newsV2Function" />
+		<constructor-arg name="methodName" value="addPlayTimes" />
+	</bean>
+
+	<bean id="51100105" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="newsV2Function" />
+		<constructor-arg name="methodName" value="getPopularAudioList" />
+	</bean>
 	<!-- 获取用户动态列表 -->
 	<!-- 
 	<bean id="20010401" class="com.melot.sdk.core.function.GenericFunction">

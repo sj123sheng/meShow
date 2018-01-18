@@ -12,6 +12,8 @@ import java.util.regex.Pattern;
 
 import com.melot.kk.module.resource.domain.Resource;
 import com.melot.kk.module.resource.service.ResourceNewService;
+import com.melot.kktv.base.CommonStateCode;
+import com.melot.kktv.base.Page;
 import com.melot.kktv.base.Result;
 import org.apache.log4j.Logger;
 
@@ -1490,6 +1492,48 @@ public class NewsService {
 			return newsService.getNewsListAndPraiseByNewsType(actorId, userId, newsType, start, offset);
 		}
 		return null;
+	}
+
+	public static Page<NewsInfo> getByTypeAndUserId(int type,Integer userId,Integer start, Integer num){
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
+		if (newsService != null) {
+			Result<Page<NewsInfo>> result = newsService.getByTypeAndUserId(type,userId,start,num);
+			if(result != null && result.getCode() != null && result.getCode().equals(CommonStateCode.SUCCESS)){
+				return result.getData();
+			}
+			else {
+				logger.error("【分页获取" + userId + "的"+type+"类型的动态失败】");
+			}
+		}
+		return null;
+	}
+
+	public static Page<NewsInfo> getHotAudioNews(Integer start, Integer num){
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
+		if (newsService != null) {
+			Result<Page<NewsInfo>> result = newsService.getHotAudioNews(start,num);
+			if(result != null && result.getCode() != null && result.getCode().equals(CommonStateCode.SUCCESS)){
+				return result.getData();
+			}
+			else {
+				logger.error("【分页获取热门音频动态失败】start="+start+"，num="+num);
+			}
+		}
+		return null;
+	}
+
+	public static boolean addNewsMediaPlay(Integer userId, Integer newsId){
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
+		if (newsService != null) {
+			Result<Integer> result = newsService.addNewsMediaPlay(userId,newsId);
+			if(result != null && result.getCode() != null && result.getCode().equals(CommonStateCode.SUCCESS)){
+				return result.getData() > 0;
+			}
+			else {
+				logger.error("【新增播放次数失败】userId="+userId+"，newsId="+newsId);
+			}
+		}
+		return false;
 	}
 	
 }

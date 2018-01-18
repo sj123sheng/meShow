@@ -94,7 +94,8 @@
 	<kkrpc:reference id="giftListService" interface="com.melot.room.gift.service.GiftListService" version="1.0.2"></kkrpc:reference>
 	
 	<!-- 动态模块 -->
-	<kkrpc:reference id="newsCenter" interface="com.melot.news.service.NewsService" version="1.2.1"></kkrpc:reference>
+	<kkrpc:reference id="newsCenter" interface="com.melot.news.service.NewsService" version="1.2.2"></kkrpc:reference>
+
 	<!-- 资源模块 -->
 	<kkrpc:reference id="resourceCenter" interface="com.melot.resource.service.ResourceService" version="1.0.0"/>
 	<!-- 1v1视频聊天服务 -->
@@ -104,7 +105,7 @@
     <!-- 主播模块 -->
     <kkrpc:reference id="areaNewActorsService" interface="com.melot.common.driver.service.AreaNewActorsService" version="1.0.0" ></kkrpc:reference>
 
-	<kkrpc:reference id="resourceNewService" interface="com.melot.kk.module.resource.service.ResourceNewService" version="1.0.1" />
+	<kkrpc:reference id="resourceNewService" interface="com.melot.kk.module.resource.service.ResourceNewService" version="1.0.2" />
 
     <!-- 主播代言团服务 -->
 	<kkrpc:reference id="shareActivityService" interface="com.melot.share.driver.service.ShareActivityService" version="1.0.2"/>
