@@ -593,6 +593,13 @@
             <version>1.0.1</version>
         </dependency>
         
+        <!-- 贵族模块 -->
+        <dependency>
+		  <groupId>com.melot.kk</groupId>
+		  <artifactId>kk-nobility-api</artifactId>
+		  <version>1.0.0-SNAPSHOT</version>
+		</dependency>
+        
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>

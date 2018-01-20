@@ -149,4 +149,7 @@
 	<kkrpc:reference id="webSkinConfService" interface="com.melot.kk.hall.api.service.WebSkinConfService" version="1.0.0"/>
 	<!-- 答题比赛模块 -->
 	<kkrpc:reference id="quizActivityService" interface="com.melot.kk.quiz.api.service.QuizActivityService" version="1.0.0"/>
+	
+	<!-- 贵族模块 -->
+	<kkrpc:reference id="nobilityService" interface="com.melot.kk.nobility.api.service.NobilityService" version="1.0.0"/>
 </beans>
