@@ -169,6 +169,7 @@ public class NobilityFunctions {
                     JsonObject infoJson = new JsonObject();
                     infoJson.addProperty("nobilityId", nobilityInfo.getNobilityId());
                     infoJson.addProperty("nobilityName", nobilityInfo.getNobilityName());
+                    infoJson.addProperty("nobilityIcon", nobilityInfo.getNobilityIcon());
                     nobilityList.add(infoJson);
                 }
                 result.add("nobilityList", nobilityList);
