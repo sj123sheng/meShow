@@ -264,14 +264,14 @@ public class NobilityFunctions {
         }
         
         // 靓号转化为真实ID
-        Integer realUserId = UserAssetServices.luckyIdToUserId(frienId);
-        if (realUserId == null) {
-            realUserId = frienId;
+        Integer realfrienId = UserAssetServices.luckyIdToUserId(frienId);
+        if (realfrienId == null) {
+            realfrienId = frienId;
         }
         
         NobilityService nobilityService = (NobilityService)MelotBeanFactory.getBean("nobilityService");
         try {
-            Result<Boolean> resp = nobilityService.buyNobility(userId, frienId, nobilityId, actorId);
+            Result<Boolean> resp = nobilityService.buyNobility(userId, realfrienId, nobilityId, actorId);
             if (resp == null) {
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
                 return result;
@@ -294,7 +294,7 @@ public class NobilityFunctions {
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             }
         } catch (Exception e) {
-            log.error("NobilityFunctions.buyNobility(" + userId + ", " + frienId + ", " + nobilityId + ", " + actorId + ") execute exception.", e);
+            log.error("NobilityFunctions.buyNobility(" + userId + ", " + realfrienId + ", " + nobilityId + ", " + actorId + ") execute exception.", e);
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
         }
         
