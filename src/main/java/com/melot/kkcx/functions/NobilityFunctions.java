@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.melot.kk.nobility.api.domain.NobilityInfo;
 import com.melot.kk.nobility.api.domain.NobilityUserInfo;
 import com.melot.kk.nobility.api.service.NobilityService;
@@ -170,7 +171,11 @@ public class NobilityFunctions {
                     JsonObject infoJson = new JsonObject();
                     infoJson.addProperty("nobilityId", nobilityInfo.getNobilityId());
                     infoJson.addProperty("nobilityName", nobilityInfo.getNobilityName());
-                    infoJson.addProperty("nobilityIcon", nobilityInfo.getNobilityIcon());
+                    try {
+                        infoJson.add("nobilityIcon", new JsonParser().parse(nobilityInfo.getNobilityIcon()));
+                    } catch (Exception e) {
+                        infoJson.add("nobilityIcon", new JsonObject());
+                    }
                     nobilityList.add(infoJson);
                 }
                 result.add("nobilityList", nobilityList);
