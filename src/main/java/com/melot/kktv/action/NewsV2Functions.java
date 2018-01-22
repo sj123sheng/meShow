@@ -511,8 +511,8 @@ public class NewsV2Functions {
 //        }
         int pageIndex,countPerPage;
         try {
-            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "start", 1, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
-            countPerPage = CommonUtil.getJsonParamInt(jsonObject, "offset", 10, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 10, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
         } catch (ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
