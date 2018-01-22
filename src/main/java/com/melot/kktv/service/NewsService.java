@@ -1266,6 +1266,7 @@ public class NewsService {
 			ResourceNewService resourceNewService = (ResourceNewService) MelotBeanFactory.getBean("resourceNewService");
 			Resource resAudio = resourceNewService.getResourceById(Integer.valueOf(Pattern.compile("\\{|\\}").matcher(newsInfo.getRefAudio()).replaceAll(""))).getData();
 			if(resAudio != null){
+				mediaSourceJson.addProperty("mediaFrom", 2);
 				mediaSourceJson.addProperty("mediaType", NewsMediaTypeEnum.AUDIO);
 				if (resAudio.getSpecificUrl() != null) {
 					mediaSourceJson.addProperty("mediaUrl", resAudio.getSpecificUrl());
