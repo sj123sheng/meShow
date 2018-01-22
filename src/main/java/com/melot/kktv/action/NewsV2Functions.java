@@ -1655,7 +1655,6 @@ public class NewsV2Functions {
             return result;
         }
 
-        // 登录返回是否点赞过
         List<NewsInfo> newsList = NewsService.getFollowNewsList(userId, start, offset);
         if (newsList != null && newsList.size() > 0) {
             JsonArray jNewsList = new JsonArray();

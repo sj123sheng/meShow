@@ -4,9 +4,10 @@ import java.net.URLDecoder;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.melot.kk.module.resource.domain.QiNiuTokenConf;
+import com.melot.kk.module.resource.service.ResourceNewService;
 import org.apache.log4j.Logger;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.melot.blacklist.service.BlacklistService;
@@ -26,8 +27,6 @@ import com.melot.kktv.util.PlatformEnum;
 import com.melot.kktv.util.SecurityFunctions;
 import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
-import com.melot.opus.domain.QiNiuTokenConf;
-import com.melot.opus.service.BasicService;
 import com.melot.qiniu.common.QiniuService;
 import com.melot.sdk.core.util.MelotBeanFactory;
 
@@ -1037,15 +1036,6 @@ public class ProfileSecurityFunctions {
 			if (!StringUtil.strIsNull(ConfigHelper.getKkApiAddress())) {
 				qiNiuTokenConf.setApiAddress(ConfigHelper.getKkApiAddress());
 			}
-			if (!StringUtil.strIsNull(ConfigHelper.getBucket())) {
-				qiNiuTokenConf.setBucket(ConfigHelper.getBucket());
-			}
-			if (!StringUtil.strIsNull(ConfigHelper.getAccessKey())) {
-				qiNiuTokenConf.setAccessKey(ConfigHelper.getAccessKey());
-			}
-			if (!StringUtil.strIsNull(ConfigHelper.getSecretKey())) {
-				qiNiuTokenConf.setSecretKey(ConfigHelper.getSecretKey());
-			}
 
 			qiNiuTokenConf.setNewsState(newsState);
 			qiNiuTokenConf.setOpusState(opusState);
@@ -1094,9 +1084,9 @@ public class ProfileSecurityFunctions {
 	 * @return
 	 */
 	private static String getQinuUploadToken(QiNiuTokenConf qiNiuTokenConf) {
-		BasicService basicService = (BasicService) MelotBeanFactory.getBean("basicService");
-		if (basicService != null) {
-			return basicService.getUpLoadTokenByDomain(qiNiuTokenConf);
+		ResourceNewService resourceNewService = (ResourceNewService)MelotBeanFactory.getBean("resourceNewService");
+		if (resourceNewService != null) {
+			return resourceNewService.getUpLoadTokenByDomain(qiNiuTokenConf);
 		}
 		return null;
 	}

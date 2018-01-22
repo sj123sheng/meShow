@@ -25,8 +25,8 @@
             <list>
                 <value>classpath:/conf/datasource.properties</value>
                 <value>classpath:/conf/config.properties</value>
-                <value>classpath:../config.xml</value>
-                <value>classpath:../JedisPoolConfig.xml</value>
+                <value>classpath:../../config.xml</value>
+                <value>classpath:../../JedisPoolConfig.xml</value>
             </list>
         </property>
     </bean>

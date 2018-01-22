@@ -46,8 +46,7 @@
 	<kkrpc:reference id="familyDefineActivityService" interface="com.melot.kk.activity.service.FamilyDefineActivityService" version="1.0.18"></kkrpc:reference>
 	<kkrpc:reference id="giftHistoryBoardService" interface="com.melot.kk.activity.service.GiftHistoryBoardService" version="1.0.18"></kkrpc:reference>
 	<kkrpc:reference id="liveStreamConfigService" interface="com.melot.stream.driver.service.LiveStreamConfigService" version="1.0.0"></kkrpc:reference>
-	<kkrpc:reference id="videoService" interface="com.melot.opus.service.VideoService" version="1.0.0"></kkrpc:reference>
-	<kkrpc:reference id="basicService" interface="com.melot.opus.service.BasicService" version="1.0.0"></kkrpc:reference> 
+	<kkrpc:reference id="videoService" interface="com.melot.kk.opus.api.service.VideoService" version="1.0.1"></kkrpc:reference>
 	<!-- 商城模块 -->
 	<kkrpc:reference id="carService" interface="com.melot.module.packagegift.driver.service.CarService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="entranceTicketService" interface="com.melot.module.packagegift.driver.service.EntranceTicketService" version="1.0.0"></kkrpc:reference>
@@ -95,7 +94,7 @@
 	<kkrpc:reference id="giftListService" interface="com.melot.room.gift.service.GiftListService" version="1.0.2"></kkrpc:reference>
 	
 	<!-- 动态模块 -->
-	<kkrpc:reference id="newsCenter" interface="com.melot.news.service.NewsService" version="1.2.0"></kkrpc:reference>
+	<kkrpc:reference id="newsCenter" interface="com.melot.news.service.NewsService" version="1.2.1"></kkrpc:reference>
 	<!-- 资源模块 -->
 	<kkrpc:reference id="resourceCenter" interface="com.melot.resource.service.ResourceService" version="1.0.0"/>
 	<!-- 1v1视频聊天服务 -->

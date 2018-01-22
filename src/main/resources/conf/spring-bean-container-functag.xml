@@ -1649,17 +1649,6 @@
 	</bean>
 	
 	<!-- 视频接口类 -->
-	<!-- 获取七牛上传Token -->
-	<bean id="10002050" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="videoFunction" />
-		<constructor-arg name="methodName" value="getUploadToken" />
-	</bean>
-	<!-- 上传作品七牛回调接口 -->
-	<bean id="10002051" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="videoFunction" />
-		<constructor-arg name="methodName" value="callbackForUploadVideo" />
-	</bean>
-	
 	<!-- 新版不发动态 -->
 	<bean id="20002050" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="videoFunction" />
@@ -1669,22 +1658,6 @@
 	<bean id="20002051" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="videoFunction" />
 		<constructor-arg name="methodName" value="callbackForUploadVideoNew" />
-	</bean>
-	
-	<!-- 获取作品列表 -->
-	<bean id="10002052" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="videoFunction" />
-		<constructor-arg name="methodName" value="getJHAVideoList" />
-	</bean>
-	<!-- 更新动态查看次数 -->
-	<bean id="10002053" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="videoFunction" />
-		<constructor-arg name="methodName" value="updateNewsViewTimes" />
-	</bean>
-	<!-- 删除作品 -->
-	<bean id="10002055" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="videoFunction" />
-		<constructor-arg name="methodName" value="delUserNewsFolder" />
 	</bean>
 	<!-- 获取老棒视频列表 -->
 	<bean id="10002056" class="com.melot.sdk.core.function.GenericFunction">

@@ -5,6 +5,7 @@ import com.google.gson.*;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.content.config.domain.ApplyContractInfo;
 import com.melot.family.driver.domain.FamilyInfo;
+import com.melot.kk.opus.api.constant.OpusCostantEnum;
 import com.melot.kkcore.user.api.ShowMoneyHistory;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcx.service.FamilyService;
@@ -24,7 +25,6 @@ import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.news.model.NewsInfo;
-import com.melot.opus.driver.enums.OpusCostantEnum;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import org.apache.log4j.Logger;
 
