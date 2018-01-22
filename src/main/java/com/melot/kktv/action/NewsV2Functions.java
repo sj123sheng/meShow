@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import com.melot.kktv.base.Page;
 import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.util.*;
+import com.melot.opus.driver.enums.OpusCostantEnum;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
@@ -298,7 +299,7 @@ public class NewsV2Functions {
         if (NewsService.isWhiteUser(userId)) {
             newsInfo.setState(1);
             if(mediaType == NewsMediaTypeEnum.AUDIO && !StringUtil.strIsNull(newsInfo.getRefAudio())){
-                resourceNewService.checkResource(Lists.newArrayList(Integer.parseInt(newsInfo.getRefAudio())),ResourceStateConstant.checkpass,"动态白名单",1);
+                resourceNewService.checkResource(Lists.newArrayList(Integer.parseInt(newsInfo.getRefAudio()),Integer.parseInt(newsInfo.getRefImage())),ResourceStateConstant.checkpass,"动态白名单",1);
             }
             else if(mediaType == NewsMediaTypeEnum.VIDEO && !StringUtil.strIsNull(newsInfo.getRefVideo())){
                 resourceNewService.checkResource(Lists.newArrayList(Integer.parseInt(newsInfo.getRefVideo())),ResourceStateConstant.checkpass,"动态白名单",1);
@@ -354,21 +355,40 @@ public class NewsV2Functions {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-        NewsInfo oldNews = NewsService.getNewsInfoById(newsId,0);
-        if(oldNews == null){
-            result.addProperty("TagCode", functag+"04");
-            return result;
-        }
         NewsInfo newsInfo = new NewsInfo();
+        newsInfo.setNewsId(newsId);
         if (content != null) newsInfo.setContent(content);
         if (newsTitle != null) newsInfo.setNewsTitle(newsTitle);
+        boolean needCheck = false;
         if (!StringUtil.strIsNull(mediaUrl)) {
             mediaUrl = mediaUrl.replaceFirst(ConfigHelper.getMediahttpdir(), "");
             if(!mediaUrl.startsWith(SEPARATOR)) {
                 mediaUrl = SEPARATOR + mediaUrl;
             }
             mediaUrl = mediaUrl.replaceFirst("/kktv", "");
-//            if()
+            Resource audio = new Resource();
+            audio.setState(ResourceStateConstant.uncheck);
+            audio.setMimeType(FileTypeConstant.audio);
+            audio.setSpecificUrl(mediaUrl);
+            audio.setUserId(userId);
+            audio.setResType(ResTypeConstant.resource);
+            audio.seteCloudType(ECloudTypeConstant.qiniu);
+            Result<Integer> audioResult = resourceNewService.addResource(audio);
+            if(audioResult != null && audioResult.getCode() != null && audioResult.getCode().equals(CommonStateCode.SUCCESS)){
+                Integer resId = audioResult.getData();
+                if (resId > 0) {
+                    newsInfo.setRefAudio(String.valueOf(resId));
+                } else {
+                    // 插入资源失败
+                    result.addProperty("TagCode", "06020009");
+                    return result;
+                }
+            }else {
+                // 插入资源失败
+                result.addProperty("TagCode", "06020009");
+                return result;
+            }
+            needCheck = true;
         }
         if (!StringUtil.strIsNull(imageUrl)) {
             imageUrl = imageUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
@@ -376,8 +396,38 @@ public class NewsV2Functions {
                 imageUrl = SEPARATOR + imageUrl;
             }
             imageUrl = imageUrl.replaceFirst("/kktv", "");
+            Resource resource = new Resource();
+            resource.setState(ResourceStateConstant.uncheck);
+            resource.setMimeType(FileTypeConstant.image);
+            resource.setResType(ResTypeConstant.resource);
+            resource.seteCloudType(ECloudTypeConstant.aliyun);
+            resource.setUserId(userId);
+            resource.setImageUrl(imageUrl);
+            Result<Integer> imageResult = resourceNewService.addResource(resource);
+            if(imageResult != null && imageResult.getCode() != null && imageResult.getCode().equals(CommonStateCode.SUCCESS)){
+                Integer resId = imageResult.getData();
+                if (resId > 0) {
+                    newsInfo.setRefImage(String.valueOf(resId));
+                } else {
+                    // 插入资源失败
+                    result.addProperty("TagCode", functag + "03");
+                    return result;
+                }
+            }else {
+                // 插入资源失败
+                result.addProperty("TagCode", functag + "03");
+                return result;
+            }
+            needCheck = true;
         }
-
+        if(needCheck) newsInfo.setState(3);
+        boolean flag = NewsService.editNews(newsInfo);
+        if(flag){
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        }
+        else{
+            result.addProperty("TagCode", functag + "02");
+        }
         return result;
 
     }
@@ -425,6 +475,8 @@ public class NewsV2Functions {
                                 }
                             }
                         }
+                    } else if (newsInfo.getState() == 3) {
+                        imageUrl = ConfigHelper.getHttpdir() + OpusCostantEnum.CHECKING_NEWS_RESOURCEURL;
                     }
                     String path_1280 = imageUrl + "!1280";
                     String path_720 = imageUrl + "!720";
@@ -453,10 +505,10 @@ public class NewsV2Functions {
     public JsonObject getPopularAudioList(JsonObject jsonObject, boolean checkTag) throws Exception {
         String functag = "51100105";
         JsonObject result = new JsonObject();
-        if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-            return result;
-        }
+//        if (!checkTag) {
+//            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+//            return result;
+//        }
         int pageIndex,countPerPage;
         try {
             pageIndex = CommonUtil.getJsonParamInt(jsonObject, "start", 1, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
@@ -478,15 +530,13 @@ public class NewsV2Functions {
                     json.addProperty("newsTitle",newsInfo.getNewsTitle());
                     json.addProperty("playTimes",newsInfo.getPlayNum());
                     String imageUrl = configService.getCheckUnpassPoster();
-                    if(newsInfo.getState() == 1 && newsInfo.getRefImage() != null){
+                    if(newsInfo.getRefImage() != null){
                         int resId = Integer.valueOf(Pattern.compile("\\{|\\}").matcher(newsInfo.getRefImage()).replaceAll(""));
                         Result<Resource> imageResult = resourceNewService.getResourceById(resId);
                         if(imageResult != null && imageResult.getCode() != null && imageResult.getCode().equals(CommonStateCode.SUCCESS)){
                             Resource image = imageResult.getData();
                             if(image != null){
-                                if(image.getState() == ResourceStateConstant.checkpass){
-                                    imageUrl = image.getImageUrl();
-                                }
+                                imageUrl = image.getImageUrl();
                             }
                         }
                     }
@@ -529,7 +579,20 @@ public class NewsV2Functions {
         }
 
         int userId,newsId;
-
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            newsId = CommonUtil.getJsonParamInt(jsonObject, "newsId", 0, functag+"01", Integer.MIN_VALUE, Integer.MAX_VALUE);
+        } catch (ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+        boolean flag = NewsService.addNewsMediaPlay(userId,newsId);
+        if(flag){
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        }
+        else{
+            result.addProperty("TagCode", functag + "02");
+        }
         return result;
     }
 
