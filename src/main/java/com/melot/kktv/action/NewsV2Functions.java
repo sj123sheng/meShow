@@ -11,6 +11,10 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.melot.kk.opus.api.constant.OpusCostantEnum;
+import com.melot.kktv.base.Page;
+import com.melot.kktv.service.ConfigService;
+import com.melot.kktv.util.*;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
@@ -44,21 +48,10 @@ import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.redis.NewsSource;
 import com.melot.kktv.redis.NewsV2Source;
-import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.NewsService;
-//import com.melot.kktv.service.ResourceService;
-import com.melot.kktv.util.AppIdEnum;
-import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.Constant;
-import com.melot.kktv.util.NewsMediaTypeEnum;
-import com.melot.kktv.util.PlatformEnum;
-import com.melot.kktv.util.StringUtil;
-import com.melot.kktv.util.TagCodeEnum;
 import com.melot.news.domain.NewsCommentHist;
 import com.melot.news.model.NewsInfo;
-//import com.melot.resource.domain.Resource;
 
 import redis.clients.jedis.Tuple;
 
@@ -72,8 +65,7 @@ public class NewsV2Functions {
     ResourceNewService resourceNewService;
 
     @Autowired
-    ConfigService configService;
-
+    private ConfigService configService;
     /**
      * 发布动态(20006002)
      *
@@ -93,9 +85,9 @@ public class NewsV2Functions {
         }
 
         // 验证参数
-        int userId, mediaType, appId, mediaFrom, platform;
+        int userId, mediaType, appId, platform;
         @SuppressWarnings("unused")
-        String content = null, mediaUrl = null, imageUrl = null, videoTitle = null, topic = null;
+        String content = null, mediaUrl = null, imageUrl = null, newsTitle = null, topic = null;
         Integer mediaDur = null, resType = null;
         try {
             appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 1, Integer.MAX_VALUE);
@@ -126,10 +118,7 @@ public class NewsV2Functions {
                 mediaDur = 0;
             }
 
-            videoTitle = CommonUtil.getJsonParamString(jsonObject, "videoTitle", null, null, 1, 40);
-
-            // 1-upyun 2-qiniu
-            mediaFrom = CommonUtil.getJsonParamInt(jsonObject, "mediaFrom", 1, null, 1, Integer.MAX_VALUE);
+            newsTitle = CommonUtil.getJsonParamString(jsonObject, "newsTitle", null, null, 1, 40);
 
             resType = CommonUtil.getJsonParamInt(jsonObject, "newsType", 8, null, 1, Integer.MAX_VALUE);
 
@@ -157,23 +146,21 @@ public class NewsV2Functions {
         if (content != null) {
             newsInfo.setContent(content);
         }
+        if (newsTitle != null) {
+            newsInfo.setNewsTitle(newsTitle);
+        }
         newsInfo.setPlatform(platform);
-        newsInfo.setAppId(appId);
-        // 校验媒体类型
-        if (mediaType > NewsMediaTypeEnum.VIDEO) {
-            result.addProperty("TagCode", "06020010");
-            return result;
+            newsInfo.setAppId(appId);
+            // 校验媒体类型
+            if (mediaType > NewsMediaTypeEnum.VIDEO) {
+                result.addProperty("TagCode", "06020010");
+                return result;
         }
 
-        if (mediaType == NewsMediaTypeEnum.AUDIO || mediaType == NewsMediaTypeEnum.VIDEO) {
+        if (mediaType == NewsMediaTypeEnum.VIDEO) {
             Resource resource = new Resource();
             resource.setState(ResourceStateConstant.uncheck);
-            if(mediaType == NewsMediaTypeEnum.AUDIO){
-                resource.setMimeType(FileTypeConstant.audio);
-            }
-            else {
-                resource.setMimeType(FileTypeConstant.video);
-            }
+            resource.setMimeType(FileTypeConstant.video);
             resource.setSpecificUrl(mediaUrl);
             resource.setUserId(userId);
             resource.setDuration(Long.valueOf(mediaDur));
@@ -197,11 +184,7 @@ public class NewsV2Functions {
             if(resIdResult != null && resIdResult.getCode() != null && resIdResult.getCode().equals(CommonStateCode.SUCCESS)){
                 Integer resId = resIdResult.getData();
                 if (resId > 0) {
-                    if (mediaType == NewsMediaTypeEnum.AUDIO) {
-                        newsInfo.setRefAudio(String.valueOf(resId));
-                    } else if (mediaType == NewsMediaTypeEnum.VIDEO) {
-                        newsInfo.setRefVideo(String.valueOf(resId));
-                    }
+                    newsInfo.setRefVideo(String.valueOf(resId));
                 } else {
                     // 插入资源失败
                     result.addProperty("TagCode", "06020009");
@@ -213,7 +196,7 @@ public class NewsV2Functions {
                 return result;
             }
 
-        } else {
+        } else if(mediaType == NewsMediaTypeEnum.IMAGE){
             // multi picture
             String[] imageList = imageUrl.split(",");
             List<Resource> resourceList = new ArrayList<Resource>();
@@ -258,11 +241,65 @@ public class NewsV2Functions {
             }
 
         }
+        else if(mediaType == NewsMediaTypeEnum.AUDIO){
+            Resource audio = new Resource();
+            audio.setState(ResourceStateConstant.uncheck);
+            audio.setMimeType(FileTypeConstant.audio);
+            audio.setSpecificUrl(mediaUrl);
+            audio.setUserId(userId);
+            audio.setDuration(Long.valueOf(mediaDur));
+            audio.setResType(ResTypeConstant.resource);
+            audio.seteCloudType(ECloudTypeConstant.qiniu);
+            Result<Integer> audioResult = resourceNewService.addResource(audio);
+            if(audioResult != null && audioResult.getCode() != null && audioResult.getCode().equals(CommonStateCode.SUCCESS)){
+                Integer resId = audioResult.getData();
+                if (resId > 0) {
+                    newsInfo.setRefAudio(String.valueOf(resId));
+                } else {
+                    // 插入资源失败
+                    result.addProperty("TagCode", "06020009");
+                    return result;
+                }
+            }else {
+                // 插入资源失败
+                result.addProperty("TagCode", "06020009");
+                return result;
+            }
+            if (!StringUtil.strIsNull(imageUrl)) {
+                Resource resource = new Resource();
+                resource.setState(ResourceStateConstant.uncheck);
+                resource.setMimeType(FileTypeConstant.image);
+                resource.setResType(ResTypeConstant.resource);
+                resource.seteCloudType(ECloudTypeConstant.aliyun);
+                resource.setUserId(userId);
+                imageUrl = imageUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
+                if(!imageUrl.startsWith(SEPARATOR)) {
+                    imageUrl = SEPARATOR + imageUrl;
+                }
+                imageUrl = imageUrl.replaceFirst("/kktv", "");
+                resource.setImageUrl(imageUrl);
+                Result<Integer> imageResult = resourceNewService.addResource(resource);
+                if(imageResult != null && imageResult.getCode() != null && imageResult.getCode().equals(CommonStateCode.SUCCESS)){
+                    Integer resId = imageResult.getData();
+                    if (resId > 0) {
+                        newsInfo.setRefImage(String.valueOf(resId));
+                    } else {
+                        // 插入资源失败
+                        result.addProperty("TagCode", "06020009");
+                        return result;
+                    }
+                }else {
+                    // 插入资源失败
+                    result.addProperty("TagCode", "06020009");
+                    return result;
+                }
+            }
+        }
 
         if (NewsService.isWhiteUser(userId)) {
             newsInfo.setState(1);
             if(mediaType == NewsMediaTypeEnum.AUDIO && !StringUtil.strIsNull(newsInfo.getRefAudio())){
-                resourceNewService.checkResource(Lists.newArrayList(Integer.parseInt(newsInfo.getRefAudio())),ResourceStateConstant.checkpass,"动态白名单",1);
+                resourceNewService.checkResource(Lists.newArrayList(Integer.parseInt(newsInfo.getRefAudio()),Integer.parseInt(newsInfo.getRefImage())),ResourceStateConstant.checkpass,"动态白名单",1);
             }
             else if(mediaType == NewsMediaTypeEnum.VIDEO && !StringUtil.strIsNull(newsInfo.getRefVideo())){
                 resourceNewService.checkResource(Lists.newArrayList(Integer.parseInt(newsInfo.getRefVideo())),ResourceStateConstant.checkpass,"动态白名单",1);
@@ -287,6 +324,276 @@ public class NewsV2Functions {
             result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
             return result;
         }
+    }
+
+    public JsonObject editNews(JsonObject jsonObject, boolean checkTag) throws Exception {
+        String functag = "51100102";
+        JsonObject result = new JsonObject();
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+        int newsId,userId;
+        String content = null, mediaUrl = null, imageUrl = null, newsTitle = null;
+        try {
+            newsId = CommonUtil.getJsonParamInt(jsonObject, "newsId", 0, functag + "01", 1, Integer.MAX_VALUE);
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, functag + "02", 1, Integer.MAX_VALUE);
+            content = CommonUtil.getJsonParamString(jsonObject, "content", null, null, 1, 500);
+            if (content != null) {
+                if (CommonUtil.matchXSSTag(content)) {
+                    throw new CommonUtil.ErrorGetParameterException(functag+"03");
+                }
+                content = GeneralService.replaceSensitiveWords(userId, content);
+            }
+            mediaUrl = CommonUtil.getJsonParamString(jsonObject, "mediaUrl", null, null, 1, Integer.MAX_VALUE);
+            imageUrl = CommonUtil.getJsonParamString(jsonObject, "imageUrl", null, null, 1, Integer.MAX_VALUE);
+            newsTitle = CommonUtil.getJsonParamString(jsonObject, "newsTitle", null, null, 1, 40);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        NewsInfo newsInfo = new NewsInfo();
+        newsInfo.setNewsId(newsId);
+        if (content != null) newsInfo.setContent(content);
+        if (newsTitle != null) newsInfo.setNewsTitle(newsTitle);
+        boolean needCheck = false;
+        if (!StringUtil.strIsNull(mediaUrl)) {
+            mediaUrl = mediaUrl.replaceFirst(ConfigHelper.getMediahttpdir(), "");
+            if(!mediaUrl.startsWith(SEPARATOR)) {
+                mediaUrl = SEPARATOR + mediaUrl;
+            }
+            mediaUrl = mediaUrl.replaceFirst("/kktv", "");
+            Resource audio = new Resource();
+            audio.setState(ResourceStateConstant.uncheck);
+            audio.setMimeType(FileTypeConstant.audio);
+            audio.setSpecificUrl(mediaUrl);
+            audio.setUserId(userId);
+            audio.setResType(ResTypeConstant.resource);
+            audio.seteCloudType(ECloudTypeConstant.qiniu);
+            Result<Integer> audioResult = resourceNewService.addResource(audio);
+            if(audioResult != null && audioResult.getCode() != null && audioResult.getCode().equals(CommonStateCode.SUCCESS)){
+                Integer resId = audioResult.getData();
+                if (resId > 0) {
+                    newsInfo.setRefAudio(String.valueOf(resId));
+                } else {
+                    // 插入资源失败
+                    result.addProperty("TagCode", "06020009");
+                    return result;
+                }
+            }else {
+                // 插入资源失败
+                result.addProperty("TagCode", "06020009");
+                return result;
+            }
+            needCheck = true;
+        }
+        if (!StringUtil.strIsNull(imageUrl)) {
+            imageUrl = imageUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
+            if(!imageUrl.startsWith(SEPARATOR)) {
+                imageUrl = SEPARATOR + imageUrl;
+            }
+            imageUrl = imageUrl.replaceFirst("/kktv", "");
+            Resource resource = new Resource();
+            resource.setState(ResourceStateConstant.uncheck);
+            resource.setMimeType(FileTypeConstant.image);
+            resource.setResType(ResTypeConstant.resource);
+            resource.seteCloudType(ECloudTypeConstant.aliyun);
+            resource.setUserId(userId);
+            resource.setImageUrl(imageUrl);
+            Result<Integer> imageResult = resourceNewService.addResource(resource);
+            if(imageResult != null && imageResult.getCode() != null && imageResult.getCode().equals(CommonStateCode.SUCCESS)){
+                Integer resId = imageResult.getData();
+                if (resId > 0) {
+                    newsInfo.setRefImage(String.valueOf(resId));
+                } else {
+                    // 插入资源失败
+                    result.addProperty("TagCode", functag + "03");
+                    return result;
+                }
+            }else {
+                // 插入资源失败
+                result.addProperty("TagCode", functag + "03");
+                return result;
+            }
+            needCheck = true;
+        }
+        if(needCheck) newsInfo.setState(3);
+        boolean flag = NewsService.editNews(newsInfo);
+        if(flag){
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        }
+        else{
+            result.addProperty("TagCode", functag + "02");
+        }
+        return result;
+
+    }
+
+    public JsonObject getMyAudioList(JsonObject jsonObject, boolean checkTag) throws Exception {
+        String functag = "51100103";
+        JsonObject result = new JsonObject();
+//        if (!checkTag) {
+//            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+//            return result;
+//        }
+        int userId,start,offset;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 1, functag +"01", 1, Integer.MAX_VALUE);
+            start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 10, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        } catch (ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+        Page<NewsInfo> page = NewsService.getByTypeAndUserId(NewsMediaTypeEnum.AUDIO,userId,start,offset);
+        if(page != null){
+            result.addProperty("countTotal",page.getCount());
+            List<NewsInfo> newsInfoList = page.getList();
+            JsonArray jNewsList = new JsonArray();
+            if(newsInfoList != null) {
+                for (NewsInfo newsInfo : newsInfoList) {
+                    JsonObject json = new JsonObject();
+                    json.addProperty("newsId", newsInfo.getNewsId());
+                    json.addProperty("content", newsInfo.getContent());
+                    json.addProperty("newsTitle", newsInfo.getNewsTitle());
+                    json.addProperty("state", newsInfo.getState());
+                    json.addProperty("praiseNum", newsInfo.getNewsPraise());
+                    json.addProperty("commentNum", newsInfo.getCommentNum());
+                    json.addProperty("playTimes", newsInfo.getPlayNum());
+                    String imageUrl = configService.getCheckUnpassPoster();
+                    if (newsInfo.getState() == 1 && newsInfo.getRefImage() != null) {
+                        int resId = Integer.valueOf(Pattern.compile("\\{|\\}").matcher(newsInfo.getRefImage()).replaceAll(""));
+                        Result<Resource> imageResult = resourceNewService.getResourceById(resId);
+                        if (imageResult != null && imageResult.getCode() != null && imageResult.getCode().equals(CommonStateCode.SUCCESS)) {
+                            Resource image = imageResult.getData();
+                            if (image != null) {
+                                if (image.getState() == ResourceStateConstant.checkpass) {
+                                    imageUrl = image.getImageUrl();
+                                }
+                            }
+                        }
+                    } else if (newsInfo.getState() == 3) {
+                        imageUrl = ConfigHelper.getHttpdir() + OpusCostantEnum.CHECKING_NEWS_RESOURCEURL;
+                    }
+                    String path_1280 = imageUrl + "!1280";
+                    String path_720 = imageUrl + "!720";
+                    String path_400 = imageUrl + "!400";
+                    String path_272 = imageUrl + "!272";
+                    String path_128 = imageUrl + "!128x96";
+                    json.addProperty("imageUrl_1280", path_1280);
+                    json.addProperty("imageUrl_720", path_720);
+                    json.addProperty("imageUrl_400", path_400);
+                    json.addProperty("imageUrl_272", path_272);
+                    json.addProperty("imageUrl_128", path_128);
+                    json.addProperty("imageUrl", path_400);
+                    jNewsList.add(json);
+                }
+            }
+            result.add("newsList", jNewsList);
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir()); // 图片前缀
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        }
+        else{
+            result.addProperty("TagCode", functag + "02");
+        }
+        return result;
+    }
+
+    public JsonObject getPopularAudioList(JsonObject jsonObject, boolean checkTag) throws Exception {
+        String functag = "51100105";
+        JsonObject result = new JsonObject();
+//        if (!checkTag) {
+//            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+//            return result;
+//        }
+        int pageIndex,countPerPage;
+        try {
+            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "start", 1, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            countPerPage = CommonUtil.getJsonParamInt(jsonObject, "offset", 10, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        } catch (ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+        Page<NewsInfo> page = NewsService.getHotAudioNews((pageIndex-1)*countPerPage,countPerPage);
+        if(page != null){
+            result.addProperty("countTotal",page.getCount());
+            List<NewsInfo> newsInfoList = page.getList();
+            JsonArray jNewsList = new JsonArray();
+            if(newsInfoList != null){
+                for(NewsInfo newsInfo:newsInfoList){
+                    JsonObject json = new JsonObject();
+                    json.addProperty("newsId",newsInfo.getNewsId());
+                    json.addProperty("content",newsInfo.getContent());
+                    json.addProperty("newsTitle",newsInfo.getNewsTitle());
+                    json.addProperty("playTimes",newsInfo.getPlayNum());
+                    String imageUrl = configService.getCheckUnpassPoster();
+                    if(newsInfo.getRefImage() != null){
+                        int resId = Integer.valueOf(Pattern.compile("\\{|\\}").matcher(newsInfo.getRefImage()).replaceAll(""));
+                        Result<Resource> imageResult = resourceNewService.getResourceById(resId);
+                        if(imageResult != null && imageResult.getCode() != null && imageResult.getCode().equals(CommonStateCode.SUCCESS)){
+                            Resource image = imageResult.getData();
+                            if(image != null){
+                                imageUrl = image.getImageUrl();
+                            }
+                        }
+                    }
+                    String path_1280 = imageUrl + "!1280";
+                    String path_720 = imageUrl + "!720";
+                    String path_400 = imageUrl + "!400";
+                    String path_272 = imageUrl + "!272";
+                    String path_128 = imageUrl + "!128x96";
+                    json.addProperty("imageUrl_1280", path_1280);
+                    json.addProperty("imageUrl_720", path_720);
+                    json.addProperty("imageUrl_400", path_400);
+                    json.addProperty("imageUrl_272", path_272);
+                    json.addProperty("imageUrl_128", path_128);
+                    json.addProperty("imageUrl", path_400);
+                    jNewsList.add(json);
+                }
+            }
+            result.add("newsList", jNewsList);
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir()); // 图片前缀
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        }
+        else{
+            result.addProperty("TagCode", functag + "02");
+        }
+        return result;
+    }
+
+
+    public JsonObject addPlayTimes(JsonObject jsonObject, boolean checkTag) throws Exception {
+        String functag = "51100104";
+        JsonObject result = new JsonObject();
+        JsonObject rtJO = null;
+        try {
+            rtJO = SecurityFunctions.checkSignedValue(jsonObject);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if(rtJO != null) {
+            return rtJO;
+        }
+
+        int userId,newsId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            newsId = CommonUtil.getJsonParamInt(jsonObject, "newsId", 0, functag+"01", Integer.MIN_VALUE, Integer.MAX_VALUE);
+        } catch (ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+        boolean flag = NewsService.addNewsMediaPlay(userId,newsId);
+        if(flag){
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        }
+        else{
+            result.addProperty("TagCode", functag + "02");
+        }
+        return result;
     }
 
     /**
