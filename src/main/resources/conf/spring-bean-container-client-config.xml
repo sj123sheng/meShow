@@ -105,7 +105,7 @@
     <!-- 主播模块 -->
     <kkrpc:reference id="areaNewActorsService" interface="com.melot.common.driver.service.AreaNewActorsService" version="1.0.0" ></kkrpc:reference>
 
-	<kkrpc:reference id="resourceNewService" interface="com.melot.kk.module.resource.service.ResourceNewService" version="1.0.2" />
+	<kkrpc:reference id="resourceNewService" interface="com.melot.kk.module.resource.service.ResourceNewService" version="1.0.1" />
 
     <!-- 主播代言团服务 -->
 	<kkrpc:reference id="shareActivityService" interface="com.melot.share.driver.service.ShareActivityService" version="1.0.2"/>

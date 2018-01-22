@@ -38,7 +38,6 @@ import com.melot.module.poster.driver.domain.PosterInfo;
 import com.melot.module.poster.driver.domain.UpYunInfo;
 import com.melot.module.poster.driver.service.PosterService;
 import com.melot.sdk.core.util.MelotBeanFactory;
-import com.upyun.api.UpYun;
 
 import javax.annotation.Resource;
 

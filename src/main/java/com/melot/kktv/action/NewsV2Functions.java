@@ -11,10 +11,10 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.melot.kk.opus.api.constant.OpusCostantEnum;
 import com.melot.kktv.base.Page;
 import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.util.*;
-import com.melot.opus.driver.enums.OpusCostantEnum;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
