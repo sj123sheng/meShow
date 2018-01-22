@@ -65,7 +65,11 @@ public class NobilityTF {
         } catch (Exception e) {
             result.add("nobilityIcon", new JsonObject());
         }
+        result.addProperty("openShowMoney", nobilityInfo.getOpenShowMoney());
+        result.addProperty("openNobilityPoint", nobilityInfo.getOpenNobilityPoint());
         result.addProperty("openUserRebate", nobilityInfo.getOpenUserRebate());
+        
+        result.addProperty("renewNobilityPoint", nobilityInfo.getRenewNobilityPoint());
         result.addProperty("renewUserRebate", nobilityInfo.getRenewUserRebate());
         result.addProperty("renewUserProportion", nobilityInfo.getRenewUserProportion());
         
