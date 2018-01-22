@@ -4,6 +4,7 @@ import java.util.Date;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.melot.kk.nobility.api.constant.NobilityStateEnum;
 import com.melot.kk.nobility.api.domain.NobilityInfo;
 import com.melot.kk.nobility.api.domain.NobilityUserInfo;
@@ -55,10 +56,16 @@ public class NobilityTF {
      */
     private static void nobilityInfoTF(JsonObject result, 
             NobilityInfo nobilityInfo, boolean withNoAuthPower) {
+        JsonParser jsonParser = new JsonParser();
         result.addProperty("nobilityId", nobilityInfo.getNobilityId());
         result.addProperty("nobilityName", nobilityInfo.getNobilityName());
         result.addProperty("nobilityLevel", nobilityInfo.getNobilityLevel());
-        result.addProperty("openActorRebate", nobilityInfo.getOpenActorRebate());
+        try {
+            result.add("nobilityIcon", jsonParser.parse(nobilityInfo.getNobilityIcon()));
+        } catch (Exception e) {
+            result.add("nobilityIcon", new JsonObject());
+        }
+        result.addProperty("openUserRebate", nobilityInfo.getOpenUserRebate());
         result.addProperty("renewUserRebate", nobilityInfo.getRenewUserRebate());
         result.addProperty("renewUserProportion", nobilityInfo.getRenewUserProportion());
         
@@ -71,7 +78,11 @@ public class NobilityTF {
             power.addProperty("powerId", powerInfo.getPowerId());
             power.addProperty("powerName", powerInfo.getPowerName());
             power.addProperty("powerDesc", powerInfo.getPowerDesc());
-            power.addProperty("powerIcon", powerInfo.getPowerIcon());
+            try {
+                power.add("powerIcon", jsonParser.parse(powerInfo.getPowerIcon()));
+            } catch (Exception e) {
+                power.add("powerIcon", new JsonObject());
+            }
             power.addProperty("powerState", powerInfo.getPowerState());
             powers.add(power);
         }
