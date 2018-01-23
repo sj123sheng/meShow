@@ -258,7 +258,7 @@ public class NobilityFunctions {
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
             friendId = CommonUtil.getJsonParamInt(jsonObject, "friendId", 0, "5201040501", 1, Integer.MAX_VALUE);
-            nobilityId = CommonUtil.getJsonParamInt(jsonObject, "nobilityId", 0, "5101040402", 1, Integer.MAX_VALUE);
+            nobilityId = CommonUtil.getJsonParamInt(jsonObject, "nobilityId", 0, "5201040402", 1, Integer.MAX_VALUE);
             actorId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.ACTOR_ID, 0, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
@@ -284,17 +284,17 @@ public class NobilityFunctions {
             if (CommonStateCode.SUCCESS.equals(resp.getCode())) {
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
             } else if ("1".equals(resp.getCode())) {
-                result.addProperty(ParameterKeys.TAG_CODE, "5101040403");
+                result.addProperty(ParameterKeys.TAG_CODE, "5201040403");
             } else if ("2".equals(resp.getCode())) {
-                result.addProperty(ParameterKeys.TAG_CODE, "5101040404");
+                result.addProperty(ParameterKeys.TAG_CODE, "5201040404");
             } else if ("3".equals(resp.getCode())) {
-                result.addProperty(ParameterKeys.TAG_CODE, "5101040405");
+                result.addProperty(ParameterKeys.TAG_CODE, "5201040405");
             } else if ("4".equals(resp.getCode())) {
-                result.addProperty(ParameterKeys.TAG_CODE, "5101040406");
+                result.addProperty(ParameterKeys.TAG_CODE, "5201040406");
             } else if ("5".equals(resp.getCode())) {
-                result.addProperty(ParameterKeys.TAG_CODE, "5101040407");
+                result.addProperty(ParameterKeys.TAG_CODE, "5201040407");
             } else if ("6".equals(resp.getCode())) {
-                result.addProperty(ParameterKeys.TAG_CODE, "5101040408");
+                result.addProperty(ParameterKeys.TAG_CODE, "5201040408");
             } else {
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             }
