@@ -23,6 +23,7 @@ public class NobilityTF {
      */
     public static void nobilityUserInfoTF(JsonObject result, NobilityUserInfo nobilityUserInfo) {
         result.addProperty("nobilityState", nobilityUserInfo.getNobilityState());
+        result.addProperty("userNobilityPoint", nobilityUserInfo.getUserNobilityPoint());
         Integer leftTime;
         if (nobilityUserInfo.getNobilityState() == NobilityStateEnum.STATE_VALID_NOBILITY) {
             Date validTime = nobilityUserInfo.getValidTime();
@@ -33,7 +34,6 @@ public class NobilityTF {
         } else {
             return;
         }
-        result.addProperty("userNobilityPoint", nobilityUserInfo.getUserNobilityPoint());
         result.addProperty("leftTime", leftTime);
         
         nobilityInfoTF(result, nobilityUserInfo.getNobilityInfo(), false);
