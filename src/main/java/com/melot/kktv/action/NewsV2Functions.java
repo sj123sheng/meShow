@@ -566,7 +566,7 @@ public class NewsV2Functions {
 
 
     public JsonObject addPlayTimes(JsonObject jsonObject, boolean checkTag) throws Exception {
-        String functag = "51100104";
+        String functag = "52100104";
         JsonObject result = new JsonObject();
         JsonObject rtJO = null;
         try {

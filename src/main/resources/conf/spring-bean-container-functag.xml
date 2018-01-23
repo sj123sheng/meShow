@@ -1169,7 +1169,7 @@
 		<constructor-arg name="methodName" value="getMyAudioList" />
 	</bean>
 
-	<bean id="51100104" class="com.melot.sdk.core.function.GenericFunction">
+	<bean id="52100104" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="newsV2Function" />
 		<constructor-arg name="methodName" value="addPlayTimes" />
 	</bean>
