@@ -254,10 +254,10 @@ public class NobilityFunctions {
             return result;
         }
         
-        int userId, frienId, nobilityId, actorId;
+        int userId, friendId, nobilityId, actorId;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-            frienId = CommonUtil.getJsonParamInt(jsonObject, "frienId", 0, "5201040501", 1, Integer.MAX_VALUE);
+            friendId = CommonUtil.getJsonParamInt(jsonObject, "friendId", 0, "5201040501", 1, Integer.MAX_VALUE);
             nobilityId = CommonUtil.getJsonParamInt(jsonObject, "nobilityId", 0, "5101040402", 1, Integer.MAX_VALUE);
             actorId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.ACTOR_ID, 0, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
@@ -269,9 +269,9 @@ public class NobilityFunctions {
         }
         
         // 靓号转化为真实ID
-        Integer realfrienId = UserAssetServices.luckyIdToUserId(frienId);
+        Integer realfrienId = UserAssetServices.luckyIdToUserId(friendId);
         if (realfrienId == null) {
-            realfrienId = frienId;
+            realfrienId = friendId;
         }
         
         NobilityService nobilityService = (NobilityService)MelotBeanFactory.getBean("nobilityService");
