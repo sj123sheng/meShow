@@ -596,6 +596,27 @@ public class NewsV2Functions {
         return result;
     }
 
+    public JsonObject checkAudioWhiteUser(JsonObject jsonObject, boolean checkTag) throws Exception {
+        String functag = "51100106";
+        JsonObject result = new JsonObject();
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, functag+"01", Integer.MIN_VALUE, Integer.MAX_VALUE);
+        } catch (ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+        boolean flag = NewsService.isAudioWhiteUser(userId);
+        result.addProperty("isWhiteUser", flag);
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+
     /**
      * 删除动态(20006003)
      *

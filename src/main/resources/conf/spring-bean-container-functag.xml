@@ -1178,6 +1178,11 @@
 		<constructor-arg name="t" ref="newsV2Function" />
 		<constructor-arg name="methodName" value="getPopularAudioList" />
 	</bean>
+
+	<bean id="51100106" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="newsV2Function" />
+		<constructor-arg name="methodName" value="checkAudioWhiteUser" />
+	</bean>
 	<!-- 获取用户动态列表 -->
 	<!-- 
 	<bean id="20010401" class="com.melot.sdk.core.function.GenericFunction">
