@@ -142,7 +142,7 @@ public class NewsV2Functions {
         if(mediaType == NewsMediaTypeEnum.AUDIO){
             boolean flag = NewsService.isAudioWhiteUser(userId);
             if(!flag){
-                result.addProperty("TagCode", "06020001");
+                result.addProperty("TagCode", "06020011");
                 return result;
             }
         }
