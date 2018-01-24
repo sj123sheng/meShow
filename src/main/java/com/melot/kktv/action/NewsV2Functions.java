@@ -139,6 +139,14 @@ public class NewsV2Functions {
          * TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION); return result; }
          */
 
+        if(mediaType == NewsMediaTypeEnum.AUDIO){
+            boolean flag = NewsService.isAudioWhiteUser(userId);
+            if(!flag){
+                result.addProperty("TagCode", "06020001");
+                return result;
+            }
+        }
+
         NewsInfo newsInfo = new NewsInfo();
         newsInfo.setUserId(userId);
         newsInfo.setNewsType(resType);
@@ -355,6 +363,20 @@ public class NewsV2Functions {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
+        NewsInfo oldNewsInfo = NewsService.getNewsInfoByNewsIdForState(newsId, 0);
+        if (oldNewsInfo == null) {
+            result.addProperty("TagCode", functag+"06");
+            return result;
+        }
+        if (oldNewsInfo.getState() != 2) {
+            result.addProperty("TagCode", functag+"07");
+            return result;
+        }
+        if (oldNewsInfo.getUserId() != userId) {
+            result.addProperty("TagCode", functag+"08");
+            return result;
+        }
+
         NewsInfo newsInfo = new NewsInfo();
         newsInfo.setNewsId(newsId);
         if (content != null) newsInfo.setContent(content);
@@ -410,12 +432,12 @@ public class NewsV2Functions {
                     newsInfo.setRefImage(String.valueOf(resId));
                 } else {
                     // 插入资源失败
-                    result.addProperty("TagCode", functag + "03");
+                    result.addProperty("TagCode", functag + "04");
                     return result;
                 }
             }else {
                 // 插入资源失败
-                result.addProperty("TagCode", functag + "03");
+                result.addProperty("TagCode", functag + "04");
                 return result;
             }
             needCheck = true;
@@ -426,7 +448,7 @@ public class NewsV2Functions {
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         }
         else{
-            result.addProperty("TagCode", functag + "02");
+            result.addProperty("TagCode", functag + "05");
         }
         return result;
 
