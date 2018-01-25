@@ -1,18 +1,5 @@
 package com.melot.kktv.action;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.chinacreator.videoalliance.util.ChinaUnicomEnum;
 import com.chinacreator.videoalliance.util.DesUtil;
 import com.dianping.cat.Cat;
@@ -24,9 +11,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.blacklist.service.BlacklistService;
-import com.melot.content.config.apply.service.ApplyActorService;
-import com.melot.content.config.domain.ApplyActor;
-import com.melot.content.config.domain.BrokerageFirmInfo;
+import com.melot.common.melot_utils.StringUtils;
 import com.melot.content.config.domain.GalleryInfo;
 import com.melot.content.config.domain.GalleryOrderRecord;
 import com.melot.content.config.domain.RecordProcessedRecord;
@@ -34,13 +19,21 @@ import com.melot.content.config.facepack.service.GalleryInfoService;
 import com.melot.content.config.facepack.service.GalleryOrderRecordService;
 import com.melot.content.config.live.upload.impl.YouPaiService;
 import com.melot.content.config.report.service.RecordProcessedRecordService;
-import com.melot.content.config.utils.Constants;
-import com.melot.content.config.utils.VerifyTypeEnum;
+import com.melot.family.driver.constant.UserApplyActorStatusEnum;
+import com.melot.family.driver.domain.DO.BrokerageFirmDO;
+import com.melot.family.driver.domain.DO.UserApplyActorDO;
 import com.melot.family.driver.domain.FamilyInfo;
+import com.melot.family.driver.service.UserApplyActorService;
 import com.melot.kk.module.report.dbo.ReportFlowRecord;
 import com.melot.kk.module.report.service.ReportFlowService;
 import com.melot.kk.module.report.util.CommonStateCode;
 import com.melot.kk.module.report.util.Result;
+import com.melot.kk.userSecurity.api.constant.IdPicStatusEnum;
+import com.melot.kk.userSecurity.api.constant.UserVerifyStatusEnum;
+import com.melot.kk.userSecurity.api.constant.UserVerifyTypeEnum;
+import com.melot.kk.userSecurity.api.domain.DO.UserVerifyDO;
+import com.melot.kk.userSecurity.api.domain.param.UserVerifyParam;
+import com.melot.kk.userSecurity.api.service.UserVerifyService;
 import com.melot.kkcore.user.api.ShowMoneyHistory;
 import com.melot.kkcore.user.api.UserAssets;
 import com.melot.kkcore.user.api.UserProfile;
@@ -59,18 +52,8 @@ import com.melot.kktv.service.ConsumeService;
 import com.melot.kktv.service.GeneralService;
 import com.melot.kktv.service.UserService;
 import com.melot.kktv.third.service.TvHongbaoService;
-import com.melot.kktv.util.AppChannelEnum;
-import com.melot.kktv.util.AppIdEnum;
-import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.*;
 import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.Constant;
-import com.melot.kktv.util.DBEnum;
-import com.melot.kktv.util.DateUtil;
-import com.melot.kktv.util.PlatformEnum;
-import com.melot.kktv.util.SecurityFunctions;
-import com.melot.kktv.util.StringUtil;
-import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.confdynamic.SystemConfig;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
@@ -79,6 +62,13 @@ import com.melot.module.packagegift.driver.service.VipService;
 import com.melot.module.packagegift.util.GiftPackageEnum;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import com.melot.stream.driver.service.LiveStreamConfigService;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import java.sql.SQLException;
+import java.util.*;
 
 /**
  * 其他相关的接口类
@@ -102,6 +92,12 @@ public class OtherFunctions {
     
     @Autowired
     private ConfigService configService;
+
+    @Resource
+    UserApplyActorService userApplyActorService;
+
+    @Resource
+    UserVerifyService userVerifyService;
     
     @SuppressWarnings("unused")
     private ActorInfoSource actorInfoSource;
@@ -923,11 +919,12 @@ public class OtherFunctions {
             result.addProperty("TagCode", TagCodeEnum.USER_IN_BLACK);
             return result;
         }
-        
-		ApplyActor applyActor = null;
+
+        UserApplyActorDO applyActor;
+        UserVerifyDO userVerifyDO;
 		try {
-			ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
-			applyActor = applyActorService.getApplyActorByActorIdV2(userId);
+			applyActor = userApplyActorService.getUserApplyActorDO(userId).getData();
+            userVerifyDO = userVerifyService.getUserVerifyDO(userId).getData();
 		} catch (Exception e) {
 			logger.error("Fail to call ApplyActorService.getApplyActorByActorId ", e);
 			result.addProperty("TagCode", TagCodeEnum.FAIL_TO_CALL_API_CONTENT_MODULE);
@@ -935,10 +932,10 @@ public class OtherFunctions {
 		}	
 		
 		try {
-		    if (applyActor != null && applyActor.getIdentityNumber() != null) {
+		    if (userVerifyDO != null && StringUtils.isNotEmpty(userVerifyDO.getCertNo())) {
 		        //身份证黑名单不得申请
 		        BlacklistService blacklistService = (BlacklistService) MelotBeanFactory.getBean("blacklistService");
-		        boolean flag = blacklistService.isIdentityBlacklist(applyActor.getIdentityNumber());
+		        boolean flag = blacklistService.isIdentityBlacklist(userVerifyDO.getCertNo());
 		        if (flag) {
 		            result.addProperty("TagCode", TagCodeEnum.IDENTITY_BLACK_LIST);
 		            return result;
@@ -947,18 +944,14 @@ public class OtherFunctions {
         } catch (Exception e) {
             logger.error("Fail to check user is IdentityBlacklist, userId: " + userId, e);
         }
-		
-		ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
-		
+
 		// 如果申请 是在30天以上之前创建的，那么过期作废，并删除记录
-		if (applyActor != null 
-		        && applyActor.getAppId() != null 
-		        && (applyActor.getAppId() == AppIdEnum.AMUSEMENT || applyActor.getAppId() == 12)
+		if (applyActor != null
 		        && applyActor.getStatus() != null 
-		        && applyActor.getStatus() < Constants.APPLY_ACTOR_OFFICIAL_CHECK_SUCCESS 
+		        && applyActor.getStatus() < UserApplyActorStatusEnum.BECOME_ACTOR_SUCCESS
 		        && DateUtil.addOnField(applyActor.getCreateTime(), Calendar.DATE, 30).getTime() < System.currentTimeMillis()) {
 			try {
-				if (applyActorService.deleteApplyActorByActorId(userId)) {
+				if (userApplyActorService.deleteUserApplyActor(userId).getData()) {
 					// 过期并删除成功
 					result.addProperty("TagCode", TagCodeEnum.APPLY_OUT_DATE_DELETE);
 					return result;
@@ -973,18 +966,9 @@ public class OtherFunctions {
 			return result;
 		}
 		
-		if (applyActor != null && applyActor.getAppId() != null && applyActor.getStatus() != null) {
+		if (applyActor != null && userVerifyDO != null && applyActor.getStatus() != null) {
+
 		    int status = applyActor.getStatus();
-		    
-			if (applyActor.getAppId() != appId && status >= 0) {
-			    if (!(appId == AppIdEnum.AMUSEMENT && applyActor.getAppId() == AppIdEnum.GAME)) {
-			        // 用户已申请其他产品主播
-			        result.addProperty("applyAppId", applyActor.getAppId());
-			        result.addProperty("TagCode", TagCodeEnum.HAS_APPLY_OTHER_APP);
-			        return result;
-                }
-			}
-			
 			if (status == -1) {
 			    // 普通用户如果是家族成员不能申请
 	            if (userInfo.getProfile().getIsActor() != 1) {
@@ -995,26 +979,20 @@ public class OtherFunctions {
 	            }
 			    
 				// -1:实名认证审核驳回
-				result.addProperty("realName", applyActor.getRealName());
-				result.addProperty("identityNumber", applyActor.getIdentityNumber());
-				result.addProperty("identityPictureOnHand", applyActor.getIdentityPictureOnHand());
-				if (applyActor.getIdentityPictureFont() != null) {
-				    result.addProperty("identityPictureFont", applyActor.getIdentityPictureFont());
+				result.addProperty("realName", userVerifyDO.getCertName());
+				result.addProperty("identityNumber", userVerifyDO.getCertNo());
+				result.addProperty("identityPictureOnHand", userVerifyDO.getIdPicOnHand());
+				if (userVerifyDO.getIdPicFont() != null) {
+				    result.addProperty("identityPictureFont", userVerifyDO.getIdPicFont());
                 }
-				if (applyActor.getIdentityPictureBack() != null) {
-				    result.addProperty("identityPictureBack", applyActor.getIdentityPictureBack());
+				if (userVerifyDO.getIdPicBack() != null) {
+				    result.addProperty("identityPictureBack", userVerifyDO.getIdPicBack());
                 }
-				if (applyActor.getGender() != null) {
-				    result.addProperty("gender", applyActor.getGender());
+				if (userVerifyDO.getGender() != null) {
+				    result.addProperty("gender", userVerifyDO.getGender());
 				}
-				if (applyActor.getMobile() != null) {
-				    result.addProperty("mobile", applyActor.getMobile());
-                }
-				if (applyActor.getQqNumber() != null) {
-				    result.addProperty("qqNumber", applyActor.getQqNumber());
-                }
-				if (applyActor.getWechatNumber() != null) {
-				    result.addProperty("wechatNumber", applyActor.getWechatNumber());
+				if (userVerifyDO.getVerifyMobile() != null) {
+				    result.addProperty("mobile", userVerifyDO.getVerifyMobile());
                 }
 				if (applyActor.getOperatorId() != null) {
 				    result.addProperty("operatorId", applyActor.getOperatorId());
@@ -1022,20 +1000,19 @@ public class OtherFunctions {
 				if (applyActor.getApplyFamilyId() != null) {
                     result.addProperty("familyId", applyActor.getApplyFamilyId());
                 }
-				if (applyActor.getBrokerageFirm() != null) {
-				    result.addProperty("brokerageFirm", applyActor.getBrokerageFirm());
+				if (applyActor.getBrokerageFirmId() != null) {
+				    result.addProperty("brokerageFirm", applyActor.getBrokerageFirmId());
 				}
 			} else {
 				// 返回家族信息
 			    Integer familyId = null;
-			    if (status != Constants.APPLY_TEST_ACTOR_IN_FAMILY_FAIL 
-			            && status != Constants.APPLY_TEST_ACTOR_NO_PASS 
+			    if (status != UserApplyActorStatusEnum.FAMILY_AUDIT_REJECT
 			            && applyActor.getApplyFamilyId() != null) {
 			        familyId = applyActor.getApplyFamilyId();
                 } else {
                     // 查看统一身份证是否有绑定的家族ID
                     try {
-                        familyId = applyActorService.getFamilyIdByIdentityNumber(applyActor.getIdentityNumber());
+                        familyId = userVerifyService.getFamilyIdByCertNo(userVerifyDO.getCertNo()).getData();
                     } catch (Exception e) {
                     }
                 }
@@ -1049,29 +1026,20 @@ public class OtherFunctions {
 			        }
                 }
 				
-				if (status == Constants.APPLY_TEST_ACTOR_PASSED) {
+				if (status == UserApplyActorStatusEnum.FAMILY_AUDIT_PASS) {
 				    // 7:家族试播通过，待用户确认协议
 				    
 				    // 获取分成比例
-					Integer distributRate = null;
-					if (applyActor.getAppId() == 12) {
-						//VR固定分成60
-						distributRate = 60;
-					} else {
-						distributRate = RoomService.getFamilyActorDistributRate(userId, applyActor.getApplyFamilyId());
-					}
+					Integer distributRate = RoomService.getFamilyActorDistributRate(userId, applyActor.getApplyFamilyId());
 				    if (distributRate != null) {
 				        result.addProperty("distributRate", distributRate);
 				    }
 				}
 			}
 			
-			// 状态 -1:实名认证审核驳回 4:家族试播申请驳回  6:家族试播驳回 13:运营终申驳回 下 返回驳回原因
-			if ((status == -1 
-			        || status == Constants.APPLY_TEST_ACTOR_IN_FAMILY_FAIL 
-			        || status == Constants.APPLY_TEST_ACTOR_NO_PASS 
-			        || status == Constants.APPLY_ACTOR_OFFICIAL_CHECK_FAIL)
-					&& applyActor.getCheckReason() != null) {
+			// 状态 -1:实名认证巡管审核驳回 6:家族审核驳回 返回驳回原因
+			if ((status == UserApplyActorStatusEnum.TOURING_AUDIT_REJECT || status == UserApplyActorStatusEnum.FAMILY_AUDIT_REJECT)
+					&& StringUtils.isNotEmpty(applyActor.getCheckReason())) {
 				result.addProperty("checkReason", applyActor.getCheckReason());
 			}
 			if (applyActor.getUpdateTime() != null) {
@@ -1079,7 +1047,7 @@ public class OtherFunctions {
 			}
 
 			// 实名认证方式返回 默认 1-巡管认证
-            result.addProperty("verifyType", applyActor.getVerifyType() == null ? VerifyTypeEnum.XG_VERIFY.getId() : applyActor.getVerifyType());
+            result.addProperty("verifyType", userVerifyDO.getVerifyType() == null ? UserVerifyTypeEnum.TOURING_VERIFY : userVerifyDO.getVerifyType());
 			
 			result.addProperty("status", status);
 			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
@@ -1116,913 +1084,6 @@ public class OtherFunctions {
             }
         }
         
-        return result;
-    }
-    
-    /**
-     * 20010502-申请实名认证
-     * @param jsonObject
-     * @param checkTag
-     * @return
-     */
-    public JsonObject applyForRealName(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-    	JsonObject result = new JsonObject();
-    	if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-            return result;
-    	}
-    	
-    	int userId, gender, appId, operatorId;
-		String realName, identityId, mobileNum, qqNum, wechatNum, idPicOnHand, idPicFont, idPicBack;
-		try {
-			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-            appId = CommonUtil.getJsonParamInt(jsonObject, "a", 0, TagCodeEnum.APPID_MISSING, 1, Integer.MAX_VALUE);
-			realName = CommonUtil.getJsonParamString(jsonObject, "realName", null, TagCodeEnum.REALNAME_MISSING, 1, 20);
-			identityId = CommonUtil.getJsonParamString(jsonObject, "identityNumber", null, TagCodeEnum.IDENTITY_MISSING, 1, 50);
-            idPicOnHand =  CommonUtil.getJsonParamString(jsonObject, "identityPictureOnHand", null, TagCodeEnum.IDPICONHAND_MISSING, 1, 200);
-			
-			gender = CommonUtil.getJsonParamInt(jsonObject, "gender", -1, null, 0, Integer.MAX_VALUE);
-			if (gender < 0 && identityId.length() == 18) {
-			    gender = StringUtil.parseFromStr(identityId.substring(16, 17), 0) % 2;
-            }
-			mobileNum = CommonUtil.getJsonParamString(jsonObject, "mobile", null, null, 5 , 20);
-			qqNum =  CommonUtil.getJsonParamString(jsonObject, "qqNumber", null, null, 1, 50);
-			wechatNum =  CommonUtil.getJsonParamString(jsonObject, "wechatNumber", null, null, 1, 50);
-			
-			// 添加 身份证正面照图片（Bang必传） 和 运营ID
-			idPicFont =  CommonUtil.getJsonParamString(jsonObject, "identityPictureFont", null, null, 1, 200);
-			idPicBack =  CommonUtil.getJsonParamString(jsonObject, "identityPictureBack", null, null, 1, 200);
-			operatorId = CommonUtil.getJsonParamInt(jsonObject, "operatorId", 0, null, 1, Integer.MAX_VALUE);
-		} catch (CommonUtil.ErrorGetParameterException e) {
-			result.addProperty("TagCode", e.getErrCode());
-			return result;
-		} catch (Exception e) {
-			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-			return result;
-		}
-		
-		try {
-			//身份证黑名单不得申请
-			BlacklistService blacklistService = (BlacklistService) MelotBeanFactory.getBean("blacklistService");
-			boolean flag = blacklistService.isIdentityBlacklist(identityId);
-			if (flag) {
-				result.addProperty("TagCode", TagCodeEnum.IDENTITY_BLACK_LIST);
-				return result;
-			}
-			
-		    // 用户无效不能申请
-			UserStaticInfo userInfo = UserService.getUserStaticInfoV2(userId);
-		    if (userInfo == null) {
-		        result.addProperty("TagCode", TagCodeEnum.USER_NOT_EXIST);
-                return result;
-            }
-		    
-		    // 用户昵称为空不能申请
-		    if (StringUtil.strIsNull(userInfo.getProfile().getNickName())) {
-		        result.addProperty("TagCode", TagCodeEnum.NICKNAME_EMPTY);
-                return result;
-            }
-		    
-		    // 游客不能申请
-		    if(userInfo.getRegisterInfo().getOpenPlatform() == 0 || userInfo.getRegisterInfo().getOpenPlatform() == -5) {
-		        result.addProperty("TagCode", TagCodeEnum.USER_IS_VISITOR);
-                return result;
-		    }
-		    
-		    // 黑名单用户不能申请
-		    if (com.melot.kkcx.service.UserService.blackListUser(userId)) {
-		        result.addProperty("TagCode", TagCodeEnum.USER_IN_BLACK);
-                return result;
-            }
-
-	        // 家族成员不能申请成为家族主播
-	        if (FamilyService.isFamilyMember(userId)) {
-	            result.addProperty("TagCode", TagCodeEnum.MEMBER_CANT_APPLY);
-	            return result;
-	        }
-		    
-	        // 未绑定手机的用户不能申请
-	        try {
-	            KkUserService userService = MelotBeanFactory.getBean("kkUserService", KkUserService.class);
-	            UserProfile userProfile = userService.getUserProfile(userId);
-	            if (userProfile == null || userProfile.getIdentifyPhone() == null) {
-//	                result.addProperty("TagCode", "02050607");
-//	                return result;
-	            } else {
-	                mobileNum = userProfile.getIdentifyPhone();
-	            }
-	        } catch (Exception e) {
-	            logger.error("Fail to get KkUserService.getUserProfile. userId: " + userId, e);
-//	            result.addProperty("TagCode", TagCodeEnum.FAIL_TO_CALL_API_CONTENT_MODULE);
-//	            return result;
-	        }
-	        
-	        if (appId == 12) {
-            	if (operatorId == 0 || !com.melot.kkcx.service.UserService.isValidOperator(operatorId)) {
-            		result.addProperty("TagCode", "02050608");
-            		return result;
-            	}
-            }
-	        
-            ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
-            List<ApplyActor> applies = applyActorService.getApplyActorsByParameter(identityId, mobileNum, qqNum);
-            if (applies != null && applies.size() > 0) {
-                for (ApplyActor apply : applies) {
-                    // 实名认证申请失败(-1)可重新申请
-                    if (apply.getStatus() < 0) {
-                        continue;
-                    }
-                    
-                    if (apply.getActorId().equals(userId)) {
-                        if (apply.getAppId().equals(appId)) {
-                            if (apply.getStatus() == 0) {
-                                result.addProperty("TagCode", TagCodeEnum.CHECKING);
-                            } else {
-                                result.addProperty("TagCode", TagCodeEnum.HAS_APPLY);
-                            }
-                            return result;
-                        } else {
-                            result.addProperty("TagCode", TagCodeEnum.HAS_APPLY_OTHER_APP);
-                            return result;
-                        }
-                    } else if (apply.getAppId().equals(appId)) {
-                        // 身份证已经存在
-                        if (apply.getIdentityNumber() != null && apply.getIdentityNumber().equals(identityId)) {
-                            result.addProperty("TagCode", TagCodeEnum.APPLY_IDNUM_EXISTS);
-                            return result;
-                        }
-                        // 手机号已经存在
-                        if (apply.getMobile() != null && mobileNum != null && apply.getMobile().equals(mobileNum)) {
-                            result.addProperty("TagCode", TagCodeEnum.APPLY_MOBILE_EXISTS);
-                            return result;
-                        }
-                        // qq号已经存在
-                        if (apply.getQqNumber() != null && qqNum != null && apply.getQqNumber().equals(qqNum)) {
-                            result.addProperty("TagCode", TagCodeEnum.APPLY_QQNUM_EXISTS);
-                            return result;
-                        }
-                    } else {
-                        // 同一身份证只能申请一个唱响主播或直播主播，不能同时拥有这两个APP的主播
-                        if (appId == AppIdEnum.AMUSEMENT && apply.getAppId() == AppIdEnum.GAME) {
-                            result.addProperty("TagCode", TagCodeEnum.USER_IN_GAME_KKCX_FORBID);
-                            return result;
-                        }
-                    }
-                }
-            }
-            
-		    ApplyActor applyActor = new ApplyActor();
-		    applyActor.setActorId(userId);
-		    applyActor.setAppId(appId);
-		    applyActor.setRealName(realName);
-		    applyActor.setIdentityNumber(identityId);
-		    applyActor.setIdentityPictureOnHand(idPicOnHand);
-		    
-		    if (idPicFont != null) {
-		        applyActor.setIdentityPictureFont(idPicFont);
-            }
-		    if (idPicBack != null) {
-                applyActor.setIdentityPictureBack(idPicBack);
-            }
-		    if (operatorId > 0) {
-		        applyActor.setOperatorId(operatorId);
-            }
-		    if (gender >= 0) {
-		        applyActor.setGender(gender);
-		    }
-		    if (mobileNum != null) {
-		        applyActor.setMobile(mobileNum);
-		    }
-		    if (qqNum != null) {
-		        applyActor.setQqNumber(qqNum);
-		    }
-		    if (wechatNum != null) {
-		        applyActor.setWechatNumber(wechatNum);
-		    }
-		    applyActor.setStatus(Constants.APPLY_INIT_STATUS);
-		    
-		    // 查看统一身份证是否有绑定的家族ID
-		    Integer familyId = applyActorService.getFamilyIdByIdentityNumber(applyActor.getIdentityNumber());
-		    if (familyId != null) {
-		        applyActor.setApplyFamilyId(familyId);
-            }
-		    if (appId == 12) {
-		    	applyActor.setApplyFamilyId(12345);
-		    }
-		    ApplyActor oldApplyActor = applyActorService.getApplyActorByActorId(userId);
-			if (oldApplyActor != null && oldApplyActor.getStatus() != null && oldApplyActor.getStatus() >= 0) {
-			    if (oldApplyActor.getAppId().equals(appId)) {
-			        if (oldApplyActor.getStatus() == 0) {
-                        result.addProperty("TagCode", TagCodeEnum.CHECKING);
-                    } else {
-                        result.addProperty("TagCode", TagCodeEnum.HAS_APPLY);
-                    }
-                } else {
-                    result.addProperty("TagCode", TagCodeEnum.HAS_APPLY_OTHER_APP);
-                }
-				return result;
-			}
-			if (applyActorService.saveApplyActor(applyActor)) {
-				result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-				return result;
-			}
-		} catch (Exception e) {
-			logger.error("Fail to call applyActorService.getApplyActorByActorId", e);
-			result.addProperty("TagCode", TagCodeEnum.FAIL_SAVE_APPLY);
-		}
-		
-		return result;
-    }
-    
-    /**
-     * 20010503-重新申请实名认证
-     * @param jsonObject
-     * @param checkTag
-     * @return
-     */
-    public JsonObject reApplyForRealName(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-    	JsonObject result = new JsonObject();
-    	if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-            return result;
-    	}
-    	
-    	int userId, gender, appId, operatorId;
-		String realName, identityId, mobileNum, qqNum, wechatNum, idPicOnHand, idPicFont, idPicBack;
-		try {
-			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-            appId = CommonUtil.getJsonParamInt(jsonObject, "a", 0, TagCodeEnum.APPID_MISSING, 1, Integer.MAX_VALUE);
-			realName = CommonUtil.getJsonParamString(jsonObject, "realName", null, null, 1, 20);
-			identityId = CommonUtil.getJsonParamString(jsonObject, "identityNumber", null, null, 1, 50);
-			idPicOnHand =  CommonUtil.getJsonParamString(jsonObject, "identityPictureOnHand", null, null, 1, 200);
-            gender = CommonUtil.getJsonParamInt(jsonObject, "gender", -1, null, 0, Integer.MAX_VALUE);
-            mobileNum = CommonUtil.getJsonParamString(jsonObject, "mobile", null, null, 5 , 20);
-            qqNum =  CommonUtil.getJsonParamString(jsonObject, "qqNumber", null, null, 1, 50);
-            wechatNum =  CommonUtil.getJsonParamString(jsonObject, "wechatNumber", null, null, 1, 50);
-            
-            // 添加 身份证正面照图片（Bang必传） 和 运营ID
-            idPicFont =  CommonUtil.getJsonParamString(jsonObject, "identityPictureFont", null, null, 1, 200);
-            idPicBack =  CommonUtil.getJsonParamString(jsonObject, "identityPictureBack", null, null, 1, 200);
-            operatorId = CommonUtil.getJsonParamInt(jsonObject, "operatorId", 0, null, 1, Integer.MAX_VALUE);
-		} catch (CommonUtil.ErrorGetParameterException e) {
-			result.addProperty("TagCode", e.getErrCode());
-			return result;
-		} catch (Exception e) {
-			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-			return result;
-		}
-		
-		try {
-			//身份证黑名单不得申请
-			BlacklistService blacklistService = (BlacklistService) MelotBeanFactory.getBean("blacklistService");
-			boolean flag = blacklistService.isIdentityBlacklist(identityId);
-			if (flag) {
-				result.addProperty("TagCode", TagCodeEnum.IDENTITY_BLACK_LIST);
-				return result;
-			}
-			
-            // 用户无效不能申请
-			UserStaticInfo userInfo = UserService.getUserStaticInfoV2(userId);
-            if (userInfo == null) {
-                result.addProperty("TagCode", TagCodeEnum.USER_NOT_EXIST);
-                return result;
-            }
-            
-            // 用户昵称为空不能申请
-            if (StringUtil.strIsNull(userInfo.getProfile().getNickName())) {
-                result.addProperty("TagCode", TagCodeEnum.NICKNAME_EMPTY);
-                return result;
-            }
-            
-            // 游客不能申请
-            if(userInfo.getRegisterInfo().getOpenPlatform() == 0 || userInfo.getRegisterInfo().getOpenPlatform() == -5) {
-                result.addProperty("TagCode", TagCodeEnum.USER_IS_VISITOR);
-                return result;
-            }
-            
-            // 黑名单用户不能申请
-            if (com.melot.kkcx.service.UserService.blackListUser(userId)) {
-                result.addProperty("TagCode", TagCodeEnum.USER_IN_BLACK);
-                return result;
-            }
-
-            // 家族成员不能申请成为家族主播
-            if (FamilyService.isFamilyMember(userId)) {
-                result.addProperty("TagCode", TagCodeEnum.MEMBER_CANT_APPLY);
-                return result;
-            }
-
-            // 未绑定手机的用户不能申请
-            try {
-                KkUserService userService = MelotBeanFactory.getBean("kkUserService", KkUserService.class);
-                UserProfile userProfile = userService.getUserProfile(userId);
-                if (userProfile == null || userProfile.getIdentifyPhone() == null) {
-//                    result.addProperty("TagCode", "02050607");
-//                    return result;
-                } else {
-                    mobileNum = userProfile.getIdentifyPhone();
-                }
-            } catch (Exception e) {
-                logger.error("Fail to get KkUserService.getUserProfile. userId: " + userId, e);
-//                result.addProperty("TagCode", TagCodeEnum.FAIL_TO_CALL_API_CONTENT_MODULE);
-//                return result;
-            }
-            
-            if (appId == 12) {
-            	if (operatorId == 0 || !com.melot.kkcx.service.UserService.isValidOperator(operatorId)) {
-            		result.addProperty("TagCode", "02050608");
-            		return result;
-            	}
-            }
-            
-		    // 数据校检
-		    ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
-		    List<ApplyActor> applies = applyActorService.getApplyActorsByParameter(identityId, mobileNum, qqNum);
-		    if (applies != null && applies.size() > 0) {
-		        for (ApplyActor apply : applies) {
-		            // 实名认证申请失败(-1)可重新申请
-		            if (apply.getStatus() < 0) {
-		                continue;
-		            }
-                    
-                    if (apply.getActorId().equals(userId)) {
-                        if (apply.getAppId().equals(appId)) {
-                            if (apply.getStatus() == 0) {
-                                result.addProperty("TagCode", TagCodeEnum.CHECKING);
-                            } else {
-                                result.addProperty("TagCode", TagCodeEnum.HAS_APPLY);
-                            }
-                            return result;
-                        } else {
-                            result.addProperty("TagCode", TagCodeEnum.HAS_APPLY_OTHER_APP);
-                            return result;
-                        }
-                    } else if (apply.getAppId().equals(appId)) {
-                        // 身份证已经存在
-                        if (apply.getIdentityNumber() != null && apply.getIdentityNumber().equals(identityId)) {
-                            result.addProperty("TagCode", TagCodeEnum.APPLY_IDNUM_EXISTS);
-                            return result;
-                        }
-                        // 手机号已经存在
-                        if (apply.getMobile() != null && mobileNum != null && apply.getMobile().equals(mobileNum)) {
-                            result.addProperty("TagCode", TagCodeEnum.APPLY_MOBILE_EXISTS);
-                            return result;
-                        }
-                        // qq号已经存在
-                        if (apply.getQqNumber() != null && qqNum != null && apply.getQqNumber().equals(qqNum)) {
-                            result.addProperty("TagCode", TagCodeEnum.APPLY_QQNUM_EXISTS);
-                            return result;
-                        }
-                    } else {
-                        // 统一身份证只能申请一个唱响主播或直播主播，不能同时拥有这两个APP的主播
-                        if (appId == AppIdEnum.AMUSEMENT && apply.getAppId() == AppIdEnum.GAME) {
-                            result.addProperty("TagCode", TagCodeEnum.USER_IN_GAME_KKCX_FORBID);
-                            return result;
-                        }
-                    }
-		        }
-		    }
-		    
-		    int upCnt = 0;
-		    
-		    ApplyActor applyActor = new ApplyActor();
-		    applyActor.setActorId(userId);
-		    applyActor.setAppId(appId);
-		    if (realName != null) {
-		        applyActor.setRealName(realName);
-		        upCnt++;
-		    }
-		    if (identityId != null) {
-		        applyActor.setIdentityNumber(identityId);
-		        upCnt++;
-		    }
-		    if (idPicOnHand != null) {
-		        applyActor.setIdentityPictureOnHand(idPicOnHand);
-		        upCnt++;
-		    }
-		    
-		    if (idPicFont != null) {
-		        applyActor.setIdentityPictureFont(idPicFont);
-		        upCnt++;
-		    }
-		    if (idPicBack != null) {
-		        applyActor.setIdentityPictureBack(idPicBack);
-		        upCnt++;
-		    }
-		    if (operatorId > 0) {
-		        applyActor.setOperatorId(operatorId);
-		        upCnt++;
-		    }
-		    if (gender >= 0) {
-		        applyActor.setGender(gender);
-		        upCnt++;
-		    }
-		    if (mobileNum != null) {
-		        applyActor.setMobile(mobileNum);
-		        upCnt++;
-		    }
-		    if (qqNum != null) {
-		        applyActor.setQqNumber(qqNum);
-		        upCnt++;
-		    }
-		    if (wechatNum != null) {
-		        applyActor.setWechatNumber(wechatNum);
-		        upCnt++;
-		    }
-		    applyActor.setStatus(Constants.APPLY_INIT_STATUS);
-            
-            // 查看统一身份证是否有绑定的家族ID
-            Integer familyId = applyActorService.getFamilyIdByIdentityNumber(applyActor.getIdentityNumber());
-            if (familyId != null) {
-                applyActor.setApplyFamilyId(familyId);
-            }
-            if (appId == 12) {
-		    	applyActor.setApplyFamilyId(12345);
-		    }
-            
-		    if (upCnt > 0) {
-		        ApplyActor oldApplyActor = applyActorService.getApplyActorByActorId(userId);
-		        Integer status;
-		        if (oldApplyActor != null && (status = oldApplyActor.getStatus()) != null) {
-		            if (status < 0) {
-		                if (!applyActorService.updateApplyActorByActorId(applyActor)) {
-		                    result.addProperty("TagCode", TagCodeEnum.FAIL_TO_UPDATE);
-		                    return result;
-		                }
-		            } else {
-		                if (!oldApplyActor.getAppId().equals(appId)) {
-		                    result.addProperty("TagCode", TagCodeEnum.HAS_APPLY_OTHER_APP);
-                        } else {
-                            if (status == 0) {
-                                result.addProperty("TagCode", TagCodeEnum.CHECKING);
-                            } else {
-                                result.addProperty("TagCode", TagCodeEnum.HAS_APPLY);
-                            }
-                        }
-		                return result;
-		            }
-		        } else {
-		            result.addProperty("TagCode", TagCodeEnum.HASNOT_APPLY);
-		            return result;
-		        }
-		    }
-		} catch (Exception e) {
-		    logger.error("Fail to call applyActorService.getActorApplyStatus", e);
-		    result.addProperty("TagCode", TagCodeEnum.FAIL_TO_CALL_API_CONTENT_MODULE);
-		    return result;
-		}	
-		
-		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-		return result;
-    }
-    
-    /**
-     * 20010504-取消申请实名认证
-     * @param jsonObject
-     * @param checkTag
-     * @return
-     */
-    public JsonObject cancelApplyForRealName(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-    	JsonObject result = new JsonObject();
-    	if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-            return result;
-    	}
-    	
-    	Integer userId = null;
-		try {
-	    	userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-  	    } catch (CommonUtil.ErrorGetParameterException e) {
-  			result.addProperty("TagCode", e.getErrCode());
-  			return result;
-  		} catch (Exception e) {
-  			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-  			return result;
-  		}
-		
-		try {
-			ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
-			Integer status = applyActorService.getActorApplyStatus(userId);
-			if (status != null) {
-				if (status <= 0) {
-					if (applyActorService.deleteApplyActorByActorId(userId)) {
-						result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-			  			return result;
-					} else {
-						result.addProperty("TagCode", TagCodeEnum.FAIL_TO_DELETE);
-			  			return result;
-					}
-				} else {
-					result.addProperty("TagCode", TagCodeEnum.HAS_CHECKING_PASS);
-		  			return result;
-				}
-			} else {
-				result.addProperty("TagCode", TagCodeEnum.HASNOT_APPLY);
-	  			return result;
-			}
-		} catch (Exception e) {
-			logger.error("Fail to call applyActorService.getActorApplyStatus", e);
-			result.addProperty("TagCode", TagCodeEnum.FAIL_TO_CALL_API_CONTENT_MODULE);
-			return result;
-		}
-		
-    }
-    
-    /**
-     * 20010505-获取推荐申请家族列表
-     * @param jsonObject
-     * @param checkTag
-     * @return
-     */
-    public JsonObject getRecommendApplyFamilyList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-    	
-    	JsonObject result = new JsonObject();
-    	
-    	int cityId, familyId;
-        try {
-        	cityId = CommonUtil.getJsonParamInt(jsonObject, "cityId", 0, null, 1, Integer.MAX_VALUE);
-        	familyId = CommonUtil.getJsonParamInt(jsonObject, "familyId", 0, null, 1, Integer.MAX_VALUE);
-  	    } catch (CommonUtil.ErrorGetParameterException e) {
-  			result.addProperty("TagCode", e.getErrCode());
-  			return result;
-  		} catch (Exception e) {
-  			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-  			return result;
-  		}
-        
-        List<FamilyInfo> familyInfoList = null;
-        
-        // 根据家族ID获取家族信息
-        if (familyId >  0) {
-			FamilyInfo familyInfo = FamilyService.getFamilyInfoByFamilyId(familyId);
-			if (familyInfo != null) {
-				familyInfoList = new ArrayList<FamilyInfo>();
-				familyInfoList.add(familyInfo);
-			}
-        }
-        
-        // 根据城市ID获取相关家族列表
-        if (familyInfoList == null && cityId > 0) {
-			familyInfoList = FamilyService.getFamilyListByCityId(cityId);
-        }
-        
-        if (familyInfoList != null && familyInfoList.size() > 0) {
-        	JsonArray list = new JsonArray();
-        	for (FamilyInfo familyInfo : familyInfoList) {
-        		JsonObject json = new JsonObject();
-    			json.addProperty("familyId", familyInfo.getFamilyId());
-    			json.addProperty("familyName", familyInfo.getFamilyName());
-    			list.add(json);
-			}
-			result.add("familyList", list);
-        }
-        
-        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        return result;
-    }
-    
-    /**
-     * 20010506-申请家族试播
-     * @param jsonObject
-     * @param checkTag
-     * @return
-     */
-    public JsonObject applyForFamily(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-    	
-    	JsonObject result = new JsonObject();
-        if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-            return result;
-        }
-        
-        Integer userId, familyId;
-        try {
-        	userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-        	familyId = CommonUtil.getJsonParamInt(jsonObject, "familyId", 0, TagCodeEnum.FAMILYID_MISSING, 1, Integer.MAX_VALUE);
-  	    } catch (CommonUtil.ErrorGetParameterException e) {
-  			result.addProperty("TagCode", e.getErrCode());
-  			return result;
-  		} catch (Exception e) {
-  			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-  			return result;
-  		}
-
-        // 家族成员不能申请成为家族主播
-        if (FamilyService.isFamilyMember(userId)) {
-        	result.addProperty("TagCode", TagCodeEnum.MEMBER_CANT_APPLY);
-        	return result;
-        }
-        
-        // 用户无效不能申请
-        UserStaticInfo userInfo = UserService.getUserStaticInfoV2(userId);
-        if (userInfo == null) {
-            result.addProperty("TagCode", TagCodeEnum.USER_NOT_EXIST);
-            return result;
-        }
-        
-        // 用户昵称为空不能申请
-        if (StringUtil.strIsNull(userInfo.getProfile().getNickName())) {
-            result.addProperty("TagCode", TagCodeEnum.NICKNAME_EMPTY);
-            return result;
-        }
-        
-        // 游客不能申请
-        if(userInfo.getRegisterInfo().getOpenPlatform() == 0 || userInfo.getRegisterInfo().getOpenPlatform() == -5) {
-            result.addProperty("TagCode", TagCodeEnum.USER_IS_VISITOR);
-            return result;
-        }
-        
-        // 黑名单用户不能申请
-        if (com.melot.kkcx.service.UserService.blackListUser(userId)) {
-            result.addProperty("TagCode", TagCodeEnum.USER_IN_BLACK);
-            return result;
-        }
-        
-        try {
-			FamilyInfo familyInfo = FamilyService.getFamilyInfoByFamilyId(familyId);
-			// 判断家族是否存在
-			if (familyInfo == null) {
-				result.addProperty("TagCode", TagCodeEnum.FAMILY_ISNOT_EXIST);
-				return result;
-			}
-			ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
-			ApplyActor applyActor = applyActorService.getApplyActorByActorId(userId);
-			if (applyActor == null || !applyActor.getAppId().equals(AppIdEnum.AMUSEMENT)) {
-				result.addProperty("TagCode", TagCodeEnum.HASNOT_APPLY);
-				return result;
-			}
-			
-			// 相同身份证只能归宿一个家族
-			Integer otherFamilyId = applyActorService.getFamilyIdByIdentityNumber(applyActor.getIdentityNumber());
-			if (otherFamilyId != null && otherFamilyId.intValue() != familyId.intValue() && otherFamilyId != 12345) {
-			    FamilyInfo otherFamilyInfo = FamilyService.getFamilyInfoByFamilyId(otherFamilyId);
-			    if (otherFamilyInfo != null) {
-			        result.addProperty("TagCode", TagCodeEnum.IDENTITY_HAS_FAMILY);
-			        result.addProperty("familyId", otherFamilyId);
-			        result.addProperty("familyName", otherFamilyInfo.getFamilyName());
-			        return result;
-                } else {
-                    otherFamilyId = null;
-                }
-            }
-			
-			int status = applyActor.getStatus();
-			if (status == Constants.APPLY_SUCCESS 
-			        || status == Constants.APPLY_TEST_ACTOR_IN_FAMILY_FAIL 
-			        || status == Constants.APPLY_TEST_ACTOR_NO_PASS
-			        || status == Constants.APPLY_TEST_ACTOR) {
-				ApplyActor newApplyActor = new ApplyActor();
-				newApplyActor.setApplyFamilyId(familyId);
-				// 更新状态为申请家族试播中  (版本过渡，直接改为试播通过 status=5)
-				newApplyActor.setStatus(Constants.APPLY_TEST_ACTOR_IN_FAMILY_PLAYING);
-				newApplyActor.setActorId(userId);
-				
-				if (applyActorService.updateApplyActorByActorId(newApplyActor)) {
-				    if (familyId == 11222) {
-				        // 唱响申请自由主播时需要直接通过后续审核成为真正的自由主播
-				        String resultTagCode = FamilyService.checkBecomeFamilyActor(userId, Constants.APPLY_ACTOR_OFFICIAL_CHECK_SUCCESS);
-				        if (!resultTagCode.equals(TagCodeEnum.SUCCESS)) {
-				            newApplyActor.setStatus(status);
-				            newApplyActor.setApplyFamilyId(otherFamilyId == null ? 0 : otherFamilyId);
-				            applyActorService.updateApplyActorByActorId(newApplyActor);
-				            
-				            if (resultTagCode.equals("10000013")) {
-				                result.addProperty("TagCode", TagCodeEnum.USER_IN_BLACK);
-                            } else {
-                                result.addProperty("TagCode", TagCodeEnum.FAIL_TO_UPDATE);
-                            }
-                            return result;
-                        }
-				    } else if (otherFamilyId != null && familyId.equals(otherFamilyId) && otherFamilyId != 12345) {
-				        // 相同身份证的主播ID已绑定过家族，则自动绑定家族并成为家族主播
-				        String resultTagCode = FamilyService.checkBecomeFamilyActor(userId, Constants.APPLY_ACTOR_OFFICIAL_CHECK_SUCCESS);
-				        if (!resultTagCode.equals(TagCodeEnum.SUCCESS)) {
-                            newApplyActor.setStatus(status);
-                            applyActorService.updateApplyActorByActorId(newApplyActor);
-                            
-                            if (resultTagCode.equals("10000013")) {
-                                result.addProperty("TagCode", TagCodeEnum.USER_IN_BLACK);
-                            } else {
-                                result.addProperty("TagCode", TagCodeEnum.FAIL_TO_UPDATE);
-                            }
-                            return result;
-                        }
-				    }
-				    
-				    result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-				    return result;
-				} else {
-				    result.addProperty("TagCode", TagCodeEnum.FAIL_TO_UPDATE);
-				    return result;
-				}
-			} else if (status < 1) {
-				result.addProperty("TagCode", TagCodeEnum.HAS_NOT_CHECKING_PASS);
-				return result;
-			} else {
-				result.addProperty("TagCode", TagCodeEnum.HAS_APPLY_PLAY);
-				return result;
-			}
-		} catch (Exception e) {
-			logger.error("Fail to call module", e);
-			result.addProperty("TagCode", TagCodeEnum.FAIL_TO_CALL_API_CONTENT_MODULE);
-			return result;
-		}
-    }
-    
-    /**
-     * 20010507-取消申请家族试播
-     * @param jsonObject
-     * @param checkTag
-     * @return
-     */
-    public JsonObject cancelApplyForFamily(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-    	
-    	JsonObject result = new JsonObject();
-        if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-            return result;
-        }
-        
-        Integer userId;
-        try {
-        	userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-  	    } catch (CommonUtil.ErrorGetParameterException e) {
-  			result.addProperty("TagCode", e.getErrCode());
-  			return result;
-  		} catch (Exception e) {
-  			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-  			return result;
-  		}
-        
-        try {
-			ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
-			Integer status = applyActorService.getActorApplyStatus(userId);
-			if (status == null) {
-				result.addProperty("TagCode", TagCodeEnum.HASNOT_APPLY);
-				return result;
-			}
-			if (status == Constants.APPLY_TEST_ACTOR_IN_FAMILY_CHECK 
-			        || status == Constants.APPLY_TEST_ACTOR_IN_FAMILY_PLAYING 
-			        || status == Constants.APPLY_TEST_ACTOR_PASSED 
-			        || status == Constants.APPLY_ACTOR_OFFICIAL_CHECK_FAIL
-			        || status == Constants.APPLY_TEST_ACTOR
-			        || status == Constants.APPLY_TEST_ACTOR_IN_FAMILY_FAIL
-			        || status == Constants.APPLY_TEST_ACTOR_NO_PASS
-			        || status == Constants.APPLY_ACTOR_INFO_CHECK_SUCCESS) {
-				ApplyActor applyActor = new ApplyActor();
-				applyActor.setApplyFamilyId(0);
-				applyActor.setActorId(userId);
-				//更新状态为实名认证通过，待用户申请成为家族主播
-				applyActor.setStatus(1);
-				if (applyActorService.updateApplyActorByActorId(applyActor)) {
-					result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-					return result;
-				} else {
-					result.addProperty("TagCode", TagCodeEnum.FAIL_TO_UPDATE);
-					return result;
-				}
-			} else {
-			    if (status == Constants.APPLY_ACTOR_OFFICIAL_CHECK_SUCCESS) {
-			        result.addProperty("TagCode", "10070001");
-			    } else {
-			        result.addProperty("TagCode", TagCodeEnum.CURRENT_STATE_CANT_OPERATION);
-			    }
-				return result;
-			}
-		} catch (Exception e) {
-			logger.error("Fail to call module", e);
-			result.addProperty("TagCode", TagCodeEnum.FAIL_TO_CALL_API_CONTENT_MODULE);
-			return result;
-		}
-    }
-    
-    /**
-     * 20010508-是否签订家族合作协议
-     * @param jsonObject
-     * @param checkTag
-     * @return
-     */
-    public JsonObject isSignFamilyCooperationAgreement(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-    	
-    	JsonObject result = new JsonObject();
-        if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-            return result;
-        }
-        
-        Integer userId, isOk;
-        String 	bankUser, bankCard, bankName, bankAddr;
-        try {
-        	userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-        	isOk = CommonUtil.getJsonParamInt(jsonObject, "isOk", 0, TagCodeEnum.ISOK_MISSIING, 0, Integer.MAX_VALUE);
-        	bankUser = CommonUtil.getJsonParamString(jsonObject, "bankUser", null, null, 1, 50);
-        	bankCard = CommonUtil.getJsonParamString(jsonObject, "bankCard", null, null, 1, 50);
-        	bankName = CommonUtil.getJsonParamString(jsonObject, "bankName", null, null, 1, 20);
-        	bankAddr = CommonUtil.getJsonParamString(jsonObject, "bankAddr", null, null, 1, 100);
-  	    } catch (CommonUtil.ErrorGetParameterException e) {
-  			result.addProperty("TagCode", e.getErrCode());
-  			return result;
-  		} catch (Exception e) {
-  			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-  			return result;
-  		}
-        
-        if (FamilyService.isFamilyMember(userId)) {
-        	result.addProperty("TagCode", TagCodeEnum.MEMBER_CANT_APPLY);
-        	return result;
-        }
-        try {
-			ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
-			ApplyActor oldApplyActor = applyActorService.getApplyActorByActorId(userId);
-			Integer status = oldApplyActor.getStatus();
-			if (status == null) {
-				result.addProperty("TagCode", TagCodeEnum.HASNOT_APPLY);
-				return result;
-			}
-			if (status == Constants.APPLY_TEST_ACTOR_PASSED) {
-				ApplyActor applyActor = new ApplyActor();
-				applyActor.setActorId(userId);
-				if (isOk == 1) {
-					if (bankUser != null && bankCard != null && bankName != null && bankAddr != null) {
-						applyActor.setBankUser(bankUser);
-						applyActor.setBankCard(bankCard);
-						applyActor.setBankName(bankName);
-						applyActor.setBankAddr(bankAddr);
-						applyActor.setStatus(Constants.APPLY_ACTOR_INFO_CHECK_SUCCESS);
-					} else {
-						result.addProperty("TagCode", TagCodeEnum.MISSING_BANK_INFO);
-						return result;
-					}
-				} else {
-					//不同意分成则回到试播状态5
-					applyActor.setStatus(Constants.APPLY_TEST_ACTOR_IN_FAMILY_PLAYING);
-				}
-				if (applyActorService.updateApplyActorByActorId(applyActor)) {
-					//更新12成功之后自动变为终审通过
-					FamilyService.checkBecomeFamilyMember(userId, Constants.APPLY_ACTOR_OFFICIAL_CHECK_SUCCESS, oldApplyActor.getAppId() == null ? 1 : oldApplyActor.getAppId());
-					result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-					return result;
-				} else {
-					result.addProperty("TagCode", TagCodeEnum.FAIL_TO_UPDATE);
-					return result;
-				}
-			} else if (status > Constants.APPLY_TEST_ACTOR_PASSED) {
-				result.addProperty("TagCode", TagCodeEnum.HAS_AGREE_SIGNED);
-				return result;
-			} else {
-				result.addProperty("TagCode", TagCodeEnum.HASNOT_PASS_PLAYINGTEST);
-				return result;
-			}
-		} catch (Exception e) {
-			logger.error("Fail to call module", e);
-			result.addProperty("TagCode", TagCodeEnum.FAIL_TO_CALL_API_CONTENT_MODULE);
-			return result;
-		}
-       
-    }
-    
-    /**
-     * 标记用户申请家族主播（50001015）
-     * 
-     * @param jsonObject 请求对象
-     * @param request 请求对象
-     * @return 
-     */
-    public JsonObject markApplyFamily(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
-        JsonObject result = new JsonObject();
-        if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-            return result;
-        }
-        
-        int actorId;
-        
-        try {
-            actorId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-        } catch(CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
-            return result;
-        } catch(Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-            return result;
-        }
-        
-        try {
-            ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
-            Integer status = applyActorService.getActorApplyStatus(actorId);
-            if (status != null && status.equals(1)) {
-                ApplyActor applyActor = new ApplyActor();
-                applyActor.setActorId(actorId);
-                applyActor.setStatus(2);
-                applyActorService.updateApplyActorByActorId(applyActor);
-            }
-        } catch (Exception e) {
-            logger.error("标记用户申请家族主播失败(actorId:" + actorId, e);
-            result.addProperty("TagCode", TagCodeEnum.FAIL_TO_CALL_API_CONTENT_MODULE);
-            return result;
-        }
-       
-        result.addProperty("TagCode",  TagCodeEnum.SUCCESS);
         return result;
     }
     
@@ -2141,8 +1202,6 @@ public class OtherFunctions {
                 logger.error("Fail to get KkUserService.getUserProfile. userId: " + userId, e);
             }
             
-            ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
-            
             if (familyId > 0) {
                 FamilyInfo familyInfo = FamilyService.getFamilyInfoByFamilyId(familyId);
                 // 判断家族是否存在
@@ -2152,36 +1211,29 @@ public class OtherFunctions {
                 }
             }
             
-            List<ApplyActor> applies = applyActorService.getApplyActorsByParameter(identityId, mobileNum, qqNum);
-            if (applies != null && applies.size() > 0) {
-                for (ApplyActor apply : applies) {
+            List<UserVerifyDO> userVerifyDOS = userVerifyService.getUserVerifyDOsByCertNoOrVerifyMobile(identityId, mobileNum).getData();
+            if (userVerifyDOS != null && userVerifyDOS.size() > 0) {
+                for (UserVerifyDO userVerifyDO : userVerifyDOS) {
+
+                    int verifyUserId = userVerifyDO.getUserId();
+                    UserApplyActorDO userApplyActorDO = userApplyActorService.getUserApplyActorDO(verifyUserId).getData();
                     //巡管审核驳回 或 家族驳回
-                    if (apply.getStatus() < 0 || apply.getStatus() == 6) {
+                    if (userApplyActorDO.getStatus() < 0 || userApplyActorDO.getStatus() == 6) {
                         continue;
                     }
                     
-                    if (apply.getActorId().equals(userId)) {
-                        if (apply.getAppId().equals(appId)) {
-                            result.addProperty("TagCode", TagCodeEnum.HAS_APPLY_PLAY);
-                            return result;
-                        } else {
-                            result.addProperty("TagCode", TagCodeEnum.HAS_APPLY_OTHER_APP);
-                            return result;
-                        }
-                    } else if (apply.getAppId().equals(appId)) {
+                    if (verifyUserId == userId) {
+                        result.addProperty("TagCode", TagCodeEnum.HAS_APPLY_PLAY);
+                        return result;
+                    } else {
                         // 身份证已经存在
-                        if (apply.getIdentityNumber() != null && apply.getIdentityNumber().equals(identityId)) {
+                        if (userVerifyDO.getCertNo() != null && userVerifyDO.getCertNo().equals(identityId)) {
                             result.addProperty("TagCode", TagCodeEnum.APPLY_IDNUM_EXISTS);
                             return result;
                         }
                         // 手机号已经存在
-                        if (apply.getMobile() != null && mobileNum != null && apply.getMobile().equals(mobileNum)) {
+                        if (userVerifyDO.getVerifyMobile() != null && mobileNum != null && userVerifyDO.getVerifyMobile().equals(mobileNum)) {
                             result.addProperty("TagCode", TagCodeEnum.APPLY_MOBILE_EXISTS);
-                            return result;
-                        }
-                        // qq号已经存在
-                        if (apply.getQqNumber() != null && qqNum != null && apply.getQqNumber().equals(qqNum)) {
-                            result.addProperty("TagCode", TagCodeEnum.APPLY_QQNUM_EXISTS);
                             return result;
                         }
                     }
@@ -2189,7 +1241,7 @@ public class OtherFunctions {
             }
             
             // 查看同一身份证是否有绑定的家族ID
-            Integer bindfamilyId = applyActorService.getFamilyIdByIdentityNumber(identityId);
+            Integer bindfamilyId = userVerifyService.getFamilyIdByCertNo(identityId).getData();
             if (bindfamilyId != null) {
                 FamilyInfo otherFamilyInfo = FamilyService.getFamilyInfoByFamilyId(bindfamilyId);
                 if (otherFamilyInfo != null) {
@@ -2200,53 +1252,45 @@ public class OtherFunctions {
                 }
             }
             
-            ApplyActor applyActor = new ApplyActor();
-            applyActor.setActorId(userId);
-            applyActor.setAppId(appId);
-            applyActor.setRealName(realName);
-            applyActor.setIdentityNumber(identityId);
-            applyActor.setIdentityPictureOnHand(idPicOnHand);
-            
-            if (familyId > 0) {
-                applyActor.setApplyFamilyId(familyId);
-            } else {
-                //自由主播
-                applyActor.setApplyFamilyId(11222);
-            }
-            
-            if (idPicFont != null) {
-                applyActor.setIdentityPictureFont(idPicFont);
-            }
-            if (idPicBack != null) {
-                applyActor.setIdentityPictureBack(idPicBack);
-            }
-            if (operatorId > 0) {
-                applyActor.setOperatorId(operatorId);
-            }
-            if (gender >= 0) {
-                applyActor.setGender(gender);
-            }
-            if (mobileNum != null) {
-                applyActor.setMobile(mobileNum);
-            }
-            if (qqNum != null) {
-                applyActor.setQqNumber(qqNum);
-            }
-            if (wechatNum != null) {
-                applyActor.setWechatNumber(wechatNum);
-            }
-            applyActor.setStatus(Constants.APPLY_INIT_STATUS);
-            
-            ApplyActor oldApplyActor = applyActorService.getApplyActorByActorId(userId);
+            UserApplyActorDO oldApplyActor = userApplyActorService.getUserApplyActorDO(userId).getData();
             if (oldApplyActor != null && oldApplyActor.getStatus() != null && oldApplyActor.getStatus() >= 0 && oldApplyActor.getStatus() != 6) {
-                if (oldApplyActor.getAppId().equals(appId)) {
-                    result.addProperty("TagCode", TagCodeEnum.HAS_APPLY_PLAY);
-                } else {
-                    result.addProperty("TagCode", TagCodeEnum.HAS_APPLY_OTHER_APP);
-                }
+                result.addProperty("TagCode", TagCodeEnum.HAS_APPLY_PLAY);
                 return result;
             }
-            if (applyActorService.saveApplyActor(applyActor)) {
+
+            KkUserService userService = MelotBeanFactory.getBean("kkUserService", KkUserService.class);
+            UserProfile userProfile = userService.getUserProfile(userId);
+
+            if (familyId <= 0) {
+                //自由主播 家族id为官方家族id:11222
+                familyId = 11222;
+            }
+
+            Boolean userApplyActorResult = userApplyActorService.userApplyActor(userId, familyId, UserApplyActorStatusEnum.TOURING_AUDITING, operatorId).getData();
+            boolean saveResult = false;
+            if(userApplyActorResult) {
+                // 更新用户实名认证信息 认证通过
+                UserVerifyParam userVerifyParam = new UserVerifyParam();
+                userVerifyParam.setUserId(userId);
+                userVerifyParam.setVerifyType(UserVerifyTypeEnum.TOURING_VERIFY);
+                userVerifyParam.setVerifyStatus(UserVerifyStatusEnum.WAIT_VERIFY);
+                userVerifyParam.setCertNo(identityId);
+                userVerifyParam.setCertName(realName);
+
+                userVerifyParam.setIdPicFont(idPicFont);
+                userVerifyParam.setIdPicBack(idPicBack);
+                userVerifyParam.setIdPicOnHand(idPicOnHand);
+
+                userVerifyParam.setVerifyMobile(userProfile.getIdentifyPhone());
+                userVerifyParam.setGender(StringUtil.parseFromStr(identityId.substring(16, 17), 0) % 2);
+                userVerifyParam.setIdPicStatus(IdPicStatusEnum.NOT_UPLOADED);
+                userVerifyParam.setSignElectronicContract(0);
+
+                saveResult = userVerifyService.updateUserVerify(userVerifyParam).getData();
+            }
+
+
+            if (saveResult) {
                 result.addProperty("TagCode", TagCodeEnum.SUCCESS);
                 return result;
             } else {
@@ -2286,11 +1330,14 @@ public class OtherFunctions {
         }
         
         try {
-            ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
-            Integer status = applyActorService.getActorApplyStatus(userId);
-            if (status != null) {
-                if (status < Constants.APPLY_ACTOR_OFFICIAL_CHECK_SUCCESS) {
-                    if (applyActorService.deleteApplyActorByActorId(userId)) {
+
+            UserApplyActorDO userApplyActorDO = userApplyActorService.getUserApplyActorDO(userId).getData();
+
+            if (userApplyActorDO != null && userApplyActorDO.getStatus() != null) {
+
+                Integer status = userApplyActorDO.getStatus();
+                if (status < UserApplyActorStatusEnum.BECOME_ACTOR_SUCCESS) {
+                    if (userApplyActorService.deleteUserApplyActor(userId).getData()) {
                         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
                         return result;
                     } else {
@@ -2343,20 +1390,18 @@ public class OtherFunctions {
         }
         
         try {
-            ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
-            ApplyActor oldApplyActor = applyActorService.getApplyActorByActorId(userId);
-            if (oldApplyActor == null || !oldApplyActor.getAppId().equals(AppIdEnum.AMUSEMENT)) {
+
+            UserApplyActorDO oldApplyActor = userApplyActorService.getUserApplyActorDO(userId).getData();
+            if (oldApplyActor == null) {
                 result.addProperty("TagCode", TagCodeEnum.HASNOT_APPLY);
                 return result;
             }
             Integer status = oldApplyActor.getStatus();
-            if (status == Constants.APPLY_TEST_ACTOR_PASSED) {
-                ApplyActor applyActor = new ApplyActor();
-                applyActor.setActorId(userId);
-                applyActor.setStatus(Constants.APPLY_ACTOR_INFO_CHECK_SUCCESS);
-                if (applyActorService.updateApplyActorByActorId(applyActor)) {
+            if (status == UserApplyActorStatusEnum.FAMILY_AUDIT_PASS) {
+
+                if (userApplyActorService.auditUserApplyActor(userId, UserApplyActorStatusEnum.CONFIRM_FAMILY_INFO, null, null).getData()) {
                     //更新12成功之后自动变为终审通过
-                    if (FamilyService.checkBecomeFamilyMember(userId, Constants.APPLY_ACTOR_OFFICIAL_CHECK_SUCCESS, oldApplyActor.getAppId() == null ? 1 : oldApplyActor.getAppId())){
+                    if (FamilyService.checkBecomeFamilyMember(userId, UserApplyActorStatusEnum.BECOME_ACTOR_SUCCESS, 1)){
                        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
                     } else {
                         result.addProperty("TagCode", TagCodeEnum.FAIL_TO_UPDATE);
@@ -2366,7 +1411,7 @@ public class OtherFunctions {
                     result.addProperty("TagCode", TagCodeEnum.FAIL_TO_UPDATE);
                     return result;
                 }
-            } else if (status > Constants.APPLY_TEST_ACTOR_PASSED) {
+            } else if (status > UserApplyActorStatusEnum.FAMILY_AUDIT_PASS) {
                 result.addProperty("TagCode", TagCodeEnum.HAS_AGREE_SIGNED);
                 return result;
             } else {
@@ -2417,11 +1462,10 @@ public class OtherFunctions {
         JsonObject result = new JsonObject();
         
         try {
-            ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
-            List<BrokerageFirmInfo> brokerageFirmInfoList = applyActorService.getBrokerageFirmInfoList();
+            List<BrokerageFirmDO> brokerageFirmInfoList = userApplyActorService.getBrokerageFirmInfoList().getData();
             if (brokerageFirmInfoList != null && brokerageFirmInfoList.size() != 0) {
                 JsonArray brokerageFirmArray = new JsonArray();
-                for (BrokerageFirmInfo brokerageFirm : brokerageFirmInfoList) {
+                for (BrokerageFirmDO brokerageFirm : brokerageFirmInfoList) {
                     JsonObject jsonObj = new JsonObject();
                     jsonObj.addProperty("firmId", brokerageFirm.getFirmId());
                     jsonObj.addProperty("firmName", brokerageFirm.getFirmName());
