@@ -949,9 +949,22 @@ public class KKHallFunctions {
                     userRecommendAlgorithm = RecommendAlgorithmSource.setUserRecommendAlgorithm(userId);
                 }
 
-                if(StringUtils.isNotEmpty(userRecommendAlgorithm) && userRecommendAlgorithm.equals("B")) {
+                if(StringUtils.isNotEmpty(userRecommendAlgorithm)) {
+                    if(userRecommendAlgorithm.equals("A")) {
 
-                    trumpRoomList = firstPageHandler.getTrumpRooms(offset);
+                        // 从大数据推荐算法接口中获取置顶位房间id列表
+                        NewRcmdService newRcmdService = MelotBeanFactory.getBean("newRcmdService", NewRcmdService.class);
+                        List<Integer> roomIdList = newRcmdService.getRcmdActorTopList(userId);
+
+                        if (roomIdList != null && roomIdList.size() > 0) {
+                            RoomInfoService roomInfoServie = MelotBeanFactory.getBean("roomInfoService", RoomInfoService.class);
+                            String roomIds = StringUtils.join(roomIdList.toArray(), ",");
+                            trumpRoomList = roomInfoServie.getRoomListByRoomIds(roomIds);
+                        }
+                    }else if(userRecommendAlgorithm.equals("B")) {
+
+                        trumpRoomList = firstPageHandler.getTrumpRooms(offset);
+                    }
                 }
             }else {
                 trumpRoomList = firstPageHandler.getTrumpRooms(offset);

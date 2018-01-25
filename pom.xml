@@ -576,7 +576,7 @@
         <dependency>
             <groupId>com.melot.datacenter</groupId>
             <artifactId>dc-newrcmd-api</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.2</version>
         </dependency>
 
         <!-- 欢乐PK -->
