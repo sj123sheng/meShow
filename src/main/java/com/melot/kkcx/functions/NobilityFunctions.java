@@ -111,10 +111,15 @@ public class NobilityFunctions {
         try {
             KkUserService kkUserService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
             UserProfile userProfile = kkUserService.getUserProfile(realUserId);
+            if (userProfile == null) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5101040201");
+                return result;
+            }
             result.addProperty("nickname", userProfile.getNickName());
         } catch (Exception e) {
             log.error(String.format("module error: kkUserService.getUserProfile(%s)", realUserId), e);
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
         }
         
         NobilityService nobilityService = (NobilityService)MelotBeanFactory.getBean("nobilityService");
