@@ -232,7 +232,7 @@
 		<dependency>
   			<groupId>com.melot</groupId>
   			<artifactId>melot-site-content-config</artifactId>
-  			<version>2.0.0</version><!--$NO-MVN-MAN-VER$-->
+  			<version>1.1.21</version><!--$NO-MVN-MAN-VER$-->
 		</dependency>
 		<dependency>
 			<groupId>com.sun.jersey</groupId>
@@ -258,7 +258,7 @@
 		<dependency>
 			<groupId>com.melot.module.driver.msgbuilder</groupId>
 			<artifactId>family-module-msgbuilder</artifactId>
-			<version>2.0.0-SNAPSHOT</version><!--$NO-MVN-MAN-VER$-->
+			<version>1.0.12</version><!--$NO-MVN-MAN-VER$-->
 		</dependency>
 		<dependency>
 		  	<groupId>com.melot.module.driver.msgbuilder</groupId>
@@ -576,7 +576,7 @@
         <dependency>
             <groupId>com.melot.datacenter</groupId>
             <artifactId>dc-newrcmd-api</artifactId>
-            <version>1.0.2</version>
+            <version>1.0.1</version>
         </dependency>
 
         <!-- 欢乐PK -->
@@ -599,20 +599,6 @@
 		  <artifactId>kk-nobility-api</artifactId>
 		  <version>1.0.0</version>
 		</dependency>
-
-        <!-- 用户安全模块 -->
-        <dependency>
-            <groupId>com.melot.kk</groupId>
-            <artifactId>kk-userSecurity-api</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
-        </dependency>
-
-        <!-- 新家族模块(具有多租户功能的springboot框架) -->
-        <dependency>
-            <groupId>com.melot.module</groupId>
-            <artifactId>kk-family-api</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
-        </dependency>
 
 		<dependency>
 			<groupId>log4j</groupId>

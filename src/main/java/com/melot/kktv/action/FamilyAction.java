@@ -1,22 +1,40 @@
 package com.melot.kktv.action;
 
+import java.io.UnsupportedEncodingException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.io.Charsets;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.google.common.collect.Sets;
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.blacklist.service.BlacklistService;
-import com.melot.family.driver.constant.UserApplyActorStatusEnum;
+import com.melot.content.config.apply.service.ApplyActorService;
+import com.melot.content.config.domain.ApplyActor;
+import com.melot.content.config.utils.Constants;
 import com.melot.family.driver.domain.ActorTransferHistV2;
 import com.melot.family.driver.domain.ApplyFamilyHist;
-import com.melot.family.driver.domain.DO.UserApplyActorDO;
 import com.melot.family.driver.domain.FamilyInfo;
 import com.melot.family.driver.domain.RespMsg;
 import com.melot.family.driver.service.FamilyAdminNewService;
 import com.melot.family.driver.service.FamilyAdminService;
 import com.melot.family.driver.service.FamilyInfoService;
-import com.melot.family.driver.service.UserApplyActorService;
-import com.melot.kk.userSecurity.api.domain.DO.UserVerifyDO;
-import com.melot.kk.userSecurity.api.service.UserVerifyService;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcx.model.RecentFamilyMatch;
 import com.melot.kkcx.service.FamilyService;
@@ -24,33 +42,37 @@ import com.melot.kkcx.service.RoomService;
 import com.melot.kkcx.service.UserAssetServices;
 import com.melot.kkcx.service.UserService;
 import com.melot.kkcx.transform.RoomTF;
-import com.melot.kktv.base.Page;
 import com.melot.kktv.domain.Honour;
 import com.melot.kktv.domain.PreviewAct;
-import com.melot.kktv.model.*;
+import com.melot.kktv.model.Family;
+import com.melot.kktv.model.FamilyApplicant;
+import com.melot.kktv.model.FamilyHonor;
+import com.melot.kktv.model.FamilyMatchChampion;
+import com.melot.kktv.model.FamilyMatchRank;
+import com.melot.kktv.model.FamilyMember;
+import com.melot.kktv.model.FamilyPoster;
 import com.melot.kktv.redis.FamilyApplySource;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.MatchSource;
 import com.melot.kktv.redis.MedalSource;
 import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.UserRelationService;
-import com.melot.kktv.util.*;
+import com.melot.kktv.util.AppIdEnum;
+import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
+import com.melot.kktv.util.ConfigHelper;
+import com.melot.kktv.util.Constant;
+import com.melot.kktv.util.FamilyMemberEnum;
+import com.melot.kktv.util.FamilyRankingEnum;
+import com.melot.kktv.util.PaginationUtil;
+import com.melot.kktv.util.PlatformEnum;
+import com.melot.kktv.util.StringUtil;
+import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.module.medal.driver.domain.ResultByFamilyMedal;
 import com.melot.module.medal.driver.service.FamilyMedalService;
 import com.melot.sdk.core.util.MelotBeanFactory;
-import org.apache.commons.io.Charsets;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import java.io.UnsupportedEncodingException;
-import java.sql.SQLException;
-import java.util.*;
 
 /**
  * 家族相关接口
@@ -68,12 +90,6 @@ public class FamilyAction {
 
 	@Autowired
     private ConfigService configService;
-
-	@Resource
-    UserApplyActorService userApplyActorService;
-
-	@Resource
-    UserVerifyService userVerifyService;
 
     private static String encode = Charsets.ISO_8859_1.name();
 
@@ -787,6 +803,8 @@ public class FamilyAction {
 	/**
 	 * 设置家族海报(10008009) ok
 	 * 权限:族长副族长
+	 * @param jsonObject
+	 * @param checkTag
 	 * @return
 	 */
 	public JsonObject setFamilyPoster(Integer userId, Integer familyId, FamilyPoster familyPoster) {
@@ -1991,7 +2009,7 @@ public class FamilyAction {
 	
 	/**
 	 * 购买家族勋章(10008021)
-	 * @param paramJsonObject with properties: userId, familyId, period(how many months),medalId
+	 * @param jsonObject with properties: userId, familyId, period(how many months),medalId
 	 * @return result JasonObject
 	 */
 	public JsonObject buyFamilyMedal(JsonObject paramJsonObject, boolean checkTag, HttpServletRequest request) {
@@ -2448,19 +2466,18 @@ public class FamilyAction {
 
         int actorTag = (userInfo.getIsActor() == 1) ? 1 : 0;
         
-        UserApplyActorDO applyActor = null;
-        UserVerifyDO userVerifyDO = null;
+        ApplyActor applyActor = null;
         try {
-            applyActor = userApplyActorService.getUserApplyActorDO(userId).getData();
-            userVerifyDO = userVerifyService.getUserVerifyDO(userId).getData();
+            ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
+            applyActor = applyActorService.getApplyActorByActorId(userId);
         } catch (Exception e) {
             logger.error("Fail to call ApplyActorService.getApplyActorByActorId ", e);
         }
         //身份证黑名单不得申请
         try {
-            if (userVerifyDO != null && StringUtils.isNotEmpty(userVerifyDO.getCertNo())) {
+            if (applyActor != null && applyActor.getIdentityNumber() != null) {
                 BlacklistService blacklistService = (BlacklistService) MelotBeanFactory.getBean("blacklistService");
-                if (blacklistService.isIdentityBlacklist(userVerifyDO.getCertNo())) {
+                if (blacklistService.isIdentityBlacklist(applyActor.getIdentityNumber())) {
                     result.addProperty("TagCode", TagCodeEnum.IDENTITY_BLACK_LIST);
                     return result;
                 }
@@ -2660,25 +2677,20 @@ public class FamilyAction {
             FamilyMember familyMember = FamilyService.getFamilyMemberInfo(userId, familyId, 0);
             if (familyMember != null && familyMember.getMemberGrade() == FamilyMemberEnum.GRADE_LEADER) {
                 FamilyAdminService familyAdminService = (FamilyAdminService) MelotBeanFactory.getBean("familyAdminService");
-                Page<UserApplyActorDO> userApplyActorDOPage = familyAdminService.getFamilyPilots(familyId, null, UserApplyActorStatusEnum.FAMILY_AUDITING, start, countPerPage);
-                int count = userApplyActorDOPage.getCount();
+                int count = familyAdminService.getFamilyPilotsCount(familyId, null, AppIdEnum.AMUSEMENT, Constants.APPLY_TEST_ACTOR_IN_FAMILY_PLAYING);
                 result.addProperty("count", count);
                 JsonArray actorList = new JsonArray();
                 if (count > 0) {
                     start = (pageIndex - 1) * countPerPage;
-                    List<UserApplyActorDO> actorApplyList = userApplyActorDOPage.getList();
+                    List<ApplyActor> actorApplyList = familyAdminService.getFamilyPilots(familyId, null, AppIdEnum.AMUSEMENT, Constants.APPLY_TEST_ACTOR_IN_FAMILY_PLAYING, start, countPerPage);
                     if (actorApplyList != null && actorApplyList.size() > 0) {
-                        for (UserApplyActorDO applyActor : actorApplyList) {
+                        for (ApplyActor applyActor : actorApplyList) {
                              JsonObject jsonObj = new JsonObject();
-                             int applyActorUserId = applyActor.getUserId();
-                             UserVerifyDO userVerifyDO = userVerifyService.getUserVerifyDO(userId).getData();
-                             if(userVerifyDO != null) {
-                                 jsonObj.addProperty("realName", userVerifyDO.getCertName());
-                             }
-                             jsonObj.addProperty("userId", applyActorUserId);
+                             jsonObj.addProperty("userId", applyActor.getActorId());
+                             jsonObj.addProperty("realName", applyActor.getRealName());
                              jsonObj.addProperty("applyTime", applyActor.getCreateTime().getTime());
                              jsonObj.addProperty("state", applyActor.getStatus());
-                             UserProfile userProfile = UserService.getUserInfoNew(applyActorUserId);
+                             UserProfile userProfile = UserService.getUserInfoNew(applyActor.getActorId());
                              if (userProfile != null) {
                                  if (userProfile.getNickName() != null) {
                                      jsonObj.addProperty("nickName", userProfile.getNickName());
@@ -2688,7 +2700,7 @@ public class FamilyAction {
                                  }
                                  jsonObj.addProperty("actorLevel", userProfile.getActorLevel());
                                  jsonObj.addProperty("richLevel", userProfile.getUserLevel());
-                                 jsonObj.addProperty("fansCount", UserRelationService.getFansCount(applyActorUserId));
+                                 jsonObj.addProperty("fansCount", UserRelationService.getFansCount(applyActor.getActorId()));
                                  jsonObj.addProperty("gender", userProfile.getGender());
                              }
                              actorList.add(jsonObj);
@@ -2746,18 +2758,22 @@ public class FamilyAction {
             FamilyMember familyMember = FamilyService.getFamilyMemberInfo(userId, familyId, 0);
             if (familyMember != null && familyMember.getMemberGrade() == FamilyMemberEnum.GRADE_LEADER) {
                 FamilyAdminService familyAdminService = (FamilyAdminService) MelotBeanFactory.getBean("familyAdminService");
-                int count = familyAdminService.getFamilyPilots(familyId, actorId, UserApplyActorStatusEnum.FAMILY_AUDITING, 0, 20).getCount();
+                int count = familyAdminService.getFamilyPilotsCount(familyId, actorId, AppIdEnum.AMUSEMENT, Constants.APPLY_TEST_ACTOR_IN_FAMILY_PLAYING);
+                ApplyActor applyActor = new ApplyActor();
+                ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
                 if (count > 0) {
                     int state = 0;
                     if (type == 1) {
-                        state = UserApplyActorStatusEnum.FAMILY_AUDIT_PASS;
+                        state = Constants.APPLY_TEST_ACTOR_PASSED;
+                        applyActor.setActorId(actorId);
+                        applyActor.setStatus(Constants.APPLY_ACTOR_INFO_CHECK_SUCCESS);
                     } else if (type == 2) {
-                        state = UserApplyActorStatusEnum.FAMILY_AUDIT_REJECT;
+                        state = Constants.APPLY_TEST_ACTOR_NO_PASS;
                     }
                     boolean isSuccess = familyAdminService.checkFamilyPilots(actorId, familyId, state, checkReason, null, 40, AppIdEnum.AMUSEMENT);
                     if (isSuccess) {
-                        if (state == UserApplyActorStatusEnum.FAMILY_AUDIT_REJECT || (state == UserApplyActorStatusEnum.FAMILY_AUDIT_PASS
-                                && userApplyActorService.auditUserApplyActor(actorId, UserApplyActorStatusEnum.CONFIRM_FAMILY_INFO, null, null).getData() && FamilyService.checkBecomeFamilyMember(actorId, UserApplyActorStatusEnum.BECOME_ACTOR_SUCCESS, AppIdEnum.AMUSEMENT))) {
+                        if (state == Constants.APPLY_TEST_ACTOR_NO_PASS || (state == Constants.APPLY_TEST_ACTOR_PASSED 
+                                && applyActorService.updateApplyActorByActorId(applyActor) && FamilyService.checkBecomeFamilyMember(actorId, Constants.APPLY_ACTOR_OFFICIAL_CHECK_SUCCESS, AppIdEnum.AMUSEMENT))) {
                             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
                         } else {
                             result.addProperty("TagCode", "5104010205");
@@ -2767,12 +2783,12 @@ public class FamilyAction {
                     }
                 } else {
                     result.addProperty("TagCode", "5104010204");
-                    UserApplyActorDO applyActor = userApplyActorService.getUserApplyActorDO(actorId).getData();
+                    applyActor = applyActorService.getApplyActorByActorIdV2(actorId);
                     if (applyActor != null && applyActor.getApplyFamilyId().equals(familyId)) {
                         //家族长已拒绝
-                        if (applyActor.getStatus().equals(UserApplyActorStatusEnum.FAMILY_AUDIT_REJECT)) {
+                        if (applyActor.getStatus().equals(Constants.APPLY_TEST_ACTOR_NO_PASS)) {
                             result.addProperty("TagCode", "5104010206");
-                        } else if(applyActor.getStatus() > UserApplyActorStatusEnum.FAMILY_AUDIT_REJECT) {
+                        } else if(applyActor.getStatus() > Constants.APPLY_TEST_ACTOR_NO_PASS) {
                             //家族长已同意
                             result.addProperty("TagCode", "5104010207");
                         }

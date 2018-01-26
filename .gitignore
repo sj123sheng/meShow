@@ -2,8 +2,6 @@
 #disconf配置文件过滤
 /disconf
 .DS_Store
-/kk-actorhistory-producer
-*.dat
 ### Java template
 # Compiled class file
 /target

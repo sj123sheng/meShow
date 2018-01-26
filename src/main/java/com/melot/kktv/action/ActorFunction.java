@@ -1,50 +1,52 @@
 package com.melot.kktv.action;
 
+import java.util.Date;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.antgroup.zmxy.openplatform.api.response.ZhimaCustomerCertificationInitializeResponse;
 import com.antgroup.zmxy.openplatform.api.response.ZhimaCustomerCertificationQueryResponse;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.melot.blacklist.service.BlacklistService;
+import com.melot.content.config.apply.service.ApplyActorService;
+import com.melot.content.config.domain.ApplyActor;
+import com.melot.content.config.domain.ZmrzApply;
+import com.melot.content.config.utils.Constants;
+import com.melot.content.config.utils.IdPicStatusEnum;
+import com.melot.content.config.utils.VerifyTypeEnum;
 import com.melot.content.config.utils.ZmrzStatusEnum;
-import com.melot.family.driver.constant.UserApplyActorStatusEnum;
-import com.melot.family.driver.domain.DO.UserApplyActorDO;
 import com.melot.family.driver.domain.FamilyInfo;
 import com.melot.family.driver.service.FamilyOperatorService;
-import com.melot.family.driver.service.UserApplyActorService;
 import com.melot.game.config.sdk.utils.StringUtils;
-import com.melot.kk.userSecurity.api.constant.IdPicStatusEnum;
-import com.melot.kk.userSecurity.api.constant.UserVerifyStatusEnum;
-import com.melot.kk.userSecurity.api.constant.UserVerifyTypeEnum;
-import com.melot.kk.userSecurity.api.domain.DO.UserVerifyDO;
-import com.melot.kk.userSecurity.api.domain.DO.ZmrzApplyDO;
-import com.melot.kk.userSecurity.api.domain.param.UserVerifyParam;
-import com.melot.kk.userSecurity.api.service.UserVerifyService;
 import com.melot.kkcore.actor.api.ActorInfo;
 import com.melot.kkcore.actor.service.ActorService;
+import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.api.ShowMoneyHistory;
 import com.melot.kkcore.user.api.UserAssets;
-import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.api.UserStaticInfo;
 import com.melot.kkcore.user.service.KkUserService;
-import com.melot.kkcx.model.ActorProfit;
 import com.melot.kkcx.service.FamilyService;
-import com.melot.kktv.base.CommonStateCode;
-import com.melot.kktv.base.Result;
 import com.melot.kktv.redis.GiftRecordSource;
 import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.UserService;
+import com.melot.kkcx.model.ActorProfit;
 import com.melot.kktv.third.service.ZmxyService;
-import com.melot.kktv.util.*;
+import com.melot.kktv.util.AppIdEnum;
+import com.melot.kktv.util.BizCodeEnum;
+import com.melot.kktv.util.CollectionUtils;
+import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.ConfigHelper;
+import com.melot.kktv.util.DateUtil;
+import com.melot.kktv.util.StringUtil;
+import com.melot.kktv.util.TagCodeEnum;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import com.melot.share.driver.domain.RankData;
 import com.melot.share.driver.service.ShareActivityService;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import java.util.Date;
-import java.util.List;
 
 /**
  * Title: ActorFunction
@@ -62,12 +64,6 @@ public class ActorFunction {
     
     @Autowired
     private ConfigService configService;
-
-    @Resource
-    UserApplyActorService userApplyActorService;
-
-    @Resource
-    UserVerifyService userVerifyService;
 
     /**
      * 获取主播代言团列表【51020101】
@@ -352,7 +348,8 @@ public class ActorFunction {
                 }
 
                 // 插入一条芝麻认证记录
-                ZmrzApplyDO zmrzApply = new ZmrzApplyDO();
+                ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
+                ZmrzApply zmrzApply = new ZmrzApply();
                 Date now = new Date();
                 zmrzApply.setBizNo(bizNo);
                 zmrzApply.setUserId(userId);
@@ -363,7 +360,7 @@ public class ActorFunction {
                 zmrzApply.setUpdateTime(now);
                 zmrzApply.setCertNo(certNo);
                 zmrzApply.setCertName(certName);
-                userVerifyService.saveZmrzApply(zmrzApply);
+                applyActorService.saveZmrzApply(zmrzApply);
                 result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             }
 
@@ -418,18 +415,15 @@ public class ActorFunction {
         String certName = "";
         if(response != null && response.isSuccess() && Boolean.parseBoolean(response.getPassed())) {
 
-            ZmrzApplyDO zmrzApply = userVerifyService.getZmrzApplyByBizNo(bizNo).getData();
-            if(zmrzApply != null) {
-                String verifyCertNo = zmrzApply.getCertNo();
-                certName = zmrzApply.getCertName();
+            ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
+            ZmrzApply zmrzApply = applyActorService.getZmrzApplyByBizNo(bizNo);
+            String verifyCertNo = zmrzApply.getCertNo();
+            certName = zmrzApply.getCertName();
 
-                if (!StringUtils.isEmpty(verifyCertNo) && certNo.equals(verifyCertNo)) {
-                    verifyResult = true;
-                } else {
-                    result.addProperty("errorMessage", "身份证号码不一致");
-                }
+            if(!StringUtils.isEmpty(verifyCertNo) && certNo.equals(verifyCertNo)) {
+                verifyResult = true;
             }else {
-                result.addProperty("errorMessage", "根据bizNo获取芝麻认证信息错误");
+                result.addProperty("errorMessage", "身份证号码不一致");
             }
         }else if(!response.isSuccess()) {
             result.addProperty("errorMessage", response.getErrorMessage());
@@ -440,8 +434,9 @@ public class ActorFunction {
         result.addProperty("verifyResult", verifyResult);
 
         // 更新芝麻认证记录的状态
+        ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
         int verifyStatus = verifyResult ? ZmrzStatusEnum.VERIFY_PASS.getId() : ZmrzStatusEnum.VERIFY_FAIL.getId();
-        userVerifyService.updateZmrzApplyStatus(bizNo, verifyStatus);
+        applyActorService.updateZmrzApplyStatus(bizNo, verifyStatus);
 
         if (!verifyResult) {
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
@@ -456,8 +451,8 @@ public class ActorFunction {
         if(familyId == 0) { // 自由主播
             try {
                 //自动变为终审通过
-                if (FamilyService.checkBecomeFamilyMember(userId, UserApplyActorStatusEnum.BECOME_ACTOR_SUCCESS, appId)) {
-                    result.addProperty("status", UserApplyActorStatusEnum.BECOME_ACTOR_SUCCESS);
+                if (FamilyService.checkBecomeFamilyMember(userId, Constants.APPLY_ACTOR_OFFICIAL_CHECK_SUCCESS, appId)) {
+                    result.addProperty("status", Constants.APPLY_ACTOR_OFFICIAL_CHECK_SUCCESS);
                     result.addProperty("TagCode", TagCodeEnum.SUCCESS);
                 } else {
                     result.addProperty("TagCode", TagCodeEnum.FAIL_TO_UPDATE);
@@ -470,7 +465,7 @@ public class ActorFunction {
             }
         } else {  // 家族主播
             FamilyInfo familyInfo = FamilyService.getFamilyInfoByFamilyId(familyId);
-            result.addProperty("status", UserApplyActorStatusEnum.FAMILY_AUDITING);
+            result.addProperty("status", Constants.APPLY_TEST_ACTOR_IN_FAMILY_PLAYING);
             result.addProperty("familyName", familyInfo.getFamilyName());
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
@@ -525,6 +520,8 @@ public class ActorFunction {
             logger.error("Fail to get KkUserService.getUserProfile. userId: " + userId, e);
         }
 
+        ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
+
         if (familyId > 0) {
             FamilyInfo familyInfo = FamilyService.getFamilyInfoByFamilyId(familyId);
             // 判断家族是否存在
@@ -535,31 +532,29 @@ public class ActorFunction {
         }
 
         // 判断该身份证是否已经申请过主播 驳回状态可以重新申请
-        Result<List<UserVerifyDO>> userVerifyDOSResult = userVerifyService.getUserVerifyDOsByCertNoOrVerifyMobile(identityId, mobileNum);
-
-        if (userVerifyDOSResult.getCode().equals(CommonStateCode.SUCCESS) && userVerifyDOSResult.getData() != null) {
-
-            List<UserVerifyDO> userVerifyDOS = userVerifyDOSResult.getData();
-
-            for (UserVerifyDO userVerifyDO : userVerifyDOS) {
-
-                int verifyUserId = userVerifyDO.getUserId();
-                UserApplyActorDO userApplyActorDO = userApplyActorService.getUserApplyActorDO(verifyUserId).getData();
+        List<ApplyActor> applies = applyActorService.getApplyActorsByParameter(identityId, mobileNum, null);
+        if (applies != null && applies.size() > 0) {
+            for (ApplyActor apply : applies) {
                 //巡管审核驳回 或 家族驳回
-                if (userApplyActorDO == null || userApplyActorDO.getStatus() < 0 || userApplyActorDO.getStatus() == 6) {
+                if (apply.getStatus() < 0 || apply.getStatus() == 6) {
                     continue;
                 }
-                if (verifyUserId == userId) {
-                    result.addProperty("TagCode", TagCodeEnum.HAS_APPLY_PLAY);
-                    return false;
-                } else {
+                if (apply.getActorId().equals(userId)) {
+                    if (apply.getAppId().equals(appId)) {
+                        result.addProperty("TagCode", TagCodeEnum.HAS_APPLY_PLAY);
+                        return false;
+                    } else {
+                        result.addProperty("TagCode", TagCodeEnum.HAS_APPLY_OTHER_APP);
+                        return false;
+                    }
+                } else if (apply.getAppId().equals(appId)) {
                     // 身份证已经存在
-                    if (userVerifyDO.getCertNo() != null && userVerifyDO.getCertNo().equals(identityId)) {
+                    if (apply.getIdentityNumber() != null && apply.getIdentityNumber().equals(identityId)) {
                         result.addProperty("TagCode", TagCodeEnum.APPLY_IDNUM_EXISTS);
                         return false;
                     }
                     // 手机号已经存在
-                    if (userVerifyDO.getVerifyMobile() != null && userVerifyDO.getVerifyMobile().equals(mobileNum)) {
+                    if (apply.getMobile() != null && apply.getMobile().equals(mobileNum)) {
                         result.addProperty("TagCode", TagCodeEnum.APPLY_MOBILE_EXISTS);
                         return false;
                     }
@@ -568,14 +563,19 @@ public class ActorFunction {
         }
 
         // 判断这个用户是否已经在申请主播并且不是驳回状态 驳回状态可以重新申请
-        UserApplyActorDO oldApplyActor = userApplyActorService.getUserApplyActorDO(userId).getData();
+        ApplyActor oldApplyActor = applyActorService.getApplyActorByActorId(userId);
         if (oldApplyActor != null && oldApplyActor.getStatus() >= 0 && oldApplyActor.getStatus() != 6) {
-            result.addProperty("TagCode", TagCodeEnum.HAS_APPLY_PLAY);
-            return false;
+            if (oldApplyActor.getAppId().equals(appId)) {
+                result.addProperty("TagCode", TagCodeEnum.HAS_APPLY_PLAY);
+                return false;
+            } else {
+                result.addProperty("TagCode", TagCodeEnum.HAS_APPLY_OTHER_APP);
+                return false;
+            }
         }
 
         // 查看同一身份证是否有绑定的家族ID
-        Integer bindfamilyId = userVerifyService.getFamilyIdByCertNo(identityId).getData();
+        Integer bindfamilyId = applyActorService.getFamilyIdByIdentityNumber(identityId);
         if (bindfamilyId != null) {
             FamilyInfo otherFamilyInfo = FamilyService.getFamilyInfoByFamilyId(bindfamilyId);
             if (otherFamilyInfo != null) {
@@ -591,43 +591,38 @@ public class ActorFunction {
 
         // 如果校验成功
         if(verifyApplyForActor(result, userId, identityId, familyId, appId)) {
-
             KkUserService userService = MelotBeanFactory.getBean("kkUserService", KkUserService.class);
             UserProfile userProfile = userService.getUserProfile(userId);
-
-            int applyStatus = UserApplyActorStatusEnum.FAMILY_AUDITING;
-            if (familyId <= 0) {
-                //自由主播 家族id为官方家族id:11222
+            ApplyActor applyActor = new ApplyActor();
+            applyActor.setActorId(userId);
+            applyActor.setAppId(appId);
+            applyActor.setRealName(certName);
+            applyActor.setIdentityNumber(identityId);
+            applyActor.setMobile(userProfile.getIdentifyPhone());
+            applyActor.setGender(StringUtil.parseFromStr(identityId.substring(16, 17), 0) % 2);
+            applyActor.setIdPicStatus(IdPicStatusEnum.UNLOAD.getId());
+            applyActor.setVerifyType(VerifyTypeEnum.ZM_VERIFY.getId());
+            int status = 0;
+            if (familyId > 0) {
+                applyActor.setApplyFamilyId(familyId);
+                status = Constants.APPLY_TEST_ACTOR_IN_FAMILY_PLAYING;
+            } else {
+                //自由主播
                 familyId = 11222;
-                applyStatus = UserApplyActorStatusEnum.CONFIRM_FAMILY_INFO;
+                applyActor.setApplyFamilyId(11222);
+                status = Constants.APPLY_ACTOR_INFO_CHECK_SUCCESS;
             }
 
-            Result<Boolean> userApplyActorResult = userApplyActorService.userApplyActor(userId, familyId, applyStatus, null);
-            boolean saveResult = false;
-            if(userApplyActorResult.getCode().equals(CommonStateCode.SUCCESS) && userApplyActorResult.getData()) {
-                // 更新用户实名认证信息 认证通过
-                UserVerifyParam userVerifyParam = new UserVerifyParam();
-                userVerifyParam.setUserId(userId);
-                userVerifyParam.setVerifyType(UserVerifyTypeEnum.SESAME_VERIFY);
-                userVerifyParam.setVerifyStatus(UserVerifyStatusEnum.VERIFY_SUCCESS);
-                userVerifyParam.setCertNo(identityId);
-                userVerifyParam.setCertName(certName);
-
-                userVerifyParam.setVerifyMobile(userProfile.getIdentifyPhone());
-                userVerifyParam.setGender(StringUtil.parseFromStr(identityId.substring(16, 17), 0) % 2);
-                userVerifyParam.setIdPicStatus(IdPicStatusEnum.NOT_UPLOADED);
-                userVerifyParam.setSignElectronicContract(0);
-
-                saveResult = userVerifyService.updateUserVerify(userVerifyParam).getData();
-            }
-
+            ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
+            boolean saveResult = applyActorService.saveApplyActorV2(applyActor);
+            
             if (saveResult) {
                 try {
                     FamilyOperatorService familyOperatorService = (FamilyOperatorService) MelotBeanFactory.getBean("familyOperatorService");
-                    saveResult = familyOperatorService.checkActorApply(userId, familyId, applyStatus, null, null, appId);
+                    saveResult = familyOperatorService.checkActorApply(userId, familyId, status, null, null, appId);
                 } catch (Exception e) {
                     saveResult = false;
-                    logger.error("familyOperatorService.checkActorApply(" + userId + ", " + familyId + ", " + applyStatus + ") execute exception", e);
+                    logger.error("familyOperatorService.checkActorApply(" + userId + ", " + familyId + ", " + status + ") execute exception", e);
                 }
             }
             

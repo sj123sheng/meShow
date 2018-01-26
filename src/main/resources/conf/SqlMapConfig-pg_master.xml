@@ -26,6 +26,7 @@
 	<sqlMap resource="com/melot/content/config/sqlmap/promotionRoom.map.xml" />
 	<sqlMap resource="com/melot/content/config/sqlmap/reportFlowRecord.map.xml" />
 	<sqlMap resource="com/melot/content/config/sqlmap/recordProcessedRecord.map.xml" />
+	<sqlMap resource="com/melot/content/config/sqlmap/applyActor.map.xml"/>
 	<sqlMap resource="com/melot/content/config/sqlmap/applyContractInfo.map.xml"/>
 	<sqlMap resource="com/melot/content/config/sqlmap/versionInfo.map.xml"/>
 	
