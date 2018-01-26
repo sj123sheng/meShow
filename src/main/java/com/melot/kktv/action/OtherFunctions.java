@@ -1218,7 +1218,7 @@ public class OtherFunctions {
                     int verifyUserId = userVerifyDO.getUserId();
                     UserApplyActorDO userApplyActorDO = userApplyActorService.getUserApplyActorDO(verifyUserId).getData();
                     //巡管审核驳回 或 家族驳回
-                    if (userApplyActorDO.getStatus() < 0 || userApplyActorDO.getStatus() == 6) {
+                    if (userApplyActorDO == null || userApplyActorDO.getStatus() < 0 || userApplyActorDO.getStatus() == 6) {
                         continue;
                     }
                     
