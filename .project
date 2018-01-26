@@ -3,7 +3,6 @@
 	<name>meShow</name>
 	<comment></comment>
 	<projects>
-		<project>api-menu-sdk</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

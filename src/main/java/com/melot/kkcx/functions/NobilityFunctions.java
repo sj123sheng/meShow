@@ -23,7 +23,6 @@ import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ParameterKeys;
 import com.melot.kktv.util.SecurityFunctions;
 import com.melot.kktv.util.TagCodeEnum;
-import com.melot.module.packagegift.driver.service.XmanService;
 import com.melot.sdk.core.util.MelotBeanFactory;
 
 public class NobilityFunctions {
@@ -102,14 +101,6 @@ public class NobilityFunctions {
             return result;
         }
         
-        // 神秘人返回用户不存在
-        if (userId <= 1127828 && userId >= 1000578 ) {
-            XmanService xmanService = (XmanService) MelotBeanFactory.getBean("xmanService");
-            if (xmanService.getXmanConf(userId) != null) {
-                result.addProperty(ParameterKeys.TAG_CODE, "5101040201");
-                return result;
-            }
-        }
         // 靓号转化为真实ID
         Integer realUserId = UserAssetServices.luckyIdToUserId(userId);
         if (realUserId == null) {
