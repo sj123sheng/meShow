@@ -1360,11 +1360,6 @@
 		<constructor-arg name="t" ref="otherFunction" />
 		<constructor-arg name="methodName" value="appleSubmitVersion" />
 	</bean>
-	<!-- 电视红包金币兑换 -->
-	<bean id="51090301" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="otherFunction" />
-		<constructor-arg name="methodName" value="exchangeTvHb" />
-	</bean>
 	
 	<!-- 用户档案安全接口类 -->
 	<!-- 安全注册 -->

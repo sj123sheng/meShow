@@ -1,5 +1,18 @@
 package com.melot.kktv.action;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.chinacreator.videoalliance.util.ChinaUnicomEnum;
 import com.chinacreator.videoalliance.util.DesUtil;
 import com.dianping.cat.Cat;
@@ -12,7 +25,11 @@ import com.google.gson.reflect.TypeToken;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.blacklist.service.BlacklistService;
 import com.melot.content.config.apply.service.ApplyActorService;
-import com.melot.content.config.domain.*;
+import com.melot.content.config.domain.ApplyActor;
+import com.melot.content.config.domain.BrokerageFirmInfo;
+import com.melot.content.config.domain.GalleryInfo;
+import com.melot.content.config.domain.GalleryOrderRecord;
+import com.melot.content.config.domain.RecordProcessedRecord;
 import com.melot.content.config.facepack.service.GalleryInfoService;
 import com.melot.content.config.facepack.service.GalleryOrderRecordService;
 import com.melot.content.config.live.upload.impl.YouPaiService;
@@ -25,7 +42,6 @@ import com.melot.kk.module.report.service.ReportFlowService;
 import com.melot.kk.module.report.util.CommonStateCode;
 import com.melot.kk.module.report.util.Result;
 import com.melot.kkcore.user.api.ShowMoneyHistory;
-import com.melot.kkcore.user.api.UserAssets;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.api.UserStaticInfo;
 import com.melot.kkcore.user.service.KkUserService;
@@ -41,9 +57,18 @@ import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.ConsumeService;
 import com.melot.kktv.service.GeneralService;
 import com.melot.kktv.service.UserService;
-import com.melot.kktv.third.service.TvHongbaoService;
-import com.melot.kktv.util.*;
+import com.melot.kktv.util.AppChannelEnum;
+import com.melot.kktv.util.AppIdEnum;
+import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
+import com.melot.kktv.util.ConfigHelper;
+import com.melot.kktv.util.Constant;
+import com.melot.kktv.util.DBEnum;
+import com.melot.kktv.util.DateUtil;
+import com.melot.kktv.util.PlatformEnum;
+import com.melot.kktv.util.SecurityFunctions;
+import com.melot.kktv.util.StringUtil;
+import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.confdynamic.SystemConfig;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
@@ -52,13 +77,6 @@ import com.melot.module.packagegift.driver.service.VipService;
 import com.melot.module.packagegift.util.GiftPackageEnum;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import com.melot.stream.driver.service.LiveStreamConfigService;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.HEAD;
-import java.sql.SQLException;
-import java.util.*;
 
 /**
  * 其他相关的接口类
@@ -77,8 +95,6 @@ public class OtherFunctions {
     private static final int SPEAK_STATE_AUTO_COMMIT = 1;
     
     private static final int SEND_LOUDER_SPEAKER_COST = 10 * 1000;
-    
-    private static final String ORDER_KEY = "kkorder_%s_%s";
     
     @Autowired
     private ConfigService configService;
@@ -2707,90 +2723,4 @@ public class OtherFunctions {
         return result;
     }
     
-    /**
-     * 电视红包金币兑换（51090301）
-     * 
-     * @param jsonObject 请求对象
-     * @return 标记信息
-     */
-    public JsonObject exchangeTvHb(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
-        JsonObject result = new JsonObject();
-        
-        // 该接口需要验证token,未验证的返回错误码
-        if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-            return result;
-        }
-        
-        int userId;
-        int exchangeAmount;
-        String tvmid;
-        String tvToken;
-        
-        try {
-            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 0, Integer.MAX_VALUE);
-            exchangeAmount = CommonUtil.getJsonParamInt(jsonObject, "exchangeAmount", 1000, null, 0, Integer.MAX_VALUE);
-            tvmid = CommonUtil.getJsonParamString(jsonObject, "tvmid", null, "5109030101", 0, Integer.MAX_VALUE);
-            tvToken = CommonUtil.getJsonParamString(jsonObject, "tvToken", null, "5109030102", 0, Integer.MAX_VALUE);
-        } catch(CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
-            return result;
-        } catch(Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-            return result;
-        }
-        
-        try {
-            int requireAmount = (int) (exchangeAmount * 1.2);
-            TvHongbaoService tvHongbaoService = (TvHongbaoService) MelotBeanFactory.getBean("tvHongbaoService");
-            String desc = "金币兑换KK秀币";
-            String orderId = String.format(ORDER_KEY, tvmid, new Date().getTime());
-            
-            JsonObject decrParam = new JsonObject();
-            decrParam.addProperty("tvmid", tvmid);
-            decrParam.addProperty("token", tvToken);
-            decrParam.addProperty("description", desc);
-            decrParam.addProperty("order_id", orderId);
-            decrParam.addProperty("amount", requireAmount);
-            
-            JsonObject decrCoinObj = tvHongbaoService.queryTvhb("/public/finance/DecrCoins", decrParam, requireAmount + desc + orderId + tvToken + tvmid);
-            if (!decrCoinObj.isJsonNull()) {
-                if (0 == decrCoinObj.get("status").getAsInt()) {
-                  //添加秀币
-                    try {
-                        KkUserService kkUserService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
-                        ShowMoneyHistory showMoneyHistory = new ShowMoneyHistory();
-                        showMoneyHistory.setAppId(1);
-                        showMoneyHistory.setIncomeAmount(exchangeAmount);
-                        showMoneyHistory.setDtime(new Date());
-                        showMoneyHistory.setUserId(userId);
-                        showMoneyHistory.setType(57);
-                        showMoneyHistory.setProductDesc(orderId);
-                        UserAssets userAssets = kkUserService.incUserAssets(userId, exchangeAmount, exchangeAmount, showMoneyHistory);
-                        if(userAssets == null) {
-                            logger.error("kkUserService.addAndGetUserAssets failed, userId:" + userId + ", showMoney: " + exchangeAmount);
-                            result.addProperty("TagCode", "5109020105");
-                            return result;
-                        } else {
-                            result.addProperty("showMoney", userAssets.getShowMoney());
-                            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-                            return result;
-                        }
-                    } catch (Exception e) {
-                        logger.error("kkUserService.addAndGetUserAssets failed, userId:" + userId + ", showMoney: " + exchangeAmount, e);
-                    }   
-                } else {
-                    if (1 == decrCoinObj.get("status").getAsInt()) {
-                        result.addProperty("TagCode", "5109020103");
-                        return result;
-                    }
-                }
-            }
-        } catch (Exception e) {
-            logger.error("OtherFunctions.exchangeTvHb(userId:" + userId + ", exchangeAmount: " + ") execute exception.", e);
-        }
-        
-        result.addProperty("TagCode", "5109030104");
-        return result;
-    }
 }
