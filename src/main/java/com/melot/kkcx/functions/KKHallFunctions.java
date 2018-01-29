@@ -952,7 +952,7 @@ public class KKHallFunctions {
                 if(StringUtils.isNotEmpty(userRecommendAlgorithm)) {
                     if(userRecommendAlgorithm.equals("A")) {
 
-                        // 从大数据推荐算法接口中获取置顶位房间id列表
+                        //  从大数据推荐算法接口中获取置顶位房间id列表
                         NewRcmdService newRcmdService = MelotBeanFactory.getBean("newRcmdService", NewRcmdService.class);
                         List<Integer> roomIdList = newRcmdService.getRcmdActorTopList(userId);
 
