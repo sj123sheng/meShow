@@ -1,8 +1,31 @@
 package com.melot.kktv.action;
 
+import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Random;
+import java.util.Set;
+import java.util.regex.Pattern;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.log4j.Logger;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.melot.api.menu.sdk.dao.domain.HomePage;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.api.menu.sdk.dao.domain.SysMenu;
@@ -19,6 +42,7 @@ import com.melot.content.config.live.upload.impl.QiniuService;
 import com.melot.kkactivity.driver.domain.ActInfo;
 import com.melot.kkactivity.driver.domain.KkActivity;
 import com.melot.kkactivity.driver.service.KkActivityService;
+import com.melot.kkcore.user.api.LastLoginInfo;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.service.ActorGiftService;
@@ -28,24 +52,38 @@ import com.melot.kkcx.service.UserService;
 import com.melot.kkcx.transform.LiveShowTF;
 import com.melot.kkcx.transform.NewsRewardRankTF;
 import com.melot.kkcx.transform.RoomTF;
-import com.melot.kktv.model.*;
-import com.melot.kktv.redis.*;
+import com.melot.kktv.model.Activity;
+import com.melot.kktv.model.HotActivity;
+import com.melot.kktv.model.NewsRewardRank;
+import com.melot.kktv.model.Notice;
+import com.melot.kktv.model.PreviewAct;
+import com.melot.kktv.model.RankUser;
+import com.melot.kktv.model.Room;
+import com.melot.kktv.model.WeekStarGift;
+import com.melot.kktv.redis.GiftRecordSource;
+import com.melot.kktv.redis.HotDataSource;
+import com.melot.kktv.redis.NewsSource;
+import com.melot.kktv.redis.SearchWordsSource;
+import com.melot.kktv.redis.WeekGiftSource;
 import com.melot.kktv.service.NewsService;
 import com.melot.kktv.service.RoomService;
-import com.melot.kktv.util.*;
+import com.melot.kktv.util.AppChannelEnum;
+import com.melot.kktv.util.AppIdEnum;
+import com.melot.kktv.util.CityUtil;
+import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
+import com.melot.kktv.util.ConfigHelper;
+import com.melot.kktv.util.Constant;
+import com.melot.kktv.util.ConstantEnum;
+import com.melot.kktv.util.DateUtil;
+import com.melot.kktv.util.PlatformEnum;
+import com.melot.kktv.util.RankingEnum;
+import com.melot.kktv.util.StringUtil;
+import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.confdynamic.GiftInfoConfig;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.sdk.core.util.MelotBeanFactory;
-import org.apache.log4j.Logger;
-
-import javax.servlet.http.HttpServletRequest;
-import java.sql.SQLException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.regex.Pattern;
 
 /**
  * 大厅相关的接口类
@@ -2896,14 +2934,21 @@ public class IndexFunctions {
 				lastMatchTime = lastNewsTime;
 			}
 		} else {
-			Date lastLoginTime = UserService.getlastLoginTime(userId);
-			if (lastLoginTime != null && lastLoginTime.getTime() > 0) {
-				lastNewsTime = lastLoginTime.getTime();
-				lastMatchTime = lastLoginTime.getTime();
-			} else {
-				result.addProperty("TagCode", TagCodeEnum.GET_USER_LOGIN_TIME_FAIL);
-				return result;
-			}
+		    try {
+		        KkUserService kkUserService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
+		        LastLoginInfo lastLoginInfo = kkUserService.getLastLoginInfo(userId);
+		        if (lastLoginInfo != null && lastLoginInfo.getLastLoginTime() > 0) {
+		            lastNewsTime = lastLoginInfo.getLastLoginTime();
+	                lastMatchTime = lastLoginInfo.getLastLoginTime();
+		        } else {
+		            result.addProperty("TagCode", TagCodeEnum.GET_USER_LOGIN_TIME_FAIL);
+	                return result;
+		        }
+		    } catch (Exception e) {
+		        logger.error("kkUserService.getLastLoginInfo(" + userId + ") execute exception.", e);
+		        result.addProperty("TagCode", TagCodeEnum.GET_USER_LOGIN_TIME_FAIL);
+                return result;
+		    }
 		}
 		//根据上次读取时间查询未读新动态数量和新比赛数量
 		int newsRemindCnt = NewsService.getUnReadNewsNum(userId, lastNewsTime);
