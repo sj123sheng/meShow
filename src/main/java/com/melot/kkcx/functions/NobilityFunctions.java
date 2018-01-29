@@ -19,6 +19,7 @@ import com.melot.kkcx.transform.NobilityTF;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Page;
 import com.melot.kktv.base.Result;
+import com.melot.kktv.service.UserService;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ParameterKeys;
 import com.melot.kktv.util.SecurityFunctions;
@@ -297,6 +298,24 @@ public class NobilityFunctions {
                 return result;
             }
             if (CommonStateCode.SUCCESS.equals(resp.getCode())) {
+                long money;
+                int userNobilityPoint;
+                try {
+                    money = UserService.getUserShowMoney(userId);
+                } catch (Exception e) {
+                    log.error("getUserShowMoney error:" + userId, e);
+                    money = 0;
+                }
+                
+                try {
+                    userNobilityPoint = nobilityService.getNobilityUserInfo(userId).getData().getUserNobilityPoint();
+                } catch (Exception e) {
+                    log.error("getUserNobilityPoint error:" + userId, e);
+                    userNobilityPoint = 0;
+                }
+                
+                result.addProperty("money", money);
+                result.addProperty("userNobilityPoint", userNobilityPoint);
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
             } else if ("1".equals(resp.getCode())) {
                 result.addProperty(ParameterKeys.TAG_CODE, "5201040503");
