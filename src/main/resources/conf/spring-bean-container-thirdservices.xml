@@ -23,6 +23,7 @@
 				<entry key="48" value-ref="googleService" />
 				<entry key="49" value-ref="twitterService" />
 				<entry key="50" value-ref="instagramService" />
+				<entry key="54" value-ref="tvHongbaoService" />
 			</map>
 		</constructor-arg>
 		<constructor-arg name="ignoreSet">
@@ -132,6 +133,12 @@
 		<property name="thirdName" value="instagram"/>
 		<property name="openPlatform" value="50"/>
 		<property name="serverUrl" value="https://api.instagram.com/v1/users/self"/>
+	</bean>
+	
+	<bean id="tvHongbaoService" class="com.melot.kktv.third.service.TvHongbaoService">
+		<property name="thirdName" value="电视红包"/>
+		<property name="openPlatform" value="54"/>
+		<property name="serverUrl" value="https://open.yx.tvyouxuan.com"/>
 	</bean>
 	
 </beans>
