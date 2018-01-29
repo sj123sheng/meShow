@@ -193,4 +193,7 @@
 
 	<!-- 答题比赛相关接口 -->
     <bean id="quizFunctions" class="com.melot.kkcx.functions.QuizFunctions" />
+    
+    <!-- 答题比赛相关接口 -->
+    <bean id="nobilityFunctions" class="com.melot.kkcx.functions.NobilityFunctions" />
 </beans>

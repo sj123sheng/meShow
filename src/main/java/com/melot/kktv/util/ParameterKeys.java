@@ -70,6 +70,11 @@ public class ParameterKeys {
      * 房间编号
      */
     public static final String ROOM_ID = "roomId";
+    
+    /**
+     * 主播id
+     */
+    public static final String ACTOR_ID = "actorId";
 
     /**
      * 第三方标识

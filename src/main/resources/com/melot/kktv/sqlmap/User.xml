@@ -67,15 +67,6 @@
 		select count(*) from login_black_userid where userid = #userid#
 	</select>
 	
-	<!-- 获取用户最近登录时间 -->
-	<select id="getUserLastLoginTime" parameterClass="java.lang.Integer" resultClass="java.util.Date">
-		select t.time1 from 
-		(
-		select time1, rank() over (partition by #userId# order by time1 desc)  rk
-		from user_log where userid = #userId#
-		) t where t.rk = 2
-	</select>
-	
 	<select id="getWeeklyFansRanking" resultMap="fansRankingItem" parameterClass="java.util.Map">
 		select t3.userId, t3.contribution, ai.type as roomSource 
 		  	from (select t2.userId, t2.contribution

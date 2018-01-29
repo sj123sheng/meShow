@@ -2864,5 +2864,34 @@
 		<constructor-arg name="t" ref="kkHallFunction" />
 		<constructor-arg name="methodName" value="getWebSkinInfo" />
 	</bean>
+	<!-- 用户是否有贵族信息 -->
+	<bean id="51010401" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="nobilityFunctions" />
+		<constructor-arg name="methodName" value="getUserNobilityState" />
+	</bean>
+	
+	<!-- 获取用户贵族详情 -->
+	<bean id="51010402" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="nobilityFunctions" />
+		<constructor-arg name="methodName" value="getUserNobilityInfo" />
+	</bean>
+	
+	<!-- 获取贵族爵位列表 -->
+	<bean id="51010403" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="nobilityFunctions" />
+		<constructor-arg name="methodName" value="getNobilityList" />
+	</bean>
+	
+	<!-- 获取贵族爵位详情 -->
+	<bean id="51010404" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="nobilityFunctions" />
+		<constructor-arg name="methodName" value="getNobilityInfo" />
+	</bean>
+	
+	<!-- 开通/续费爵位信息 -->
+	<bean id="52010405" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="nobilityFunctions" />
+		<constructor-arg name="methodName" value="buyNobility" />
+	</bean>
 
 </beans>
