@@ -119,7 +119,12 @@ public class NewsV2Functions {
             }
 
             newsTitle = CommonUtil.getJsonParamString(jsonObject, "newsTitle", null, null, 1, 40);
-
+            if (newsTitle != null) {
+                if (CommonUtil.matchXSSTag(newsTitle)) {
+                    throw new CommonUtil.ErrorGetParameterException("06020007");
+                }
+                newsTitle = GeneralService.replaceSensitiveWords(userId, newsTitle);
+            }
             resType = CommonUtil.getJsonParamInt(jsonObject, "newsType", 8, null, 1, Integer.MAX_VALUE);
 
             topic = CommonUtil.getJsonParamString(jsonObject, "topic", null, null, 1, 10);
@@ -356,6 +361,12 @@ public class NewsV2Functions {
             mediaUrl = CommonUtil.getJsonParamString(jsonObject, "mediaUrl", null, null, 1, Integer.MAX_VALUE);
             imageUrl = CommonUtil.getJsonParamString(jsonObject, "imageUrl", null, null, 1, Integer.MAX_VALUE);
             newsTitle = CommonUtil.getJsonParamString(jsonObject, "newsTitle", null, null, 1, 40);
+            if (newsTitle != null) {
+                if (CommonUtil.matchXSSTag(newsTitle)) {
+                    throw new CommonUtil.ErrorGetParameterException(functag+"03");
+                }
+                newsTitle = GeneralService.replaceSensitiveWords(userId, newsTitle);
+            }
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
