@@ -379,15 +379,11 @@ public class NewsV2Functions {
 
         NewsInfo newsInfo = new NewsInfo();
         newsInfo.setNewsId(newsId);
+        newsInfo.setUserId(userId);
         if (content != null) newsInfo.setContent(content);
         if (newsTitle != null) newsInfo.setNewsTitle(newsTitle);
         boolean needCheck = false;
         if (!StringUtil.strIsNull(mediaUrl)) {
-            mediaUrl = mediaUrl.replaceFirst(ConfigHelper.getMediahttpdir(), "");
-            if(!mediaUrl.startsWith(SEPARATOR)) {
-                mediaUrl = SEPARATOR + mediaUrl;
-            }
-            mediaUrl = mediaUrl.replaceFirst("/kktv", "");
             Resource audio = new Resource();
             audio.setState(ResourceStateConstant.uncheck);
             audio.setMimeType(FileTypeConstant.audio);
