@@ -449,7 +449,12 @@ public class NewsV2Functions {
             }
             needCheck = true;
         }
-        if(needCheck) newsInfo.setState(3);
+        if(needCheck){
+            newsInfo.setState(3);
+        }
+        else {
+            newsInfo.setState(oldNewsInfo.getState());
+        }
         boolean flag = NewsService.editNews(newsInfo);
         if(flag){
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
@@ -517,7 +522,7 @@ public class NewsV2Functions {
                     json.addProperty("imageUrl_400", path_400);
                     json.addProperty("imageUrl_272", path_272);
                     json.addProperty("imageUrl_128", path_128);
-                    json.addProperty("imageUrl", path_400);
+                    json.addProperty("imageUrl", imageUrl);
                     jNewsList.add(json);
                 }
             }
@@ -579,7 +584,7 @@ public class NewsV2Functions {
                     json.addProperty("imageUrl_400", path_400);
                     json.addProperty("imageUrl_272", path_272);
                     json.addProperty("imageUrl_128", path_128);
-                    json.addProperty("imageUrl", path_400);
+                    json.addProperty("imageUrl", imageUrl);
                     jNewsList.add(json);
                 }
             }
