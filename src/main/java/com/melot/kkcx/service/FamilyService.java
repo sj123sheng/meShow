@@ -1208,22 +1208,6 @@ public class FamilyService {
 		}
 		return false;
 	}
-    
-    public static String checkBecomeFamilyActor(int userId, int status) {
-        try {
-            FamilyOperatorService familyOperatorService = (FamilyOperatorService) MelotBeanFactory.getBean("familyOperatorService");
-            RespMsg respMsg = familyOperatorService.checkBecomeFamilyActor(userId, 0, AppIdEnum.AMUSEMENT, status, null, null);
-            if (!respMsg.getTagCode().equals(TagCodeEnum.SUCCESS)) {
-                logger.error("FamilyService.checkBecomeFamilyActor fail respTagCode :"
-                        + respMsg.getTagCode() + "respMsg : " + respMsg.getRespMsg());
-            }
-            return respMsg.getTagCode();
-        } catch (Exception e) {
-            logger.error("FamilyService.checkBecomeFamilyActor exception, userId :" + userId, e);
-        }
-        
-        return TagCodeEnum.FAIL_TO_UPDATE;
-    }
 	
 	/**
 	 * 获取首页推荐的家族房的列表
