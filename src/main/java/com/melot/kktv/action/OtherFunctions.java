@@ -51,7 +51,6 @@ import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.ConsumeService;
 import com.melot.kktv.service.GeneralService;
 import com.melot.kktv.service.UserService;
-import com.melot.kktv.third.service.TvHongbaoService;
 import com.melot.kktv.util.*;
 import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
 import com.melot.kktv.util.confdynamic.SystemConfig;
@@ -1289,7 +1288,6 @@ public class OtherFunctions {
                 saveResult = userVerifyService.updateUserVerify(userVerifyParam).getData();
             }
 
-
             if (saveResult) {
                 result.addProperty("TagCode", TagCodeEnum.SUCCESS);
                 return result;
@@ -1771,90 +1769,4 @@ public class OtherFunctions {
         return result;
     }
     
-    /**
-     * 电视红包金币兑换（51090301）
-     * 
-     * @param jsonObject 请求对象
-     * @return 标记信息
-     */
-    public JsonObject exchangeTvHb(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
-        JsonObject result = new JsonObject();
-        
-        // 该接口需要验证token,未验证的返回错误码
-        if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-            return result;
-        }
-        
-        int userId;
-        int exchangeAmount;
-        String tvmid;
-        String tvToken;
-        
-        try {
-            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 0, Integer.MAX_VALUE);
-            exchangeAmount = CommonUtil.getJsonParamInt(jsonObject, "exchangeAmount", 1000, null, 0, Integer.MAX_VALUE);
-            tvmid = CommonUtil.getJsonParamString(jsonObject, "tvmid", null, "5109030101", 0, Integer.MAX_VALUE);
-            tvToken = CommonUtil.getJsonParamString(jsonObject, "tvToken", null, "5109030102", 0, Integer.MAX_VALUE);
-        } catch(CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
-            return result;
-        } catch(Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-            return result;
-        }
-        
-        try {
-            int requireAmount = (int) (exchangeAmount * 1.2);
-            TvHongbaoService tvHongbaoService = (TvHongbaoService) MelotBeanFactory.getBean("tvHongbaoService");
-            String desc = "金币兑换KK秀币";
-            String orderId = String.format(ORDER_KEY, tvmid, new Date().getTime());
-            
-            JsonObject decrParam = new JsonObject();
-            decrParam.addProperty("tvmid", tvmid);
-            decrParam.addProperty("token", tvToken);
-            decrParam.addProperty("description", desc);
-            decrParam.addProperty("order_id", orderId);
-            decrParam.addProperty("amount", requireAmount);
-            
-            JsonObject decrCoinObj = tvHongbaoService.queryTvhb("/public/finance/DecrCoins", decrParam, requireAmount + desc + orderId + tvToken + tvmid);
-            if (!decrCoinObj.isJsonNull()) {
-                if (0 == decrCoinObj.get("status").getAsInt()) {
-                  //添加秀币
-                    try {
-                        KkUserService kkUserService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
-                        ShowMoneyHistory showMoneyHistory = new ShowMoneyHistory();
-                        showMoneyHistory.setAppId(1);
-                        showMoneyHistory.setIncomeAmount(exchangeAmount);
-                        showMoneyHistory.setDtime(new Date());
-                        showMoneyHistory.setUserId(userId);
-                        showMoneyHistory.setType(57);
-                        showMoneyHistory.setProductDesc(orderId);
-                        UserAssets userAssets = kkUserService.incUserAssets(userId, exchangeAmount, exchangeAmount, showMoneyHistory);
-                        if(userAssets == null) {
-                            logger.error("kkUserService.addAndGetUserAssets failed, userId:" + userId + ", showMoney: " + exchangeAmount);
-                            result.addProperty("TagCode", "5109020105");
-                            return result;
-                        } else {
-                            result.addProperty("showMoney", userAssets.getShowMoney());
-                            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-                            return result;
-                        }
-                    } catch (Exception e) {
-                        logger.error("kkUserService.addAndGetUserAssets failed, userId:" + userId + ", showMoney: " + exchangeAmount, e);
-                    }   
-                } else {
-                    if (1 == decrCoinObj.get("status").getAsInt()) {
-                        result.addProperty("TagCode", "5109020103");
-                        return result;
-                    }
-                }
-            }
-        } catch (Exception e) {
-            logger.error("OtherFunctions.exchangeTvHb(userId:" + userId + ", exchangeAmount: " + ") execute exception.", e);
-        }
-        
-        result.addProperty("TagCode", "5109030104");
-        return result;
-    }
 }
