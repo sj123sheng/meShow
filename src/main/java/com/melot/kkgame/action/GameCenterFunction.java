@@ -14,9 +14,12 @@ import org.apache.log4j.Logger;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.melot.kkcore.user.api.UserProfile;
+import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kktv.redis.GameRankingSource;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.TagCodeEnum;
+import com.melot.sdk.core.util.MelotBeanFactory;
 
 /**
  * Title: GameCenterFunction
@@ -67,16 +70,42 @@ public class GameCenterFunction {
         JsonObject result = new JsonObject();
         int appId = 0;
         int platform = 0;
+        int userId = 0;
         try {
             appId = CommonUtil.getJsonParamInt(jsonObject, "a", 0, TagCodeEnum.APPID_MISSING, 0, Integer.MAX_VALUE);
             platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, TagCodeEnum.PLATFORM_MISSING, 1, Integer.MAX_VALUE);
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 0, Integer.MAX_VALUE);
             String gameList = GameRankingSource.getGameList(appId, platform);
+            JsonArray gameArray = new JsonArray();
+            JsonArray miniGameArray = new JsonArray();
             result.addProperty("layoutType", 1);
             if (gameList == null) {
-                result.add("gameList", new JsonArray());
+                result.add("gameList", gameArray);
+                result.add("miniGameList", miniGameArray);
             } else {
+                int userLevel = 0;
+                UserProfile userProfile = null;
+                KkUserService kkUserService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
+                if (userId > 0) {
+                    userProfile = kkUserService.getUserProfile(userId);
+                }
+                if (userProfile != null) {
+                    userLevel = userProfile.getUserLevel();
+                }
                 JsonArray parseArray = parse.parse(gameList).getAsJsonArray();
-                result.add("gameList", parseArray);
+                for (int i = 0; i < parseArray.size(); i++) {
+                    JsonObject jsonObj = (JsonObject) parseArray.get(i);
+                    int enterLevelLimit = jsonObj.get("enterLevelLimit").getAsInt();
+                    if (enterLevelLimit == 0) {
+                        gameArray.add(jsonObj);
+                    } else {
+                        if (enterLevelLimit <= userLevel) {
+                            miniGameArray.add(jsonObj);
+                        }
+                    }
+                }
+                result.add("gameList", gameArray);
+                result.add("miniGameList", miniGameArray);
             }
         } catch (CommonUtil.ErrorGetParameterException e) {
             logger.error("getVersion.ErrorGetParameterException", e);

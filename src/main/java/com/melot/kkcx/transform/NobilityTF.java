@@ -23,17 +23,17 @@ public class NobilityTF {
      */
     public static void nobilityUserInfoTF(JsonObject result, NobilityUserInfo nobilityUserInfo) {
         result.addProperty("nobilityState", nobilityUserInfo.getNobilityState());
+        result.addProperty("userNobilityPoint", nobilityUserInfo.getUserNobilityPoint());
         Integer leftTime;
         if (nobilityUserInfo.getNobilityState() == NobilityStateEnum.STATE_VALID_NOBILITY) {
             Date validTime = nobilityUserInfo.getValidTime();
-            leftTime = (int) ((validTime.getTime() - System.currentTimeMillis()) / DAY);
+            leftTime = (int) Math.ceil((validTime.getTime() - System.currentTimeMillis()) / Double.valueOf(DAY));
         } else if (nobilityUserInfo.getNobilityState() == NobilityStateEnum.STATE_PROTECTED_NOBILITY) {
             Date validTime = nobilityUserInfo.getProtectedTime();
-            leftTime = (int) ((validTime.getTime() - System.currentTimeMillis()) / DAY);
+            leftTime = (int) Math.ceil((validTime.getTime() - System.currentTimeMillis()) / Double.valueOf(DAY));
         } else {
             return;
         }
-        result.addProperty("userNobilityPoint", nobilityUserInfo.getUserNobilityPoint());
         result.addProperty("leftTime", leftTime);
         
         nobilityInfoTF(result, nobilityUserInfo.getNobilityInfo(), false);
@@ -92,5 +92,9 @@ public class NobilityTF {
         }
         
         result.add("powers", powers);
+    }
+    
+    public static void main(String[] args) {
+        System.out.println(Math.ceil((1519491661000L - System.currentTimeMillis()) / DAY));
     }
 }

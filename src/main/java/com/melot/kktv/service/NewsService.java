@@ -1591,5 +1591,18 @@ public class NewsService {
 		}
 		return false;
 	}
-	
+
+	public static boolean isAudioWhiteUser(int userId) {
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
+		if (newsService != null) {
+			Result<Boolean> result = newsService.isAudioWhiteUser(userId);
+			if(result != null && result.getCode() != null && result.getCode().equals(CommonStateCode.SUCCESS)){
+				return result.getData();
+			}
+			else {
+				logger.error("【判断是否是音频动态白名单失败】userId="+userId);
+			}
+		}
+		return false;
+	}
 }

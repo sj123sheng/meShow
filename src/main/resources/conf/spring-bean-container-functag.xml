@@ -1169,7 +1169,7 @@
 		<constructor-arg name="methodName" value="getMyAudioList" />
 	</bean>
 
-	<bean id="51100104" class="com.melot.sdk.core.function.GenericFunction">
+	<bean id="52100104" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="newsV2Function" />
 		<constructor-arg name="methodName" value="addPlayTimes" />
 	</bean>
@@ -1177,6 +1177,11 @@
 	<bean id="51100105" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="newsV2Function" />
 		<constructor-arg name="methodName" value="getPopularAudioList" />
+	</bean>
+
+	<bean id="51100106" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="newsV2Function" />
+		<constructor-arg name="methodName" value="checkAudioWhiteUser" />
 	</bean>
 	<!-- 获取用户动态列表 -->
 	<!-- 
@@ -1354,11 +1359,6 @@
 	<bean id="10007005" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="otherFunction" />
 		<constructor-arg name="methodName" value="appleSubmitVersion" />
-	</bean>
-	<!-- 电视红包金币兑换 -->
-	<bean id="51090301" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="otherFunction" />
-		<constructor-arg name="methodName" value="exchangeTvHb" />
 	</bean>
 	
 	<!-- 用户档案安全接口类 -->

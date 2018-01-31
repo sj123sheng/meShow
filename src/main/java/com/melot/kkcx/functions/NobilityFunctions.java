@@ -19,10 +19,12 @@ import com.melot.kkcx.transform.NobilityTF;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Page;
 import com.melot.kktv.base.Result;
+import com.melot.kktv.service.UserService;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ParameterKeys;
 import com.melot.kktv.util.SecurityFunctions;
 import com.melot.kktv.util.TagCodeEnum;
+import com.melot.module.packagegift.driver.service.XmanService;
 import com.melot.sdk.core.util.MelotBeanFactory;
 
 public class NobilityFunctions {
@@ -101,6 +103,15 @@ public class NobilityFunctions {
             return result;
         }
         
+        // 神秘人返回用户不存在
+        if (userId <= 1127828 && userId >= 1000578 ) {
+            XmanService xmanService = (XmanService) MelotBeanFactory.getBean("xmanService");
+            if (xmanService.getXmanConf(userId) != null) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5101040201");
+                return result;
+            }
+        }
+        
         // 靓号转化为真实ID
         Integer realUserId = UserAssetServices.luckyIdToUserId(userId);
         if (realUserId == null) {
@@ -111,10 +122,15 @@ public class NobilityFunctions {
         try {
             KkUserService kkUserService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
             UserProfile userProfile = kkUserService.getUserProfile(realUserId);
+            if (userProfile == null) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5101040201");
+                return result;
+            }
             result.addProperty("nickname", userProfile.getNickName());
         } catch (Exception e) {
             log.error(String.format("module error: kkUserService.getUserProfile(%s)", realUserId), e);
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
         }
         
         NobilityService nobilityService = (NobilityService)MelotBeanFactory.getBean("nobilityService");
@@ -254,11 +270,11 @@ public class NobilityFunctions {
             return result;
         }
         
-        int userId, frienId, nobilityId, actorId;
+        int userId, friendId, nobilityId, actorId;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-            frienId = CommonUtil.getJsonParamInt(jsonObject, "frienId", 0, "5201040501", 1, Integer.MAX_VALUE);
-            nobilityId = CommonUtil.getJsonParamInt(jsonObject, "nobilityId", 0, "5101040402", 1, Integer.MAX_VALUE);
+            friendId = CommonUtil.getJsonParamInt(jsonObject, "friendId", 0, "5201040501", 1, Integer.MAX_VALUE);
+            nobilityId = CommonUtil.getJsonParamInt(jsonObject, "nobilityId", 0, "5201040502", 1, Integer.MAX_VALUE);
             actorId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.ACTOR_ID, 0, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
@@ -269,9 +285,9 @@ public class NobilityFunctions {
         }
         
         // 靓号转化为真实ID
-        Integer realfrienId = UserAssetServices.luckyIdToUserId(frienId);
+        Integer realfrienId = UserAssetServices.luckyIdToUserId(friendId);
         if (realfrienId == null) {
-            realfrienId = frienId;
+            realfrienId = friendId;
         }
         
         NobilityService nobilityService = (NobilityService)MelotBeanFactory.getBean("nobilityService");
@@ -282,19 +298,37 @@ public class NobilityFunctions {
                 return result;
             }
             if (CommonStateCode.SUCCESS.equals(resp.getCode())) {
+                long money;
+                int userNobilityPoint;
+                try {
+                    money = UserService.getUserShowMoney(userId);
+                } catch (Exception e) {
+                    log.error("getUserShowMoney error:" + userId, e);
+                    money = 0;
+                }
+                
+                try {
+                    userNobilityPoint = nobilityService.getNobilityUserInfo(userId).getData().getUserNobilityPoint();
+                } catch (Exception e) {
+                    log.error("getUserNobilityPoint error:" + userId, e);
+                    userNobilityPoint = 0;
+                }
+                
+                result.addProperty("money", money);
+                result.addProperty("userNobilityPoint", userNobilityPoint);
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
             } else if ("1".equals(resp.getCode())) {
-                result.addProperty(ParameterKeys.TAG_CODE, "5101040403");
+                result.addProperty(ParameterKeys.TAG_CODE, "5201040503");
             } else if ("2".equals(resp.getCode())) {
-                result.addProperty(ParameterKeys.TAG_CODE, "5101040404");
+                result.addProperty(ParameterKeys.TAG_CODE, "5201040504");
             } else if ("3".equals(resp.getCode())) {
-                result.addProperty(ParameterKeys.TAG_CODE, "5101040405");
+                result.addProperty(ParameterKeys.TAG_CODE, "5201040505");
             } else if ("4".equals(resp.getCode())) {
-                result.addProperty(ParameterKeys.TAG_CODE, "5101040406");
+                result.addProperty(ParameterKeys.TAG_CODE, "5201040506");
             } else if ("5".equals(resp.getCode())) {
-                result.addProperty(ParameterKeys.TAG_CODE, "5101040407");
+                result.addProperty(ParameterKeys.TAG_CODE, "5201040507");
             } else if ("6".equals(resp.getCode())) {
-                result.addProperty(ParameterKeys.TAG_CODE, "5101040408");
+                result.addProperty(ParameterKeys.TAG_CODE, "5201040508");
             } else {
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             }

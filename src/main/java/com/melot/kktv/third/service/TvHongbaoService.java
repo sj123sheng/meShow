@@ -40,9 +40,9 @@ public class TvHongbaoService extends BaseService{
     
     private String serverUrl;
     
-    private static final String key = "topkklive";
+    private static final String key = "topdabd1f237df5628aa11bf7bf9a683";
     
-    private static final String secret = "topkklive";
+    private static final String secret = "a3dab829bbbe7d7159acfcff59961508e48f327700af3c1b071212b1a99d3c99";
     
     private static final String NONCE_KEY = "tvHb_%s";
 
@@ -113,54 +113,6 @@ public class TvHongbaoService extends BaseService{
 
     public void setServerUrl(String serverUrl) {
         this.serverUrl = serverUrl;
-    }
-    
-    public JsonObject queryTvhb(String postfixUrl, JsonObject param, String vStr) {
-        JsonObject result = new JsonObject();
-        HttpURLConnection url_con = null;
-        try {
-            long time = new Date().getTime()/1000L;
-            String nonce = String.format(NONCE_KEY, time);
-            String sign = CommonUtil.md5(key + vStr + nonce + time + secret).toLowerCase();
-            param.addProperty("key", key);
-            param.addProperty("nonce", nonce);
-            param.addProperty("timestamp", time);
-            param.addProperty("sign", sign);
-            
-            URL url = new URL(serverUrl + postfixUrl);            
-            url_con = (HttpURLConnection) url.openConnection();
-            url_con.setRequestMethod("POST");
-            url_con.setConnectTimeout(10000);
-            url_con.setReadTimeout(5000);
-            url_con.setDoInput(true);         
-            url_con.setDoOutput(true);
-            
-            PrintWriter out = new PrintWriter(url_con.getOutputStream());
-            out.print(param);
-            out.flush();
-            
-            InputStream in = url_con.getInputStream();
-            BufferedReader rd = new BufferedReader(new InputStreamReader(in, "UTF-8"));
-            StringBuffer tempStr = new StringBuffer();
-            String tempLine = null;
-            while ((tempLine = rd.readLine()) != null) {
-                tempStr.append(tempLine);
-            }   
-
-            result = new JsonParser().parse(tempStr.toString()).getAsJsonObject();
-            
-            out.close();
-            rd.close();
-            in.close();
-        } catch (Exception e) {
-            logger.error("TvHongbaoService.get(postfixUrl: " + postfixUrl + ", param:" + param+ ") execute exception.", e);
-        } finally {
-            if (url_con != null) {
-                url_con.disconnect();
-            }
-        }
-        
-        return result;
     }
     
 }

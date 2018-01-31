@@ -119,7 +119,12 @@ public class NewsV2Functions {
             }
 
             newsTitle = CommonUtil.getJsonParamString(jsonObject, "newsTitle", null, null, 1, 40);
-
+            if (newsTitle != null) {
+                if (CommonUtil.matchXSSTag(newsTitle)) {
+                    throw new CommonUtil.ErrorGetParameterException("06020007");
+                }
+                newsTitle = GeneralService.replaceSensitiveWords(userId, newsTitle);
+            }
             resType = CommonUtil.getJsonParamInt(jsonObject, "newsType", 8, null, 1, Integer.MAX_VALUE);
 
             topic = CommonUtil.getJsonParamString(jsonObject, "topic", null, null, 1, 10);
@@ -138,6 +143,14 @@ public class NewsV2Functions {
          * userProfile.getIsActor() == 0) { result.addProperty("TagCode",
          * TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION); return result; }
          */
+
+        if(mediaType == NewsMediaTypeEnum.AUDIO){
+            boolean flag = NewsService.isAudioWhiteUser(userId);
+            if(!flag){
+                result.addProperty("TagCode", "06020011");
+                return result;
+            }
+        }
 
         NewsInfo newsInfo = new NewsInfo();
         newsInfo.setUserId(userId);
@@ -348,6 +361,12 @@ public class NewsV2Functions {
             mediaUrl = CommonUtil.getJsonParamString(jsonObject, "mediaUrl", null, null, 1, Integer.MAX_VALUE);
             imageUrl = CommonUtil.getJsonParamString(jsonObject, "imageUrl", null, null, 1, Integer.MAX_VALUE);
             newsTitle = CommonUtil.getJsonParamString(jsonObject, "newsTitle", null, null, 1, 40);
+            if (newsTitle != null) {
+                if (CommonUtil.matchXSSTag(newsTitle)) {
+                    throw new CommonUtil.ErrorGetParameterException(functag+"03");
+                }
+                newsTitle = GeneralService.replaceSensitiveWords(userId, newsTitle);
+            }
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -355,17 +374,27 @@ public class NewsV2Functions {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
+        NewsInfo oldNewsInfo = NewsService.getNewsInfoByNewsIdForState(newsId, 0);
+        if (oldNewsInfo == null) {
+            result.addProperty("TagCode", functag+"06");
+            return result;
+        }
+        if (oldNewsInfo.getState() != 2) {
+            result.addProperty("TagCode", functag+"07");
+            return result;
+        }
+        if (oldNewsInfo.getUserId() != userId) {
+            result.addProperty("TagCode", functag+"08");
+            return result;
+        }
+
         NewsInfo newsInfo = new NewsInfo();
         newsInfo.setNewsId(newsId);
+        newsInfo.setUserId(userId);
         if (content != null) newsInfo.setContent(content);
         if (newsTitle != null) newsInfo.setNewsTitle(newsTitle);
         boolean needCheck = false;
         if (!StringUtil.strIsNull(mediaUrl)) {
-            mediaUrl = mediaUrl.replaceFirst(ConfigHelper.getMediahttpdir(), "");
-            if(!mediaUrl.startsWith(SEPARATOR)) {
-                mediaUrl = SEPARATOR + mediaUrl;
-            }
-            mediaUrl = mediaUrl.replaceFirst("/kktv", "");
             Resource audio = new Resource();
             audio.setState(ResourceStateConstant.uncheck);
             audio.setMimeType(FileTypeConstant.audio);
@@ -410,12 +439,12 @@ public class NewsV2Functions {
                     newsInfo.setRefImage(String.valueOf(resId));
                 } else {
                     // 插入资源失败
-                    result.addProperty("TagCode", functag + "03");
+                    result.addProperty("TagCode", functag + "04");
                     return result;
                 }
             }else {
                 // 插入资源失败
-                result.addProperty("TagCode", functag + "03");
+                result.addProperty("TagCode", functag + "04");
                 return result;
             }
             needCheck = true;
@@ -426,7 +455,7 @@ public class NewsV2Functions {
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         }
         else{
-            result.addProperty("TagCode", functag + "02");
+            result.addProperty("TagCode", functag + "05");
         }
         return result;
 
@@ -566,7 +595,7 @@ public class NewsV2Functions {
 
 
     public JsonObject addPlayTimes(JsonObject jsonObject, boolean checkTag) throws Exception {
-        String functag = "51100104";
+        String functag = "52100104";
         JsonObject result = new JsonObject();
         JsonObject rtJO = null;
         try {
@@ -593,6 +622,27 @@ public class NewsV2Functions {
         else{
             result.addProperty("TagCode", functag + "02");
         }
+        return result;
+    }
+
+    public JsonObject checkAudioWhiteUser(JsonObject jsonObject, boolean checkTag) throws Exception {
+        String functag = "51100106";
+        JsonObject result = new JsonObject();
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, functag+"01", Integer.MIN_VALUE, Integer.MAX_VALUE);
+        } catch (ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+        boolean flag = NewsService.isAudioWhiteUser(userId);
+        result.addProperty("isWhiteUser", flag);
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
 

@@ -1439,6 +1439,12 @@ public class UserAssetAction {
         ActivityMedalService activityMedalService = (ActivityMedalService) MelotBeanFactory.getBean("activityMedalService");
         
         try {
+            //贵族勋章不允许取消佩戴
+            if (medalId >= 157 && medalId <= 163) {
+                result.addProperty("TagCode", "05650004");
+                return result;
+            }
+            
             UserWearMedalListModel userWearMedalListModel = activityMedalService.updateOperatorUserMedal(userId, medalId);
             
             List<UserActivityMedal> wearList = userWearMedalListModel.getWearList();

@@ -283,7 +283,7 @@
 		<dependency>
 			<groupId>com.melot</groupId>
 			<artifactId>news-module-api</artifactId>
-			<version>1.2.8-SNAPSHOT</version>
+			<version>1.2.8</version>
 		</dependency>
 		<dependency>
 			<groupId>com.melot.module</groupId>
@@ -592,10 +592,12 @@
             <artifactId>kk-hall-module-api</artifactId>
             <version>1.0.1</version>
         </dependency>
+        
+        <!-- 贵族模块 -->
         <dependency>
 		  <groupId>com.melot.kk</groupId>
 		  <artifactId>kk-nobility-api</artifactId>
-		  <version>1.0.0-SNAPSHOT</version>
+		  <version>1.0.1</version>
 		</dependency>
 
         <!-- 用户安全模块 -->

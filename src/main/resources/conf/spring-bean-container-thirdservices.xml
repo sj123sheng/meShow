@@ -138,7 +138,7 @@
 	<bean id="tvHongbaoService" class="com.melot.kktv.third.service.TvHongbaoService">
 		<property name="thirdName" value="电视红包"/>
 		<property name="openPlatform" value="54"/>
-		<property name="serverUrl" value="http://open.std.tvmopt.com"/>
+		<property name="serverUrl" value="https://open.yx.tvyouxuan.com"/>
 	</bean>
 	
 </beans>

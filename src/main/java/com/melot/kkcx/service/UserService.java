@@ -808,24 +808,6 @@ public class UserService {
         
         return result;
     }
-	
-    /**
-     * 获取用户上次登录时间
-     * @param userId
-     * @return
-     */
-    @SuppressWarnings("unchecked")
-    public static Date getlastLoginTime(int userId) {
-    	try {
-    		List<Date> list = SqlMapClientHelper.getInstance(DB.MASTER).queryForList("User.getUserLastLoginTime", userId);
-    		if (list != null && list.size() > 0) {
-    			return list.get(0);
-    		}
-		} catch(Exception e) {
-			logger.error("Fail to execute User.getUserLastLoginTime sql , userId " + userId, e);
-		}
-    	return null;
-    }
     
     /**
      * 获取用户拥有会员
