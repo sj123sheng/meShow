@@ -391,8 +391,17 @@ public class NewsV2Functions {
         NewsInfo newsInfo = new NewsInfo();
         newsInfo.setNewsId(newsId);
         newsInfo.setUserId(userId);
-        if (content != null) newsInfo.setContent(content);
-        if (newsTitle != null) newsInfo.setNewsTitle(newsTitle);
+        if (content != null) {
+            newsInfo.setContent(content);
+        }else{
+            newsInfo.setContent("");
+        }
+        if (newsTitle != null) {
+            newsInfo.setNewsTitle(newsTitle);
+        }
+        else {
+            newsInfo.setNewsTitle("");
+        }
         boolean needCheck = false;
         if(!StringUtil.strIsNull(mediaUrl) && !StringUtil.strIsNull(imageUrl)){
             needCheck = true;
