@@ -35,7 +35,6 @@ import com.melot.kk.userSecurity.api.domain.DO.UserVerifyDO;
 import com.melot.kk.userSecurity.api.domain.param.UserVerifyParam;
 import com.melot.kk.userSecurity.api.service.UserVerifyService;
 import com.melot.kkcore.user.api.ShowMoneyHistory;
-import com.melot.kkcore.user.api.UserAssets;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.api.UserStaticInfo;
 import com.melot.kkcore.user.service.KkUserService;
@@ -1287,6 +1286,7 @@ public class OtherFunctions {
 
                 saveResult = userVerifyService.updateUserVerify(userVerifyParam).getData();
             }
+
 
             if (saveResult) {
                 result.addProperty("TagCode", TagCodeEnum.SUCCESS);
