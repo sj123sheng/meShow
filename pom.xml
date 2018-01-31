@@ -258,7 +258,7 @@
 		<dependency>
 			<groupId>com.melot.module.driver.msgbuilder</groupId>
 			<artifactId>family-module-msgbuilder</artifactId>
-			<version>2.0.0-SNAPSHOT</version><!--$NO-MVN-MAN-VER$-->
+			<version>2.0.0</version><!--$NO-MVN-MAN-VER$-->
 		</dependency>
 		<dependency>
 		  	<groupId>com.melot.module.driver.msgbuilder</groupId>
@@ -583,7 +583,7 @@
         <dependency>
             <groupId>com.melot.module</groupId>
             <artifactId>kk-nationalPK-api</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>1.0.1</version>
         </dependency>
 
 		<!-- 大厅模块 -->
@@ -602,14 +602,14 @@
         <dependency>
             <groupId>com.melot.kk</groupId>
             <artifactId>kk-userSecurity-api</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>1.0.0</version>
         </dependency>
 
         <!-- 新家族模块(具有多租户功能的springboot框架) -->
         <dependency>
             <groupId>com.melot.module</groupId>
             <artifactId>kk-family-api</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>1.0.0</version>
         </dependency>
 
 		<dependency>
@@ -617,7 +617,6 @@
 			<artifactId>log4j</artifactId>
 			<version>1.2.17-cat-error</version>
 		</dependency>
-
 		
 	</dependencies>
  	
