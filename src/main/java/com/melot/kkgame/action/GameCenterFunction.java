@@ -15,6 +15,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.kktv.redis.GameRankingSource;
+import com.melot.kktv.util.AppChannelEnum;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.TagCodeEnum;
 
@@ -67,9 +68,20 @@ public class GameCenterFunction {
         JsonObject result = new JsonObject();
         int appId = 0;
         int platform = 0;
+        int channel = 0;
+        int versionCode = 0;               
         try {
             appId = CommonUtil.getJsonParamInt(jsonObject, "a", 0, TagCodeEnum.APPID_MISSING, 0, Integer.MAX_VALUE);
             platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, TagCodeEnum.PLATFORM_MISSING, 1, Integer.MAX_VALUE);
+            channel = CommonUtil.getJsonParamInt(jsonObject, "c", AppChannelEnum.KK, null, 0, Integer.MAX_VALUE);
+            versionCode = CommonUtil.getJsonParamInt(jsonObject, "v", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            
+            //oppo 渠道不返回游戏列表
+            if (channel == 70220 && versionCode == 116) {
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                return result;
+            }
+            
             String gameList = GameRankingSource.getGameList(appId, platform);
             result.addProperty("layoutType", 1);
             if (gameList == null) {
