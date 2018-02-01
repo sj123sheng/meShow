@@ -429,8 +429,11 @@ public class NewsV2Functions {
                 result.addProperty("TagCode", "06020009");
                 return result;
             }
-            if(!needCheck && resourceNewService.isAllResourceCheckPass(getRegexAdmin(oldNewsInfo.getRefImage())).getData()){
-                needCheck = true;
+            if(!needCheck){
+                Resource image = resourceNewService.getResourceById(Integer.parseInt(getRegexAdmin(oldNewsInfo.getRefImage()))).getData();
+                if(image != null && (image.getState() == ResourceStateConstant.uncheck ||image.getState() == ResourceStateConstant.checkpass)){
+                    needCheck = true;
+                }
             }
         }
         if (!StringUtil.strIsNull(imageUrl)) {
@@ -461,8 +464,11 @@ public class NewsV2Functions {
                 result.addProperty("TagCode", functag + "04");
                 return result;
             }
-            if(!needCheck && resourceNewService.isAllResourceCheckPass(getRegexAdmin(oldNewsInfo.getRefAudio())).getData()){
-                needCheck = true;
+            if(!needCheck){
+                Resource audio = resourceNewService.getResourceById(Integer.parseInt(getRegexAdmin(oldNewsInfo.getRefAudio()))).getData();
+                if(audio != null && (audio.getState() == ResourceStateConstant.uncheck ||audio.getState() == ResourceStateConstant.checkpass)){
+                    needCheck = true;
+                }
             }
         }
         if(needCheck){
