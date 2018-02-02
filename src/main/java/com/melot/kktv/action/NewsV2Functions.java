@@ -11,10 +11,6 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.melot.kk.opus.api.constant.OpusCostantEnum;
-import com.melot.kktv.base.Page;
-import com.melot.kktv.service.ConfigService;
-import com.melot.kktv.util.*;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
@@ -40,16 +36,28 @@ import com.melot.kk.module.resource.constant.ResTypeConstant;
 import com.melot.kk.module.resource.constant.ResourceStateConstant;
 import com.melot.kk.module.resource.domain.Resource;
 import com.melot.kk.module.resource.service.ResourceNewService;
+import com.melot.kk.opus.api.constant.OpusCostantEnum;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcx.service.GeneralService;
 import com.melot.kkcx.service.RoomService;
 import com.melot.kkcx.service.UserService;
 import com.melot.kktv.base.CommonStateCode;
+import com.melot.kktv.base.Page;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.redis.NewsSource;
 import com.melot.kktv.redis.NewsV2Source;
+import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.NewsService;
+import com.melot.kktv.util.AppIdEnum;
+import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
+import com.melot.kktv.util.ConfigHelper;
+import com.melot.kktv.util.Constant;
+import com.melot.kktv.util.NewsMediaTypeEnum;
+import com.melot.kktv.util.PlatformEnum;
+import com.melot.kktv.util.SecurityFunctions;
+import com.melot.kktv.util.StringUtil;
+import com.melot.kktv.util.TagCodeEnum;
 import com.melot.news.domain.NewsCommentHist;
 import com.melot.news.model.NewsInfo;
 
@@ -136,6 +144,13 @@ public class NewsV2Functions {
             return result;
         }
 
+        //特殊时期修改接口停用
+        if (configService.getIsSpecialTime()) {
+            if (!UserService.checkUserIdentify(userId)) {
+                result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+                return result;
+            }
+        }
         // 不是主播不可发动态
         /*
          * UserProfile userProfile = com.melot.kktv.service.UserService
@@ -875,11 +890,11 @@ public class NewsV2Functions {
             return result;
         }
         
-//        //特殊时期接口暂停使用
-//        if (configService.getIsSpecialTime()) {
-//            result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
-//            return result;
-//        }
+        //特殊时期接口暂停使用
+        if (configService.getIsSpecialTime()) {
+            result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+            return result;
+        }
 
         // 定义所需参数
         int userId, newsId, toUserId, platform;

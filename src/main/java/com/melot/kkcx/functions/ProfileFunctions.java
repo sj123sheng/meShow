@@ -1,13 +1,30 @@
 package com.melot.kkcx.functions;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.dianping.cat.Cat;
 import com.dianping.cat.message.Transaction;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
-import com.melot.family.driver.domain.DO.UserApplyActorDO;
 import com.melot.family.driver.domain.FamilyInfo;
+import com.melot.family.driver.domain.DO.UserApplyActorDO;
 import com.melot.family.driver.service.UserApplyActorService;
 import com.melot.kk.opus.api.constant.OpusCostantEnum;
 import com.melot.kk.userSecurity.api.domain.DO.UserVerifyDO;
@@ -21,17 +38,38 @@ import com.melot.kkcx.model.ActorLevel;
 import com.melot.kkcx.model.CommonDevice;
 import com.melot.kkcx.model.RichLevel;
 import com.melot.kkcx.model.StarInfo;
-import com.melot.kkcx.service.*;
+import com.melot.kkcx.service.FamilyService;
+import com.melot.kkcx.service.GeneralService;
+import com.melot.kkcx.service.MessageBoxServices;
+import com.melot.kkcx.service.ProfileServices;
+import com.melot.kkcx.service.UserAssetServices;
+import com.melot.kkcx.service.UserService;
 import com.melot.kkgame.redis.LiveTypeSource;
 import com.melot.kktv.domain.mongo.MongoRoom;
-import com.melot.kktv.model.*;
+import com.melot.kktv.model.BuyProperties;
+import com.melot.kktv.model.ConsumerRecord;
+import com.melot.kktv.model.Family;
+import com.melot.kktv.model.GiftRecord;
+import com.melot.kktv.model.Honor;
+import com.melot.kktv.model.LiveRecord;
+import com.melot.kktv.model.MedalInfo;
+import com.melot.kktv.model.WinLotteryRecord;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.MedalSource;
 import com.melot.kktv.redis.QQVipSource;
 import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.LiveVideoService;
 import com.melot.kktv.service.UserRelationService;
-import com.melot.kktv.util.*;
+import com.melot.kktv.util.AppChannelEnum;
+import com.melot.kktv.util.AppIdEnum;
+import com.melot.kktv.util.CityUtil;
+import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.ConfigHelper;
+import com.melot.kktv.util.DateUtil;
+import com.melot.kktv.util.PlatformEnum;
+import com.melot.kktv.util.StringUtil;
+import com.melot.kktv.util.TagCodeEnum;
+import com.melot.kktv.util.TextFilter;
 import com.melot.kktv.util.confdynamic.MedalConfig;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
@@ -46,13 +84,6 @@ import com.melot.sdk.core.util.MelotBeanFactory;
 import com.melot.showmoney.driver.domain.PageShowMoneyHistory;
 import com.melot.showmoney.driver.domain.ShowMoneyHistory;
 import com.melot.showmoney.driver.service.ShowMoneyService;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import java.sql.SQLException;
-import java.util.*;
 
 public class ProfileFunctions {
 	
@@ -1187,7 +1218,7 @@ public class ProfileFunctions {
                 if (isNickNameChange) {
                     if (configService.getIsSpecialTime()) {
                         UserRegistry userRegistry = UserService.getUserRegistryInfo(userId);
-                        if (userRegistry != null && userRegistry.getRegisterTime() > 1506700800000L
+                        if (userRegistry != null && userRegistry.getRegisterTime() > 1514736000000L
                                 && !ProfileServices.checkUserUpdateProfileByType(userId, "nickName")) {
                             //特殊时期昵称修改需前置审核
                             ProfileServices.insertChangeUserName(userId, nickname, 3);

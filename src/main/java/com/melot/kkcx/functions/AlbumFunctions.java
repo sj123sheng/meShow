@@ -7,10 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-
-import com.melot.kk.opus.api.constant.OpusCostantEnum;
-import com.melot.kk.opus.api.domain.TempUserResource;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,8 +18,12 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.melot.kk.module.resource.service.ResourceNewService;
+import com.melot.kk.opus.api.constant.OpusCostantEnum;
+import com.melot.kk.opus.api.domain.TempUserResource;
+import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcx.service.AlbumServices;
 import com.melot.kkcx.service.ProfileServices;
+import com.melot.kkcx.service.UserService;
 import com.melot.kktv.action.FamilyAction;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
@@ -30,7 +32,13 @@ import com.melot.kktv.model.Photo;
 import com.melot.kktv.model.PhotoComment;
 import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.LiveVideoService;
-import com.melot.kktv.util.*;
+import com.melot.kktv.util.AppIdEnum;
+import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.ConfigHelper;
+import com.melot.kktv.util.Constant;
+import com.melot.kktv.util.PictureTypeEnum;
+import com.melot.kktv.util.PictureTypeExtendEnum;
+import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.module.api.exceptions.MelotModuleException;
@@ -38,8 +46,6 @@ import com.melot.module.poster.driver.domain.PosterInfo;
 import com.melot.module.poster.driver.domain.UpYunInfo;
 import com.melot.module.poster.driver.service.PosterService;
 import com.melot.sdk.core.util.MelotBeanFactory;
-
-import javax.annotation.Resource;
 
 public class AlbumFunctions {
 
@@ -922,6 +928,22 @@ public class AlbumFunctions {
 			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
 			return result;
 		}
+		
+		//特殊时期接口暂停使用
+        if (configService.getIsSpecialTime()) {
+            if (pictureType == PictureTypeEnum.family_poster || pictureType == PictureTypeEnum.picture) {
+                result.addProperty("message", "系统维护中，本功能暂时停用");
+                result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+                return result;
+            } else if (pictureType == PictureTypeEnum.portrait) {
+                UserProfile userProfile = UserService.getUserInfoNew(userId);
+                if (userProfile != null && userProfile.getPortrait() != null) {
+                    result.addProperty("message", "系统维护中，本功能暂时停用");
+                    result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+                    return result; 
+                }
+            }
+        }
 
 		Integer resId = 0;
         if(configService.getResourceType().contains(","+ pictureType+",")){
@@ -1210,6 +1232,21 @@ public class AlbumFunctions {
 			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
 			return result;
 		}
+		
+		PosterService posterService = MelotBeanFactory.getBean("posterService", PosterService.class);
+		
+		//特殊时期用户没有上传过海报可上传一次
+		if (configService.getIsSpecialTime()) {
+		    try {
+		        List<PosterInfo> posterList = posterService.getPosterList(userId);
+		        if (posterList != null && posterList.size() > 0) {
+		            result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+	                return result;
+		        }
+		    } catch (Exception e) {
+	            logger.error("call PosterService getPosterList error userId:" + userId, e);
+	        }
+		}
 
 		Integer resId = 0;
 		if(configService.getResourceType().contains(","+ pictureType+",")){
@@ -1230,7 +1267,6 @@ public class AlbumFunctions {
 			}
 		}
 
-		PosterService posterService = MelotBeanFactory.getBean("posterService", PosterService.class);
 		if (posterService == null) {
 			//调用模块异常
 			result.addProperty("TagCode", "04130100");
@@ -1304,6 +1340,19 @@ public class AlbumFunctions {
 
 		PosterService posterService = MelotBeanFactory.getBean("posterService", PosterService.class);
 
+        //特殊时期用户没有上传过海报可上传一次
+        if (configService.getIsSpecialTime()) {
+            try {
+                List<PosterInfo> posterList = posterService.getPosterList(userId);
+                if (posterList != null && posterList.size() > 0) {
+                    result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+                    return result;
+                }
+            } catch (Exception e) {
+                logger.error("call PosterService getPosterList error userId:" + userId, e);
+            }
+        }
+        
 		try {
 			if(!fileUrl.startsWith(SEPARATOR)) {
 				fileUrl = SEPARATOR + fileUrl;

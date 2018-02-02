@@ -308,7 +308,7 @@ public class ProfileServices {
     public static void setUserUpdateProfileByType(int userId, String type) {
         try {
             String key = String.format(USER_UPDATEPROFILE_KEY, userId, type);
-            HotDataSource.setTempDataString(key, "1", 30*24*3600);
+            HotDataSource.setTempDataString(key, "1", 3*30*24*3600);
         } catch(Exception e) {
             logger.error("ProfileServices.setUserUpdateProfileByType(" + userId + "," + type + ") return exception.", e);
         }
