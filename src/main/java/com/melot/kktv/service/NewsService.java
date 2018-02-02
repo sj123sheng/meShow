@@ -12,6 +12,8 @@ import java.util.regex.Pattern;
 
 import com.melot.kk.module.resource.domain.Resource;
 import com.melot.kk.module.resource.service.ResourceNewService;
+import com.melot.kktv.base.CommonStateCode;
+import com.melot.kktv.base.Page;
 import com.melot.kktv.base.Result;
 import org.apache.log4j.Logger;
 
@@ -1142,6 +1144,9 @@ public class NewsService {
 		if (newsInfo.getContent() != null) {
 			json.addProperty("content", newsInfo.getContent());
 		}
+		if (newsInfo.getNewsTitle() != null) {
+			json.addProperty("newsTitle", newsInfo.getNewsTitle());
+		}
 		json.addProperty("publishedTime", newsInfo.getPublishedTime().getTime());
 		json.addProperty("newsType", newsInfo.getNewsType());
 		if (newsInfo.getTopic() != null) {
@@ -1240,6 +1245,7 @@ public class NewsService {
 				}
 			}
 			if (resVideo != null) {
+				mediaSourceJson.addProperty("mediaType", NewsMediaTypeEnum.VIDEO);
 				if (resVideo.getDuration() != null) {
 					mediaSourceJson.addProperty("mediaDur", resVideo.getDuration());
 				}
@@ -1255,7 +1261,45 @@ public class NewsService {
 			}
 			
 			json.add("mediaSource", mediaSourceJson);
-		} else if (newsInfo.getRefImage() != null) {
+		} else if (newsInfo.getRefAudio() != null) {
+			JsonObject mediaSourceJson = new JsonObject();
+			ResourceNewService resourceNewService = (ResourceNewService) MelotBeanFactory.getBean("resourceNewService");
+			Resource resAudio = resourceNewService.getResourceById(Integer.valueOf(Pattern.compile("\\{|\\}").matcher(newsInfo.getRefAudio()).replaceAll(""))).getData();
+			if(resAudio != null){
+				mediaSourceJson.addProperty("mediaFrom", 2);
+				mediaSourceJson.addProperty("mediaType", NewsMediaTypeEnum.AUDIO);
+				if (resAudio.getSpecificUrl() != null) {
+					mediaSourceJson.addProperty("mediaUrl", resAudio.getSpecificUrl());
+				}
+				if (newsInfo.getRefImage() != null){
+					Resource resImage = resourceNewService.getResourceById(Integer.valueOf(Pattern.compile("\\{|\\}").matcher(newsInfo.getRefImage()).replaceAll(""))).getData();
+					if(resImage!= null){
+						String path_original = resImage.getImageUrl();
+						String path_1280 = null;
+						String path_720 = null;
+						String path_400 = null;
+						String path_300 = null;
+						String path_272 = null;
+						String path_128 = null;
+						path_1280 = path_original + "!1280";
+						path_720 = path_original + "!720";
+						path_400 = path_original + "!400";
+						path_300 = path_original + "!300";
+						path_272 = path_original + "!272";
+						path_128 = path_original + "!128x96";
+						mediaSourceJson.addProperty("imageUrl_1280", path_1280);
+						mediaSourceJson.addProperty("imageUrl_720", path_720);
+						mediaSourceJson.addProperty("imageUrl_400", path_400);
+						mediaSourceJson.addProperty("imageUrl_300", path_300);
+						mediaSourceJson.addProperty("imageUrl_272", path_272);
+						mediaSourceJson.addProperty("imageUrl_128", path_128);
+						mediaSourceJson.addProperty("imageUrl", path_400);
+					}
+				}
+			}
+			json.add("mediaSource", mediaSourceJson);
+		}
+		else if (newsInfo.getRefImage() != null) {
 			ResourceNewService resourceNewService = (ResourceNewService) MelotBeanFactory.getBean("resourceNewService");
 			List<Resource> resImage = resourceNewService.getResourcesByIds(Pattern.compile("\\{|\\}").matcher(newsInfo.getRefImage()).replaceAll("")).getData();
 			if (resImage != null && resImage.size() > 0) {
@@ -1491,5 +1535,74 @@ public class NewsService {
 		}
 		return null;
 	}
-	
+
+	public static Page<NewsInfo> getByTypeAndUserId(int type,Integer userId,Integer start, Integer num){
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
+		if (newsService != null) {
+			Result<Page<NewsInfo>> result = newsService.getByTypeAndUserId(type,userId,start,num);
+			if(result != null && result.getCode() != null && result.getCode().equals(CommonStateCode.SUCCESS)){
+				return result.getData();
+			}
+			else {
+				logger.error("【分页获取" + userId + "的"+type+"类型的动态失败】");
+			}
+		}
+		return null;
+	}
+
+	public static Page<NewsInfo> getHotAudioNews(Integer start, Integer num){
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
+		if (newsService != null) {
+			Result<Page<NewsInfo>> result = newsService.getHotAudioNews(start,num);
+			if(result != null && result.getCode() != null && result.getCode().equals(CommonStateCode.SUCCESS)){
+				return result.getData();
+			}
+			else {
+				logger.error("【分页获取热门音频动态失败】start="+start+"，num="+num);
+			}
+		}
+		return null;
+	}
+
+	public static boolean addNewsMediaPlay(Integer userId, Integer newsId){
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
+		if (newsService != null) {
+			Result<Integer> result = newsService.addNewsMediaPlay(userId,newsId);
+			if(result != null && result.getCode() != null && result.getCode().equals(CommonStateCode.SUCCESS)){
+				return result.getData() > 0;
+			}
+			else {
+				logger.error("【新增播放次数失败】userId="+userId+"，newsId="+newsId);
+			}
+		}
+		return false;
+	}
+
+	public static boolean editNews(NewsInfo newsInfo){
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
+		if (newsService != null) {
+			Result<Boolean> result = newsService.editNews(newsInfo);
+			if(result != null && result.getCode() != null && result.getCode().equals(CommonStateCode.SUCCESS)){
+				return result.getData();
+			}
+			else {
+				logger.error("【更新动态失败】"+ new Gson().toJson(newsInfo));
+			}
+		}
+		return false;
+	}
+
+	public static boolean isAudioWhiteUser(int userId) {
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
+		if (newsService != null) {
+			Result<Boolean> result = newsService.isAudioWhiteUser(userId);
+			if(result != null && result.getCode() != null && result.getCode().equals(CommonStateCode.SUCCESS)){
+				return result.getData();
+			}
+			else {
+				logger.error("【判断是否是音频动态白名单失败】userId="+userId);
+			}
+		}
+		return false;
+	}
 }

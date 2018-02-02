@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.melot.kk.opus.api.constant.OpusCostantEnum;
 import com.melot.kk.opus.api.domain.TempUserResource;
+
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -37,7 +38,6 @@ import com.melot.module.poster.driver.domain.PosterInfo;
 import com.melot.module.poster.driver.domain.UpYunInfo;
 import com.melot.module.poster.driver.service.PosterService;
 import com.melot.sdk.core.util.MelotBeanFactory;
-import com.upyun.api.UpYun;
 
 import javax.annotation.Resource;
 
