@@ -1121,7 +1121,7 @@ public class OtherFunctions {
             operatorId = CommonUtil.getJsonParamInt(jsonObject, "operatorId", 0, null, 1, Integer.MAX_VALUE);
             familyId = CommonUtil.getJsonParamInt(jsonObject, "familyId", 0, null, 1, Integer.MAX_VALUE);
             //特殊时期自由主播暂停申请
-            if (familyId == 11222 && configService.getIsSpecialTime()) {
+            if (familyId == 11222 && configService.getIsCloseFreeApply()) {
                 result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
                 return result;
             }

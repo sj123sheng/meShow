@@ -72,7 +72,7 @@ public class ResourceFunctions {
             
             //特殊时期接口暂停使用
             if (configService.getIsSpecialTime()) {
-                if (resType == PictureTypeEnum.family_poster || resType == PictureTypeEnum.picture) {
+                if (resType == PictureTypeEnum.family_poster || resType == 2) {
                     result.addProperty("message", "系统维护中，本功能暂时停用");
                     result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
                     return result;
@@ -83,7 +83,7 @@ public class ResourceFunctions {
                         result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
                         return result; 
                     }
-                } else if (resType == PictureTypeEnum.poster) {
+                } else if (resType == 1) {
                     try {
                         PosterService posterService = MelotBeanFactory.getBean("posterService", PosterService.class);
                         List<PosterInfo> posterList = posterService.getPosterList(userId);
