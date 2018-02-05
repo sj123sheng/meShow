@@ -1,5 +1,19 @@
 package com.melot.kkcx.functions;
 
+import java.io.IOException;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -9,21 +23,21 @@ import com.melot.kk.module.resource.domain.Resource;
 import com.melot.kk.module.resource.domain.ResourceUpLoadConf;
 import com.melot.kk.module.resource.domain.ResourceUploadConfParam;
 import com.melot.kk.module.resource.service.ResourceNewService;
+import com.melot.kkcore.user.api.UserProfile;
+import com.melot.kkcx.service.UserService;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
-import com.melot.kktv.util.*;
 import com.melot.kktv.service.ConfigService;
+import com.melot.kktv.util.AppIdEnum;
+import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.ConfigHelper;
+import com.melot.kktv.util.PictureTypeEnum;
+import com.melot.kktv.util.SecurityFunctions;
+import com.melot.kktv.util.TagCodeEnum;
+import com.melot.module.poster.driver.domain.PosterInfo;
+import com.melot.module.poster.driver.service.PosterService;
 import com.melot.qiniu.common.QiniuService;
 import com.melot.sdk.core.util.MelotBeanFactory;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.util.EntityUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 
 /**
  * Title:
@@ -37,6 +51,8 @@ import java.io.IOException;
  */
 public class ResourceFunctions {
 
+    private static Logger logger = Logger.getLogger(ResourceFunctions.class);
+    
     @Autowired
     private ConfigService configService;
     /**
@@ -53,6 +69,34 @@ public class ResourceFunctions {
             Integer userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, tagCode_prefix+"01", 1, Integer.MAX_VALUE);
             Integer abroad = CommonUtil.getJsonParamInt(jsonObject, "abroad", 1, null, 1, Integer.MAX_VALUE);
             Integer resType = CommonUtil.getJsonParamInt(jsonObject, "resType", 0, tagCode_prefix+"02", 0, Integer.MAX_VALUE);
+            
+            //特殊时期接口暂停使用
+            if (configService.getIsSpecialTime()) {
+                if (resType == PictureTypeEnum.family_poster || resType == 2) {
+                    result.addProperty("message", "系统维护中，本功能暂时停用");
+                    result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+                    return result;
+                } else if (resType == PictureTypeEnum.portrait) {
+                    UserProfile userProfile = UserService.getUserInfoNew(userId);
+                    if (userProfile != null && userProfile.getPortrait() != null) {
+                        result.addProperty("message", "系统维护中，本功能暂时停用");
+                        result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+                        return result; 
+                    }
+                } else if (resType == 1) {
+                    try {
+                        PosterService posterService = MelotBeanFactory.getBean("posterService", PosterService.class);
+                        List<PosterInfo> posterList = posterService.getPosterList(userId);
+                        if (posterList != null && posterList.size() > 0) {
+                            result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+                            return result;
+                        }
+                    } catch (Exception e) {
+                        logger.error("call PosterService getPosterList error userId:" + userId, e);
+                    }
+                }
+            }
+            
             Integer mimeType = CommonUtil.getJsonParamInt(jsonObject, "mimeType", 0, tagCode_prefix+"03", 1, Integer.MAX_VALUE);
             String  suffix = CommonUtil.getJsonParamString(jsonObject, "suffix", null, tagCode_prefix+"04", 1, 500);
             Integer appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, TagCodeEnum.APPID_MISSING, 1, Integer.MAX_VALUE);

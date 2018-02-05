@@ -34,6 +34,11 @@ public class ConfigService {
 
     //是否特殊时期
     private boolean isSpecialTime;
+    
+    /**
+     * 是否关闭自由主播申请
+     */
+    private boolean isCloseFreeApply;
 
     /**
      * 需要接入资源模块的资源类型
@@ -147,6 +152,15 @@ public class ConfigService {
 
     public void setIsSpecialTime(boolean isSpecialTime) {
         this.isSpecialTime = isSpecialTime;
+    }
+    
+    @DisconfFileItem(name = "global.isCloseFreeApply", associateField = "isCloseFreeApply")
+    public boolean getIsCloseFreeApply() {
+        return isCloseFreeApply;
+    }
+
+    public void setIsCloseFreeApply(boolean isCloseFreeApply) {
+        this.isCloseFreeApply = isCloseFreeApply;
     }
 
     @DisconfFileItem(name = "global.isAbroad", associateField = "isAbroad")

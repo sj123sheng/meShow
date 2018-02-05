@@ -300,7 +300,7 @@ public class ActorFunction {
             returnUrl = CommonUtil.getJsonParamString(jsonObject, "returnUrl", "", null, 1, Integer.MAX_VALUE);
             appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 1, Integer.MAX_VALUE);
             familyId = CommonUtil.getJsonParamInt(jsonObject, "familyId", 0, null, 1, Integer.MAX_VALUE);
-            if (familyId == 11222 && configService.getIsSpecialTime()) {
+            if ((familyId == 11222 || familyId == 0) && configService.getIsCloseFreeApply()) {
                 result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
                 return result;
             }

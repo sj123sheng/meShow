@@ -1186,7 +1186,7 @@ public class ProfileFunctions {
                 if (isNickNameChange) {
                     if (configService.getIsSpecialTime()) {
                         UserRegistry userRegistry = UserService.getUserRegistryInfo(userId);
-                        if (userRegistry != null && userRegistry.getRegisterTime() > 1506700800000L
+                        if (userRegistry != null && userRegistry.getRegisterTime() > 1514736000000L
                                 && !ProfileServices.checkUserUpdateProfileByType(userId, "nickName")) {
                             //特殊时期昵称修改需前置审核
                             ProfileServices.insertChangeUserName(userId, nickname, 3);
