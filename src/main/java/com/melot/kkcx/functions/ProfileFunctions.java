@@ -1,40 +1,78 @@
 package com.melot.kkcx.functions;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.dianping.cat.Cat;
 import com.dianping.cat.message.Transaction;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
-import com.melot.content.config.apply.service.ApplyActorService;
-import com.melot.content.config.domain.ApplyActor;
 import com.melot.family.driver.domain.FamilyInfo;
-import com.melot.feedback.driver.service.FeedbackService;
+import com.melot.family.driver.domain.DO.UserApplyActorDO;
+import com.melot.family.driver.service.UserApplyActorService;
 import com.melot.kk.opus.api.constant.OpusCostantEnum;
+import com.melot.kk.userSecurity.api.domain.DO.UserVerifyDO;
+import com.melot.kk.userSecurity.api.service.UserVerifyService;
 import com.melot.kkcore.user.api.ProfileKeys;
 import com.melot.kkcore.user.api.UserInfoDetail;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.api.UserRegistry;
 import com.melot.kkcore.user.service.KkUserService;
-import com.melot.kkcx.model.*;
-import com.melot.kkcx.service.*;
-import com.melot.kkgame.domain.GameUserInfo;
+import com.melot.kkcx.model.ActorLevel;
+import com.melot.kkcx.model.CommonDevice;
+import com.melot.kkcx.model.RichLevel;
+import com.melot.kkcx.model.StarInfo;
+import com.melot.kkcx.service.FamilyService;
+import com.melot.kkcx.service.GeneralService;
+import com.melot.kkcx.service.MessageBoxServices;
+import com.melot.kkcx.service.ProfileServices;
+import com.melot.kkcx.service.UserAssetServices;
+import com.melot.kkcx.service.UserService;
 import com.melot.kkgame.redis.LiveTypeSource;
 import com.melot.kktv.domain.mongo.MongoRoom;
-import com.melot.kktv.lottery.arithmetic.LotteryArithmetic;
-import com.melot.kktv.lottery.arithmetic.LotteryArithmeticCache;
-import com.melot.kktv.model.*;
+import com.melot.kktv.model.BuyProperties;
+import com.melot.kktv.model.ConsumerRecord;
+import com.melot.kktv.model.Family;
+import com.melot.kktv.model.GiftRecord;
+import com.melot.kktv.model.Honor;
+import com.melot.kktv.model.LiveRecord;
+import com.melot.kktv.model.MedalInfo;
+import com.melot.kktv.model.WinLotteryRecord;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.MedalSource;
 import com.melot.kktv.redis.QQVipSource;
 import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.LiveVideoService;
 import com.melot.kktv.service.UserRelationService;
-import com.melot.kktv.util.*;
+import com.melot.kktv.util.AppChannelEnum;
+import com.melot.kktv.util.AppIdEnum;
+import com.melot.kktv.util.CityUtil;
+import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.ConfigHelper;
+import com.melot.kktv.util.DateUtil;
+import com.melot.kktv.util.PlatformEnum;
+import com.melot.kktv.util.StringUtil;
+import com.melot.kktv.util.TagCodeEnum;
+import com.melot.kktv.util.TextFilter;
 import com.melot.kktv.util.confdynamic.MedalConfig;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
-import com.melot.module.api.exceptions.MelotModuleException;
 import com.melot.module.medal.driver.domain.ConfMedal;
 import com.melot.module.medal.driver.domain.UserActivityMedal;
 import com.melot.module.medal.driver.service.ActivityMedalService;
@@ -42,21 +80,10 @@ import com.melot.module.medal.driver.service.UserMedalService;
 import com.melot.module.packagegift.driver.domain.ResUserXman;
 import com.melot.module.packagegift.driver.domain.ResXman;
 import com.melot.module.packagegift.driver.service.XmanService;
-import com.melot.module.task.driver.domain.ConfTaskReward;
-import com.melot.module.task.driver.domain.GetUserTaskListResp;
-import com.melot.module.task.driver.domain.GetUserTaskRewardResp;
-import com.melot.module.task.driver.domain.UserTask;
-import com.melot.module.task.driver.service.TaskInterfaceService;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import com.melot.showmoney.driver.domain.PageShowMoneyHistory;
 import com.melot.showmoney.driver.domain.ShowMoneyHistory;
 import com.melot.showmoney.driver.service.ShowMoneyService;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.servlet.http.HttpServletRequest;
-import java.sql.SQLException;
-import java.util.*;
 
 public class ProfileFunctions {
 	
@@ -65,6 +92,12 @@ public class ProfileFunctions {
 	
 	@Autowired
     private ConfigService configService;
+
+	@Resource
+    UserApplyActorService userApplyActorService;
+
+	@Resource
+    UserVerifyService userVerifyService;
 
 	private LiveTypeSource liveTypeSource;
 
@@ -775,11 +808,10 @@ public class ProfileFunctions {
 			        int actorTag = result.get("actorTag").getAsInt();
 			        if (actorTag == 1) {
 			        	//获取实名认证状态
-						ApplyActor applyActor = null;
-						t = Cat.getProducer().newTransaction("MCall", "applyActorService.getApplyActorByActorId");
+						UserApplyActorDO applyActor = null;
+						t = Cat.getProducer().newTransaction("MCall", "userApplyActorService.getUserApplyActorDO");
 						try {
-							ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
-							applyActor = applyActorService.getApplyActorByActorId(userId);
+							applyActor = userApplyActorService.getUserApplyActorDO(userId).getData();
 							t.setStatus(Transaction.SUCCESS);
 						} catch (Exception e) {
 							logger.error("Fail to call ApplyActorService.getApplyActorByActorId ", e);
@@ -2565,8 +2597,8 @@ public class ProfileFunctions {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
         }
         try{
-            ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
-            ApplyActor applyActor = applyActorService.getApplyActorByActorId(userId);
+            UserApplyActorDO applyActor = userApplyActorService.getUserApplyActorDO(userId).getData();
+            UserVerifyDO userVerifyDO = userVerifyService.getUserVerifyDO(userId).getData();
             result.addProperty("userId", userId);
             
             if (appId == AppIdEnum.GAME) {
@@ -2577,10 +2609,11 @@ public class ProfileFunctions {
                 } else {
                     result.addProperty("status", applyActor.getStatus());
                     result.addProperty("state", applyActor.getStatus());
-                    result.addProperty("name", checkNullString(applyActor.getRealName()));
-                    result.addProperty("identity", checkNullString(applyActor.getIdentityNumber()));
-                    result.addProperty("mobile", checkNullString(applyActor.getMobile()));
-                    result.addProperty("qq", checkNullString(applyActor.getQqNumber()));
+                    if(userVerifyDO != null) {
+                        result.addProperty("name", checkNullString(userVerifyDO.getCertName()));
+                        result.addProperty("identity", checkNullString(userVerifyDO.getCertNo()));
+                        result.addProperty("mobile", checkNullString(userVerifyDO.getVerifyMobile()));
+                    }
                     
                     if (!StringUtil.strIsNull(applyActor.getIntroduce())) {
                         String[]introduces = applyActor.getIntroduce().split(",");
@@ -2599,10 +2632,11 @@ public class ProfileFunctions {
                     result.addProperty("state", -2);
                 } else {
                     result.addProperty("state", applyActor.getStatus());
-                    result.addProperty("name", checkNullString(applyActor.getRealName()));
-                    result.addProperty("identity", checkNullString(applyActor.getIdentityNumber()));
-                    result.addProperty("mobile", checkNullString(applyActor.getMobile()));
-                    result.addProperty("qq", checkNullString(applyActor.getQqNumber()));
+                    if(userVerifyDO != null) {
+                        result.addProperty("name", checkNullString(userVerifyDO.getCertName()));
+                        result.addProperty("identity", checkNullString(userVerifyDO.getCertNo()));
+                        result.addProperty("mobile", checkNullString(userVerifyDO.getVerifyMobile()));
+                    }
                     if (applyActor.getStatus() == -1) {
                         result.addProperty("refuseReason", checkNullString(applyActor.getCheckReason()));
                     }           

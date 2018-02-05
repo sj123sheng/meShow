@@ -7,9 +7,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.api.menu.sdk.service.RoomInfoService;
-import com.melot.content.config.apply.service.ApplyActorService;
 import com.melot.content.config.apply.service.ApplyContractService;
-import com.melot.content.config.domain.ApplyActor;
 import com.melot.content.config.domain.ApplyContractInfo;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.service.KkUserService;
@@ -219,22 +217,6 @@ public class RoomService {
         }
         
         return null;
-    }
-    
-    /**
-     * 获取主播申请信息
-     * @param userId
-     * @return
-     */
-    public static ApplyActor getActorApplyInfo(int userId) {
-    	ApplyActor applyInfo = null;
-    	try {
-    		ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
-    		applyInfo = applyActorService.getApplyActorByActorId(userId);
-    	} catch (Exception e) {
-    		logger.error("Fail to call ApplyActorService.getApplyActorByActorId, " + userId, e);
-    	}
-    	return applyInfo;
     }
     
     /**

@@ -8,19 +8,12 @@
  */
 package com.melot.kkgame.action;
 
-import java.util.Calendar;
-import java.util.Date;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.log4j.Logger;
-
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.api.menu.sdk.service.RoomInfoService;
-import com.melot.content.config.apply.service.ApplyActorService;
-import com.melot.content.config.domain.ApplyActor;
+import com.melot.family.driver.domain.DO.UserApplyActorDO;
+import com.melot.family.driver.service.UserApplyActorService;
 import com.melot.game.config.sdk.actor.service.ActorLiveInfoService;
 import com.melot.game.config.sdk.domain.ActorLiveInfo;
 import com.melot.ios.idfa.driver.UpIdfaService;
@@ -32,6 +25,12 @@ import com.melot.kktv.util.TagCodeEnum;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import com.melot.stream.driver.service.LiveStreamConfigService;
 import com.melot.stream.driver.service.domain.ClientDetail;
+import org.apache.log4j.Logger;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import java.util.Calendar;
+import java.util.Date;
 
 /**
  * Title: ActorFunction
@@ -47,6 +46,9 @@ public class ActorFunction extends BaseAction {
     private static Logger logger = Logger.getLogger(ActorFunction.class);
     
     private ActorLiveInfo defaultActorLiveInfo;
+
+    @Resource
+    UserApplyActorService userApplyActorService;
     
     /**
      * 修改房间主题（10005055）
@@ -203,9 +205,8 @@ public class ActorFunction extends BaseAction {
         }
         
         //2016-3-24 非实名认证不得获取推流地址
-        ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService",ApplyActorService.class);
-        ApplyActor applyActor = applyActorService.getApplyActorByActorId(userId);
-        if(applyActor == null || applyActor.getStatus() < 1){
+        UserApplyActorDO userApplyActorDO = userApplyActorService.getUserApplyActorDO(userId).getData();
+        if(userApplyActorDO == null || userApplyActorDO.getStatus() < 1){
              result.addProperty(TAG_CODE, TagCodeEnum.STATE_MISSING);
              result.addProperty(ERROR_MSG, "您尚未通过实名认证，请登录官方站点完成实名认证");
              return result;

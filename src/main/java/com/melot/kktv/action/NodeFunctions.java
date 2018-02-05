@@ -1,60 +1,35 @@
 package com.melot.kktv.action;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.log4j.Logger;
-
 import com.dianping.cat.Cat;
 import com.dianping.cat.message.Transaction;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.melot.api.menu.sdk.dao.domain.RoomExtraInfo;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.api.menu.sdk.service.RoomInfoService;
 import com.melot.api.menu.sdk.utils.RoomInfoUtils;
 import com.melot.common.driver.domain.CharmUserInfo;
+import com.melot.common.driver.domain.ConfSystemInfo;
 import com.melot.common.driver.domain.WeekGiftRank;
+import com.melot.common.driver.service.ConfigInfoService;
 import com.melot.common.driver.service.RoomExtendConfService;
 import com.melot.common.driver.service.ShareService;
-import com.melot.content.config.apply.service.ApplyActorService;
-import com.melot.content.config.domain.ApplyActor;
 import com.melot.content.config.domain.ApplyContractInfo;
+import com.melot.family.driver.domain.DO.UserApplyActorDO;
 import com.melot.family.driver.domain.FamilyInfo;
+import com.melot.family.driver.service.UserApplyActorService;
 import com.melot.kkcore.user.api.UserInfoDetail;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.model.ActorLevel;
 import com.melot.kkcx.model.RichLevel;
-import com.melot.kkcx.service.ActorGiftService;
-import com.melot.kkcx.service.FamilyService;
-import com.melot.kkcx.service.GeneralService;
-import com.melot.kkcx.service.ProfileServices;
-import com.melot.kkcx.service.RoomService;
-import com.melot.kkcx.service.UserAssetServices;
-import com.melot.kkcx.service.UserService;
+import com.melot.kkcx.service.*;
 import com.melot.kktv.model.FansRankingItem;
 import com.melot.kktv.model.MedalInfo;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.MedalSource;
 import com.melot.kktv.redis.QQVipSource;
 import com.melot.kktv.service.UserRelationService;
-import com.melot.kktv.util.AppChannelEnum;
-import com.melot.kktv.util.AppIdEnum;
-import com.melot.kktv.util.CityUtil;
-import com.melot.kktv.util.CommonUtil;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.Constant;
-import com.melot.kktv.util.StringUtil;
-import com.melot.kktv.util.TagCodeEnum;
+import com.melot.kktv.util.*;
 import com.melot.kktv.util.confdynamic.MedalConfig;
 import com.melot.module.guard.driver.domain.GsonGuardObj;
 import com.melot.module.guard.driver.service.GuardService;
@@ -68,10 +43,18 @@ import com.melot.module.packagegift.driver.domain.XmanConf;
 import com.melot.module.packagegift.driver.domain.XmanUserInfo;
 import com.melot.module.packagegift.driver.service.XmanService;
 import com.melot.sdk.core.util.MelotBeanFactory;
+import org.apache.log4j.Logger;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import java.util.*;
 
 public class NodeFunctions {
     
     public static Logger logger = Logger.getLogger(NodeFunctions.class);
+
+    @Resource
+    UserApplyActorService userApplyActorService;
 	
 	/**
 	 * 获取用户信息(For Node)(10005044)
@@ -650,12 +633,11 @@ public class NodeFunctions {
 				int actorTag = result.get("actorTag").getAsInt();
 				if (actorTag == 1) {
 					//获取实名认证状态
-					ApplyActor applyActor = null;
+					UserApplyActorDO applyActor = null;
 					try {
-						ApplyActorService applyActorService = MelotBeanFactory.getBean("applyActorService", ApplyActorService.class);
-			        	t = Cat.getProducer().newTransaction("MCall", "applyActorService.getApplyActorByActorId");
+			        	t = Cat.getProducer().newTransaction("MCall", "userApplyActorService.getUserApplyActorDO");
 						try {
-							applyActor = applyActorService.getApplyActorByActorId(userId);
+							applyActor = userApplyActorService.getUserApplyActorDO(userId).getData();
 							t.setStatus(Transaction.SUCCESS);
 						} catch (Exception e) {
 							Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
@@ -766,10 +748,20 @@ public class NodeFunctions {
 						int familyId = 0;
 						int actorRate = 0;
 						int familyRate = 0;
+						int officialRate = 40;
+		                try {
+		                    ConfigInfoService configInfoService = (ConfigInfoService) MelotBeanFactory.getBean("configInfoService");
+		                    ConfSystemInfo confSystemInfo = configInfoService.getConfSystemInfoByKey("official_rate");
+		                    if (confSystemInfo != null && confSystemInfo.getcValue() != null) {
+		                        officialRate = Integer.valueOf(confSystemInfo.getcValue());
+		                    }
+		                } catch (Exception e) {
+		                    logger.error("configInfoService.getConfSystemInfoByKey(actor_rate) execute exception", e);
+		                }
 						if (roomInfo.getFamilyId() != null && roomInfo.getFamilyId().intValue() > 0) {
 							familyId = roomInfo.getFamilyId().intValue();
 							if (familyId == 12345) {
-								actorRate = 60;
+								actorRate = 100 - officialRate;
 								familyRate = 0;
 							} else {
 								// 获取家族主播分成比例
@@ -786,11 +778,11 @@ public class NodeFunctions {
 								}
 								if (distributRate != null && distributRate.intValue() > 0) {
 									actorRate = distributRate.intValue();
-									familyRate = 60 - actorRate;
+									familyRate = 100 - officialRate - actorRate;
 								}
 								// 家族房家族得60%
 								if (actorRate == 0 && roomInfo.getRoomMode() != null && roomInfo.getRoomMode().intValue() == 3) {
-									familyRate = 60;
+									familyRate = 100 - officialRate;
 								}
 							}
 						}
@@ -1177,8 +1169,19 @@ public class NodeFunctions {
 				int familyId = 0;
 				int actorRate = 0;
 				int familyRate = 0;
+				int officialRate = 40;
+				try {
+                    ConfigInfoService configInfoService = (ConfigInfoService) MelotBeanFactory.getBean("configInfoService");
+                    ConfSystemInfo confSystemInfo = configInfoService.getConfSystemInfoByKey("official_rate");
+                    if (confSystemInfo != null && confSystemInfo.getcValue() != null) {
+                        officialRate = Integer.valueOf(confSystemInfo.getcValue());
+                    }
+                } catch (Exception e) {
+                    logger.error("configInfoService.getConfSystemInfoByKey(actor_rate) execute exception", e);
+                }
+				
 				if (roomType == 12) {
-					actorRate = 60;
+					actorRate = 100 - officialRate;
 					familyId = 12345;
 				} else {
 					ApplyContractInfo applyContractInfo = null;
@@ -1203,7 +1206,7 @@ public class NodeFunctions {
 						
 						// 家族房家族得60%
 						if (actorRate == 0 && roomInfo.getRoomMode() != null && roomInfo.getRoomMode().intValue() == 3) {
-							familyRate = 60;
+							familyRate = 100 - officialRate;
 						} else {
 							// 判断家族是否在本APP上开通，如未开通则家族分成为 0
 							FamilyInfo familyInfo = null;
@@ -1218,7 +1221,7 @@ public class NodeFunctions {
 								t.complete();
 							}
 							if (familyInfo != null && familyInfo.getAssess() != null && familyInfo.getAssess() == 1) {
-								familyRate = 60 - actorRate;
+								familyRate = 100 - officialRate - actorRate;
 							}
 						}
 					}
@@ -1229,10 +1232,10 @@ public class NodeFunctions {
 		    }
 		    
 		    // 获取主播申请信息
-			ApplyActor applyInfo = null;
-        	t = Cat.getProducer().newTransaction("MCall", "RoomService.getActorApplyInfo");
+			UserApplyActorDO applyInfo = null;
+        	t = Cat.getProducer().newTransaction("MCall", "userApplyActorService.getActorApplyInfo");
 			try {
-				applyInfo = RoomService.getActorApplyInfo(userId);
+				applyInfo = userApplyActorService.getUserApplyActorDO(userId).getData();
 				t.setStatus(Transaction.SUCCESS);
 			} catch (Exception e) {
 				Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
