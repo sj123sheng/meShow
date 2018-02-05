@@ -1309,11 +1309,6 @@
 		<constructor-arg name="t" ref="otherFunction" />
 		<constructor-arg name="methodName" value="getApplyForActorInfo" />
 	</bean>
-	<!-- 获取推荐申请家族列表 -->
-	<bean id="20010505" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="otherFunction" />
-		<constructor-arg name="methodName" value="getRecommendApplyFamilyList" />
-	</bean>
 
 	<!-- 获取动态表情贴图列表 -->
 	<bean id="50001016" class="com.melot.sdk.core.function.GenericFunction">
