@@ -89,7 +89,7 @@ public class GembinderFunctions {
         try {
             String userIdString = SecretKeyUtil.encodeDES(Integer.toString(userId),key);
             String tokenString = encryptToken(token);
-            result.addProperty("tagCode", TagCodeEnum.SUCCESS);
+            result.addProperty("tagCode", 0);
             result.addProperty("userId", userIdString);
             result.addProperty("token", tokenString);
             return result;
@@ -246,7 +246,7 @@ public class GembinderFunctions {
             }
             Result<Long> histId = gembinderService.addGembinderHis(userId,(int)usedDiamonds);
             if(histId != null && histId.getCode() != null && histId.getCode().equals(CommonStateCode.SUCCESS)){
-                result.addProperty("tagCode", TagCodeEnum.SUCCESS);
+                result.addProperty("tagCode", 0);
                 result.addProperty("histId", histId.getData());
                 result.addProperty("diamonds", userGameAssets.getGameMoney());
             }
