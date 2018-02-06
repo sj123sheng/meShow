@@ -17,6 +17,7 @@ import com.google.gson.JsonParser;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kktv.redis.GameRankingSource;
+import com.melot.kktv.util.AppChannelEnum;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.sdk.core.util.MelotBeanFactory;
@@ -71,10 +72,21 @@ public class GameCenterFunction {
         int appId = 0;
         int platform = 0;
         int userId = 0;
+        int channel = 0;
+        int versionCode = 0;
         try {
             appId = CommonUtil.getJsonParamInt(jsonObject, "a", 0, TagCodeEnum.APPID_MISSING, 0, Integer.MAX_VALUE);
             platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, TagCodeEnum.PLATFORM_MISSING, 1, Integer.MAX_VALUE);
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 0, Integer.MAX_VALUE);
+            channel = CommonUtil.getJsonParamInt(jsonObject, "c", AppChannelEnum.KK, null, 0, Integer.MAX_VALUE);
+            versionCode = CommonUtil.getJsonParamInt(jsonObject, "v", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            
+            //oppo 渠道不返回游戏列表
+            if (channel == 70220 && versionCode == 116) {
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                return result;
+            }
+            
             String gameList = GameRankingSource.getGameList(appId, platform);
             JsonArray gameArray = new JsonArray();
             JsonArray miniGameArray = new JsonArray();

@@ -184,7 +184,7 @@
 		<dependency>
 		  	<groupId>com.melot</groupId>
 		  	<artifactId>melot-api-common</artifactId>
-		  	<version>1.0.0</version>
+		  	<version>1.0.2</version>
 		</dependency>
 		<dependency>
 			<groupId>com.melot.module.api</groupId>
@@ -393,7 +393,7 @@
 		<dependency>
   			<groupId>com.melot.module.driver.msgbuilder</groupId>
   			<artifactId>kkActivity-module-msgbuilder</artifactId>
-  			<version>1.0.12</version>
+  			<version>1.0.13-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 		    <groupId>com.melot.module</groupId>

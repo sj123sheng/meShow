@@ -1,5 +1,14 @@
 package com.melot.kktv.action;
 
+import java.util.Date;
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.antgroup.zmxy.openplatform.api.response.ZhimaCustomerCertificationInitializeResponse;
 import com.antgroup.zmxy.openplatform.api.response.ZhimaCustomerCertificationQueryResponse;
 import com.google.gson.JsonArray;
@@ -7,8 +16,8 @@ import com.google.gson.JsonObject;
 import com.melot.blacklist.service.BlacklistService;
 import com.melot.content.config.utils.ZmrzStatusEnum;
 import com.melot.family.driver.constant.UserApplyActorStatusEnum;
-import com.melot.family.driver.domain.DO.UserApplyActorDO;
 import com.melot.family.driver.domain.FamilyInfo;
+import com.melot.family.driver.domain.DO.UserApplyActorDO;
 import com.melot.family.driver.service.FamilyOperatorService;
 import com.melot.family.driver.service.UserApplyActorService;
 import com.melot.game.config.sdk.utils.StringUtils;
@@ -34,17 +43,17 @@ import com.melot.kktv.redis.GiftRecordSource;
 import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.UserService;
 import com.melot.kktv.third.service.ZmxyService;
-import com.melot.kktv.util.*;
+import com.melot.kktv.util.AppIdEnum;
+import com.melot.kktv.util.BizCodeEnum;
+import com.melot.kktv.util.CollectionUtils;
+import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.ConfigHelper;
+import com.melot.kktv.util.DateUtil;
+import com.melot.kktv.util.StringUtil;
+import com.melot.kktv.util.TagCodeEnum;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import com.melot.share.driver.domain.RankData;
 import com.melot.share.driver.service.ShareActivityService;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import java.util.Date;
-import java.util.List;
 
 /**
  * Title: ActorFunction
@@ -304,7 +313,7 @@ public class ActorFunction {
             returnUrl = CommonUtil.getJsonParamString(jsonObject, "returnUrl", "", null, 1, Integer.MAX_VALUE);
             appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 1, Integer.MAX_VALUE);
             familyId = CommonUtil.getJsonParamInt(jsonObject, "familyId", 0, null, 1, Integer.MAX_VALUE);
-            if (familyId == 11222 && configService.getIsSpecialTime()) {
+            if ((familyId == 11222 || familyId == 0) && configService.getIsCloseFreeApply()) {
                 result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
                 return result;
             }
