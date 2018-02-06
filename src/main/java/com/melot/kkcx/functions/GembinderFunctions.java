@@ -89,7 +89,7 @@ public class GembinderFunctions {
         try {
             String userIdString = SecretKeyUtil.encodeDES(Integer.toString(userId),key);
             String tokenString = encryptToken(token);
-            result.addProperty("tagCode", 0);
+            result.addProperty("tagCode", TagCodeEnum.SUCCESS);
             result.addProperty("userId", userIdString);
             result.addProperty("token", tokenString);
             return result;
