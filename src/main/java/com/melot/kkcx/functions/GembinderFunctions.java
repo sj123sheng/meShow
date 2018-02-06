@@ -63,7 +63,7 @@ public class GembinderFunctions {
 
         // 该接口需要验证token,未验证的返回错误码
         if (!checkTag) {
-            result.addProperty("tagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
             return result;
         }
 
@@ -73,29 +73,29 @@ public class GembinderFunctions {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
             token = CommonUtil.getJsonParamString(jsonObject, "token", null, null, 1, 500);
         } catch (CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("tagCode", e.getErrCode());
+            result.addProperty("TagCode", e.getErrCode());
             return result;
         } catch (Exception e) {
-            result.addProperty("tagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
 
         UserProfile userProfile = kkUserService.getUserProfile(userId);
         if(userProfile.getIsActor() == 1){
-            result.addProperty("tagCode", "40300000");
+            result.addProperty("TagCode", "40300000");
             return result;
         }
 
         try {
             String userIdString = SecretKeyUtil.encodeDES(Integer.toString(userId),key);
             String tokenString = encryptToken(token);
-            result.addProperty("tagCode", TagCodeEnum.SUCCESS);
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             result.addProperty("userId", userIdString);
             result.addProperty("token", tokenString);
             return result;
         } catch (Exception e) {
             logger.error("【账户加密失败】userId="+userId+",token="+token,e);
-            result.addProperty("tagCode", "5105030101");
+            result.addProperty("TagCode", "5105030101");
             return result;
         }
     }
