@@ -45,7 +45,6 @@ import com.melot.kkcx.service.ProfileServices;
 import com.melot.kkcx.service.UserAssetServices;
 import com.melot.kkcx.service.UserService;
 import com.melot.kkgame.redis.LiveTypeSource;
-import com.melot.kktv.domain.mongo.MongoRoom;
 import com.melot.kktv.model.BuyProperties;
 import com.melot.kktv.model.ConsumerRecord;
 import com.melot.kktv.model.Family;
@@ -1115,7 +1114,7 @@ public class ProfileFunctions {
 //		if (photoje != null && !photoje.isJsonNull() && !photoje.getAsString().isEmpty()) {
 //			new SaveRemotePortrait(userId, photoje.getAsString()).start();
 //		}
-		MongoRoom mRoom = new MongoRoom();
+//		MongoRoom mRoom = new MongoRoom();
 		Map<String, Object> userMap = new HashMap<String, Object>();
 		int flag = 0;
 		String nickname = null;
@@ -1154,7 +1153,6 @@ public class ProfileFunctions {
 		    	}
 		    }
 		    nickname = sb.toString();
-			mRoom.setNickname(nickname);
 		}
 		if (genderje != null && !(genderje.isJsonNull() || genderje.getAsString().equals(""))) {
 			try {
@@ -1163,12 +1161,10 @@ public class ProfileFunctions {
 			    result.addProperty("TagCode", "05020003");
 			    return result;
 			}
-			mRoom.setGender(gender);
 			userMap.put(ProfileKeys.GENDER.key(), gender);
 			flag++;
 		}
 		if (birthdayje != null && !(birthdayje.isJsonNull() || birthdayje.getAsString().equals(""))) {
-			mRoom.setBirthday(birthdayje.getAsString());
 			userMap.put(ProfileKeys.BIRTHDAY.key(), birthdayje.getAsString());
 			flag++;
 		}
@@ -1198,7 +1194,6 @@ public class ProfileFunctions {
 			    return result;
 			}
 			String signature = GeneralService.replaceSensitiveWords(userId, signatureje.getAsString());
-			mRoom.setSignature(signature);
 			userMap.put(ProfileKeys.SIGNATURE.key(), signature);
 			flag++;
 		}
