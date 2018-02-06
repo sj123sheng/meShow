@@ -54,7 +54,7 @@ public class GembinderFunctions {
     private GembinderService gembinderService;
 
     @Resource
-    private AccountService accountService;
+    private AccountService kkAccountService;
 
     public JsonObject encryptAccount(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 
@@ -391,7 +391,7 @@ public class GembinderFunctions {
 
     private boolean checkToken(Integer userId,String checkTokenString){
         Integer otherApp = Integer.valueOf(checkTokenString.substring(1,2));
-        String getToken = accountService.getUserToken(userId, otherApp);
+        String getToken = kkAccountService.getUserToken(userId, otherApp);
         return checkTokenString.equals(encryptToken(getToken));
     }
 
