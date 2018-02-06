@@ -8,6 +8,7 @@ import com.melot.kkcore.user.api.GameMoneyHistory;
 import com.melot.kkcore.user.api.UserGameAssets;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.service.KkUserService;
+import com.melot.kkcx.redis.PeopleCountSource;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.util.CommonUtil;
@@ -80,8 +81,7 @@ public class GembinderFunctions {
             return result;
         }
 
-        UserProfile userProfile = kkUserService.getUserProfile(userId);
-        if(userProfile.getIsActor() == 1){
+        if(!PeopleCountSource.canPlay(userId)){
             result.addProperty("TagCode", "40300000");
             return result;
         }
@@ -135,9 +135,9 @@ public class GembinderFunctions {
             kkUserService = (KkUserService)MelotBeanFactory.getBean("kkUserService");
         }
         UserProfile userProfile = kkUserService.getUserProfile(userId);
-        if(userProfile == null || (userProfile!= null&&userProfile.getIsActor()== 1)){
+        if(userProfile == null || !PeopleCountSource.canPlay(userId)){
             result.addProperty("tagCode",1);
-            result.addProperty("msg","userId无效或者userId为主播");
+            result.addProperty("msg","userId无效或者userId为游戏黑名单");
             out.println(result.toString());
             return null;
         }
@@ -206,9 +206,9 @@ public class GembinderFunctions {
             kkUserService = (KkUserService)MelotBeanFactory.getBean("kkUserService");
         }
         UserProfile userProfile = kkUserService.getUserProfile(userId);
-        if(userProfile == null || (userProfile!= null&&userProfile.getIsActor()== 1)){
+        if(userProfile == null || !PeopleCountSource.canPlay(userId)){
             result.addProperty("tagCode",1);
-            result.addProperty("msg","userId无效或者userId为主播");
+            result.addProperty("msg","userId无效或者userId为游戏黑名单");
             out.println(result.toString());
             return null;
         }
@@ -311,9 +311,9 @@ public class GembinderFunctions {
             kkUserService = (KkUserService)MelotBeanFactory.getBean("kkUserService");
         }
         UserProfile userProfile = kkUserService.getUserProfile(userId);
-        if(userProfile == null || (userProfile!= null&&userProfile.getIsActor()== 1)){
+        if(userProfile == null || !PeopleCountSource.canPlay(userId)){
             result.addProperty("tagCode",1);
-            result.addProperty("msg","userId无效或者userId为主播");
+            result.addProperty("msg","userId无效或者userId为游戏黑名单");
             out.println(result.toString());
             return null;
         }
@@ -407,6 +407,9 @@ public class GembinderFunctions {
     }
 
     private boolean checkToken(Integer userId,String checkTokenString){
+        if(!checkTokenString.startsWith("A")){
+            return false;
+        }
         Integer otherApp = Integer.valueOf(checkTokenString.substring(1,2));
         if(kkAccountService == null){
             kkAccountService = (AccountService)MelotBeanFactory.getBean("kkAccountService");
