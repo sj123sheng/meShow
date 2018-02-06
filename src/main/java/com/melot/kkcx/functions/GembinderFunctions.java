@@ -14,6 +14,7 @@ import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.SecretKeyUtil;
 import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
+import com.melot.sdk.core.util.MelotBeanFactory;
 import com.opensymphony.xwork2.ActionContext;
 import org.apache.log4j.Logger;
 import org.apache.struts2.ServletActionContext;
@@ -89,8 +90,8 @@ public class GembinderFunctions {
             String userIdString = SecretKeyUtil.encodeDES(Integer.toString(userId),key);
             String tokenString = encryptToken(token);
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-            result.addProperty("userIdString", userIdString);
-            result.addProperty("tokenString", tokenString);
+            result.addProperty("userId", userIdString);
+            result.addProperty("token", tokenString);
             return result;
         } catch (Exception e) {
             logger.error("【账户加密失败】userId="+userId+",token="+token,e);
@@ -128,6 +129,10 @@ public class GembinderFunctions {
             result.addProperty("msg","userId无效，解密失败");
             out.println(result.toString());
             return null;
+        }
+
+        if(kkUserService == null){
+            kkUserService = (KkUserService)MelotBeanFactory.getBean("kkUserService");
         }
         UserProfile userProfile = kkUserService.getUserProfile(userId);
         if(userProfile == null || (userProfile!= null&&userProfile.getIsActor()== 1)){
@@ -197,6 +202,9 @@ public class GembinderFunctions {
             out.println(result.toString());
             return null;
         }
+        if(kkUserService == null){
+            kkUserService = (KkUserService)MelotBeanFactory.getBean("kkUserService");
+        }
         UserProfile userProfile = kkUserService.getUserProfile(userId);
         if(userProfile == null || (userProfile!= null&&userProfile.getIsActor()== 1)){
             result.addProperty("tagCode",1);
@@ -233,6 +241,9 @@ public class GembinderFunctions {
         gameMoneyHistory.setProductDesc("消消乐游戏消费");
         UserGameAssets userGameAssets = kkUserService.decUserGameAssets(userId,usedDiamonds,gameMoneyHistory);
         if(userGameAssets !=null){
+            if(gembinderService == null){
+                gembinderService = (GembinderService)MelotBeanFactory.getBean("gembinderService");
+            }
             Result<Long> histId = gembinderService.addGembinderHis(userId,(int)usedDiamonds);
             if(histId != null && histId.getCode() != null && histId.getCode().equals(CommonStateCode.SUCCESS)){
                 result.addProperty("TagCode", TagCodeEnum.SUCCESS);
@@ -296,6 +307,9 @@ public class GembinderFunctions {
             out.println(result.toString());
             return null;
         }
+        if(kkUserService == null){
+            kkUserService = (KkUserService)MelotBeanFactory.getBean("kkUserService");
+        }
         UserProfile userProfile = kkUserService.getUserProfile(userId);
         if(userProfile == null || (userProfile!= null&&userProfile.getIsActor()== 1)){
             result.addProperty("tagCode",1);
@@ -352,6 +366,9 @@ public class GembinderFunctions {
                 result.addProperty("diamonds", userGameAssets.getGameMoney());
                 result.addProperty("msg","结束游戏成功");
                 result.addProperty("tagCode",0);
+                if(gembinderService == null){
+                    gembinderService = (GembinderService)MelotBeanFactory.getBean("gembinderService");
+                }
                 Result<Boolean> updateResult = gembinderService.updateIncomeDiamond(histId,(int)getDiamonds);
                 if(updateResult != null && updateResult.getCode() != null && updateResult.getCode().equals(CommonStateCode.SUCCESS)){
                     if(updateResult.getData()){
@@ -391,6 +408,9 @@ public class GembinderFunctions {
 
     private boolean checkToken(Integer userId,String checkTokenString){
         Integer otherApp = Integer.valueOf(checkTokenString.substring(1,2));
+        if(kkAccountService == null){
+            kkAccountService = (AccountService)MelotBeanFactory.getBean("kkAccountService");
+        }
         String getToken = kkAccountService.getUserToken(userId, otherApp);
         return checkTokenString.equals(encryptToken(getToken));
     }
