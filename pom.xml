@@ -28,10 +28,10 @@
 			<resource>
 				<directory>${basedir}/src/main/resources</directory>
 				<targetPath>.</targetPath>
-                <excludes>
-                    <exclude>disconf.properties</exclude>
-                    <exclude>META-INF/cat/*</exclude>
-                </excludes>
+                <!--<excludes>-->
+                    <!--<exclude>disconf.properties</exclude>-->
+                    <!--<exclude>META-INF/cat/*</exclude>-->
+                <!--</excludes>-->
 			</resource>
 		</resources>
 		
@@ -393,7 +393,7 @@
 		<dependency>
   			<groupId>com.melot.module.driver.msgbuilder</groupId>
   			<artifactId>kkActivity-module-msgbuilder</artifactId>
-  			<version>1.0.13-SNAPSHOT</version>
+  			<version>1.0.13</version>
 		</dependency>
 		<dependency>
 		    <groupId>com.melot.module</groupId>

@@ -341,6 +341,18 @@ public class GembinderFunctions {
         }
 
         if(getDiamonds <= 0){
+            if(gembinderService == null){
+                gembinderService = (GembinderService)MelotBeanFactory.getBean("gembinderService");
+            }
+            Result<Boolean> updateResult = gembinderService.updateIncomeDiamond(histId,(int)getDiamonds);
+            if(updateResult != null && updateResult.getCode() != null && updateResult.getCode().equals(CommonStateCode.SUCCESS)){
+                if(!updateResult.getData()){
+                    logger.error("【更新消息乐游戏结果失败】histId="+histId+",getDiamonds="+getDiamonds);
+                }
+            }
+            else {
+                logger.error("【更新消息乐游戏结果失败】histId="+histId+",getDiamonds="+getDiamonds);
+            }
             UserGameAssets userGameAssets = kkUserService.getUserGameAssets(userId);
             if(userGameAssets != null){
                 result.addProperty("tagCode",0);
@@ -371,10 +383,7 @@ public class GembinderFunctions {
                 }
                 Result<Boolean> updateResult = gembinderService.updateIncomeDiamond(histId,(int)getDiamonds);
                 if(updateResult != null && updateResult.getCode() != null && updateResult.getCode().equals(CommonStateCode.SUCCESS)){
-                    if(updateResult.getData()){
-
-                    }
-                    else {
+                    if(!updateResult.getData()){
                         logger.error("【更新消息乐游戏结果失败】histId="+histId+",getDiamonds="+getDiamonds);
                     }
                 }
