@@ -962,7 +962,7 @@ public class OtherFunctions {
 			return result;
 		}
 		
-		if (applyActor != null && userVerifyDO != null && applyActor.getStatus() != null) {
+		if (applyActor != null && applyActor.getStatus() != null) {
 
 		    int status = applyActor.getStatus();
 			if (status == -1) {
@@ -973,22 +973,24 @@ public class OtherFunctions {
 	                    return tempResult;
 	                }
 	            }
-			    
-				// -1:实名认证审核驳回
-				result.addProperty("realName", userVerifyDO.getCertName());
-				result.addProperty("identityNumber", userVerifyDO.getCertNo());
-				result.addProperty("identityPictureOnHand", userVerifyDO.getIdPicOnHand());
-				if (userVerifyDO.getIdPicFont() != null) {
-				    result.addProperty("identityPictureFont", userVerifyDO.getIdPicFont());
-                }
-				if (userVerifyDO.getIdPicBack() != null) {
-				    result.addProperty("identityPictureBack", userVerifyDO.getIdPicBack());
-                }
-				if (userVerifyDO.getGender() != null) {
-				    result.addProperty("gender", userVerifyDO.getGender());
-				}
-				if (userVerifyDO.getVerifyMobile() != null) {
-				    result.addProperty("mobile", userVerifyDO.getVerifyMobile());
+
+	            if(userVerifyDO != null) {
+                    // -1:实名认证审核驳回
+                    result.addProperty("realName", userVerifyDO.getCertName());
+                    result.addProperty("identityNumber", userVerifyDO.getCertNo());
+                    result.addProperty("identityPictureOnHand", userVerifyDO.getIdPicOnHand());
+                    if (userVerifyDO.getIdPicFont() != null) {
+                        result.addProperty("identityPictureFont", userVerifyDO.getIdPicFont());
+                    }
+                    if (userVerifyDO.getIdPicBack() != null) {
+                        result.addProperty("identityPictureBack", userVerifyDO.getIdPicBack());
+                    }
+                    if (userVerifyDO.getGender() != null) {
+                        result.addProperty("gender", userVerifyDO.getGender());
+                    }
+                    if (userVerifyDO.getVerifyMobile() != null) {
+                        result.addProperty("mobile", userVerifyDO.getVerifyMobile());
+                    }
                 }
 				if (applyActor.getOperatorId() != null) {
 				    result.addProperty("operatorId", applyActor.getOperatorId());
@@ -1005,7 +1007,7 @@ public class OtherFunctions {
 			    if (status != UserApplyActorStatusEnum.FAMILY_AUDIT_REJECT
 			            && applyActor.getApplyFamilyId() != null) {
 			        familyId = applyActor.getApplyFamilyId();
-                } else {
+                } else if(userVerifyDO != null) {
                     // 查看统一身份证是否有绑定的家族ID
                     try {
                         familyId = userVerifyService.getFamilyIdByCertNo(userVerifyDO.getCertNo()).getData();
@@ -1043,7 +1045,11 @@ public class OtherFunctions {
 			}
 
 			// 实名认证方式返回 默认 1-巡管认证
-            result.addProperty("verifyType", userVerifyDO.getVerifyType() == null ? UserVerifyTypeEnum.TOURING_VERIFY : userVerifyDO.getVerifyType());
+            if(userVerifyDO != null) {
+                result.addProperty("verifyType", userVerifyDO.getVerifyType() == null ? UserVerifyTypeEnum.TOURING_VERIFY : userVerifyDO.getVerifyType());
+            }else {
+                result.addProperty("verifyType", UserVerifyTypeEnum.TOURING_VERIFY);
+            }
 			
 			result.addProperty("status", status);
 			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
