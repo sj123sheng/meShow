@@ -29,6 +29,9 @@ public class ConfigService {
     private String goldMedalFamily;
 
     private String goldMedalFamilyIds;
+    
+    //限制渠道及版本号
+    private String limitCvs;
 
     private boolean isAbroad;
 
@@ -143,6 +146,15 @@ public class ConfigService {
 
     public void setGoldMedalFamilyIds(String goldMedalFamilyIds) {
         this.goldMedalFamilyIds = goldMedalFamilyIds;
+    }
+    
+    @DisconfFileItem(name = "global.limitCvs", associateField = "limitCvs")
+    public String getLimitCvs() {
+        return limitCvs;
+    }
+
+    public void setLimitCvs(String limitCvs) {
+        this.limitCvs = limitCvs;
     }
 
     @DisconfFileItem(name = "global.isSpecialTime", associateField = "isSpecialTime")

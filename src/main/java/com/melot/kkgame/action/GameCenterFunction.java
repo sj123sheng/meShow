@@ -11,12 +11,15 @@ package com.melot.kkgame.action;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kktv.redis.GameRankingSource;
+import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.util.AppChannelEnum;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.TagCodeEnum;
@@ -36,6 +39,11 @@ public class GameCenterFunction {
     private static Logger logger = Logger.getLogger(GameCenterFunction.class);
     
     private JsonParser parse = new JsonParser();
+    
+    @Autowired
+    private ConfigService configService;
+    
+    private static String REGEX = ";";
     
     /**
      *增值业务游戏中心版本查询(80001002)
@@ -81,10 +89,16 @@ public class GameCenterFunction {
             channel = CommonUtil.getJsonParamInt(jsonObject, "c", AppChannelEnum.KK, null, 0, Integer.MAX_VALUE);
             versionCode = CommonUtil.getJsonParamInt(jsonObject, "v", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
             
-            //oppo 渠道不返回游戏列表
-            if (channel == 70220 && versionCode == 116) {
-                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-                return result;
+            //渠道版本号限制
+            String cv = channel + "," + versionCode;
+            String[] limitCvs = configService.getLimitCvs().trim().split(REGEX);
+            if (limitCvs != null && limitCvs.length > 0) {
+                for (String cvStr : limitCvs) {
+                    if (cvStr.equals(cv)) {
+                        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                        return result;
+                    }
+                }
             }
             
             String gameList = GameRankingSource.getGameList(appId, platform);

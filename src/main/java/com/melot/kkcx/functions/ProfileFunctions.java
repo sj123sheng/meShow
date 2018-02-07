@@ -1114,7 +1114,6 @@ public class ProfileFunctions {
 //		if (photoje != null && !photoje.isJsonNull() && !photoje.getAsString().isEmpty()) {
 //			new SaveRemotePortrait(userId, photoje.getAsString()).start();
 //		}
-//		MongoRoom mRoom = new MongoRoom();
 		Map<String, Object> userMap = new HashMap<String, Object>();
 		int flag = 0;
 		String nickname = null;
