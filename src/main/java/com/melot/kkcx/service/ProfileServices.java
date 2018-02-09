@@ -202,7 +202,7 @@ public class ProfileServices {
 	public static boolean checkIsOfficial(int userId) {
 	    boolean result = false;
 	    Integer adminType = getUserAdminType(userId);
-	    if (adminType != null && adminType != 5) {
+	    if (adminType != null && adminType != -1 && adminType != 5) {
 	        result = true;
 	    }
         return result;
