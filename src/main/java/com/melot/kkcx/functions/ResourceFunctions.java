@@ -24,6 +24,7 @@ import com.melot.kk.module.resource.domain.ResourceUpLoadConf;
 import com.melot.kk.module.resource.domain.ResourceUploadConfParam;
 import com.melot.kk.module.resource.service.ResourceNewService;
 import com.melot.kkcore.user.api.UserProfile;
+import com.melot.kkcx.service.ProfileServices;
 import com.melot.kkcx.service.UserService;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
@@ -70,8 +71,8 @@ public class ResourceFunctions {
             Integer abroad = CommonUtil.getJsonParamInt(jsonObject, "abroad", 1, null, 1, Integer.MAX_VALUE);
             Integer resType = CommonUtil.getJsonParamInt(jsonObject, "resType", 0, tagCode_prefix+"02", 0, Integer.MAX_VALUE);
             
-            //特殊时期接口暂停使用
-            if (configService.getIsSpecialTime()) {
+            //特殊时期接口暂停使用（官方号不过滤）
+            if (configService.getIsSpecialTime() && !ProfileServices.checkIsOfficial(userId)) {
                 if (resType == PictureTypeEnum.family_poster || resType == 2) {
                     result.addProperty("message", "系统维护中，本功能暂时停用");
                     result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
@@ -87,9 +88,14 @@ public class ResourceFunctions {
                     try {
                         PosterService posterService = MelotBeanFactory.getBean("posterService", PosterService.class);
                         List<PosterInfo> posterList = posterService.getPosterList(userId);
+                        //海报池有可用海报
                         if (posterList != null && posterList.size() > 0) {
-                            result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
-                            return result;
+                            for (PosterInfo posterInfo : posterList) {
+                                if (posterInfo.getState() != 3) {
+                                    result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+                                    return result;
+                                }
+                            }
                         }
                     } catch (Exception e) {
                         logger.error("call PosterService getPosterList error userId:" + userId, e);

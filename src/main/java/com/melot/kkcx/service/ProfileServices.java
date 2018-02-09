@@ -199,6 +199,15 @@ public class ProfileServices {
         return adminType;
 	}
 	
+	public static boolean checkIsOfficial(int userId) {
+	    boolean result = false;
+	    Integer adminType = getUserAdminType(userId);
+	    if (adminType != null && adminType != 5) {
+	        result = true;
+	    }
+        return result;
+    }
+	
     public static Integer getRoomType(int actorId) {
         Integer roomType = null;
         try {
