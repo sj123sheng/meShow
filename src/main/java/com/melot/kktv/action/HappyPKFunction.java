@@ -129,6 +129,9 @@ public class HappyPKFunction {
                     result.addProperty("gameDanName", resActorLadderMatchDO.getGameDanName());
                     result.addProperty("winningRate", resActorLadderMatchDO.getWinningRate());
                     result.addProperty("ranking", resActorLadderMatchDO.getRanking());
+                    result.addProperty("nextLevelGameDan", resActorLadderMatchDO.getNextLevelGameDan());
+                    result.addProperty("nextLevelGameDanName", resActorLadderMatchDO.getNextLevelGameDanName());
+                    result.addProperty("nextLevelIntegral", resActorLadderMatchDO.getNextLevelIntegral());
                 }
 
                 result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
@@ -284,7 +287,61 @@ public class HappyPKFunction {
     }
 
     /**
-     * 保存天梯记录【51060405】
+     * 获取上赛季最强王者的前五名【51060405】
+     */
+    public JsonObject getLastSeasonStrongestKingTop5(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        try {
+
+            Result<List<ResActorLadderMatchDO>> resListResult =  resActorLadderMatchService.getLastSeasonStrongestKingTop5();
+            if(resListResult.getCode().equals(CommonStateCode.SUCCESS) && resListResult.getData() != null){
+
+                List<ResActorLadderMatchDO> resActorLadderMatchDOS = resListResult.getData();
+
+                JsonArray lastSeasonStrongestKingTop5 = new JsonArray();
+                for(ResActorLadderMatchDO resActorLadderMatchDO : resActorLadderMatchDOS) {
+
+                    int actorId = resActorLadderMatchDO.getActorId();
+                    UserProfile userProfile = kkUserService.getUserProfile(actorId);
+
+                    JsonObject resActorLadderMatch = new JsonObject();
+
+                    resActorLadderMatch.addProperty("userId", actorId);
+                    if(userProfile != null) {
+                        resActorLadderMatch.addProperty("gender", userProfile.getGender());
+                        resActorLadderMatch.addProperty("portrait", getPortrait(userProfile));
+                        resActorLadderMatch.addProperty("nickname", userProfile.getNickName());
+                    }
+                    resActorLadderMatch.addProperty("ranking", resActorLadderMatchDO.getRanking());
+                    resActorLadderMatch.addProperty("integral", resActorLadderMatchDO.getLadderMatchIntegral());
+                    resActorLadderMatch.addProperty("gameDan", resActorLadderMatchDO.getGameDan());
+                    resActorLadderMatch.addProperty("gameDanName", resActorLadderMatchDO.getGameDanName());
+                    resActorLadderMatch.addProperty("winningRate", resActorLadderMatchDO.getWinningRate());
+                    resActorLadderMatch.addProperty("time", resActorLadderMatchDO.getLadderMatchTime());
+                    resActorLadderMatch.addProperty("showMoneyCount", resActorLadderMatchDO.getShowMoneyCount());
+
+                    lastSeasonStrongestKingTop5.add(resActorLadderMatch);
+                }
+                result.add("lastSeasonStrongestKingTop5", lastSeasonStrongestKingTop5);
+
+                result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                return result;
+            } else {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+        } catch (Exception e) {
+            logger.error("Error getLadderChart()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 保存天梯记录【51060406】
      */
     public JsonObject saveLadderMatchRecord(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 
