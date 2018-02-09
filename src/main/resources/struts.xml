@@ -19,6 +19,10 @@
 		
 		<action name="timMsgCallback" class="com.melot.kkcx.action.TimMsgAction" method="timMsgCallback">
 		</action>
-		
+
+		<action name="getDiamonds" class="com.melot.kkcx.functions.GembinderFunctions" method="getDiamonds"/>
+		<action name="startGame" class="com.melot.kkcx.functions.GembinderFunctions" method="startGame"/>
+		<action name="endGame" class="com.melot.kkcx.functions.GembinderFunctions" method="endGame"/>
+
 	</package>
 </struts>

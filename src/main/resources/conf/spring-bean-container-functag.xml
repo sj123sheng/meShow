@@ -2912,4 +2912,9 @@
 		<constructor-arg name="methodName" value="buyNobility" />
 	</bean>
 
+	<bean id="51050301" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="gembinderFunctions" />
+		<constructor-arg name="methodName" value="encryptAccount" />
+	</bean>
+
 </beans>

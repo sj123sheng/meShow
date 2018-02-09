@@ -929,8 +929,8 @@ public class AlbumFunctions {
 			return result;
 		}
 		
-		//特殊时期接口暂停使用
-        if (configService.getIsSpecialTime()) {
+		//特殊时期接口暂停使用（官方号不限制）
+        if (configService.getIsSpecialTime() && !ProfileServices.checkIsOfficial(userId)) {
             if (pictureType == PictureTypeEnum.family_poster || pictureType == 2) {
                 result.addProperty("message", "系统维护中，本功能暂时停用");
                 result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
@@ -1072,6 +1072,22 @@ public class AlbumFunctions {
 			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
 			return result;
 		}
+		
+		//特殊时期接口暂停使用（官方号不限制）
+        if (configService.getIsSpecialTime() && !ProfileServices.checkIsOfficial(userId)) {
+            if (pictureType == PictureTypeEnum.family_poster || pictureType == 2) {
+                result.addProperty("message", "系统维护中，本功能暂时停用");
+                result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+                return result;
+            } else if (pictureType == PictureTypeEnum.portrait) {
+                UserProfile userProfile = UserService.getUserInfoNew(userId);
+                if (userProfile != null && userProfile.getPortrait() != null) {
+                    result.addProperty("message", "系统维护中，本功能暂时停用");
+                    result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+                    return result; 
+                }
+            }
+        }
 
 		// 0:头像 2:相册图片
 		try {
@@ -1235,14 +1251,19 @@ public class AlbumFunctions {
 		
 		PosterService posterService = MelotBeanFactory.getBean("posterService", PosterService.class);
 		
-		//特殊时期用户没有上传过海报可上传一次
-		if (configService.getIsSpecialTime()) {
+		//特殊时期用户没有上传过海报可上传一次（官方号不限制）
+		if (configService.getIsSpecialTime() && !ProfileServices.checkIsOfficial(userId)) {
 		    try {
 		        List<PosterInfo> posterList = posterService.getPosterList(userId);
-		        if (posterList != null && posterList.size() > 0) {
-		            result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
-	                return result;
-		        }
+		        //海报池有可用海报
+                if (posterList != null && posterList.size() > 0) {
+                    for (PosterInfo posterInfo : posterList) {
+                        if (posterInfo.getState() != 3) {
+                            result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+                            return result;
+                        }
+                    }
+                }
 		    } catch (Exception e) {
 	            logger.error("call PosterService getPosterList error userId:" + userId, e);
 	        }
@@ -1341,12 +1362,17 @@ public class AlbumFunctions {
 		PosterService posterService = MelotBeanFactory.getBean("posterService", PosterService.class);
 
         //特殊时期用户没有上传过海报可上传一次
-        if (configService.getIsSpecialTime()) {
+        if (configService.getIsSpecialTime() && !ProfileServices.checkIsOfficial(userId)) {
             try {
                 List<PosterInfo> posterList = posterService.getPosterList(userId);
+                //海报池有可用海报
                 if (posterList != null && posterList.size() > 0) {
-                    result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
-                    return result;
+                    for (PosterInfo posterInfo : posterList) {
+                        if (posterInfo.getState() != 3) {
+                            result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+                            return result;
+                        }
+                    }
                 }
             } catch (Exception e) {
                 logger.error("call PosterService getPosterList error userId:" + userId, e);

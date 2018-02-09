@@ -159,4 +159,6 @@
 	<!-- 新家族模块 -->
 	<kkrpc:reference id="userApplyActorService" interface="com.melot.family.driver.service.UserApplyActorService" version="1.0.0"/>
 
+	<!-- 消消乐 -->
+	<kkrpc:reference id="gembinderService" interface="com.melot.kkactivity.driver.service.GembinderService" version="1.0.0"/>
 </beans>
