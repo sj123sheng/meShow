@@ -173,6 +173,23 @@ public class ResourceFunctions {
             resource.setResType(resType);
             resource.setMimeType(mimeType);
             resource.seteCloudType(eCloudType);
+            
+            //特殊时期接口暂停使用（官方号不限制）
+            if (configService.getIsSpecialTime() && !ProfileServices.checkIsOfficial(userId)) {
+                if (resType == PictureTypeEnum.family_poster || resType == 2) {
+                    result.addProperty("message", "系统维护中，本功能暂时停用");
+                    result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+                    return result;
+                } else if (resType == PictureTypeEnum.portrait) {
+                    UserProfile userProfile = UserService.getUserInfoNew(userId);
+                    if (userProfile != null && userProfile.getPortrait() != null) {
+                        result.addProperty("message", "系统维护中，本功能暂时停用");
+                        result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+                        return result; 
+                    }
+                }
+            }
+            
             if(mimeType == 2){
                 resource.setImageUrl(fileUrl);
             }
