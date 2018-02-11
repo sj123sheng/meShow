@@ -252,6 +252,39 @@ public class GuardFunctions {
     }
     
     /**
+     * 获取主播拥有的守护数量（51010501）
+     * @param paramJsonObject
+     * @return
+     */
+    public JsonObject getActorGuardCount(JsonObject paramJsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        int actorId = 0;
+        try {
+            actorId = CommonUtil.getJsonParamInt(paramJsonObject, "actorId", 0, TagCodeEnum.ACTORID_MISSING, 1,Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        try {
+            GuardService guardService = (GuardService) MelotBeanFactory.getBean("guardService");
+            List<GsonGuardObj> actorGuardList = guardService.getActorGuards(actorId);
+            int count = 0;
+            if (!CollectionUtils.isEmpty(actorGuardList)) {
+                count = actorGuardList.size();
+            }
+            result.addProperty("count", count);
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+        }
+        return result;
+    }
+    
+    /**
      * 获取黄金赛周榜（20031004）
      * @param jsonObject
      * @param checkTag
