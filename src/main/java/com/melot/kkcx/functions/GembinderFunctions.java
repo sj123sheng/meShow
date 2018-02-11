@@ -7,6 +7,7 @@ import com.melot.kkcore.account.service.AccountService;
 import com.melot.kkcore.user.api.GameMoneyHistory;
 import com.melot.kkcore.user.api.UserGameAssets;
 import com.melot.kkcore.user.api.UserProfile;
+import com.melot.kkcore.user.api.exception.GameMoneyLackException;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.redis.PeopleCountSource;
 import com.melot.kktv.base.CommonStateCode;
@@ -232,14 +233,19 @@ public class GembinderFunctions {
             out.println(result.toString());
             return null;
         }
-
         GameMoneyHistory gameMoneyHistory = new GameMoneyHistory();
         gameMoneyHistory.setUserId(userId);
         gameMoneyHistory.setType(62);
         gameMoneyHistory.setDtime(new Date());
         gameMoneyHistory.setConsumeAmount((int)usedDiamonds);
         gameMoneyHistory.setProductDesc("消消乐游戏消费");
-        UserGameAssets userGameAssets = kkUserService.decUserGameAssets(userId,usedDiamonds,gameMoneyHistory);
+        UserGameAssets userGameAssets = null;
+        try {
+            userGameAssets = kkUserService.decUserGameAssets(userId, usedDiamonds, gameMoneyHistory);
+        }catch (GameMoneyLackException gmle){
+            result.addProperty("tagCode",21);
+            result.addProperty("msg","钻石余额不足");
+        }
         if(userGameAssets !=null){
             if(gembinderService == null){
                 gembinderService = (GembinderService)MelotBeanFactory.getBean("gembinderService");
