@@ -7,13 +7,16 @@ import com.melot.kkcore.account.service.AccountService;
 import com.melot.kkcore.user.api.GameMoneyHistory;
 import com.melot.kkcore.user.api.UserGameAssets;
 import com.melot.kkcore.user.api.UserProfile;
+import com.melot.kkcore.user.api.exception.GameMoneyLackException;
 import com.melot.kkcore.user.service.KkUserService;
+import com.melot.kkcx.redis.PeopleCountSource;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.SecretKeyUtil;
 import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
+import com.melot.sdk.core.util.MelotBeanFactory;
 import com.opensymphony.xwork2.ActionContext;
 import org.apache.log4j.Logger;
 import org.apache.struts2.ServletActionContext;
@@ -54,7 +57,7 @@ public class GembinderFunctions {
     private GembinderService gembinderService;
 
     @Resource
-    private AccountService accountService;
+    private AccountService kkAccountService;
 
     public JsonObject encryptAccount(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 
@@ -79,8 +82,7 @@ public class GembinderFunctions {
             return result;
         }
 
-        UserProfile userProfile = kkUserService.getUserProfile(userId);
-        if(userProfile.getIsActor() == 1){
+        if(!PeopleCountSource.canPlay(userId)){
             result.addProperty("TagCode", "40300000");
             return result;
         }
@@ -89,8 +91,8 @@ public class GembinderFunctions {
             String userIdString = SecretKeyUtil.encodeDES(Integer.toString(userId),key);
             String tokenString = encryptToken(token);
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-            result.addProperty("userIdString", userIdString);
-            result.addProperty("tokenString", tokenString);
+            result.addProperty("userId", userIdString);
+            result.addProperty("token", tokenString);
             return result;
         } catch (Exception e) {
             logger.error("【账户加密失败】userId="+userId+",token="+token,e);
@@ -129,10 +131,14 @@ public class GembinderFunctions {
             out.println(result.toString());
             return null;
         }
+
+        if(kkUserService == null){
+            kkUserService = (KkUserService)MelotBeanFactory.getBean("kkUserService");
+        }
         UserProfile userProfile = kkUserService.getUserProfile(userId);
-        if(userProfile == null || (userProfile!= null&&userProfile.getIsActor()== 1)){
+        if(userProfile == null || !PeopleCountSource.canPlay(userId)){
             result.addProperty("tagCode",1);
-            result.addProperty("msg","userId无效或者userId为主播");
+            result.addProperty("msg","userId无效或者userId为游戏黑名单");
             out.println(result.toString());
             return null;
         }
@@ -197,10 +203,13 @@ public class GembinderFunctions {
             out.println(result.toString());
             return null;
         }
+        if(kkUserService == null){
+            kkUserService = (KkUserService)MelotBeanFactory.getBean("kkUserService");
+        }
         UserProfile userProfile = kkUserService.getUserProfile(userId);
-        if(userProfile == null || (userProfile!= null&&userProfile.getIsActor()== 1)){
+        if(userProfile == null || !PeopleCountSource.canPlay(userId)){
             result.addProperty("tagCode",1);
-            result.addProperty("msg","userId无效或者userId为主播");
+            result.addProperty("msg","userId无效或者userId为游戏黑名单");
             out.println(result.toString());
             return null;
         }
@@ -224,18 +233,26 @@ public class GembinderFunctions {
             out.println(result.toString());
             return null;
         }
-
         GameMoneyHistory gameMoneyHistory = new GameMoneyHistory();
         gameMoneyHistory.setUserId(userId);
         gameMoneyHistory.setType(62);
         gameMoneyHistory.setDtime(new Date());
         gameMoneyHistory.setConsumeAmount((int)usedDiamonds);
         gameMoneyHistory.setProductDesc("消消乐游戏消费");
-        UserGameAssets userGameAssets = kkUserService.decUserGameAssets(userId,usedDiamonds,gameMoneyHistory);
+        UserGameAssets userGameAssets = null;
+        try {
+            userGameAssets = kkUserService.decUserGameAssets(userId, usedDiamonds, gameMoneyHistory);
+        }catch (GameMoneyLackException gmle){
+            result.addProperty("tagCode",21);
+            result.addProperty("msg","钻石余额不足");
+        }
         if(userGameAssets !=null){
+            if(gembinderService == null){
+                gembinderService = (GembinderService)MelotBeanFactory.getBean("gembinderService");
+            }
             Result<Long> histId = gembinderService.addGembinderHis(userId,(int)usedDiamonds);
             if(histId != null && histId.getCode() != null && histId.getCode().equals(CommonStateCode.SUCCESS)){
-                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                result.addProperty("tagCode", 0);
                 result.addProperty("histId", histId.getData());
                 result.addProperty("diamonds", userGameAssets.getGameMoney());
             }
@@ -296,10 +313,13 @@ public class GembinderFunctions {
             out.println(result.toString());
             return null;
         }
+        if(kkUserService == null){
+            kkUserService = (KkUserService)MelotBeanFactory.getBean("kkUserService");
+        }
         UserProfile userProfile = kkUserService.getUserProfile(userId);
-        if(userProfile == null || (userProfile!= null&&userProfile.getIsActor()== 1)){
+        if(userProfile == null || !PeopleCountSource.canPlay(userId)){
             result.addProperty("tagCode",1);
-            result.addProperty("msg","userId无效或者userId为主播");
+            result.addProperty("msg","userId无效或者userId为游戏黑名单");
             out.println(result.toString());
             return null;
         }
@@ -327,6 +347,18 @@ public class GembinderFunctions {
         }
 
         if(getDiamonds <= 0){
+            if(gembinderService == null){
+                gembinderService = (GembinderService)MelotBeanFactory.getBean("gembinderService");
+            }
+            Result<Boolean> updateResult = gembinderService.updateIncomeDiamond(histId,(int)getDiamonds);
+            if(updateResult != null && updateResult.getCode() != null && updateResult.getCode().equals(CommonStateCode.SUCCESS)){
+                if(!updateResult.getData()){
+                    logger.error("【更新消息乐游戏结果失败】histId="+histId+",getDiamonds="+getDiamonds);
+                }
+            }
+            else {
+                logger.error("【更新消息乐游戏结果失败】histId="+histId+",getDiamonds="+getDiamonds);
+            }
             UserGameAssets userGameAssets = kkUserService.getUserGameAssets(userId);
             if(userGameAssets != null){
                 result.addProperty("tagCode",0);
@@ -352,12 +384,12 @@ public class GembinderFunctions {
                 result.addProperty("diamonds", userGameAssets.getGameMoney());
                 result.addProperty("msg","结束游戏成功");
                 result.addProperty("tagCode",0);
+                if(gembinderService == null){
+                    gembinderService = (GembinderService)MelotBeanFactory.getBean("gembinderService");
+                }
                 Result<Boolean> updateResult = gembinderService.updateIncomeDiamond(histId,(int)getDiamonds);
                 if(updateResult != null && updateResult.getCode() != null && updateResult.getCode().equals(CommonStateCode.SUCCESS)){
-                    if(updateResult.getData()){
-
-                    }
-                    else {
+                    if(!updateResult.getData()){
                         logger.error("【更新消息乐游戏结果失败】histId="+histId+",getDiamonds="+getDiamonds);
                     }
                 }
@@ -390,8 +422,14 @@ public class GembinderFunctions {
     }
 
     private boolean checkToken(Integer userId,String checkTokenString){
+        if(!checkTokenString.startsWith("A")){
+            return false;
+        }
         Integer otherApp = Integer.valueOf(checkTokenString.substring(1,2));
-        String getToken = accountService.getUserToken(userId, otherApp);
+        if(kkAccountService == null){
+            kkAccountService = (AccountService)MelotBeanFactory.getBean("kkAccountService");
+        }
+        String getToken = kkAccountService.getUserToken(userId, otherApp);
         return checkTokenString.equals(encryptToken(getToken));
     }
 

@@ -1196,7 +1196,9 @@ public class ProfileFunctions {
 			userMap.put(ProfileKeys.SIGNATURE.key(), signature);
 			flag++;
 		}
-		if (introduceje != null && !introduceje.isJsonNull() && !configService.getIsSpecialTime()) {
+		//官方号特殊时期不限制
+		if (introduceje != null && !introduceje.isJsonNull() &&
+		    (!configService.getIsSpecialTime() || (configService.getIsSpecialTime() && ProfileServices.checkIsOfficial(userId)))) {
 			introduce = introduceje.getAsString();
 			introduce = GeneralService.replaceSensitiveWords(userId, introduce);
 			userMap.put("introduce", introduce);
@@ -1210,7 +1212,8 @@ public class ProfileFunctions {
                 return result;
             } else {
                 if (isNickNameChange) {
-                    if (configService.getIsSpecialTime()) {
+                    //特殊时期 官方号无需过滤
+                    if (configService.getIsSpecialTime() && !ProfileServices.checkIsOfficial(userId)) {
                         UserRegistry userRegistry = UserService.getUserRegistryInfo(userId);
                         if (userRegistry != null && userRegistry.getRegisterTime() > 1514736000000L
                                 && !ProfileServices.checkUserUpdateProfileByType(userId, "nickName")) {
@@ -2454,12 +2457,6 @@ public class ProfileFunctions {
             return result;
         }
     	
-    	//特殊时期接口暂停使用
-    	if (configService.getIsSpecialTime()) {
-    	    result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
-            return result;
-    	}
-        
         int userId = 0;
         String roomTheme = null;
         
@@ -2475,6 +2472,12 @@ public class ProfileFunctions {
             return result;
         } catch (Exception e) {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        //特殊时期接口暂停使用 （官方号不限制）
+        if (configService.getIsSpecialTime() && !ProfileServices.checkIsOfficial(userId)) {
+            result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
             return result;
         }
         

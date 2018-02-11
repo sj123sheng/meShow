@@ -13,6 +13,7 @@ import com.melot.kk.nobility.api.domain.NobilityInfo;
 import com.melot.kk.nobility.api.domain.NobilityUserInfo;
 import com.melot.kk.nobility.api.service.NobilityService;
 import com.melot.kkcore.user.api.UserProfile;
+import com.melot.kkcore.user.api.UserRegistry;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.service.UserAssetServices;
 import com.melot.kkcx.transform.NobilityTF;
@@ -122,7 +123,12 @@ public class NobilityFunctions {
         try {
             KkUserService kkUserService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
             UserProfile userProfile = kkUserService.getUserProfile(realUserId);
-            if (userProfile == null) {
+            UserRegistry userRegistry = kkUserService.getUserRegistry(realUserId);
+            if (userProfile == null 
+                    || userRegistry == null 
+                    || userRegistry.getOpenPlatform() == 0
+                    || userRegistry.getOpenPlatform() == -5
+                    || userRegistry.getOpenPlatform() == -7) {
                 result.addProperty(ParameterKeys.TAG_CODE, "5101040201");
                 return result;
             }
@@ -288,6 +294,25 @@ public class NobilityFunctions {
         Integer realfrienId = UserAssetServices.luckyIdToUserId(friendId);
         if (realfrienId == null) {
             realfrienId = friendId;
+        }
+        
+        // 添加用户的基本信息
+        try {
+            KkUserService kkUserService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
+            UserProfile userProfile = kkUserService.getUserProfile(realfrienId);
+            UserRegistry userRegistry = kkUserService.getUserRegistry(realfrienId);
+            if (userProfile == null 
+                    || userRegistry == null 
+                    || userRegistry.getOpenPlatform() == 0
+                    || userRegistry.getOpenPlatform() == -5
+                    || userRegistry.getOpenPlatform() == -7) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5201040501");
+                return result;
+            }
+        } catch (Exception e) {
+            log.error(String.format("module error: kkUserService.getUserProfile(%s)", realfrienId), e);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
         }
         
         NobilityService nobilityService = (NobilityService)MelotBeanFactory.getBean("nobilityService");
