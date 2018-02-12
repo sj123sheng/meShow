@@ -718,8 +718,9 @@ public class NewsV2Functions {
             result.addProperty("TagCode", e.getErrCode());
             return result;
         }
-        NewsInfo newsInfo = NewsService.getNewsInfoById(newsId, 0);
-        if (newsInfo == null) {
+        NewsInfo newsInfo = NewsService.getNewsInfoByNewsIdForState(newsId, 0);
+        if (newsInfo == null || (newsInfo.getState() != 1 && StringUtil.strIsNull(newsInfo.getRefAudio()))||
+                (!StringUtil.strIsNull(newsInfo.getRefAudio())&&newsInfo.getState() == 3)) {
             result.addProperty("TagCode", "06030103");
             return result;
         }
