@@ -122,12 +122,10 @@ public class GameCenterFunction {
                 for (int i = 0; i < parseArray.size(); i++) {
                     JsonObject jsonObj = (JsonObject) parseArray.get(i);
                     int enterLevelLimit = jsonObj.get("enterLevelLimit").getAsInt();
-                    if (enterLevelLimit == 0) {
+                    if (enterLevelLimit == 0 || (enterLevelLimit > 0 && enterLevelLimit <= userLevel)) {
                         gameArray.add(jsonObj);
-                    } else {
-                        if (enterLevelLimit <= userLevel) {
-                            miniGameArray.add(jsonObj);
-                        }
+                    } else if (enterLevelLimit < 0 && -enterLevelLimit <= userLevel) {
+                        miniGameArray.add(jsonObj);
                     }
                 }
                 result.add("gameList", gameArray);
