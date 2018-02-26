@@ -297,6 +297,8 @@ public class NobilityFunctions {
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
+        // 仅仅允许给自己购买爵位，不允许代购
+        friendId = userId;
         
         // 靓号转化为真实ID
         Integer realfrienId = UserAssetServices.luckyIdToUserId(friendId);
