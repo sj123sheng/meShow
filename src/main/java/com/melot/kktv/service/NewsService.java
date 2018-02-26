@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import com.melot.kk.module.resource.constant.ResourceStateConstant;
 import com.melot.kk.module.resource.domain.Resource;
 import com.melot.kk.module.resource.service.ResourceNewService;
 import com.melot.kktv.base.CommonStateCode;
@@ -1271,6 +1272,7 @@ public class NewsService {
 				if (resAudio.getSpecificUrl() != null) {
 					mediaSourceJson.addProperty("mediaUrl", resAudio.getSpecificUrl());
 				}
+				mediaSourceJson.addProperty("mediaState", resAudio.getState());
 				if (newsInfo.getRefImage() != null){
 					Resource resImage = resourceNewService.getResourceById(Integer.valueOf(Pattern.compile("\\{|\\}").matcher(newsInfo.getRefImage()).replaceAll(""))).getData();
 					if(resImage!= null){
@@ -1294,6 +1296,7 @@ public class NewsService {
 						mediaSourceJson.addProperty("imageUrl_272", path_272);
 						mediaSourceJson.addProperty("imageUrl_128", path_128);
 						mediaSourceJson.addProperty("imageUrl", path_400);
+						mediaSourceJson.addProperty("imageState", resImage.getState());
 					}
 				}
 			}
