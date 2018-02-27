@@ -1215,8 +1215,7 @@ public class ProfileFunctions {
                     //特殊时期 官方号无需过滤
                     if (configService.getIsSpecialTime() && !ProfileServices.checkIsOfficial(userId)) {
                         UserRegistry userRegistry = UserService.getUserRegistryInfo(userId);
-                        if (userRegistry != null && userRegistry.getRegisterTime() > 1514736000000L
-                                && !ProfileServices.checkUserUpdateProfileByType(userId, "nickName")) {
+                        if (userRegistry != null && !ProfileServices.checkUserUpdateProfileByType(userId, "nickName")) {
                             //特殊时期昵称修改需前置审核
                             ProfileServices.insertChangeUserName(userId, nickname, 3);
                             ProfileServices.setUserUpdateProfileByType(userId, "nickName");
