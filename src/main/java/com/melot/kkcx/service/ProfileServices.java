@@ -3,6 +3,7 @@ package com.melot.kkcx.service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,7 @@ import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.QQVipSource;
 import com.melot.kktv.service.TagService;
 import com.melot.kktv.util.ConfigHelper;
+import com.melot.kktv.util.DateUtil;
 import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.db.DB;
@@ -36,8 +38,7 @@ public class ProfileServices {
     
     private static final String USER_COMMONDEVICE_KEY = "%s_commonDevice";
     
-//    private static final String USER_UPDATEPROFILE_KEY = "%s_%s_updateprofile";
-    private static final String USER_UPDATEPROFILE_KEY = "%s_%s_updateProfileNew";
+    private static final String USER_UPDATEPROFILE_KEY = "%s_%s_updateProfileV2";
 	
 	/**
 	 * 更新私有redis
@@ -318,7 +319,9 @@ public class ProfileServices {
     public static void setUserUpdateProfileByType(int userId, String type) {
         try {
             String key = String.format(USER_UPDATEPROFILE_KEY, userId, type);
-            HotDataSource.setTempDataString(key, "1", 24*3600);
+            long curTime = System.currentTimeMillis();
+            long endTime = DateUtil.getNextDay(new Date()).getTime();
+            HotDataSource.setTempDataString(key, "1", (int) ((endTime - curTime)/1000));
         } catch(Exception e) {
             logger.error("ProfileServices.setUserUpdateProfileByType(" + userId + "," + type + ") return exception.", e);
         }
