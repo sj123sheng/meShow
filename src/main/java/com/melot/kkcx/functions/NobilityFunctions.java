@@ -73,7 +73,7 @@ public class NobilityFunctions {
             if (CommonStateCode.SUCCESS.equals(userInfoResult.getCode())) {
                 NobilityUserInfo nobilityUserInfo = userInfoResult.getData();
                 result.addProperty("nobilityState", nobilityUserInfo.getNobilityState());
-                if (nobilityUserInfo.getNobilityId() != null) {
+                if (nobilityUserInfo.getNobilityId() != null && nobilityUserInfo.getNobilityId() > 0) {
                     result.addProperty("nobilityId", nobilityUserInfo.getNobilityId());
                 }
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
