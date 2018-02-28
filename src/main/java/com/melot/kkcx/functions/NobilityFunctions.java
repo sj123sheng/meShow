@@ -301,7 +301,10 @@ public class NobilityFunctions {
             return result;
         }
         // 仅仅允许给自己购买爵位，不允许代购
-        friendId = userId;
+        if (friendId != userId) {
+            result.addProperty(ParameterKeys.TAG_CODE, "5201040501");
+            return result;
+        }
         
         // 靓号转化为真实ID
         Integer realfrienId = UserAssetServices.luckyIdToUserId(friendId);
