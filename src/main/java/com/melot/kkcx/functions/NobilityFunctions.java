@@ -300,16 +300,17 @@ public class NobilityFunctions {
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-        // 仅仅允许给自己购买爵位，不允许代购
-        if (friendId != userId) {
-            result.addProperty(ParameterKeys.TAG_CODE, "5201040501");
-            return result;
-        }
         
         // 靓号转化为真实ID
         Integer realfrienId = UserAssetServices.luckyIdToUserId(friendId);
         if (realfrienId == null) {
             realfrienId = friendId;
+        }
+        
+        // 仅仅允许给自己购买爵位，不允许代购
+        if (realfrienId != userId) {
+            result.addProperty(ParameterKeys.TAG_CODE, "5201040501");
+            return result;
         }
         
         // 添加用户的基本信息
