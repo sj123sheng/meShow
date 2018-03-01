@@ -321,7 +321,7 @@ public class ProfileServices {
             String key = String.format(USER_UPDATEPROFILE_KEY, userId, type);
             long curTime = System.currentTimeMillis();
             long endTime = DateUtil.getNextDay(new Date()).getTime();
-            HotDataSource.setTempDataString(key, "1", (int) ((endTime - curTime) / 1000));
+            HotDataSource.setTempDataString(key, "1", (int) ((endTime - curTime)/1000));
         } catch(Exception e) {
             logger.error("ProfileServices.setUserUpdateProfileByType(" + userId + "," + type + ") return exception.", e);
         }
