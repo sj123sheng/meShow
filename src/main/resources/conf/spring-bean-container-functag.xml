@@ -2870,6 +2870,10 @@
         <constructor-arg name="t" ref="happyPKFunction" />
         <constructor-arg name="methodName" value="getLadderChart" />
     </bean>
+    <bean id="51060405" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="happyPKFunction" />
+        <constructor-arg name="methodName" value="getLastSeasonStrongestKingTop5" />
+    </bean>
 
 	<!-- 答题比赛 -->
 	<bean id="51050405" class="com.melot.sdk.core.function.GenericFunction">
