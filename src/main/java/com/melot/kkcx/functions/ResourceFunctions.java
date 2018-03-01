@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.melot.kktv.util.*;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
@@ -29,12 +30,6 @@ import com.melot.kkcx.service.UserService;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.service.ConfigService;
-import com.melot.kktv.util.AppIdEnum;
-import com.melot.kktv.util.CommonUtil;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.PictureTypeEnum;
-import com.melot.kktv.util.SecurityFunctions;
-import com.melot.kktv.util.TagCodeEnum;
 import com.melot.module.poster.driver.domain.PosterInfo;
 import com.melot.module.poster.driver.service.PosterService;
 import com.melot.qiniu.common.QiniuService;
@@ -168,11 +163,15 @@ public class ResourceFunctions {
             Integer mimeType = CommonUtil.getJsonParamInt(jsonObject, "mimeType", 0, tagCode_prefix+"03", 1, Integer.MAX_VALUE);
             Integer eCloudType = CommonUtil.getJsonParamInt(jsonObject, "eCloudType", 0, tagCode_prefix+"04", 1, Integer.MAX_VALUE);
             String fileUrl = CommonUtil.getJsonParamString(jsonObject, "fileUrl", null, tagCode_prefix+"05", 1, 500);
+            String md5 = CommonUtil.getJsonParamString(jsonObject, "md5", null, null, 1, Integer.MAX_VALUE);
             Resource resource = new Resource();
             resource.setUserId(userId);
             resource.setResType(resType);
             resource.setMimeType(mimeType);
             resource.seteCloudType(eCloudType);
+            if(!StringUtil.strIsNull(md5)){
+                resource.setMd5(md5);
+            }
             
             //特殊时期接口暂停使用（官方号不限制）
             if (configService.getIsSpecialTime() && !ProfileServices.checkIsOfficial(userId)) {
@@ -189,7 +188,7 @@ public class ResourceFunctions {
                     }
                 }
             }
-            
+
             if(mimeType == 2){
                 resource.setImageUrl(fileUrl);
             }

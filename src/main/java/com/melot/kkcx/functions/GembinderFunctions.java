@@ -19,13 +19,17 @@ import com.melot.kktv.util.TagCodeEnum;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import com.opensymphony.xwork2.ActionContext;
 import org.apache.log4j.Logger;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.struts2.ServletActionContext;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
+import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
@@ -235,6 +239,7 @@ public class GembinderFunctions {
         }
         GameMoneyHistory gameMoneyHistory = new GameMoneyHistory();
         gameMoneyHistory.setUserId(userId);
+        gameMoneyHistory.setToUserId(0);
         gameMoneyHistory.setType(62);
         gameMoneyHistory.setDtime(new Date());
         gameMoneyHistory.setConsumeAmount((int)usedDiamonds);
@@ -449,6 +454,27 @@ public class GembinderFunctions {
         }
         stringBuilder.append(userId).append(token).append(time).append(openkey);
         return ckeckSignString.equals(CommonUtil.md5(stringBuilder.toString()).toUpperCase());
+    }
+
+    public static void main(String[] args) throws Exception {
+        FileInputStream excelFileInputStream = new FileInputStream("D:\\xxxx.xlsx");
+        XSSFWorkbook workbook = new XSSFWorkbook(excelFileInputStream);
+        excelFileInputStream.close();
+        XSSFSheet sheet = workbook.getSheetAt(0);
+        DecimalFormat df = new DecimalFormat("0");
+        for (int i = 1; i < sheet.getLastRowNum() + 1; i++) {
+            XSSFRow rowData = sheet.getRow(i);
+            String s = df.format(rowData.getCell(4).getNumericCellValue());
+            if(s.equals("0")){
+                s = df.format(rowData.getCell(5).getNumericCellValue());
+            }
+            XSSFCell xssfCell = rowData.createCell(12);
+            xssfCell.setCellValue(SecretKeyUtil.encodeDES(s,key));
+        }
+        FileOutputStream fileOut = new FileOutputStream(
+                "D:\\xxxx.xlsx");
+        workbook.write(fileOut);
+        fileOut.close();
     }
 
 

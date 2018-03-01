@@ -32,6 +32,9 @@ public class NobilityFunctions {
  
     private static Logger log = Logger.getLogger(NobilityFunctions.class);
     
+    private static final String NOBILITY_SERVICE_STR = "nobilityService";
+    private static final String NOBILITY_ID_STR = "nobilityId";
+    
     /**
      * 用户是否有贵族信息[51010401]
      * @param jsonObject
@@ -40,7 +43,7 @@ public class NobilityFunctions {
      * @return
      * @throws Exception
      */
-    public JsonObject getUserNobilityState(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+    public JsonObject getUserNobilityState(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         
         JsonObject result = new JsonObject();
         
@@ -60,7 +63,7 @@ public class NobilityFunctions {
             return result;
         }
         
-        NobilityService nobilityService = (NobilityService)MelotBeanFactory.getBean("nobilityService");
+        NobilityService nobilityService = (NobilityService)MelotBeanFactory.getBean(NOBILITY_SERVICE_STR);
         try {
             Result<NobilityUserInfo> userInfoResult =  nobilityService.getNobilityUserInfo(userId);
             if (userInfoResult == null) {
@@ -70,6 +73,9 @@ public class NobilityFunctions {
             if (CommonStateCode.SUCCESS.equals(userInfoResult.getCode())) {
                 NobilityUserInfo nobilityUserInfo = userInfoResult.getData();
                 result.addProperty("nobilityState", nobilityUserInfo.getNobilityState());
+                if (nobilityUserInfo.getNobilityId() != null && nobilityUserInfo.getNobilityId() > 0) {
+                    result.addProperty("nobilityId", nobilityUserInfo.getNobilityId());
+                }
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
             } else {
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
@@ -89,7 +95,7 @@ public class NobilityFunctions {
      * @return
      * @throws Exception
      */
-    public JsonObject getUserNobilityInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+    public JsonObject getUserNobilityInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         
         JsonObject result = new JsonObject();
         
@@ -139,7 +145,7 @@ public class NobilityFunctions {
             return result;
         }
         
-        NobilityService nobilityService = (NobilityService)MelotBeanFactory.getBean("nobilityService");
+        NobilityService nobilityService = (NobilityService)MelotBeanFactory.getBean(NOBILITY_SERVICE_STR);
         try {
             Result<NobilityUserInfo> userInfoResult =  nobilityService.getNobilityUserInfo(realUserId);
             if (userInfoResult == null) {
@@ -173,11 +179,11 @@ public class NobilityFunctions {
      * @return
      * @throws Exception
      */
-    public JsonObject getNobilityList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+    public JsonObject getNobilityList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         
         JsonObject result = new JsonObject();
         
-        NobilityService nobilityService = (NobilityService)MelotBeanFactory.getBean("nobilityService");
+        NobilityService nobilityService = (NobilityService)MelotBeanFactory.getBean(NOBILITY_SERVICE_STR);
         try {
             Result<Page<NobilityInfo>> pageResult = nobilityService.getNobilityInfos();
             if (pageResult == null) {
@@ -191,7 +197,7 @@ public class NobilityFunctions {
                 JsonArray nobilityList = new JsonArray();
                 for (NobilityInfo nobilityInfo : list) {
                     JsonObject infoJson = new JsonObject();
-                    infoJson.addProperty("nobilityId", nobilityInfo.getNobilityId());
+                    infoJson.addProperty(NOBILITY_ID_STR, nobilityInfo.getNobilityId());
                     infoJson.addProperty("nobilityName", nobilityInfo.getNobilityName());
                     try {
                         infoJson.add("nobilityIcon", new JsonParser().parse(nobilityInfo.getNobilityIcon()));
@@ -220,13 +226,13 @@ public class NobilityFunctions {
      * @return
      * @throws Exception
      */
-    public JsonObject getNobilityInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+    public JsonObject getNobilityInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         
         JsonObject result = new JsonObject();
         
         int nobilityId;
         try {
-            nobilityId = CommonUtil.getJsonParamInt(jsonObject, "nobilityId", 0, "5101040401", 1, Integer.MAX_VALUE);
+            nobilityId = CommonUtil.getJsonParamInt(jsonObject, NOBILITY_ID_STR, 0, "5101040401", 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
             return result;
@@ -235,7 +241,7 @@ public class NobilityFunctions {
             return result;
         }
         
-        NobilityService nobilityService = (NobilityService)MelotBeanFactory.getBean("nobilityService");
+        NobilityService nobilityService = (NobilityService)MelotBeanFactory.getBean(NOBILITY_SERVICE_STR);
         try {
             Result<NobilityInfo> nobilityInfoResult = nobilityService.getNobilityInfo(nobilityId);
             if (nobilityInfoResult == null) {
@@ -276,12 +282,17 @@ public class NobilityFunctions {
             return result;
         }
         
-        int userId, friendId, nobilityId, actorId;
+        int userId;
+        int friendId;
+        int nobilityId;
+        int actorId;
+        int monthCount;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
             friendId = CommonUtil.getJsonParamInt(jsonObject, "friendId", 0, "5201040501", 1, Integer.MAX_VALUE);
-            nobilityId = CommonUtil.getJsonParamInt(jsonObject, "nobilityId", 0, "5201040502", 1, Integer.MAX_VALUE);
+            nobilityId = CommonUtil.getJsonParamInt(jsonObject, NOBILITY_ID_STR, 0, "5201040502", 1, Integer.MAX_VALUE);
             actorId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.ACTOR_ID, 0, null, 1, Integer.MAX_VALUE);
+            monthCount = CommonUtil.getJsonParamInt(jsonObject, "monthCount", 1, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
             return result;
@@ -294,6 +305,12 @@ public class NobilityFunctions {
         Integer realfrienId = UserAssetServices.luckyIdToUserId(friendId);
         if (realfrienId == null) {
             realfrienId = friendId;
+        }
+        
+        // 仅仅允许给自己购买爵位，不允许代购
+        if (realfrienId != userId) {
+            result.addProperty(ParameterKeys.TAG_CODE, "5201040501");
+            return result;
         }
         
         // 添加用户的基本信息
@@ -315,9 +332,9 @@ public class NobilityFunctions {
             return result;
         }
         
-        NobilityService nobilityService = (NobilityService)MelotBeanFactory.getBean("nobilityService");
+        NobilityService nobilityService = (NobilityService)MelotBeanFactory.getBean(NOBILITY_SERVICE_STR);
         try {
-            Result<Boolean> resp = nobilityService.buyNobility(userId, realfrienId, nobilityId, actorId);
+            Result<Boolean> resp = nobilityService.buyNobilityV2(userId, realfrienId, nobilityId, actorId, monthCount);
             if (resp == null) {
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
                 return result;
