@@ -86,8 +86,6 @@ public class OtherFunctions {
     
     private static final int SEND_LOUDER_SPEAKER_COST = 10 * 1000;
     
-    private static final String ORDER_KEY = "kkorder_%s_%s";
-    
     @Autowired
     private ConfigService configService;
 
