@@ -127,7 +127,7 @@
 
 	<kkrpc:reference id="danceService" interface="com.melot.kk.dance.api.service.DanceService" version="1.0.0" />
     <!-- 主播模块 -->
-    <kkrpc:reference id="actorService" interface="com.melot.kkcore.actor.service.ActorService" version="1.0.9" />
+    <kkrpc:reference id="actorService" interface="com.melot.kkcore.actor.service.ActorService" version="1.1.0" />
 
 	<kkrpc:reference id="bountyQuestionService" interface="com.melot.kk.bounty.api.service.BountyQuestionService" version="1.0.0" />
 	
@@ -151,7 +151,7 @@
 	<kkrpc:reference id="quizActivityService" interface="com.melot.kk.quiz.api.service.QuizActivityService" version="1.0.0"/>
 	
 	<!-- 贵族模块 -->
-	<kkrpc:reference id="nobilityService" interface="com.melot.kk.nobility.api.service.NobilityService" version="1.0.0"/>
+	<kkrpc:reference id="nobilityService" interface="com.melot.kk.nobility.api.service.NobilityService" version="1.0.1"/>
 
 	<!-- 用户安全模块 -->
 	<kkrpc:reference id="userVerifyService" interface="com.melot.kk.userSecurity.api.service.UserVerifyService" version="1.0.0"/>
