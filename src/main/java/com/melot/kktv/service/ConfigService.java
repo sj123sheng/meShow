@@ -77,6 +77,11 @@ public class ConfigService {
      * 一起玩大厅特殊渠道配置
      */
     private String playTogetherSpecialChannelConfig;
+    
+    /**
+     * 贵族生效时间
+     */
+    private long startTime;
 
     @DisconfFileItem(name = "playTogether.specialChannel.config", associateField = "playTogetherSpecialChannelConfig")
     public String getPlayTogetherSpecialChannelConfig() {
@@ -209,6 +214,15 @@ public class ConfigService {
     
     public void setCloseCheckPhone(String closeCheckPhone) {
         this.closeCheckPhone = closeCheckPhone;
+    }
+    
+    @DisconfFileItem(name = "nobility.startTime", associateField = "startTime")
+    public long getStartTime() {
+        return startTime;
+    }
+    
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
     }
     
 }
