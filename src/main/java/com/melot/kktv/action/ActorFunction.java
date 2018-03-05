@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.antgroup.zmxy.openplatform.api.response.ZhimaCustomerCertificationInitializeResponse;
 import com.antgroup.zmxy.openplatform.api.response.ZhimaCustomerCertificationQueryResponse;
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.melot.blacklist.service.BlacklistService;
@@ -554,6 +555,10 @@ public class ActorFunction {
 
                 int verifyUserId = userVerifyDO.getUserId();
                 UserApplyActorDO userApplyActorDO = userApplyActorService.getUserApplyActorDO(verifyUserId).getData();
+                if(userApplyActorDO == null && verifyUserId != userId) {
+                    result.addProperty("TagCode", TagCodeEnum.APPLY_IDNUM_EXISTS);
+                    return false;
+                }
                 //巡管审核驳回 或 家族驳回
                 if (userApplyActorDO == null || userApplyActorDO.getStatus() < 0 || userApplyActorDO.getStatus() == 6) {
                     continue;

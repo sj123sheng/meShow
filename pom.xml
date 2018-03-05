@@ -10,7 +10,7 @@
 	
 	<artifactId>meShow</artifactId>
 	<packaging>war</packaging>
-	<version>2.2.11.96</version>
+	<version>2.2.11.97</version>
 	<name>meShow</name>
 	<url>http://maven.apache.org</url>
 	
@@ -597,7 +597,7 @@
         <dependency>
 		  <groupId>com.melot.kk</groupId>
 		  <artifactId>kk-nobility-api</artifactId>
-		  <version>1.0.1</version>
+		  <version>1.0.5</version>
 		</dependency>
 
         <!-- 用户安全模块 -->
