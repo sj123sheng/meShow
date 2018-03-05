@@ -524,4 +524,10 @@ public class TagCodeEnum {
     /**不是主播*/
     public static final String NOT_ACTOR = "5106040201";
 
+    /*------芝麻认证接口 52020102 -------*/
+    /**身份证号码不一致*/
+    public static final String ID_NOT_MATCH = "5202010201";
+    /**根据bizNo获取芝麻认证信息错误*/
+    public static final String GET_VERIFY_INFO_ERROR = "5202010202";
+
 }
