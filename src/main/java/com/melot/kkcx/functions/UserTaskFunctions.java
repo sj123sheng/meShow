@@ -117,13 +117,7 @@ public class UserTaskFunctions {
 
         TaskInterfaceService taskInterfaceService = (TaskInterfaceService) MelotBeanFactory.getBean("taskInterfaceService");
         try {
-        	  if (10000023 == taskId || 10000027 == taskId) {
-        	  	  taskInterfaceService.finishUserTask(userId, taskId, platform, appId);
-        	  	} else {
-        	  		  result.addProperty("TagCode", "5101030203");
-        	  		  return result;
-        	  	}
-            
+            taskInterfaceService.finishUserTask(userId, taskId, platform, appId);
         } catch (MelotModuleException e) {
             switch (e.getErrCode()) {
             case 101:
