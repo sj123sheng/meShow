@@ -19,6 +19,7 @@ import com.melot.game.config.sdk.domain.ActorLiveInfo;
 import com.melot.ios.idfa.driver.UpIdfaService;
 import com.melot.kkcx.service.GeneralService;
 import com.melot.kkgame.logger.HadoopLogger;
+import com.melot.kktv.redis.RankingListSource;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.TagCodeEnum;
@@ -29,6 +30,7 @@ import org.apache.log4j.Logger;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -201,10 +203,17 @@ public class ActorFunction extends BaseAction {
             return result;
         }
         if (version != null) {
-            HadoopLogger.getHadoopLogger().info("actor_push_version_v1" + "^" + version);
+            try {
+                HadoopLogger.getHadoopLogger().info("actor_push_version_v1" + "^" + version);
+                String time =  dateToStringYMD(new Date());
+                RankingListSource.hset("LiveTool:" + time, Integer.toString(userId), version);
+                RankingListSource.hset("LiveTool:last_live_time", Integer.toString(userId), System.currentTimeMillis()/1000 + "");
+            }catch (Exception e) {
+               logger.error("直播精灵获取推流地址写入redis统计失败", e);
+            }
         }
         
-        //2016-3-24 非实名认证不得获取推流地址
+        //没有主播申请记录不得获取推流地址
         UserApplyActorDO userApplyActorDO = userApplyActorService.getUserApplyActorDO(userId).getData();
         if(userApplyActorDO == null || userApplyActorDO.getStatus() < 1){
              result.addProperty(TAG_CODE, TagCodeEnum.STATE_MISSING);
@@ -227,6 +236,15 @@ public class ActorFunction extends BaseAction {
         result = new JsonParser().parse(resObj).getAsJsonObject();
         result.addProperty(TAG_CODE, TagCodeEnum.SUCCESS);
         result.addProperty(ERROR_MSG, "成功");
+        return result;
+    }
+
+    private String dateToStringYMD(Date date) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        String result = "";
+        if (date != null) {
+            result = sdf.format(date);
+        }
         return result;
     }
     
