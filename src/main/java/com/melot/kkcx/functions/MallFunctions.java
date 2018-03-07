@@ -13,6 +13,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.melot.kktv.util.ParameterKeys;
 import org.apache.log4j.Logger;
 
 import com.google.gson.JsonArray;
@@ -556,4 +557,89 @@ public class MallFunctions {
         return result;
     }
 
+    /**
+     * 获取当前用户货币的自动转换状态(51030110)
+     *
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getUserAutoExchangeState(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        if (!checkTag) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId;
+
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+        } catch(CommonUtil.ErrorGetParameterException e) {
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
+            return result;
+        } catch(Exception e) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        try {
+            MallService mallService = (MallService) MelotBeanFactory.getBean("mallService");
+            result.addProperty("showMoneyToGameMoney", mallService.getGameMoneyAutoExchangeState(userId));
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+        } catch (Exception e) {
+            logger.error("mallService.getGameMoneyAutoExchangeState(userId: " + userId + ") return exception.", e);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+        }
+
+        return result;
+    }
+
+    /**
+     * 修改当前用户货币的自动转换状态(51030111)
+     *
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject changeUserAutoExchangeState(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        if (!checkTag) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId, showMoneyToGameMoney;
+
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            showMoneyToGameMoney = CommonUtil.getJsonParamInt(jsonObject, "showMoneyToGameMoney", 0, null, 0 ,1);
+        } catch(CommonUtil.ErrorGetParameterException e) {
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
+            return result;
+        } catch(Exception e) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        try {
+            MallService mallService = (MallService) MelotBeanFactory.getBean("mallService");
+            boolean tag = mallService.updateGameMoneyAutoExchangeState(userId, showMoneyToGameMoney);
+            if (tag) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+            } else {
+                result.addProperty(ParameterKeys.TAG_CODE, "5103011101");
+            }
+
+        } catch (Exception e) {
+            logger.error("mallService.getGameMoneyAutoExchangeState(userId: " + userId + ") return exception.", e);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+        }
+
+        return result;
+    }
 }
