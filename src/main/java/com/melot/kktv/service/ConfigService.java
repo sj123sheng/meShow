@@ -83,6 +83,21 @@ public class ConfigService {
      */
     private long startTime;
 
+    /**
+     * 即开彩web配置
+     */
+    private String lotteryWebConfig;
+    
+    /**
+     * 即开彩APP配置
+     */
+    private String lotteryAppConfig;
+    
+    /**
+     * 即开彩banner文案
+     */
+    private String lotteryContent;
+    
     @DisconfFileItem(name = "playTogether.specialChannel.config", associateField = "playTogetherSpecialChannelConfig")
     public String getPlayTogetherSpecialChannelConfig() {
         return playTogetherSpecialChannelConfig;
@@ -225,4 +240,31 @@ public class ConfigService {
         this.startTime = startTime;
     }
     
+    @DisconfFileItem(name = "lottery.lotteryWebConfig", associateField = "lotteryWebConfig")
+    public String getLotteryWebConfig() {
+        return lotteryWebConfig;
+    }
+
+    public void setLotteryWebConfig(String lotteryWebConfig) {
+        this.lotteryWebConfig = lotteryWebConfig;
+    }
+    
+    @DisconfFileItem(name = "lottery.lotteryAppConfig", associateField = "lotteryAppConfig")
+    public String getLotteryAppConfig() {
+        return lotteryAppConfig;
+    }
+
+    public void setLotteryAppConfig(String lotteryAppConfig) {
+        this.lotteryAppConfig = lotteryAppConfig;
+    }
+
+    @DisconfFileItem(name = "lottery.lotteryContent", associateField = "lotteryContent")
+    public String getLotteryContent() {
+        return lotteryContent;
+    }
+
+    public void setLotteryContent(String lotteryContent) {
+        this.lotteryContent = lotteryContent;
+    }
+
 }

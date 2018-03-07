@@ -1838,4 +1838,38 @@ public class OtherFunctions {
         return stringBuilder.toString();
     }
     
+    /**
+     * 获取即开彩banner信息(51090303)
+     * 
+     * @param jsonObject 请求对象
+     * @return 标记信息
+     */
+    public JsonObject getLotteryInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        int platform;
+        try {
+            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 1, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        String lotteryConfig = null;
+        if (platform == PlatformEnum.WEB) {
+            lotteryConfig = configService.getLotteryWebConfig();
+            result = new JsonParser().parse(lotteryConfig).getAsJsonObject();
+        } else {
+            lotteryConfig= configService.getLotteryAppConfig();
+            result = new JsonParser().parse(lotteryConfig).getAsJsonObject();
+        }
+        result.addProperty("lotteryContent", configService.getLotteryContent());
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+    
 }
