@@ -2748,6 +2748,16 @@
         <constructor-arg name="t" ref="mallFunctions" />
         <constructor-arg name="methodName" value="exchangeGoldCoinProp" />
     </bean>
+	<!-- 获取用户自动兑换状态  -->
+	<bean id="51030110" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="mallFunctions" />
+		<constructor-arg name="methodName" value="getUserAutoExchangeState" />
+	</bean>
+	<!-- 修改用户自动兑换状态 -->
+	<bean id="51030111" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="mallFunctions" />
+		<constructor-arg name="methodName" value="changeUserAutoExchangeState" />
+	</bean>
 	
 	<!-- 获取奖励金分享红包列表 -->
 	<bean id="52050209" class="com.melot.sdk.core.function.GenericFunction">
