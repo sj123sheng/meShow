@@ -123,7 +123,6 @@ public class UserTaskFunctions {
         	  		  result.addProperty("TagCode", "5101030203");
         	  		  return result;
         	  	}
-            
         } catch (MelotModuleException e) {
             switch (e.getErrCode()) {
             case 101:
