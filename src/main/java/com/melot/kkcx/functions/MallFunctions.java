@@ -235,6 +235,7 @@ public class MallFunctions {
         
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         result.addProperty("gameMoney", UserService.getUserGameMoney(userId));
+        result.addProperty("showMoney", UserService.getUserMoney(userId));
         
         return result;
     }
