@@ -1,24 +1,14 @@
 package com.melot.kktv.action;
 
-import java.util.Date;
-import java.util.List;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.antgroup.zmxy.openplatform.api.response.ZhimaCustomerCertificationInitializeResponse;
 import com.antgroup.zmxy.openplatform.api.response.ZhimaCustomerCertificationQueryResponse;
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.melot.blacklist.service.BlacklistService;
 import com.melot.content.config.utils.ZmrzStatusEnum;
 import com.melot.family.driver.constant.UserApplyActorStatusEnum;
-import com.melot.family.driver.domain.FamilyInfo;
 import com.melot.family.driver.domain.DO.UserApplyActorDO;
+import com.melot.family.driver.domain.FamilyInfo;
 import com.melot.family.driver.service.FamilyOperatorService;
 import com.melot.family.driver.service.UserApplyActorService;
 import com.melot.game.config.sdk.utils.StringUtils;
@@ -44,17 +34,17 @@ import com.melot.kktv.redis.GiftRecordSource;
 import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.UserService;
 import com.melot.kktv.third.service.ZmxyService;
-import com.melot.kktv.util.AppIdEnum;
-import com.melot.kktv.util.BizCodeEnum;
-import com.melot.kktv.util.CollectionUtils;
-import com.melot.kktv.util.CommonUtil;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.DateUtil;
-import com.melot.kktv.util.StringUtil;
-import com.melot.kktv.util.TagCodeEnum;
+import com.melot.kktv.util.*;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import com.melot.share.driver.domain.RankData;
 import com.melot.share.driver.service.ShareActivityService;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Title: ActorFunction
@@ -387,7 +377,7 @@ public class ActorFunction {
     }
 
     /**
-     * 50001024-校验芝麻认证是否通过 认证成功：如果申请的是自由主播直接变成主播，如果是家族主播等待家族审核通过后变成主播 认证失败返回申请状态为空【52020102】
+     * 52020102-校验芝麻认证是否通过 认证成功：如果申请的是自由主播直接变成主播，如果是家族主播等待家族审核通过后变成主播 认证失败返回申请状态为空【52020102】
      * @param jsonObject
      * @param checkTag
      * @return
@@ -422,6 +412,8 @@ public class ActorFunction {
             return result;
         }
 
+        // 身份证号码转成大写
+        certNo = certNo.toUpperCase();
         // 芝麻认证校验
         ZhimaCustomerCertificationQueryResponse response = ZmxyService.getResult(bizNo);
         boolean verifyResult = false;
@@ -436,9 +428,11 @@ public class ActorFunction {
                 if (!StringUtils.isEmpty(verifyCertNo) && certNo.equals(verifyCertNo)) {
                     verifyResult = true;
                 } else {
+                    result.addProperty("TagCode", TagCodeEnum.ID_NOT_MATCH);
                     result.addProperty("errorMessage", "身份证号码不一致");
                 }
             }else {
+                result.addProperty("TagCode", TagCodeEnum.GET_VERIFY_INFO_ERROR);
                 result.addProperty("errorMessage", "根据bizNo获取芝麻认证信息错误");
             }
         }else if(!response.isSuccess()) {
