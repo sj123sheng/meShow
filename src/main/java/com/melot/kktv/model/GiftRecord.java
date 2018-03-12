@@ -23,6 +23,7 @@ public class GiftRecord {
 	private Date sendTime;
 	private String xmanNick;
 	private Integer xmanId;
+	private Integer price;
 
 	/**
 	 * 转成用户接受礼物的JsonObject
@@ -76,7 +77,14 @@ public class GiftRecord {
 		jObject.addProperty("rsvPrice", this.getRsvPrice());
 		jObject.addProperty("count", this.getCount());
 		jObject.addProperty("sendTime", this.getSendTime().getTime());
-
+        
+		//送礼类型 0:非库存礼物  1:库存礼物 2：钻石礼物
+		int sendType = 0;
+		if (this.getPrice() != null && this.getPrice() >= 100) {
+		    sendType = Integer.valueOf(String.valueOf(this.getPrice()).substring(2, 3));
+		}
+		jObject.addProperty("sendType", sendType);
+		
 		return jObject;
 	}
 
@@ -167,4 +175,13 @@ public class GiftRecord {
 	public void setXmanId(Integer xmanId) {
 		this.xmanId = xmanId;
 	}
+    
+    public Integer getPrice() {
+        return price;
+    }
+
+    public void setPrice(Integer price) {
+        this.price = price;
+    }
+	
 }
