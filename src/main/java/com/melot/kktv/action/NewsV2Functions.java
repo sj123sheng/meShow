@@ -233,7 +233,7 @@ public class NewsV2Functions {
             // multi picture
             String[] imageList = imageUrl.split(",");
             String[] md5List = new String[imageList.length];
-            if(StringUtil.strIsNull(imageMd5)){
+            if(!StringUtil.strIsNull(imageMd5)){
                 md5List = imageMd5.split(",");
             }
             List<Resource> resourceList = new ArrayList<Resource>();
