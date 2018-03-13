@@ -155,6 +155,8 @@
 
 	<!-- 用户安全模块 -->
 	<kkrpc:reference id="userVerifyService" interface="com.melot.kk.userSecurity.api.service.UserVerifyService" version="1.0.0"/>
+	<kkrpc:reference id="actorWithdrawService" interface="com.melot.kk.userSecurity.api.service.ActorWithdrawService" version="1.0.0"/>
+	<kkrpc:reference id="userBankService" interface="com.melot.kk.userSecurity.api.service.UserBankService" version="1.0.0"/>
 
 	<!-- 新家族模块 -->
 	<kkrpc:reference id="userApplyActorService" interface="com.melot.family.driver.service.UserApplyActorService" version="1.0.0"/>
