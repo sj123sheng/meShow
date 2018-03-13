@@ -83,8 +83,6 @@ public class ResourceFunctions {
                         result.addProperty("message", "该用户操作次数超过当日限制");
                         result.addProperty("TagCode", TagCodeEnum.FUNCTAG_LIMIT_EXCEPTION);
                         return result; 
-                    } else {
-                        ProfileServices.setUserUpdateProfileByType(userId, "2");
                     }
                 } else if (resType == 1) {
 //                    try {
