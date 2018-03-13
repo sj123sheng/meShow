@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.melot.kktv.util.*;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
@@ -29,12 +30,6 @@ import com.melot.kkcx.service.UserService;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.service.ConfigService;
-import com.melot.kktv.util.AppIdEnum;
-import com.melot.kktv.util.CommonUtil;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.PictureTypeEnum;
-import com.melot.kktv.util.SecurityFunctions;
-import com.melot.kktv.util.TagCodeEnum;
 import com.melot.module.poster.driver.domain.PosterInfo;
 import com.melot.module.poster.driver.service.PosterService;
 import com.melot.qiniu.common.QiniuService;
@@ -78,27 +73,39 @@ public class ResourceFunctions {
                     result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
                     return result;
                 } else if (resType == PictureTypeEnum.portrait) {
-                    UserProfile userProfile = UserService.getUserInfoNew(userId);
-                    if (userProfile != null && userProfile.getPortrait() != null) {
-                        result.addProperty("message", "系统维护中，本功能暂时停用");
-                        result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+//                    UserProfile userProfile = UserService.getUserInfoNew(userId);
+//                    if (userProfile != null && userProfile.getPortrait() != null) {
+//                        result.addProperty("message", "系统维护中，本功能暂时停用");
+//                        result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+//                        return result; 
+//                    }
+                    if (ProfileServices.checkUserUpdateProfileByType(userId, "2")) {
+                        result.addProperty("message", "该用户操作次数超过当日限制");
+                        result.addProperty("TagCode", TagCodeEnum.FUNCTAG_LIMIT_EXCEPTION);
                         return result; 
                     }
                 } else if (resType == 1) {
-                    try {
-                        PosterService posterService = MelotBeanFactory.getBean("posterService", PosterService.class);
-                        List<PosterInfo> posterList = posterService.getPosterList(userId);
-                        //海报池有可用海报
-                        if (posterList != null && posterList.size() > 0) {
-                            for (PosterInfo posterInfo : posterList) {
-                                if (posterInfo.getState() != 3) {
-                                    result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
-                                    return result;
-                                }
-                            }
-                        }
-                    } catch (Exception e) {
-                        logger.error("call PosterService getPosterList error userId:" + userId, e);
+//                    try {
+//                        PosterService posterService = MelotBeanFactory.getBean("posterService", PosterService.class);
+//                        List<PosterInfo> posterList = posterService.getPosterList(userId);
+//                        //海报池有可用海报
+//                        if (posterList != null && posterList.size() > 0) {
+//                            for (PosterInfo posterInfo : posterList) {
+//                                if (posterInfo.getState() != 3) {
+//                                    result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+//                                    return result;
+//                                }
+//                            }
+//                        }
+//                    } catch (Exception e) {
+//                        logger.error("call PosterService getPosterList error userId:" + userId, e);
+//                    }
+                    if (ProfileServices.checkUserUpdateProfileByType(userId, "3")) {
+                        result.addProperty("message", "该用户操作次数超过当日限制");
+                        result.addProperty("TagCode", TagCodeEnum.FUNCTAG_LIMIT_EXCEPTION);
+                        return result; 
+                    } else {
+                        ProfileServices.setUserUpdateProfileByType(userId, "3");
                     }
                 }
             }
@@ -181,15 +188,22 @@ public class ResourceFunctions {
                     result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
                     return result;
                 } else if (resType == PictureTypeEnum.portrait) {
-                    UserProfile userProfile = UserService.getUserInfoNew(userId);
-                    if (userProfile != null && userProfile.getPortrait() != null) {
-                        result.addProperty("message", "系统维护中，本功能暂时停用");
-                        result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+//                    UserProfile userProfile = UserService.getUserInfoNew(userId);
+//                    if (userProfile != null && userProfile.getPortrait() != null) {
+//                        result.addProperty("message", "系统维护中，本功能暂时停用");
+//                        result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+//                        return result; 
+//                    }
+                    if (ProfileServices.checkUserUpdateProfileByType(userId, "2")) {
+                        result.addProperty("message", "该用户操作次数超过当日限制");
+                        result.addProperty("TagCode", TagCodeEnum.FUNCTAG_LIMIT_EXCEPTION);
                         return result; 
+                    } else {
+                        ProfileServices.setUserUpdateProfileByType(userId, "2");
                     }
                 }
             }
-            
+
             if(mimeType == 2){
                 resource.setImageUrl(fileUrl);
             }

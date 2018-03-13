@@ -316,6 +316,10 @@ public class ProfileServices {
         return true;
     }
     
+    /**
+     * @param userId
+     * @param type 1:用户昵称  2：用户头像 3:海报
+     */
     public static void setUserUpdateProfileByType(int userId, String type) {
         try {
             String key = String.format(USER_UPDATEPROFILE_KEY, userId, type);
