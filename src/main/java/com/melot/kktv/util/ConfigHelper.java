@@ -94,6 +94,7 @@ public class ConfigHelper {
 	private static Map<String, Integer> iphoneChargeProduct;
 	private static Map<String, Integer> ipadChargeProduct;
 	private static Map<String, Integer> checkinReward;
+	private static Map<String, String> thirdAppKey;
 	
 	private static String notifyWebUrl;
 
@@ -293,6 +294,15 @@ public class ConfigHelper {
 				Integer value = Integer.parseInt(element.getTextTrim());
 				checkinReward.put(key, value);
 			}
+			
+			thirdAppKey = new HashMap<>();
+			Element thirdAppKeyElement = root.getChild("thirdAppKey");
+            List<Element> appKeyChildren = thirdAppKeyElement.getChildren("appKey");
+            for (Element element : appKeyChildren) {
+                String key = element.getAttributeValue("id");
+                String value = element.getTextTrim();
+                thirdAppKey.put(key, value);
+            }
 			
 			notifyWebUrl = root.getChildText("notifyWebUrl");
 
@@ -763,7 +773,15 @@ public class ConfigHelper {
 		ConfigHelper.checkinReward = checkinReward;
 	}
 
-	public static String getNotifyWebUrl() {
+    public static Map<String, String> getThirdAppKey() {
+        return thirdAppKey;
+    }
+    
+    public static void setThirdAppKey(Map<String, String> thirdAppKey) {
+        ConfigHelper.thirdAppKey = thirdAppKey;
+    }
+
+    public static String getNotifyWebUrl() {
 		return notifyWebUrl;
 	}
 

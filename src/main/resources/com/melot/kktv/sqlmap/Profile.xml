@@ -120,6 +120,7 @@
 			jdbcType="TIMESTAMP" />
 		<result property="xmanNick" column="xmanNick"/>
 		<result property="xmanId" column="xmanId"/>
+		<result property="price" column="price" />
 	</resultMap>
 
 	<parameterMap id="getUserSendGiftListMap" class="java.util.Map">
@@ -142,7 +143,7 @@
 
 	<procedure id="getUserSendGiftList" parameterMap="getUserSendGiftListMap">
 		{call
-		P_GETUSERSENDGIFTLIST_V2(?,?,?,?,?,?,?)}
+		P_GETUSERSENDGIFTLIST_V3(?,?,?,?,?,?,?)}
 	</procedure>
 
 	<!-- 获取商城车市中的车辆列表 -->

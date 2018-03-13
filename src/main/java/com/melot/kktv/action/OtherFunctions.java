@@ -40,6 +40,7 @@ import com.melot.kkcore.user.api.UserStaticInfo;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.model.DynamicEmoticon;
 import com.melot.kkcx.model.Sticker;
+import com.melot.kkcx.redis.PeopleCountSource;
 import com.melot.kkcx.service.FamilyService;
 import com.melot.kkcx.service.ProfileServices;
 import com.melot.kkcx.service.RoomService;
@@ -1769,6 +1770,104 @@ public class OtherFunctions {
             result.addProperty("TagCode", "5109020101");
             return result;
         }
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+    
+    /**
+     * 加密用户登录账户(51090302)
+     * 
+     * @param jsonObject 请求对象
+     * @return 标记信息
+     */
+    public JsonObject encryptAccount(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId;
+        int thirdAppId;
+        String token;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            token = CommonUtil.getJsonParamString(jsonObject, "token", null, null, 1, 500);
+            thirdAppId = CommonUtil.getJsonParamInt(jsonObject, "thirdAppId", 0, "5109030201", Integer.MIN_VALUE, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        try {
+            String thirdAppKey = null;
+            if (!ConfigHelper.getThirdAppKey().isEmpty()) {
+                thirdAppKey = ConfigHelper.getThirdAppKey().get(String.valueOf(thirdAppId));
+            }
+            
+            if (StringUtil.strIsNull(thirdAppKey)) {
+                result.addProperty("TagCode", "5109030202");
+                return result;
+            }
+            
+            String userIdString = SecretKeyUtil.encodeDES(Integer.toString(userId), thirdAppKey);
+            String tokenString = encryptToken(token, thirdAppKey);
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            result.addProperty("userId", userIdString);
+            result.addProperty("token", tokenString);
+            return result;
+        } catch (Exception e) {
+            logger.error("【账户加密失败】userId=" + userId + ",token=" + token, e);
+            result.addProperty("TagCode", "5105030103");
+            return result;
+        }
+    }
+    
+    private String encryptToken(String token, String key) {
+        if(StringUtil.strIsNull(token)){
+            return null;
+        }
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(token.substring(0,2)).append(CommonUtil.md5(token.substring(2) + key));
+        return stringBuilder.toString();
+    }
+    
+    /**
+     * 获取即开彩banner信息(51090303)
+     * 
+     * @param jsonObject 请求对象
+     * @return 标记信息
+     */
+    public JsonObject getLotteryInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        int platform;
+        try {
+            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 1, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        String lotteryConfig = null;
+        if (platform == PlatformEnum.WEB) {
+            lotteryConfig = configService.getLotteryWebConfig();
+            result = new JsonParser().parse(lotteryConfig).getAsJsonObject();
+        } else {
+            lotteryConfig= configService.getLotteryAppConfig();
+            result = new JsonParser().parse(lotteryConfig).getAsJsonObject();
+        }
+        result.addProperty("lotteryContent", configService.getLotteryContent());
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }

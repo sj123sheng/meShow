@@ -77,7 +77,27 @@ public class ConfigService {
      * 一起玩大厅特殊渠道配置
      */
     private String playTogetherSpecialChannelConfig;
+    
+    /**
+     * 贵族生效时间
+     */
+    private long startTime;
 
+    /**
+     * 即开彩web配置
+     */
+    private String lotteryWebConfig;
+    
+    /**
+     * 即开彩APP配置
+     */
+    private String lotteryAppConfig;
+    
+    /**
+     * 即开彩banner文案
+     */
+    private String lotteryContent;
+    
     @DisconfFileItem(name = "playTogether.specialChannel.config", associateField = "playTogetherSpecialChannelConfig")
     public String getPlayTogetherSpecialChannelConfig() {
         return playTogetherSpecialChannelConfig;
@@ -211,4 +231,40 @@ public class ConfigService {
         this.closeCheckPhone = closeCheckPhone;
     }
     
+    @DisconfFileItem(name = "nobility.startTime", associateField = "startTime")
+    public long getStartTime() {
+        return startTime;
+    }
+    
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
+    }
+    
+    @DisconfFileItem(name = "lottery.lotteryWebConfig", associateField = "lotteryWebConfig")
+    public String getLotteryWebConfig() {
+        return lotteryWebConfig;
+    }
+
+    public void setLotteryWebConfig(String lotteryWebConfig) {
+        this.lotteryWebConfig = lotteryWebConfig;
+    }
+    
+    @DisconfFileItem(name = "lottery.lotteryAppConfig", associateField = "lotteryAppConfig")
+    public String getLotteryAppConfig() {
+        return lotteryAppConfig;
+    }
+
+    public void setLotteryAppConfig(String lotteryAppConfig) {
+        this.lotteryAppConfig = lotteryAppConfig;
+    }
+
+    @DisconfFileItem(name = "lottery.lotteryContent", associateField = "lotteryContent")
+    public String getLotteryContent() {
+        return lotteryContent;
+    }
+
+    public void setLotteryContent(String lotteryContent) {
+        this.lotteryContent = lotteryContent;
+    }
+
 }

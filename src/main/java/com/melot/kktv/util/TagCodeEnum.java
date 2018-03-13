@@ -31,6 +31,9 @@ public class TagCodeEnum {
 
     /** 接口过期异常 */
     public static final String FUNCTAG_INVALID_EXCEPTION = "20001010";
+    
+    /**  该用户操作次数超过当日限制*/
+    public static final String FUNCTAG_LIMIT_EXCEPTION = "20001011";
 
 	/** 参数中不包含parameter */
 	public static final String PARAMETER_MISSING = "30001000";

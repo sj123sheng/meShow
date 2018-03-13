@@ -205,7 +205,7 @@ public class CityUtil {
 			Map<String, Object> map = new HashMap<String, Object>();
 			map.put("parentId", parentId);
 			map.put("name", name);
-			return (Integer) SqlMapClientHelper.getInstance(DB.SLAVE_PG).insert("Other.insertCityInfo", map);
+			return (Integer) SqlMapClientHelper.getInstance(DB.MASTER_PG).insert("Other.insertCityInfo", map);
 		} catch (SQLException e) {
 			logger.error("fail to execute sql insertCityInfo, parentId : " + parentId + ", cityName : " + name, e);
 		}
