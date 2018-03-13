@@ -31,6 +31,9 @@ public class TagCodeEnum {
 
     /** 接口过期异常 */
     public static final String FUNCTAG_INVALID_EXCEPTION = "20001010";
+    
+    /**  该用户操作次数超过当日限制*/
+    public static final String FUNCTAG_LIMIT_EXCEPTION = "20001011";
 
 	/** 参数中不包含parameter */
 	public static final String PARAMETER_MISSING = "30001000";
@@ -523,5 +526,11 @@ public class TagCodeEnum {
     public static final String LADDER_MATCH_UN_CONF = "5106040102";
     /**不是主播*/
     public static final String NOT_ACTOR = "5106040201";
+
+    /*------芝麻认证接口 52020102 -------*/
+    /**身份证号码不一致*/
+    public static final String ID_NOT_MATCH = "5202010201";
+    /**根据bizNo获取芝麻认证信息错误*/
+    public static final String GET_VERIFY_INFO_ERROR = "5202010202";
 
 }

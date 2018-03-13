@@ -936,11 +936,18 @@ public class AlbumFunctions {
                 result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
                 return result;
             } else if (pictureType == PictureTypeEnum.portrait) {
-                UserProfile userProfile = UserService.getUserInfoNew(userId);
-                if (userProfile != null && userProfile.getPortrait() != null) {
-                    result.addProperty("message", "系统维护中，本功能暂时停用");
-                    result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+//                UserProfile userProfile = UserService.getUserInfoNew(userId);
+//                if (userProfile != null && userProfile.getPortrait() != null) {
+//                    result.addProperty("message", "系统维护中，本功能暂时停用");
+//                    result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+//                    return result; 
+//                }
+                if (ProfileServices.checkUserUpdateProfileByType(userId, "2")) {
+                    result.addProperty("message", "该用户操作次数超过当日限制");
+                    result.addProperty("TagCode", TagCodeEnum.FUNCTAG_LIMIT_EXCEPTION);
                     return result; 
+                } else {
+                    ProfileServices.setUserUpdateProfileByType(userId, "2");
                 }
             }
         }
@@ -1080,11 +1087,18 @@ public class AlbumFunctions {
                 result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
                 return result;
             } else if (pictureType == PictureTypeEnum.portrait) {
-                UserProfile userProfile = UserService.getUserInfoNew(userId);
-                if (userProfile != null && userProfile.getPortrait() != null) {
-                    result.addProperty("message", "系统维护中，本功能暂时停用");
-                    result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+//                UserProfile userProfile = UserService.getUserInfoNew(userId);
+//                if (userProfile != null && userProfile.getPortrait() != null) {
+//                    result.addProperty("message", "系统维护中，本功能暂时停用");
+//                    result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+//                    return result; 
+//                }
+                if (ProfileServices.checkUserUpdateProfileByType(userId, "2")) {
+                    result.addProperty("message", "该用户操作次数超过当日限制");
+                    result.addProperty("TagCode", TagCodeEnum.FUNCTAG_LIMIT_EXCEPTION);
                     return result; 
+                } else {
+                    ProfileServices.setUserUpdateProfileByType(userId, "2");
                 }
             }
         }
@@ -1253,20 +1267,27 @@ public class AlbumFunctions {
 		
 		//特殊时期用户没有上传过海报可上传一次（官方号不限制）
 		if (configService.getIsSpecialTime() && !ProfileServices.checkIsOfficial(userId)) {
-		    try {
-		        List<PosterInfo> posterList = posterService.getPosterList(userId);
-		        //海报池有可用海报
-                if (posterList != null && posterList.size() > 0) {
-                    for (PosterInfo posterInfo : posterList) {
-                        if (posterInfo.getState() != 3) {
-                            result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
-                            return result;
-                        }
-                    }
-                }
-		    } catch (Exception e) {
-	            logger.error("call PosterService getPosterList error userId:" + userId, e);
-	        }
+//		    try {
+//		        List<PosterInfo> posterList = posterService.getPosterList(userId);
+//		        //海报池有可用海报
+//                if (posterList != null && posterList.size() > 0) {
+//                    for (PosterInfo posterInfo : posterList) {
+//                        if (posterInfo.getState() != 3) {
+//                            result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+//                            return result;
+//                        }
+//                    }
+//                }
+//		    } catch (Exception e) {
+//	            logger.error("call PosterService getPosterList error userId:" + userId, e);
+//	        }
+		    if (ProfileServices.checkUserUpdateProfileByType(userId, "3")) {
+                result.addProperty("message", "该用户操作次数超过当日限制");
+                result.addProperty("TagCode", TagCodeEnum.FUNCTAG_LIMIT_EXCEPTION);
+                return result; 
+            } else {
+                ProfileServices.setUserUpdateProfileByType(userId, "3");
+            }
 		}
 
 		Integer resId = 0;
@@ -1363,19 +1384,26 @@ public class AlbumFunctions {
 
         //特殊时期用户没有上传过海报可上传一次
         if (configService.getIsSpecialTime() && !ProfileServices.checkIsOfficial(userId)) {
-            try {
-                List<PosterInfo> posterList = posterService.getPosterList(userId);
-                //海报池有可用海报
-                if (posterList != null && posterList.size() > 0) {
-                    for (PosterInfo posterInfo : posterList) {
-                        if (posterInfo.getState() != 3) {
-                            result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
-                            return result;
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                logger.error("call PosterService getPosterList error userId:" + userId, e);
+//            try {
+//                List<PosterInfo> posterList = posterService.getPosterList(userId);
+//                //海报池有可用海报
+//                if (posterList != null && posterList.size() > 0) {
+//                    for (PosterInfo posterInfo : posterList) {
+//                        if (posterInfo.getState() != 3) {
+//                            result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+//                            return result;
+//                        }
+//                    }
+//                }
+//            } catch (Exception e) {
+//                logger.error("call PosterService getPosterList error userId:" + userId, e);
+//            }
+            if (ProfileServices.checkUserUpdateProfileByType(userId, "3")) {
+                result.addProperty("message", "该用户操作次数超过当日限制");
+                result.addProperty("TagCode", TagCodeEnum.FUNCTAG_LIMIT_EXCEPTION);
+                return result; 
+            } else {
+                ProfileServices.setUserUpdateProfileByType(userId, "3");
             }
         }
         

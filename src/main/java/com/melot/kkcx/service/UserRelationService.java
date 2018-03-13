@@ -134,7 +134,7 @@ public class UserRelationService {
     		    	map.put(String.format("%s_%s_%s", platform, flagPage, countPerPage), new Gson().toJson(jRoomList));
     			}
     			//save redis
-    			UserRelationSource.setHotData("follow_list_" + userId, map, 300);
+    			UserRelationSource.setHotData("follow_list_" + userId, map, 60);
     		}
     	}
     	

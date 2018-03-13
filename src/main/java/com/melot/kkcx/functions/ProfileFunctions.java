@@ -361,6 +361,12 @@ public class ProfileFunctions {
 		    if (userInfoDetail.getProfile().getBirthday() != null) {
 		        result.addProperty("birthday", userInfoDetail.getProfile().getBirthday());
 		    }
+		    if (userInfoDetail.getProfile().getExtendData() != null) {
+		        String emailAddress = (String) userInfoDetail.getProfile().getExtendData().get("emailAddress");
+		        if (!StringUtil.strIsNull(emailAddress)) {
+		            result.addProperty("emailAddress", emailAddress);
+		        }
+		    }
 		    
 		    try {
 		        long consumeTotal = userInfoDetail.getAssets() == null ? 0 : userInfoDetail.getAssets().getConsumeTotal();
@@ -1090,6 +1096,7 @@ public class ProfileFunctions {
 		JsonElement userIdje = jsonObject.get("userId");
 		JsonElement nicknameje = jsonObject.get("nickname");
 		JsonElement genderje = jsonObject.get("gender");
+		JsonElement emailAddressje = jsonObject.get("emailAddress");
 		JsonElement birthdayje = jsonObject.get("birthday");
 		JsonElement cityje = jsonObject.get("city");
 		JsonElement signatureje = jsonObject.get("signature");
@@ -1118,6 +1125,7 @@ public class ProfileFunctions {
 		int flag = 0;
 		String nickname = null;
 		Integer gender = null;
+		String emailAddress = null;
 		String introduce = null;
 		String tagCode = TagCodeEnum.SUCCESS;
 		boolean isNickNameChange = false;
@@ -1163,6 +1171,18 @@ public class ProfileFunctions {
 			userMap.put(ProfileKeys.GENDER.key(), gender);
 			flag++;
 		}
+		if (emailAddressje != null && !(emailAddressje.isJsonNull() || emailAddressje.getAsString().equals(""))) {
+            try {
+                emailAddress = emailAddressje.getAsString();
+            } catch (Exception e) {
+                result.addProperty("TagCode", "05020009");
+                return result;
+            }
+            Map<String, Object> extendDataMap = new HashMap<>();
+            extendDataMap.put("emailAddress", emailAddress);
+            userMap.put("extendData", extendDataMap);
+            flag++;
+        }
 		if (birthdayje != null && !(birthdayje.isJsonNull() || birthdayje.getAsString().equals(""))) {
 			userMap.put(ProfileKeys.BIRTHDAY.key(), birthdayje.getAsString());
 			flag++;

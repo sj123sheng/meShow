@@ -232,7 +232,10 @@ public class NewsV2Functions {
         } else if(mediaType == NewsMediaTypeEnum.IMAGE){
             // multi picture
             String[] imageList = imageUrl.split(",");
-            String[] md5List = imageMd5.split(",");
+            String[] md5List = new String[imageList.length];
+            if(!StringUtil.strIsNull(imageMd5)){
+                md5List = imageMd5.split(",");
+            }
             List<Resource> resourceList = new ArrayList<Resource>();
             for (int i = 0;i<imageList.length;i++) {
                 String tempUrl = imageList[i];

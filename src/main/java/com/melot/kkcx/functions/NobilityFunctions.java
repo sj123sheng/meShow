@@ -5,6 +5,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -20,6 +21,7 @@ import com.melot.kkcx.transform.NobilityTF;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Page;
 import com.melot.kktv.base.Result;
+import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.UserService;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ParameterKeys;
@@ -34,6 +36,9 @@ public class NobilityFunctions {
     
     private static final String NOBILITY_SERVICE_STR = "nobilityService";
     private static final String NOBILITY_ID_STR = "nobilityId";
+    
+    @Autowired
+    private ConfigService configService;
     
     /**
      * 用户是否有贵族信息[51010401]
@@ -308,7 +313,8 @@ public class NobilityFunctions {
         }
         
         // 仅仅允许给自己购买爵位，不允许代购
-        if (realfrienId != userId) {
+        if (System.currentTimeMillis() > configService.getStartTime()
+                && realfrienId != userId) {
             result.addProperty(ParameterKeys.TAG_CODE, "5201040501");
             return result;
         }

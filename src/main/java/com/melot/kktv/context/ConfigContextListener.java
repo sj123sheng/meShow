@@ -99,7 +99,7 @@ public class ConfigContextListener implements ServletContextListener {
 		LotteryArithmetic.init(CacheTypeEnum.REDIS, RedisConfigHelper.getJedisPool("LotteryCache"), null, null, logger);
         try {
             LotteryArithmetic.loadLotteryArithmeticByXml("conf/lottery_conf.xml", new WeeklyCheckIn());
-            logger.error("Init Lottery success .......................................");
+            logger.info("Init Lottery success .......................................");
         } catch (Exception e) {
         	logger.error("Init Lottery exeception .......................................", e);
         }
