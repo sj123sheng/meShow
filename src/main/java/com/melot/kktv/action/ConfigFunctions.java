@@ -447,13 +447,13 @@ public class ConfigFunctions {
     }
     
     private String returnCodeToTagCode (String returnCode){
-        if (returnCode.equals(ReturnResultCode.ERROR_PARMETER)) {
+        if (returnCode.equals(ReturnResultCode.ERROR_PARAMETER.getCode())) {
             return TagCodeEnum.GIFT_MODULE_ERROR_PARMETER;
         }
-        if (returnCode.equals(ReturnResultCode.ERROR_SQL)) {
+        if (returnCode.equals(ReturnResultCode.ERROR_SQL.getCode())) {
             return TagCodeEnum.GIFT_MODULE_ERROR_SQL;
         }
-        if (returnCode.equals(ReturnResultCode.ERROR_REQUEST_TIMEOUT)) {
+        if (returnCode.equals(ReturnResultCode.ERROR_REQUEST_TIMEOUT.getCode())) {
             return TagCodeEnum.GIFT_MODULE_ERROR_REQUEST_TIMEOUT;
         }
         return TagCodeEnum.GIFT_MODULE_ERROR_UNDEFINED;
