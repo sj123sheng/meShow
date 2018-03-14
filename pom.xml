@@ -492,7 +492,7 @@
         <dependency>
 			<groupId>com.melot.module</groupId>
 			<artifactId>room-gift-module-api</artifactId>
-			<version>1.0.7-SNAPSHOT</version>
+			<version>1.0.2</version>
 		</dependency>
 		
 		<dependency>
