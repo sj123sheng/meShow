@@ -60,6 +60,8 @@ public class ActorFunction {
 
     private static Logger logger = Logger.getLogger(ActorFunction.class);
     
+    private static String REGEX = ",";
+    
     @Autowired
     private ConfigService configService;
 
@@ -684,9 +686,18 @@ public class ActorFunction {
         try {
             ActorService actorService = (ActorService) MelotBeanFactory.getBean("actorService");
             List<ActorInfo> actors = actorService.getThirdPlatformActors(userId);
+            JsonArray roomTypeList = new JsonArray();
             if (actors != null && actors.size() > 0) {
                 state = actors.get(0).getThirdPlatformPermission();
+                String roomTypeStr = actors.get(0).getThirdPlatformRoomType();
+                if (!StringUtil.strIsNull(roomTypeStr)) {
+                    String[] roomTypes = roomTypeStr.split(REGEX);
+                    for (String roomType : roomTypes) {
+                        roomTypeList.add(roomType);
+                    }
+                }
             }
+            result.add("roomTypeList", roomTypeList);
         } catch (Exception e) {
             logger.error("ActorService.getThirdPlatformActors actorId :" + userId + "return exception.", e);
             result.addProperty("TagCode", TagCodeEnum.UNCATCHED_EXCEPTION);

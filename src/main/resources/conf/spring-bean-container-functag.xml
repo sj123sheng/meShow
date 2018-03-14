@@ -1355,6 +1355,16 @@
 		<constructor-arg name="t" ref="otherFunction" />
 		<constructor-arg name="methodName" value="appleSubmitVersion" />
 	</bean>
+	<!-- 加密用户登录账户 -->
+	<bean id="51090302" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="otherFunction" />
+		<constructor-arg name="methodName" value="encryptAccount" />
+	</bean>
+	<!-- 获取即开彩banner信息 -->
+	<bean id="51090303" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="otherFunction" />
+		<constructor-arg name="methodName" value="getLotteryInfo" />
+	</bean>
 	
 	<!-- 用户档案安全接口类 -->
 	<!-- 安全注册 -->
