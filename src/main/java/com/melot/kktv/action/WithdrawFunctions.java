@@ -1,14 +1,13 @@
 package com.melot.kktv.action;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.melot.common.melot_utils.StringUtils;
 import com.melot.kk.userSecurity.api.constant.IdPicStatusEnum;
 import com.melot.kk.userSecurity.api.constant.SignElectronicContractStatusEnum;
 import com.melot.kk.userSecurity.api.constant.UserVerifyStatusEnum;
-import com.melot.kk.userSecurity.api.domain.DO.ActorKbiDO;
-import com.melot.kk.userSecurity.api.domain.DO.UserBankAccountDO;
-import com.melot.kk.userSecurity.api.domain.DO.UserElectronicContractDO;
-import com.melot.kk.userSecurity.api.domain.DO.UserVerifyDO;
+import com.melot.kk.userSecurity.api.constant.WithdrawStatusEnum;
+import com.melot.kk.userSecurity.api.domain.DO.*;
 import com.melot.kk.userSecurity.api.domain.param.UserBankAccountParam;
 import com.melot.kk.userSecurity.api.domain.param.UserVerifyParam;
 import com.melot.kk.userSecurity.api.service.ActorWithdrawService;
@@ -16,6 +15,7 @@ import com.melot.kk.userSecurity.api.service.UserBankService;
 import com.melot.kk.userSecurity.api.service.UserVerifyService;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kktv.base.CommonStateCode;
+import com.melot.kktv.base.Page;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.redis.SmsSource;
 import com.melot.kktv.util.CommonUtil;
@@ -405,7 +405,7 @@ public class WithdrawFunctions {
 
         try {
             Result<Boolean> withdrawResult = actorWithdrawService.actorWithdraw(userId, withdrawAmount);
-            if(withdrawResult.getCode().equals(CommonStateCode.SUCCESS) && withdrawResult.getData() != null) {
+            if(withdrawResult.getCode().equals(CommonStateCode.SUCCESS)) {
 
                 result.addProperty("withdrawResult",  withdrawResult.getData());
             }else {
@@ -420,6 +420,84 @@ public class WithdrawFunctions {
             result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             return result;
         }
+    }
+
+    /**
+     * 获取主播提现列表（51010607）
+     *
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getWithdrawList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId, pageIndex, countPerPage;
+
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
+            countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 10, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        try {
+
+            JsonArray withdrawList = new JsonArray();
+
+            Page<ActorWithdrawDO> actorWithdrawDOPage = actorWithdrawService.getActorWithdrawDOList(userId, pageIndex, countPerPage).getData();
+            if(actorWithdrawDOPage != null && actorWithdrawDOPage.getCount() > 0) {
+                for (ActorWithdrawDO actorWithdrawDO : actorWithdrawDOPage.getList()) {
+                    JsonObject jsonObj = new JsonObject();
+                    jsonObj.addProperty("withdrawId", actorWithdrawDO.getHistId());
+                    jsonObj.addProperty("withdrawAmount", actorWithdrawDO.getRmb());
+                    jsonObj.addProperty("withdrawType", "K豆提现");
+                    String bankcard = actorWithdrawDO.getBankCard();
+                    String tailNumber = bankcard;
+                    if(bankcard.length() >= 4) {
+                        tailNumber = bankcard.substring(bankcard.length()-4);
+                    }
+                    String withdrawAccount = actorWithdrawDO.getBankName() + "(" + tailNumber +")";
+                    jsonObj.addProperty("withdrawAccount", withdrawAccount);
+                    jsonObj.addProperty("applyTime", actorWithdrawDO.getAddTime().getTime());
+                    int state = actorWithdrawDO.getState();
+                    int withdrawStatus = 1;
+                    if(state == WithdrawStatusEnum.WAIT_SERVICE_COMPANY_AUDIT
+                            || state == WithdrawStatusEnum.WAIT_FINANCE_AUDIT
+                            || state == WithdrawStatusEnum.WAIT_FINANCE_CONFIRM) {
+                        withdrawStatus = 1;
+                    }else if(state == WithdrawStatusEnum.ALREADY_ISSUED) {
+                        withdrawStatus = 2;
+                    }else if(state == WithdrawStatusEnum.APPLY_REFUSE) {
+                        withdrawStatus = 3;
+                    }
+                    jsonObj.addProperty("withdrawStatus", withdrawStatus);
+                    withdrawList.add(jsonObj);
+                }
+            }
+
+            result.addProperty("count", actorWithdrawDOPage.getCount());
+            result.add("withdrawList", withdrawList);
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        } catch(Exception e) {
+            logger.error("WithdrawFunctions.getWithdrawList(" + userId + ", " + pageIndex + ", " + countPerPage + ") return exception.", e);
+            result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
+        }
+
+        return result;
     }
 
 }
