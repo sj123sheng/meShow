@@ -423,7 +423,7 @@ public class WithdrawFunctions {
     }
 
     /**
-     * 获取主播提现列表（51010607）
+     * 获取主播提现列表（51010608）
      *
      * @param jsonObject
      * @param checkTag
