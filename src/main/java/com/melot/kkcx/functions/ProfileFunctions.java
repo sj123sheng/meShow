@@ -29,6 +29,7 @@ import com.melot.family.driver.service.UserApplyActorService;
 import com.melot.kk.opus.api.constant.OpusCostantEnum;
 import com.melot.kk.userSecurity.api.domain.DO.UserVerifyDO;
 import com.melot.kk.userSecurity.api.service.UserVerifyService;
+import com.melot.kkcore.user.api.GameMoneyHistory;
 import com.melot.kkcore.user.api.ProfileKeys;
 import com.melot.kkcore.user.api.UserInfoDetail;
 import com.melot.kkcore.user.api.UserProfile;
@@ -80,6 +81,7 @@ import com.melot.module.packagegift.driver.domain.ResUserXman;
 import com.melot.module.packagegift.driver.domain.ResXman;
 import com.melot.module.packagegift.driver.service.XmanService;
 import com.melot.sdk.core.util.MelotBeanFactory;
+import com.melot.showmoney.driver.domain.PageGameMoneyHistory;
 import com.melot.showmoney.driver.domain.PageShowMoneyHistory;
 import com.melot.showmoney.driver.domain.ShowMoneyHistory;
 import com.melot.showmoney.driver.service.ShowMoneyService;
@@ -3112,6 +3114,106 @@ public class ProfileFunctions {
         }
         
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+    
+    /**
+     * 获取用户游戏币消费列表(51010104)
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getUserGameMoneyConsumeList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+        int userId, start, offset;
+        long startTime, endTime;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            startTime = CommonUtil.getJsonParamLong(jsonObject, "startTime", 0, "5101010401", DateUtil.getDayBeginTime(System.currentTimeMillis()) - 180 * 24 * 3600 * 1000L, Long.MAX_VALUE);
+            endTime = CommonUtil.getJsonParamLong(jsonObject, "endTime", 0, "5101010402", startTime, Long.MAX_VALUE);
+            start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, null, 0, Integer.MAX_VALUE);
+            offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 10, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        JsonArray moneyList = new JsonArray();
+        ShowMoneyService showmoneyService = (ShowMoneyService) MelotBeanFactory.getBean("showMoneyService");
+        List<GameMoneyHistory> list = new ArrayList<GameMoneyHistory>();
+        if (showmoneyService != null) {
+            PageGameMoneyHistory pageGameMoneyHistory = showmoneyService.getUserGameMoneyConsume(userId, startTime, endTime, start, offset);
+            if (pageGameMoneyHistory != null) {
+                list = pageGameMoneyHistory.getPageList();
+                result.addProperty("listCount", pageGameMoneyHistory.getPageCount());
+                if (list != null && list.size() > 0) {
+
+                    List<Integer> userIds  = Lists.newArrayList();
+                    for(GameMoneyHistory hist : list) {
+                        if(hist.getToUserId() != null) {
+                            userIds.add(hist.getToUserId());
+                        }
+                    }
+
+                    // 获取用户信息列表
+                    KkUserService kkUserService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
+                    List<UserProfile> userProfiles = kkUserService.getUserProfileBatch(userIds);
+                    Map<Integer, UserProfile> userProfileMap = Maps.newHashMap();
+                    if (userProfiles != null) {
+                        for (UserProfile userProfile : userProfiles) {
+                            userProfileMap.put(userProfile.getUserId(), userProfile);
+                        }
+                    }
+
+                    for (GameMoneyHistory hist : list) {
+                        JsonObject moneyObj = new JsonObject();
+                        if (hist.getConsumeAmount() != null) {
+                            moneyObj.addProperty("amount", hist.getConsumeAmount());
+                        }
+                        if (hist.getToUserId() != null && hist.getToUserId() > 0) {
+
+                            UserProfile userProfile = userProfileMap.get(hist.getToUserId());
+                            if (userProfile != null && userProfile.getNickName() != null) {
+                                moneyObj.addProperty("nickname", userProfile.getNickName());
+                            }
+                            moneyObj.addProperty("toUserId", hist.getToUserId());
+                        }
+                        if (hist.getXmanDesc() != null && hist.getXmanDesc().contains("dxmanId")) {
+                            try {
+                                JsonObject xmanDesc = new JsonParser().parse(hist.getXmanDesc()).getAsJsonObject();
+                                if (xmanDesc.has("dxmanId") && xmanDesc.get("dxmanId") != null) {
+                                    moneyObj.addProperty("toUserId", xmanDesc.get("dxmanId").getAsInt());
+                                    moneyObj.addProperty("nickname", "神秘人" + xmanDesc.get("dxmanId").getAsInt() % 1000);
+                                }
+                            } catch (Exception e) {
+                            }
+                        }
+                        if (hist.getTypeDesc() != null) {
+                            moneyObj.addProperty("typeDesc", hist.getTypeDesc());
+                        }
+                        if (hist.getDtime() != null) {
+                            moneyObj.addProperty("time", hist.getDtime().getTime());
+                        }
+                        moneyList.add(moneyObj);
+                    }
+
+                }
+            }
+        } else {
+            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            return result;
+        }
+        
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        result.add("consumeList", moneyList);
         return result;
     }
 	

@@ -491,6 +491,11 @@
 		<constructor-arg name="t" ref="profileFunction" />
 		<constructor-arg name="methodName" value="getCommonDeviceList" />
 	</bean>
+	<!-- 获取用户游戏币消费列表 -->
+	<bean id="51010104" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="profileFunction" />
+		<constructor-arg name="methodName" value="getUserGameMoneyConsumeList" />
+	</bean>
 	
 	<!-- 充值接口类 -->
 	<!-- 获取充值的说明信息 -->
