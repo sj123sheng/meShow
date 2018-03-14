@@ -536,5 +536,11 @@ public class TagCodeEnum {
     /*------提现接口 -------*/
     /**未实名认证*/
     public static final String ID_NOT_IDENTIFY = "53010601";
+    /**短信验证码不匹配或已过有效期*/
+    public static final String VERIFYCODE_ERROR = "53010602";
+    /** 参数bankCard缺失 */
+    public static final String BANKCARD_MISS = "53010603";
+    /** 获取k豆出错 */
+    public static final String GETKBI_ERROR = "53010604";
 
 }
