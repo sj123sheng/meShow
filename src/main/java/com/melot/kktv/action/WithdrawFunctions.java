@@ -209,6 +209,54 @@ public class WithdrawFunctions {
                 result.addProperty("tailNumber", tailNumber);
             }
 
+            result.addProperty("bindBankCard", bindBankCard);
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error getCurrentSeasonInfo()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 解绑银行卡【51010604】
+     */
+    public JsonObject unbindBankCard(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+
+        JsonObject result = new JsonObject();
+
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        try {
+
+            int bindBankCard = 0;
+            UserBankAccountDO userBankAccountDO = userBankService.getUserBankAccount(userId).getData();
+            if(userBankAccountDO != null || StringUtils.isNotEmpty(userBankAccountDO.getBankcard())) {
+                bindBankCard = 1;
+                String bankcard = userBankAccountDO.getBankcard();
+                String tailNumber = bankcard;
+                if(bankcard.length() >= 4) {
+                    tailNumber = bankcard.substring(bankcard.length()-4);
+                }
+                result.addProperty("bankName", userBankAccountDO.getBankname());
+                result.addProperty("tailNumber", tailNumber);
+            }
 
             result.addProperty("bindBankCard", bindBankCard);
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
