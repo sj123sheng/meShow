@@ -393,7 +393,7 @@
 		<dependency>
 		    <groupId>com.melot.module</groupId>
 		    <artifactId>kkcore-account-api</artifactId>
-		    <version>1.0.7</version>
+		    <version>1.0.8</version>
 		</dependency>
 		<dependency>
             <groupId>com.melot</groupId>
@@ -435,7 +435,7 @@
     	<dependency>
   			<groupId>com.melot.module.driver.msgbuilder</groupId>
   			<artifactId>showmoney-module-msgbuilder</artifactId>
-  			<version>1.0.2</version>
+  			<version>1.0.3-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.melot.module.driver.msgbuilder</groupId>
@@ -627,6 +627,19 @@
 			<version>3.7</version>
 		</dependency>
 		
+		<!-- 心愿商品【众筹】模块 -->
+		<dependency>
+		  <groupId>com.melot.kk</groupId>
+		  <artifactId>kk-crowdfunding-api</artifactId>
+		  <version>1.0.0-SNAPSHOT</version>
+		</dependency>
+		
+		<!-- 收发货模块 -->
+		<dependency>
+		  <groupId>com.melot.kk</groupId>
+		  <artifactId>kk-logistics-api</artifactId>
+		  <version>1.0.0-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
  	
 </project>

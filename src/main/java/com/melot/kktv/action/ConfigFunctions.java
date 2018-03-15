@@ -42,8 +42,6 @@ public class ConfigFunctions {
     
     private static final String KEY = "YdsSH&@#Uyh";
 
-    private static final String SPLIT = ",";
-
     /**
      * 50001101
      * 根据KEY获取相关配置信息
@@ -296,7 +294,7 @@ public class ConfigFunctions {
 //            ReturnResult<String> grammarIdResult = giftListService.getGiftNameListGrammarId();
 //            if (grammarIdResult == null) {
 //                
-//            }else if (!ReturnResultCode.SUCCESS.equals(grammarIdResult.getCode())) {
+//            }else if (!ReturnResultCode.SUCCESS.getCode().equals(grammarIdResult.getCode())) {
 //                
 //            }else {
 //                configGiftInfo.setGrammarId(grammarIdResult.getData());

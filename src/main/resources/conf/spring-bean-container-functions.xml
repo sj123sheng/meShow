@@ -202,4 +202,7 @@
 
     <!-- 提现相关接口 -->
     <bean id="withdrawFunctions" class="com.melot.kktv.action.WithdrawFunctions" />
+
+	<!-- 主播心愿商品【众筹】相关接口 -->
+	<bean id="wishGoodsFunctions" class="com.melot.kkcx.functions.WishGoodsFunctions" />
 </beans>
