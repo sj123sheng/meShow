@@ -1,15 +1,5 @@
 package com.melot.kktv.action;
 
-import java.util.Date;
-import java.util.List;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-
-import com.melot.kk.userSecurity.api.constant.ZmrzStatusEnum;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.antgroup.zmxy.openplatform.api.response.ZhimaCustomerCertificationInitializeResponse;
 import com.antgroup.zmxy.openplatform.api.response.ZhimaCustomerCertificationQueryResponse;
 import com.google.gson.JsonArray;
@@ -24,6 +14,7 @@ import com.melot.game.config.sdk.utils.StringUtils;
 import com.melot.kk.userSecurity.api.constant.IdPicStatusEnum;
 import com.melot.kk.userSecurity.api.constant.UserVerifyStatusEnum;
 import com.melot.kk.userSecurity.api.constant.UserVerifyTypeEnum;
+import com.melot.kk.userSecurity.api.constant.ZmrzStatusEnum;
 import com.melot.kk.userSecurity.api.domain.DO.UserVerifyDO;
 import com.melot.kk.userSecurity.api.domain.DO.ZmrzApplyDO;
 import com.melot.kk.userSecurity.api.domain.param.UserVerifyParam;
@@ -567,7 +558,7 @@ public class ActorFunction {
 
         // 判断该身份证是否已经实名认证过
         Result<List<UserVerifyDO>> userVerifyDOSResult = userVerifyService.getPassUserVerifyDOsByCertNo(identityId);
-        if (userVerifyDOSResult.getCode().equals(CommonStateCode.SUCCESS) && userVerifyDOSResult.getData() != null) {
+        if (userVerifyDOSResult.getCode().equals(CommonStateCode.SUCCESS) && userVerifyDOSResult.getData() != null && userVerifyDOSResult.getData().size() > 0) {
 
             result.addProperty("TagCode", TagCodeEnum.APPLY_IDNUM_EXISTS);
             return false;
