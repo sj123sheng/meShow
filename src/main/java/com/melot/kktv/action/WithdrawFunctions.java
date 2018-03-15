@@ -19,6 +19,7 @@ import com.melot.kktv.base.Page;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.redis.SmsSource;
 import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.SecurityFunctions;
 import com.melot.kktv.util.TagCodeEnum;
 import org.apache.log4j.Logger;
@@ -179,9 +180,28 @@ public class WithdrawFunctions {
             }
 
             UserVerifyParam userVerifyParam = new UserVerifyParam();
+            String pathPrefix = ConfigHelper.getHttpdir();
+            if(!pathPrefix.endsWith("/")) {
+                pathPrefix = pathPrefix + "/";
+            }
+            if(idPicFont.startsWith("/")) {
+                idPicFont = pathPrefix + idPicFont.substring(1);
+            }else {
+                idPicFont = pathPrefix + idPicFont;
+            }
+            if(idPicBack.startsWith("/")) {
+                idPicBack = pathPrefix + idPicBack.substring(1);
+            }else {
+                idPicBack = pathPrefix + idPicBack;
+            }
+            if(idPicCompose.startsWith("/")) {
+                idPicCompose = pathPrefix + idPicCompose.substring(1);
+            }else {
+                idPicCompose = pathPrefix + idPicCompose;
+            }
             userVerifyParam.setUserId(userId);
             userVerifyParam.setWithdrawIdPicFont(idPicFont);
-            userVerifyParam.setWithdrawIdPicFont(idPicBack);
+            userVerifyParam.setWithdrawIdPicBack(idPicBack);
             userVerifyParam.setWithdrawIdPicCompose(idPicCompose);
             userVerifyParam.setIdPicStatus(IdPicStatusEnum.WAIT_AUDIT);
             Result<Boolean> updateResult = userVerifyService.updateUserVerify(userVerifyParam);
@@ -223,7 +243,7 @@ public class WithdrawFunctions {
 
             int bindBankCard = 0;
             UserBankAccountDO userBankAccountDO = userBankService.getUserBankAccount(userId).getData();
-            if(userBankAccountDO != null || StringUtils.isNotEmpty(userBankAccountDO.getBankcard())) {
+            if(userBankAccountDO != null && StringUtils.isNotEmpty(userBankAccountDO.getBankcard())) {
                 bindBankCard = 1;
                 String bankcard = userBankAccountDO.getBankcard();
                 String tailNumber = bankcard;
