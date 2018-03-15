@@ -478,9 +478,9 @@ public class UserFunctions {
 		
 		com.melot.kkcore.account.service.AccountService accountService = (com.melot.kkcore.account.service.AccountService) MelotBeanFactory.getBean("kkAccountService");
 		ResMobileGuestUser resMobileGuestUser = null;
-		String nickName = "富豪" + CommonUtil.getRandomDigit(6);
+		String nickname = "富豪" + CommonUtil.getRandomDigit(6);
 		if (accountService != null) {
-		    resMobileGuestUser = accountService.genMobileGuestUserNew(platform, deviceUId, clientIp, appId, channel, port, nickName);
+		    resMobileGuestUser = accountService.genMobileGuestUserNew(platform, deviceUId, clientIp, appId, channel, port, nickname);
 		}
 		if (resMobileGuestUser != null && resMobileGuestUser.getTagCode() != null) {
 			String TagCode = resMobileGuestUser.getTagCode();
@@ -509,7 +509,7 @@ public class UserFunctions {
                 if (resMobileGuestUser.getTimestamp() != null) {
                     result.addProperty("timestamp", resMobileGuestUser.getTimestamp());
                 }
-                result.addProperty("nickName", nickName);
+                result.addProperty("nickname", nickname);
 				
 				// 注册日志
 				HadoopLogger.registerLog((userId==null?0:userId.intValue()), new Date(), platform, LoginTypeEnum.GUEST,
