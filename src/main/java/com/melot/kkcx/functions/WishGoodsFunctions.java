@@ -304,7 +304,14 @@ public class WishGoodsFunctions {
         
         try {
             Result<ActorWishGoodsDTO> moduleResult = crowdFundingService.getWishGoodsInfo(actorId, wishGoodsId);
-            if (moduleResult == null || !CommonStateCode.SUCCESS.equals(moduleResult.getCode())) {
+            if (moduleResult == null) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+                return result;
+            }
+            if ("2".equals(moduleResult.getCode())) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5105050403");
+                return result;
+            } else if (!CommonStateCode.SUCCESS.equals(moduleResult.getCode())) {
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
                 return result;
             }
@@ -350,7 +357,14 @@ public class WishGoodsFunctions {
         
         try {
             Result<Page<UserWishHistDTO>> moduleResult = crowdFundingService.getWishGoodsRankingList(actorId, wishGoodsId, start, num);
-            if (moduleResult == null || !CommonStateCode.SUCCESS.equals(moduleResult.getCode())) {
+            if (moduleResult == null) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+                return result;
+            }
+            if ("2".equals(moduleResult.getCode())) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5105050503");
+                return result;
+            } else if (!CommonStateCode.SUCCESS.equals(moduleResult.getCode())) {
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
                 return result;
             }
