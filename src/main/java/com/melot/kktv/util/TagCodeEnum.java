@@ -542,5 +542,7 @@ public class TagCodeEnum {
     public static final String BANKCARD_MISS = "53010603";
     /** 获取k豆出错 */
     public static final String GETKBI_ERROR = "53010604";
+    /** 身份证照片已上传 */
+    public static final String IDPHOTO_UPLOADED_ERROR = "53010605";
 
 }

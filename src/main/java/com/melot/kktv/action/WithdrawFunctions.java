@@ -85,11 +85,17 @@ public class WithdrawFunctions {
 
         try {
 
+            // 获取认证手机号
+            String verifyMobile = userService.getUserProfile(userId).getIdentifyPhone();
+            if(StringUtils.isNotEmpty(verifyMobile)) {
+                result.addProperty("verifyMobile", verifyMobile);
+            }
+
             Result<UserVerifyDO> userVerifyDOResult = userVerifyService.getUserVerifyDO(userId);
             if(userVerifyDOResult.getCode().equals(CommonStateCode.SUCCESS) && userVerifyDOResult.getData() != null) {
 
                 UserVerifyDO userVerifyDO = userVerifyDOResult.getData();
-                Integer signStatus = userVerifyDO.getSignElectronicContract();
+                int signStatus = userVerifyDO.getSignElectronicContract();
 
                 result.addProperty("userId", userVerifyDO.getUserId());
                 result.addProperty("verifyStatus", userVerifyDO.getVerifyStatus());
@@ -98,7 +104,6 @@ public class WithdrawFunctions {
                 result.addProperty("idPicStatus", userVerifyDO.getIdPicStatus());
                 result.addProperty("verifyFailReason", userVerifyDO.getVerifyFailReason());
                 result.addProperty("electronicContractStatus", signStatus);
-                result.addProperty("verifyMobile", userVerifyDO.getVerifyMobile());
                 result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 
                 if(signStatus == SignElectronicContractStatusEnum.WAIT_SIGN) {
@@ -107,7 +112,11 @@ public class WithdrawFunctions {
                 }
                 return result;
             }else {
-                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                result.addProperty("userId", userId);
+                result.addProperty("verifyStatus", 0);
+                result.addProperty("idPicStatus", IdPicStatusEnum.NOT_UPLOADED);
+                result.addProperty("electronicContractStatus",SignElectronicContractStatusEnum.NOT_SIGN);
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
                 return result;
             }
         } catch (Exception e) {
@@ -163,6 +172,12 @@ public class WithdrawFunctions {
                 result.addProperty("TagCode", TagCodeEnum.ID_NOT_IDENTIFY);
                 return result;
             }
+            int idPicStatus = userVerifyDO.getIdPicStatus();
+            if(idPicStatus == IdPicStatusEnum.WAIT_AUDIT || idPicStatus == IdPicStatusEnum.AUDIT_SUCCESS) {
+                result.addProperty("TagCode", TagCodeEnum.IDPHOTO_UPLOADED_ERROR);
+                return result;
+            }
+
             UserVerifyParam userVerifyParam = new UserVerifyParam();
             userVerifyParam.setUserId(userId);
             userVerifyParam.setWithdrawIdPicFont(idPicFont);
