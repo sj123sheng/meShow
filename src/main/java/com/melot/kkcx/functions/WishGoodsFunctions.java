@@ -13,6 +13,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.melot.kk.crowdfunding.api.constant.WishOrderEnum;
 import com.melot.kk.crowdfunding.api.dto.ActorWishGoodsDTO;
 import com.melot.kk.crowdfunding.api.dto.ActorWishOrderDTO;
 import com.melot.kk.crowdfunding.api.dto.BuyWishConfigInfoDTO;
@@ -442,29 +443,34 @@ public class WishGoodsFunctions {
             }
             for (ActorWishOrderDTO actorWishOrderDTO : page.getList()) {
                 JsonObject actorWishOrderJson = new JsonObject();
-                actorWishOrderJson.addProperty("wishOrderId", "");
-                actorWishOrderJson.addProperty(PARAM_WISH_GOODS_ID, "");
-                actorWishOrderJson.addProperty("wishGoodsName", "");
-                actorWishOrderJson.addProperty("wishGoodsPrice", "");
-                actorWishOrderJson.addProperty("goodsCount", "");
-                actorWishOrderJson.addProperty("state", "");
-                actorWishOrderJson.addProperty("type", "");
+                actorWishOrderJson.addProperty("wishOrderId", actorWishOrderDTO.getWishOrderId());
+                actorWishOrderJson.addProperty(PARAM_WISH_GOODS_ID, actorWishOrderDTO.getWishGoodsId());
+                actorWishOrderJson.addProperty("wishGoodsName", actorWishOrderDTO.getWishGoodsName());
+                actorWishOrderJson.addProperty("wishGoodsPrice", actorWishOrderDTO.getWishGoodsPrice());
+                actorWishOrderJson.addProperty("goodsCount", actorWishOrderDTO.getWishGoodsCount());
+                actorWishOrderJson.addProperty("state", actorWishOrderDTO.getOrderState());
+                actorWishOrderJson.addProperty("type", actorWishOrderDTO.getOrderType());
                 
                 JsonObject wishGoodsIcon = new JsonObject();
                 wishGoodsIcon.addProperty("web", actorWishOrderDTO.getWishGoodsIcon());
                 wishGoodsIcon.addProperty("phone", actorWishOrderDTO.getWishGoodsIcon());
                 actorWishOrderJson.add("wishGoodsIcon", wishGoodsIcon);
                 
-                JsonObject addrInfo = new JsonObject();
-                addrInfo.addProperty("consigneeName", actorWishOrderDTO.getConsigneeName());
-                addrInfo.addProperty("consigneeMobile", actorWishOrderDTO.getConsigneeMobile());
-                addrInfo.addProperty("detailAddress", actorWishOrderDTO.getDetailAddress());
-                actorWishOrderJson.add("addrInfo", addrInfo);
-                
-                actorWishOrderJson.addProperty("waybillNumber", actorWishOrderDTO.getWaybillNumber());
-                actorWishOrderJson.addProperty("courierCompany", actorWishOrderDTO.getCourierCompany());
-                actorWishOrderJson.addProperty("goodsUrl", actorWishOrderDTO.getWishGoodsUrl());
-                actorWishOrderJson.addProperty("goodsDesc", actorWishOrderDTO.getWishGoodsDesc());
+                if (actorWishOrderDTO.getOrderType().equals(WishOrderEnum.ORDER_TYPE_REAL) 
+                        && actorWishOrderDTO.getOrderState() > WishOrderEnum.ORDER_STATE_WAIT_APPLY) {
+                    JsonObject addrInfo = new JsonObject();
+                    addrInfo.addProperty("consigneeName", actorWishOrderDTO.getConsigneeName());
+                    addrInfo.addProperty("consigneeMobile", actorWishOrderDTO.getConsigneeMobile());
+                    addrInfo.addProperty("detailAddress", actorWishOrderDTO.getDetailAddress());
+                    actorWishOrderJson.add("addrInfo", addrInfo);
+                    actorWishOrderJson.addProperty("waybillNumber", actorWishOrderDTO.getWaybillNumber());
+                    actorWishOrderJson.addProperty("courierCompany", actorWishOrderDTO.getCourierCompany());
+                }
+                if (actorWishOrderDTO.getOrderType().equals(WishOrderEnum.ORDER_TYPE_VIRTUAL) 
+                        && actorWishOrderDTO.getOrderState().equals(WishOrderEnum.ORDER_STATE_HAS_SEND)) {
+                    actorWishOrderJson.addProperty("goodsUrl", actorWishOrderDTO.getWishGoodsUrl());
+                    actorWishOrderJson.addProperty("goodsDesc", actorWishOrderDTO.getWishGoodsDesc());
+                }
                 actorWishOrderJson.addProperty("addTime", actorWishOrderDTO.getAddTime().getTime());
                 
                 wishOrders.add(actorWishOrderJson);
