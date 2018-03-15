@@ -62,6 +62,7 @@ public class WishGoodsFunctions {
     private static final String PARAM_WISH_GOODS_ID = "wishGoodsId";
     private static final String PARAM_WISH_COUNT = "wishCount";
     private static final String PARAM_WISH_GOODS_RICH_LIST = "wishGoodsRichList";
+    private static final String PARAM_WISH_GOODS_LIST = "wishGoodsList";
     
     /**
      * 主播获取所有没有勾选的心愿商品列表【51050501】
@@ -97,11 +98,16 @@ public class WishGoodsFunctions {
             Page<WishGoodsInfoDTO> page = moduleResult.getData();
             result.addProperty(PARAM_COUNT, page.getCount());
             JsonArray wishGoodsList = new JsonArray();
+            if (page.getList() == null) {
+                result.add(PARAM_WISH_GOODS_LIST, wishGoodsList);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+                return result;
+            }
             for (WishGoodsInfoDTO wishGoodsInfoDTO : page.getList()) {
                 JsonObject wishGoodsInfoJson = WishGoodsTF.wishGoods2Json(wishGoodsInfoDTO);
                 wishGoodsList.add(wishGoodsInfoJson);
             }
-            result.add("wishGoodsList", wishGoodsList);
+            result.add(PARAM_WISH_GOODS_LIST, wishGoodsList);
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
             return result;
         } catch (Exception e) {
@@ -234,6 +240,11 @@ public class WishGoodsFunctions {
             Page<ActorWishGoodsDTO> page = moduleResult.getData();
             result.addProperty("maxWishGoodsCount", page.getCount());
             JsonArray wishGoodsList = new JsonArray();
+            if (page.getList() == null) {
+                result.add(PARAM_WISH_GOODS_LIST, wishGoodsList);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+                return result;
+            }
             for (ActorWishGoodsDTO actorWishGoodsDTO : page.getList()) {
                 JsonObject actorWishGoodsJson = WishGoodsTF.actorWishGoods2Json(actorWishGoodsDTO);
                 if (hasBar == 0) {
@@ -241,7 +252,7 @@ public class WishGoodsFunctions {
                 }
                 wishGoodsList.add(actorWishGoodsJson);
             }
-            result.add("wishGoodsList", wishGoodsList);
+            result.add(PARAM_WISH_GOODS_LIST, wishGoodsList);
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
             return result;
         } catch (Exception e) {
@@ -346,6 +357,11 @@ public class WishGoodsFunctions {
             Page<UserWishHistDTO> page = moduleResult.getData();
             result.addProperty(PARAM_COUNT, page.getCount());
             JsonArray wishGoodsRichList = new JsonArray();
+            if (page.getList() == null) {
+                result.add("wishGoodsRichList", wishGoodsRichList);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+                return result;
+            }
             for (UserWishHistDTO userWishHistDTO : page.getList()) {
                 UserProfile userProfile = kkUserService.getUserProfile(userWishHistDTO.getUserId());
                 JsonObject userWishHistJson = new JsonObject();
@@ -405,6 +421,11 @@ public class WishGoodsFunctions {
             Page<ActorWishOrderDTO> page = moduleResult.getData();
             result.addProperty(PARAM_COUNT, page.getCount());
             JsonArray wishOrders = new JsonArray();
+            if (page.getList() == null) {
+                result.add(PARAM_WISH_GOODS_RICH_LIST, wishOrders);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+                return result;
+            }
             for (ActorWishOrderDTO actorWishOrderDTO : page.getList()) {
                 JsonObject actorWishOrderJson = new JsonObject();
                 actorWishOrderJson.addProperty("wishOrderId", "");
@@ -533,6 +554,11 @@ public class WishGoodsFunctions {
             Page<UserWishHistDTO> page = moduleResult.getData();
             result.addProperty(PARAM_COUNT, page.getCount());
             JsonArray wishGoodsList = new JsonArray();
+            if (page.getList() == null) {
+                result.add(PARAM_WISH_GOODS_RICH_LIST, wishGoodsList);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+                return result;
+            }
             for (UserWishHistDTO userWishHistDTO : page.getList()) {
                 JsonObject userWishHistJson = new JsonObject();
                 int relationId = 0;
