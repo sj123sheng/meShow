@@ -3047,4 +3047,10 @@
 		<constructor-arg name="methodName" value="getUserAddressInfo" />
 	</bean>
 	
+	<!-- 获取游客昵称(51010105) -->
+	<bean id="51010105" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="userFunction" />
+		<constructor-arg name="methodName" value="getGuestName" />
+	</bean>
+	
 </beans>
