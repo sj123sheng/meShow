@@ -348,6 +348,19 @@ public class WithdrawFunctions {
         }
 
         try {
+
+            String identifyPhone = userService.getUserProfile(userId).getIdentifyPhone();
+            if(StringUtils.isEmpty(identifyPhone)) {
+                result.addProperty("TagCode", TagCodeEnum.NON_IDENTITY_PHONE);
+                return result;
+            }
+
+            UserVerifyDO userVerifyDO = userVerifyService.getUserVerifyDO(userId).getData();
+            if(userVerifyDO == null || userVerifyDO.getVerifyStatus() != UserVerifyStatusEnum.VERIFY_SUCCESS) {
+                result.addProperty("TagCode", TagCodeEnum.ID_NOT_IDENTIFY);
+                return result;
+            }
+
             UserBankAccountParam userBankAccountParam = new UserBankAccountParam();
             userBankAccountParam.setUserId(userId);
             userBankAccountParam.setBankcard(bankCard);
