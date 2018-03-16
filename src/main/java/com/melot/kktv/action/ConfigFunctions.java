@@ -194,7 +194,7 @@ public class ConfigFunctions {
                 return result;
             }
             
-            if (!ReturnResultCode.SUCCESS.equals(giftVersionResult.getCode())) {
+            if (!ReturnResultCode.SUCCESS.getCode().equals(giftVersionResult.getCode())) {
                 result.addProperty("TagCode", returnCodeToTagCode(giftVersionResult.getCode()));
                 return result;
             }
@@ -227,7 +227,7 @@ public class ConfigFunctions {
                 return result;
             }
             
-            if (!ReturnResultCode.SUCCESS.equals(giftListResourceURLResult.getCode())) {
+            if (!ReturnResultCode.SUCCESS.getCode().equals(giftListResourceURLResult.getCode())) {
                 result.addProperty("TagCode", returnCodeToTagCode(giftListResourceURLResult.getCode()));
                 return result;
             }
@@ -255,7 +255,7 @@ public class ConfigFunctions {
                 return result;
             }
             
-            if (!ReturnResultCode.SUCCESS.equals(allGiftsResult.getCode())) {
+            if (!ReturnResultCode.SUCCESS.getCode().equals(allGiftsResult.getCode())) {
                 result.addProperty("TagCode", returnCodeToTagCode(allGiftsResult.getCode()));
                 return result;
             }
@@ -276,7 +276,7 @@ public class ConfigFunctions {
                 return result;
             }
             
-            if (!ReturnResultCode.SUCCESS.equals(allGiftIconsResult.getCode())) {
+            if (!ReturnResultCode.SUCCESS.getCode().equals(allGiftIconsResult.getCode())) {
                 result.addProperty("TagCode", returnCodeToTagCode(allGiftIconsResult.getCode()));
                 return result;
             }
@@ -294,7 +294,7 @@ public class ConfigFunctions {
 //            ReturnResult<String> grammarIdResult = giftListService.getGiftNameListGrammarId();
 //            if (grammarIdResult == null) {
 //                
-//            }else if (!ReturnResultCode.SUCCESS.getCode().equals(grammarIdResult.getCode())) {
+//            }else if (!ReturnResultCode.SUCCESS.getCode().getCode().equals(grammarIdResult.getCode())) {
 //                
 //            }else {
 //                configGiftInfo.setGrammarId(grammarIdResult.getData());
@@ -429,7 +429,7 @@ public class ConfigFunctions {
             // 获取VR使用的grammarId（这块暂时不做强制有数据）
             GiftListService giftListService = MelotBeanFactory.getBean("giftListService", GiftListService.class);
             ReturnResult<String> grammarIdResult = giftListService.getGiftNameListGrammarId();
-            if (grammarIdResult != null && ReturnResultCode.SUCCESS.equals(grammarIdResult.getCode())) {
+            if (grammarIdResult != null && ReturnResultCode.SUCCESS.getCode().equals(grammarIdResult.getCode())) {
                 result.addProperty("grammarId", grammarIdResult.getData());
             }else {
                 result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
@@ -445,13 +445,13 @@ public class ConfigFunctions {
     }
     
     private String returnCodeToTagCode (String returnCode){
-        if (returnCode.equals(ReturnResultCode.ERROR_PARMETER)) {
+        if (returnCode.equals(ReturnResultCode.ERROR_PARAMETER.getCode())) {
             return TagCodeEnum.GIFT_MODULE_ERROR_PARMETER;
         }
-        if (returnCode.equals(ReturnResultCode.ERROR_SQL)) {
+        if (returnCode.equals(ReturnResultCode.ERROR_SQL.getCode())) {
             return TagCodeEnum.GIFT_MODULE_ERROR_SQL;
         }
-        if (returnCode.equals(ReturnResultCode.ERROR_REQUEST_TIMEOUT)) {
+        if (returnCode.equals(ReturnResultCode.ERROR_REQUEST_TIMEOUT.getCode())) {
             return TagCodeEnum.GIFT_MODULE_ERROR_REQUEST_TIMEOUT;
         }
         return TagCodeEnum.GIFT_MODULE_ERROR_UNDEFINED;
