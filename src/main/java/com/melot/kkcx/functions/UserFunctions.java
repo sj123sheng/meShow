@@ -597,7 +597,10 @@ public class UserFunctions {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-        String nickname = ProfileServices.getGuestNickName(guestUid);
+        String nickname = null;
+        if (guestUid > 0) {
+            nickname = ProfileServices.getGuestNickName(guestUid);
+        }
         if (StringUtil.strIsNull(nickname)) {
             String clientIp = com.melot.kktv.service.GeneralService.getIpAddr(request, appId, platform, CommonUtil.getIpAddr(request));
             nickname = getDistrictNickname(clientIp);
