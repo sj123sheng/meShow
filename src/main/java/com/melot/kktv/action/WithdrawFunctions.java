@@ -507,7 +507,7 @@ public class WithdrawFunctions {
             JsonArray withdrawList = new JsonArray();
 
             Page<ActorWithdrawDO> actorWithdrawDOPage = actorWithdrawService.getActorWithdrawDOList(userId, pageIndex, countPerPage).getData();
-            if(actorWithdrawDOPage != null && actorWithdrawDOPage.getCount() > 0) {
+            if(actorWithdrawDOPage != null && actorWithdrawDOPage.getList() != null) {
                 for (ActorWithdrawDO actorWithdrawDO : actorWithdrawDOPage.getList()) {
                     JsonObject jsonObj = new JsonObject();
                     jsonObj.addProperty("withdrawId", actorWithdrawDO.getHistId());
