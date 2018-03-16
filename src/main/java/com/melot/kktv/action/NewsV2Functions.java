@@ -95,7 +95,7 @@ public class NewsV2Functions {
         // 验证参数
         int userId, mediaType, appId, platform;
         @SuppressWarnings("unused")
-        String content = null, mediaUrl = null, imageUrl = null, newsTitle = null, topic = null;
+        String content = null, mediaUrl = null,mediaMd5 = null, imageUrl = null,imageMd5 = null, newsTitle = null, topic = null;
         Integer mediaDur = null, resType = null;
         try {
             appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 1, Integer.MAX_VALUE);
@@ -116,8 +116,10 @@ public class NewsV2Functions {
                 mediaUrl = mediaUrl.replaceFirst(ConfigHelper.getMediahttpdir(), "");
                 mediaUrl = mediaUrl.replaceFirst("/kktv", "");
             }
+            mediaMd5 = CommonUtil.getJsonParamString(jsonObject, "mediaMd5", null, null, 1, Integer.MAX_VALUE);
 
             imageUrl = CommonUtil.getJsonParamString(jsonObject, "imageUrl", null, null, 1, Integer.MAX_VALUE);
+            imageMd5 = CommonUtil.getJsonParamString(jsonObject, "imageMd5", null, null, 1, Integer.MAX_VALUE);
 
             mediaDur = CommonUtil.getJsonParamInt(jsonObject, "mediaDur", -1, null, 1, Integer.MAX_VALUE);
             if (mediaDur > 7200) {
@@ -193,6 +195,9 @@ public class NewsV2Functions {
             resource.setUserId(userId);
             resource.setDuration(Long.valueOf(mediaDur));
             resource.setResType(ResTypeConstant.resource);
+            if(!StringUtil.strIsNull(mediaMd5)){
+                resource.setMd5(mediaMd5);
+            }
             // 获取分辨率,添加分辨率信息
             VideoInfo videoInfo = getVideoInfoByHttp(mediaUrl);
             if (videoInfo != null) {
@@ -227,8 +232,14 @@ public class NewsV2Functions {
         } else if(mediaType == NewsMediaTypeEnum.IMAGE){
             // multi picture
             String[] imageList = imageUrl.split(",");
+            String[] md5List = new String[imageList.length];
+            if(!StringUtil.strIsNull(imageMd5)){
+                md5List = imageMd5.split(",");
+            }
             List<Resource> resourceList = new ArrayList<Resource>();
-            for (String tempUrl : imageList) {
+            for (int i = 0;i<imageList.length;i++) {
+                String tempUrl = imageList[i];
+                String tempMd5 = md5List[i];
                 if(!StringUtil.strIsNull(tempUrl)){
                     Resource resource = new Resource();
                     resource.setState(ResourceStateConstant.uncheck);
@@ -236,6 +247,9 @@ public class NewsV2Functions {
                     resource.setResType(ResTypeConstant.resource);
                     resource.seteCloudType(ECloudTypeConstant.aliyun);
                     resource.setUserId(userId);
+                    if(!StringUtil.strIsNull(tempMd5)){
+                        resource.setMd5(tempMd5);
+                    }
                     if (!StringUtil.strIsNull(tempUrl)) {
                         tempUrl = tempUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
                         if(!imageUrl.startsWith(SEPARATOR)) {
@@ -278,6 +292,9 @@ public class NewsV2Functions {
             audio.setDuration(Long.valueOf(mediaDur));
             audio.setResType(ResTypeConstant.resource);
             audio.seteCloudType(ECloudTypeConstant.qiniu);
+            if(!StringUtil.strIsNull(mediaMd5)){
+                audio.setMd5(mediaMd5);
+            }
             Result<Integer> audioResult = resourceNewService.addResource(audio);
             if(audioResult != null && audioResult.getCode() != null && audioResult.getCode().equals(CommonStateCode.SUCCESS)){
                 Integer resId = audioResult.getData();
@@ -306,6 +323,9 @@ public class NewsV2Functions {
                 }
                 imageUrl = imageUrl.replaceFirst("/kktv", "");
                 resource.setImageUrl(imageUrl);
+                if(!StringUtil.strIsNull(imageMd5)){
+                    resource.setMd5(imageMd5);
+                }
                 Result<Integer> imageResult = resourceNewService.addResource(resource);
                 if(imageResult != null && imageResult.getCode() != null && imageResult.getCode().equals(CommonStateCode.SUCCESS)){
                     Integer resId = imageResult.getData();
@@ -362,7 +382,7 @@ public class NewsV2Functions {
             return result;
         }
         int newsId,userId;
-        String content = null, mediaUrl = null, imageUrl = null, newsTitle = null;
+        String content = null, mediaUrl = null,mediaMd5=null,imageMd5=null, imageUrl = null, newsTitle = null;
         try {
             newsId = CommonUtil.getJsonParamInt(jsonObject, "newsId", 0, functag + "01", 1, Integer.MAX_VALUE);
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, functag + "02", 1, Integer.MAX_VALUE);
@@ -382,6 +402,9 @@ public class NewsV2Functions {
                 }
                 newsTitle = GeneralService.replaceSensitiveWords(userId, newsTitle);
             }
+            mediaMd5 = CommonUtil.getJsonParamString(jsonObject, "mediaMd5", null, null, 1, Integer.MAX_VALUE);
+
+            imageMd5 = CommonUtil.getJsonParamString(jsonObject, "imageMd5", null, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -429,6 +452,9 @@ public class NewsV2Functions {
             audio.setUserId(userId);
             audio.setResType(ResTypeConstant.resource);
             audio.seteCloudType(ECloudTypeConstant.qiniu);
+            if(!StringUtil.strIsNull(mediaMd5)){
+                audio.setMd5(mediaMd5);
+            }
             Result<Integer> audioResult = resourceNewService.addResource(audio);
             if(audioResult != null && audioResult.getCode() != null && audioResult.getCode().equals(CommonStateCode.SUCCESS)){
                 Integer resId = audioResult.getData();
@@ -464,6 +490,9 @@ public class NewsV2Functions {
             resource.seteCloudType(ECloudTypeConstant.aliyun);
             resource.setUserId(userId);
             resource.setImageUrl(imageUrl);
+            if(!StringUtil.strIsNull(imageMd5)){
+                resource.setMd5(imageMd5);
+            }
             Result<Integer> imageResult = resourceNewService.addResource(resource);
             if(imageResult != null && imageResult.getCode() != null && imageResult.getCode().equals(CommonStateCode.SUCCESS)){
                 Integer resId = imageResult.getData();

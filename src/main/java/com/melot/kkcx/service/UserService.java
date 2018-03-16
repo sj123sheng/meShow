@@ -17,6 +17,7 @@ import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.common.driver.service.StarService;
 import com.melot.goldcoin.domain.UserGoldAssets;
 import com.melot.goldcoin.service.GoldcoinService;
+import com.melot.kkcore.user.api.UserAssets;
 import com.melot.kkcore.user.api.UserGameAssets;
 import com.melot.kkcore.user.api.UserInfoDetail;
 import com.melot.kkcore.user.api.UserLevel;
@@ -1031,7 +1032,28 @@ public class UserService {
 		}
 		return true;
 	}
-	
+
+	/**
+	 * 获取用户秀币
+	 *
+	 * @param userId 用户ID
+	 * @return
+	 */
+	public static long getUserMoney(int userId) {
+		try {
+			com.melot.kkcore.user.service.KkUserService userService = (com.melot.kkcore.user.service.KkUserService) MelotBeanFactory.getBean("kkUserService");
+			if (userService != null) {
+				UserAssets userAssets = userService.getUserAssets(userId);
+				if (userAssets != null) {
+					return userAssets.getShowMoney();
+				}
+			}
+		} catch (Exception e) {
+			logger.error("fail to execute KkUserService.getUserAssets, userId: " + userId, e);
+		}
+		return 0;
+	}
+
 	/**
      * 获取用户游戏币
      * @param userId
