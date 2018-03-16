@@ -39,6 +39,8 @@ public class ProfileServices {
     private static final String USER_COMMONDEVICE_KEY = "%s_commonDevice";
     
     private static final String USER_UPDATEPROFILE_KEY = "%s_%s_updateProfileV2";
+    
+    private static final String GUEST_NAME_KEY = "%s_guestName";
 	
 	/**
 	 * 更新私有redis
@@ -341,6 +343,33 @@ public class ProfileServices {
             }
         } catch(Exception e) {
             logger.error("ProfileServices.checkUserUpdateProfileByType(" + userId + "," + type + ") return exception.", e);
+        }
+        return result;
+    }
+    
+
+    /**
+     * 设置游客昵称
+     * 
+     * @param guestId
+     * @param nickname
+     */
+    public static void setGuestNickName(int guestId, String nickname) {
+        try {
+            String key = String.format(GUEST_NAME_KEY, guestId);
+            HotDataSource.setTempDataString(key, nickname, 10*24*3600*1000);
+        } catch(Exception e) {
+            logger.error("ProfileServices.setGuestNickName(" + guestId + "," + nickname + ") return exception.", e);
+        }
+    }
+    
+    public static String getGuestNickName(int guestId) {
+        String result = null;
+        try {
+            String key = String.format(GUEST_NAME_KEY, guestId);
+            result = HotDataSource.getTempDataString(key);
+        } catch(Exception e) {
+            logger.error("ProfileServices.getGuestNickName(" + guestId + ") return exception.", e);
         }
         return result;
     }
