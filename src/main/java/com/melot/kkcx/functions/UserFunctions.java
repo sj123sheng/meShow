@@ -1,3 +1,4 @@
+
 package com.melot.kkcx.functions;
 
 import java.sql.SQLException;
@@ -583,10 +584,12 @@ public class UserFunctions {
         
         int platform = 0;
         int appId = 0;
+        int guestUid = 0;
         JsonObject result = new JsonObject();
         try {
-            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.ANDROID, TagCodeEnum.PLATFORM_MISSING, 1, Integer.MAX_VALUE);
-            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, TagCodeEnum.APPID_MISSING, 0, Integer.MAX_VALUE);
+            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.ANDROID, null, 1, Integer.MAX_VALUE);
+            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 0, Integer.MAX_VALUE);
+            guestUid = CommonUtil.getJsonParamInt(jsonObject, "guestUid", 0, null, 0, Integer.MAX_VALUE);
         } catch(CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -594,9 +597,13 @@ public class UserFunctions {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-        
-        String clientIp = com.melot.kktv.service.GeneralService.getIpAddr(request, appId, platform, CommonUtil.getIpAddr(request));
-        result.addProperty("nickname", getDistrictNickname(clientIp));
+        String nickname = ProfileServices.getGuestNickName(guestUid);
+        if (StringUtil.strIsNull(nickname)) {
+            String clientIp = com.melot.kktv.service.GeneralService.getIpAddr(request, appId, platform, CommonUtil.getIpAddr(request));
+            nickname = getDistrictNickname(clientIp);
+            ProfileServices.setGuestNickName(guestUid, nickname);
+        }
+        result.addProperty("nickname", nickname);
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
