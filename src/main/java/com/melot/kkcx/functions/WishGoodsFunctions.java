@@ -475,7 +475,7 @@ public class WishGoodsFunctions {
                 
                 wishOrders.add(actorWishOrderJson);
             }
-            result.add(PARAM_WISH_GOODS_RICH_LIST, wishOrders);
+            result.add("wishOrders", wishOrders);
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
             return result;
         } catch (Exception e) {
@@ -689,11 +689,19 @@ public class WishGoodsFunctions {
         
         try {
             Result<Boolean> moduleResult = crowdFundingService.checkOrder(orderNo);
-            if (moduleResult == null || !CommonStateCode.SUCCESS.equals(moduleResult.getCode())) {
+            if (moduleResult == null) {
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
                 return result;
             }
-            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+            
+            if (CommonStateCode.SUCCESS.equals(moduleResult.getCode())) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+            } else if ("2".equals(moduleResult.getCode())) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5105051101");
+            } else {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            }
+            
             return result;
         } catch (Exception e) {
             logger.error("Module Error：crowdFundingService.checkOrder(" + orderNo + ");", e);
