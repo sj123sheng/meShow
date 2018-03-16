@@ -13,6 +13,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.melot.kk.crowdfunding.api.constant.WishOrderEnum;
 import com.melot.kk.crowdfunding.api.dto.ActorWishGoodsDTO;
 import com.melot.kk.crowdfunding.api.dto.ActorWishOrderDTO;
 import com.melot.kk.crowdfunding.api.dto.BuyWishConfigInfoDTO;
@@ -442,34 +443,39 @@ public class WishGoodsFunctions {
             }
             for (ActorWishOrderDTO actorWishOrderDTO : page.getList()) {
                 JsonObject actorWishOrderJson = new JsonObject();
-                actorWishOrderJson.addProperty("wishOrderId", "");
-                actorWishOrderJson.addProperty(PARAM_WISH_GOODS_ID, "");
-                actorWishOrderJson.addProperty("wishGoodsName", "");
-                actorWishOrderJson.addProperty("wishGoodsPrice", "");
-                actorWishOrderJson.addProperty("goodsCount", "");
-                actorWishOrderJson.addProperty("state", "");
-                actorWishOrderJson.addProperty("type", "");
+                actorWishOrderJson.addProperty("wishOrderId", actorWishOrderDTO.getWishOrderId());
+                actorWishOrderJson.addProperty(PARAM_WISH_GOODS_ID, actorWishOrderDTO.getWishGoodsId());
+                actorWishOrderJson.addProperty("wishGoodsName", actorWishOrderDTO.getWishGoodsName());
+                actorWishOrderJson.addProperty("wishGoodsPrice", actorWishOrderDTO.getWishGoodsPrice());
+                actorWishOrderJson.addProperty("goodsCount", actorWishOrderDTO.getWishGoodsCount());
+                actorWishOrderJson.addProperty("state", actorWishOrderDTO.getOrderState());
+                actorWishOrderJson.addProperty("type", actorWishOrderDTO.getOrderType());
                 
                 JsonObject wishGoodsIcon = new JsonObject();
                 wishGoodsIcon.addProperty("web", actorWishOrderDTO.getWishGoodsIcon());
                 wishGoodsIcon.addProperty("phone", actorWishOrderDTO.getWishGoodsIcon());
                 actorWishOrderJson.add("wishGoodsIcon", wishGoodsIcon);
                 
-                JsonObject addrInfo = new JsonObject();
-                addrInfo.addProperty("consigneeName", actorWishOrderDTO.getConsigneeName());
-                addrInfo.addProperty("consigneeMobile", actorWishOrderDTO.getConsigneeMobile());
-                addrInfo.addProperty("detailAddress", actorWishOrderDTO.getDetailAddress());
-                actorWishOrderJson.add("addrInfo", addrInfo);
-                
-                actorWishOrderJson.addProperty("waybillNumber", actorWishOrderDTO.getWaybillNumber());
-                actorWishOrderJson.addProperty("courierCompany", actorWishOrderDTO.getCourierCompany());
-                actorWishOrderJson.addProperty("goodsUrl", actorWishOrderDTO.getWishGoodsUrl());
-                actorWishOrderJson.addProperty("goodsDesc", actorWishOrderDTO.getWishGoodsDesc());
+                if (actorWishOrderDTO.getOrderType().equals(WishOrderEnum.ORDER_TYPE_REAL) 
+                        && actorWishOrderDTO.getOrderState() > WishOrderEnum.ORDER_STATE_WAIT_APPLY) {
+                    JsonObject addrInfo = new JsonObject();
+                    addrInfo.addProperty("consigneeName", actorWishOrderDTO.getConsigneeName());
+                    addrInfo.addProperty("consigneeMobile", actorWishOrderDTO.getConsigneeMobile());
+                    addrInfo.addProperty("detailAddress", actorWishOrderDTO.getDetailAddress());
+                    actorWishOrderJson.add("addrInfo", addrInfo);
+                    actorWishOrderJson.addProperty("waybillNumber", actorWishOrderDTO.getWaybillNumber());
+                    actorWishOrderJson.addProperty("courierCompany", actorWishOrderDTO.getCourierCompany());
+                }
+                if (actorWishOrderDTO.getOrderType().equals(WishOrderEnum.ORDER_TYPE_VIRTUAL) 
+                        && actorWishOrderDTO.getOrderState().equals(WishOrderEnum.ORDER_STATE_HAS_SEND)) {
+                    actorWishOrderJson.addProperty("goodsUrl", actorWishOrderDTO.getWishGoodsUrl());
+                    actorWishOrderJson.addProperty("goodsDesc", actorWishOrderDTO.getWishGoodsDesc());
+                }
                 actorWishOrderJson.addProperty("addTime", actorWishOrderDTO.getAddTime().getTime());
                 
                 wishOrders.add(actorWishOrderJson);
             }
-            result.add(PARAM_WISH_GOODS_RICH_LIST, wishOrders);
+            result.add("wishOrders", wishOrders);
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
             return result;
         } catch (Exception e) {
@@ -683,11 +689,19 @@ public class WishGoodsFunctions {
         
         try {
             Result<Boolean> moduleResult = crowdFundingService.checkOrder(orderNo);
-            if (moduleResult == null || !CommonStateCode.SUCCESS.equals(moduleResult.getCode())) {
+            if (moduleResult == null) {
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
                 return result;
             }
-            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+            
+            if (CommonStateCode.SUCCESS.equals(moduleResult.getCode())) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+            } else if ("2".equals(moduleResult.getCode())) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5105051101");
+            } else {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            }
+            
             return result;
         } catch (Exception e) {
             logger.error("Module Error：crowdFundingService.checkOrder(" + orderNo + ");", e);

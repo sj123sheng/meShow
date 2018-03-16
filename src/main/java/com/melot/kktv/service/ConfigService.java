@@ -94,6 +94,11 @@ public class ConfigService {
     private String lotteryAppConfig;
     
     /**
+     * 地域昵称
+     */
+    private String regionNickname;
+    
+    /**
      * 即开彩banner文案
      */
     private String lotteryContent;
@@ -265,6 +270,15 @@ public class ConfigService {
 
     public void setLotteryContent(String lotteryContent) {
         this.lotteryContent = lotteryContent;
+    }
+    
+    @DisconfFileItem(name = "global.regionNickname", associateField = "regionNickname")
+    public String getRegionNickname() {
+        return regionNickname;
+    }
+
+    public void setRegionNickname(String regionNickname) {
+        this.regionNickname = regionNickname;
     }
 
 }
