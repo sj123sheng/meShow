@@ -2785,7 +2785,7 @@ public class UserFunctions {
             
             // 设置默认
             UserAddressParam param = new UserAddressParam();
-            param.setAddressId(addressId);
+            param.setAddressId(addressId <= 0 ? null : addressId);
             param.setCity(city);
             param.setConsigneeMobile(consigneeMobile);
             param.setConsigneeName(consigneeName);
