@@ -515,8 +515,13 @@ public class UserFunctions {
                     result.addProperty("timestamp", resMobileGuestUser.getTimestamp());
                 }
                 UserProfile userProfile = UserService.getUserInfoV2(resMobileGuestUser.getUserId());
-                if (userProfile != null && userProfile.getNickName() != null) {
+                if (userProfile != null && !StringUtil.strIsNull(userProfile.getNickName())) {
                     nickname = userProfile.getNickName();
+                } else {
+                    //旧的没有昵称游客添加昵称
+                    Map<String, Object> userMap = new HashMap<String, Object>();
+                    userMap.put(ProfileKeys.NICKNAME.key(), nickname);
+                    com.melot.kktv.service.UserService.updateUserInfoV2(userId, userMap);
                 }
                 result.addProperty("nickname", nickname);
 				
