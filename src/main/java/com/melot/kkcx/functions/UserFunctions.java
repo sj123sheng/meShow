@@ -607,7 +607,7 @@ public class UserFunctions {
             nickname = ProfileServices.getGuestNickName(guestUid);
         }
         if (StringUtil.strIsNull(nickname)) {
-            String clientIp = com.melot.kktv.service.GeneralService.getIpAddr(request, appId, platform, CommonUtil.getIpAddr(request));
+            String clientIp = com.melot.kktv.service.GeneralService.getIpAddr(request, appId, platform, null);
             nickname = getDistrictNickname(clientIp);
             ProfileServices.setGuestNickName(guestUid, nickname);
         }
