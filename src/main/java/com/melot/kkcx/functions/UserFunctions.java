@@ -1,3 +1,4 @@
+
 package com.melot.kkcx.functions;
 
 import java.sql.SQLException;
@@ -514,8 +515,13 @@ public class UserFunctions {
                     result.addProperty("timestamp", resMobileGuestUser.getTimestamp());
                 }
                 UserProfile userProfile = UserService.getUserInfoV2(resMobileGuestUser.getUserId());
-                if (userProfile != null && userProfile.getNickName() != null) {
+                if (userProfile != null && !StringUtil.strIsNull(userProfile.getNickName())) {
                     nickname = userProfile.getNickName();
+                } else {
+                    //旧的没有昵称游客添加昵称
+                    Map<String, Object> userMap = new HashMap<String, Object>();
+                    userMap.put(ProfileKeys.NICKNAME.key(), nickname);
+                    com.melot.kktv.service.UserService.updateUserInfoV2(userId, userMap);
                 }
                 result.addProperty("nickname", nickname);
 				
@@ -583,10 +589,12 @@ public class UserFunctions {
         
         int platform = 0;
         int appId = 0;
+        int guestUid = 0;
         JsonObject result = new JsonObject();
         try {
-            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.ANDROID, TagCodeEnum.PLATFORM_MISSING, 1, Integer.MAX_VALUE);
-            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, TagCodeEnum.APPID_MISSING, 0, Integer.MAX_VALUE);
+            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.ANDROID, null, 1, Integer.MAX_VALUE);
+            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 0, Integer.MAX_VALUE);
+            guestUid = CommonUtil.getJsonParamInt(jsonObject, "guestUid", 0, null, 0, Integer.MAX_VALUE);
         } catch(CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -594,9 +602,16 @@ public class UserFunctions {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-        
-        String clientIp = com.melot.kktv.service.GeneralService.getIpAddr(request, appId, platform, CommonUtil.getIpAddr(request));
-        result.addProperty("nickname", getDistrictNickname(clientIp));
+        String nickname = null;
+        if (guestUid > 0) {
+            nickname = ProfileServices.getGuestNickName(guestUid);
+        }
+        if (StringUtil.strIsNull(nickname)) {
+            String clientIp = com.melot.kktv.service.GeneralService.getIpAddr(request, appId, platform, CommonUtil.getIpAddr(request));
+            nickname = getDistrictNickname(clientIp);
+            ProfileServices.setGuestNickName(guestUid, nickname);
+        }
+        result.addProperty("nickname", nickname);
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
@@ -632,7 +647,7 @@ public class UserFunctions {
 	        logger.info("UserFunctions.getDistrictNickname execute exception, ipAdrr: " + ipAddr, e);
 	    }
 	    
-	    result = nicknamePre + CommonUtil.getRandomDigit(6);
+	    result = nicknamePre + CommonUtil.getRandomDigit(5);
 	    return result;
 	}
 
@@ -2775,7 +2790,7 @@ public class UserFunctions {
             
             // 设置默认
             UserAddressParam param = new UserAddressParam();
-            param.setAddressId(addressId);
+            param.setAddressId(addressId <= 0 ? null : addressId);
             param.setCity(city);
             param.setConsigneeMobile(consigneeMobile);
             param.setConsigneeName(consigneeName);
