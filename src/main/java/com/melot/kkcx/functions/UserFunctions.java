@@ -1,3 +1,4 @@
+
 package com.melot.kkcx.functions;
 
 import java.sql.SQLException;
@@ -25,6 +26,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.blacklist.service.BlacklistService;
+import com.melot.kk.logistics.api.domain.UserAddressDO;
+import com.melot.kk.logistics.api.domain.UserAddressParam;
+import com.melot.kk.logistics.api.service.UserAddressService;
 import com.melot.kkcore.account.api.ExtendDataKeys;
 import com.melot.kkcore.account.api.ResLogin;
 import com.melot.kkcore.account.api.ResMobileGuestUser;
@@ -44,6 +48,8 @@ import com.melot.kkcx.service.ProfileServices;
 import com.melot.kkcx.service.UserAssetServices;
 import com.melot.kktv.action.IndexFunctions;
 import com.melot.kktv.action.UserRelationFunctions;
+import com.melot.kktv.base.CommonStateCode;
+import com.melot.kktv.base.Result;
 import com.melot.kktv.domain.SmsConfig;
 import com.melot.kktv.model.MedalInfo;
 import com.melot.kktv.redis.AppStatsSource;
@@ -66,6 +72,7 @@ import com.melot.kktv.util.Constant;
 import com.melot.kktv.util.DateUtil;
 import com.melot.kktv.util.HadoopLogger;
 import com.melot.kktv.util.LoginTypeEnum;
+import com.melot.kktv.util.ParameterKeys;
 import com.melot.kktv.util.PlatformEnum;
 import com.melot.kktv.util.SecurityFunctions;
 import com.melot.kktv.util.SmsTypEnum;
@@ -95,6 +102,10 @@ public class UserFunctions {
 	
 	@Autowired
     private ConfigService configService;
+	
+	private static final String DEFAULT_NICKNAME = "北京爷们儿";
+	
+	private static String REGEX = ",";
 	
 	/**
 	 * 用户注册(10001002)
@@ -470,7 +481,12 @@ public class UserFunctions {
 		String clientIp = com.melot.kktv.service.GeneralService.getIpAddr(request, appId, platform, null);
 		int port = com.melot.kktv.service.GeneralService.getPort(request, appId, platform, 0);
 		
-		ResMobileGuestUser resMobileGuestUser = AccountService.genMobileGuestUser(platform, deviceUId, clientIp, appId, channel, port);
+		com.melot.kkcore.account.service.AccountService accountService = (com.melot.kkcore.account.service.AccountService) MelotBeanFactory.getBean("kkAccountService");
+		ResMobileGuestUser resMobileGuestUser = null;
+		String nickname = getDistrictNickname(clientIp);
+		if (accountService != null) {
+		    resMobileGuestUser = accountService.genMobileGuestUserNew(platform, deviceUId, clientIp, appId, channel, port, nickname);
+		}
 		if (resMobileGuestUser != null && resMobileGuestUser.getTagCode() != null) {
 			String TagCode = resMobileGuestUser.getTagCode();
 			if (TagCode.equals(TagCodeEnum.SUCCESS)) {
@@ -498,6 +514,16 @@ public class UserFunctions {
                 if (resMobileGuestUser.getTimestamp() != null) {
                     result.addProperty("timestamp", resMobileGuestUser.getTimestamp());
                 }
+                UserProfile userProfile = UserService.getUserInfoV2(resMobileGuestUser.getUserId());
+                if (userProfile != null && !StringUtil.strIsNull(userProfile.getNickName())) {
+                    nickname = userProfile.getNickName();
+                } else {
+                    //旧的没有昵称游客添加昵称
+                    Map<String, Object> userMap = new HashMap<String, Object>();
+                    userMap.put(ProfileKeys.NICKNAME.key(), nickname);
+                    com.melot.kktv.service.UserService.updateUserInfoV2(userId, userMap);
+                }
+                result.addProperty("nickname", nickname);
 				
 				// 注册日志
 				HadoopLogger.registerLog((userId==null?0:userId.intValue()), new Date(), platform, LoginTypeEnum.GUEST,
@@ -550,6 +576,79 @@ public class UserFunctions {
 		}
 		
 		return result;
+	}
+	
+	/**
+     * 获取游客昵称(51010105)
+     * 
+     * @param jsonObject 请求对象
+     * @param request 请求对象
+     * @return
+     */
+    public JsonObject getGuestName(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+        
+        int platform = 0;
+        int appId = 0;
+        int guestUid = 0;
+        JsonObject result = new JsonObject();
+        try {
+            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.ANDROID, null, 1, Integer.MAX_VALUE);
+            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 0, Integer.MAX_VALUE);
+            guestUid = CommonUtil.getJsonParamInt(jsonObject, "guestUid", 0, null, 0, Integer.MAX_VALUE);
+        } catch(CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch(Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        String nickname = null;
+        if (guestUid > 0) {
+            nickname = ProfileServices.getGuestNickName(guestUid);
+        }
+        if (StringUtil.strIsNull(nickname)) {
+            String clientIp = com.melot.kktv.service.GeneralService.getIpAddr(request, appId, platform, null);
+            nickname = getDistrictNickname(clientIp);
+            ProfileServices.setGuestNickName(guestUid, nickname);
+        }
+        result.addProperty("nickname", nickname);
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+	
+	private String getDistrictNickname(String ipAddr) {
+	    String result = null;
+	    String areaName = null;
+	    String nicknamePre = DEFAULT_NICKNAME;
+	    try {
+	        Integer cityId = CityUtil.getCityIdByIpAddr(ipAddr); 
+	        areaName = CityUtil.getCityName(cityId);
+	        // 北京 天津 上海 重庆
+            if (areaName != null) {
+                if (areaName.indexOf(" ") > 0) {
+                    String province = areaName.split("\\s+")[0].trim();
+                    if (province.equals("北京") || province.equals("天津") || province.equals("上海") || province.equals("重庆")) {
+                        areaName = province;
+                    } else {
+                        areaName = areaName.split("\\s+")[1].trim();
+                    }
+                }
+            }
+	        if (!StringUtil.strIsNull(areaName)) {
+	            String[] regionNicknames = configService.getRegionNickname().split(REGEX);
+	            for (String regionNickStr : regionNicknames) {
+	                if (regionNickStr.contains(areaName)) {
+	                    nicknamePre = regionNickStr;
+	                    break;
+	                }
+	            }
+	        }
+	    } catch(Exception e) {
+	        logger.info("UserFunctions.getDistrictNickname execute exception, ipAdrr: " + ipAddr, e);
+	    }
+	    
+	    result = nicknamePre + CommonUtil.getRandomDigit(5);
+	    return result;
 	}
 
 	/**
