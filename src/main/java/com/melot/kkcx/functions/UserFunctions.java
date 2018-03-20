@@ -647,7 +647,7 @@ public class UserFunctions {
 	        logger.info("UserFunctions.getDistrictNickname execute exception, ipAdrr: " + ipAddr, e);
 	    }
 	    
-	    result = nicknamePre + CommonUtil.getRandomDigit(6);
+	    result = nicknamePre + CommonUtil.getRandomDigit(5);
 	    return result;
 	}
 
