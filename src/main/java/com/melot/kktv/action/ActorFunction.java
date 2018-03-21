@@ -640,7 +640,7 @@ public class ActorFunction {
                     return false;
                 }
                 //巡管审核驳回 或 家族驳回
-                if (userApplyActorDO == null || userApplyActorDO.getStatus() < 0 || userApplyActorDO.getStatus() == 6) {
+                if (userApplyActorDO == null || userApplyActorDO.getStatus() < 0 || userApplyActorDO.getStatus() == 6 || userApplyActorDO.getStatus() == 12) {
                     continue;
                 }
                 if (verifyUserId == userId) {
