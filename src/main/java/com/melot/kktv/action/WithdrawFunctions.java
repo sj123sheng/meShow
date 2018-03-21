@@ -3,10 +3,7 @@ package com.melot.kktv.action;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.melot.common.melot_utils.StringUtils;
-import com.melot.kk.userSecurity.api.constant.IdPicStatusEnum;
-import com.melot.kk.userSecurity.api.constant.SignElectronicContractStatusEnum;
-import com.melot.kk.userSecurity.api.constant.UserVerifyStatusEnum;
-import com.melot.kk.userSecurity.api.constant.WithdrawStatusEnum;
+import com.melot.kk.userSecurity.api.constant.*;
 import com.melot.kk.userSecurity.api.domain.DO.*;
 import com.melot.kk.userSecurity.api.domain.param.UserBankAccountParam;
 import com.melot.kk.userSecurity.api.domain.param.UserVerifyParam;
@@ -130,7 +127,7 @@ public class WithdrawFunctions {
     /**
      * 上传身份证照片【51010602】
      */
-    public JsonObject uploadIDPhoto(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+    public JsonObject uploadIDPhoto(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 
         JsonObject result = new JsonObject();
 
@@ -218,7 +215,7 @@ public class WithdrawFunctions {
     /**
      * 获取用户绑定银行卡信息【51010603】
      */
-    public JsonObject getUserBindBankCardInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+    public JsonObject getUserBindBankCardInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 
         JsonObject result = new JsonObject();
 
@@ -250,8 +247,23 @@ public class WithdrawFunctions {
                 if(bankcard.length() >= 4) {
                     tailNumber = bankcard.substring(bankcard.length()-4);
                 }
-                result.addProperty("bankName", userBankAccountDO.getBankname());
                 result.addProperty("tailNumber", tailNumber);
+            }
+            ActorPayeeDO actorPayeeDO = actorWithdrawService.getActorPayeeDO(userId).getData();
+            if(actorPayeeDO != null) {
+                int payRoll = actorPayeeDO.getPayRoll();
+                if(payRoll == PayRollEnum.ENTRUST_OTHERS_SEND) {
+                    payRoll = 1;
+                }
+                result.addProperty("payRoll", payRoll);
+                if(payRoll != PayRollEnum.SELF_COLLAR && StringUtils.isNotEmpty(actorPayeeDO.getPayeeBankCard())) {
+                    String payeeBankCard = actorPayeeDO.getPayeeBankCard();
+                    String clientTailNumber = payeeBankCard;
+                    if(payeeBankCard.length() >= 4) {
+                        clientTailNumber = payeeBankCard.substring(payeeBankCard.length()-4);
+                    }
+                    result.addProperty("clientTailNumber", clientTailNumber);
+                }
             }
 
             result.addProperty("bindBankCard", bindBankCard);
@@ -267,7 +279,7 @@ public class WithdrawFunctions {
     /**
      * 解绑银行卡【51010604】
      */
-    public JsonObject unbindBankCard(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+    public JsonObject unbindBankCard(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 
         JsonObject result = new JsonObject();
 
@@ -319,7 +331,7 @@ public class WithdrawFunctions {
     /**
      * 绑定银行卡【51010605】
      */
-    public JsonObject bindBankCard(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+    public JsonObject bindBankCard(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 
         JsonObject result = new JsonObject();
 
@@ -379,7 +391,7 @@ public class WithdrawFunctions {
     /**
      * 获取主播提现信息【51010606】
      */
-    public JsonObject getActorWithdrawInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+    public JsonObject getActorWithdrawInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 
         JsonObject result = new JsonObject();
 
@@ -409,6 +421,32 @@ public class WithdrawFunctions {
             }else {
                 result.addProperty("TagCode", TagCodeEnum.GETKBI_ERROR);
                 return result;
+            }
+            UserVerifyDO userVerifyDO = userVerifyService.getUserVerifyDO(userId).getData();
+            result.addProperty("signStatus", userVerifyDO == null ? SignElectronicContractStatusEnum.NOT_SIGN : userVerifyDO.getSignElectronicContract());
+
+            ActorPayeeDO actorPayeeDO = actorWithdrawService.getActorPayeeDO(userId).getData();
+            if(actorPayeeDO != null) {
+                int payRoll = actorPayeeDO.getPayRoll();
+                if(payRoll == PayRollEnum.ENTRUST_OTHERS_SEND) {
+                    payRoll = 1;
+                }
+                result.addProperty("payRoll", payRoll);
+                if(payRoll != PayRollEnum.SELF_COLLAR) {
+                    UserVerifyDO payeeUserVerifyDO = userVerifyService.getUserVerifyDO(actorPayeeDO.getPayeeUserId()).getData();
+                    if(payeeUserVerifyDO != null) {
+                        result.addProperty("clientSignStatus", payeeUserVerifyDO.getSignElectronicContract());
+                    }
+                }
+            }
+            ServiceCompanyDO serviceCompanyDO = userBankService.getServiceCompanyDO(userId).getData();
+            if(serviceCompanyDO != null) {
+                int signServiceCompany = serviceCompanyDO.getSignServiceCompany();
+                if(signServiceCompany == 0) {
+                    result.addProperty("serviceCompanyId", serviceCompanyDO.getServiceCompanyId());
+                    result.addProperty("serviceCompanyName", serviceCompanyDO.getServiceCompanyName());
+                }
+                result.addProperty("signServiceCompany", signServiceCompany);
             }
 
             result.addProperty("kBeans", kBeans);
@@ -546,6 +584,48 @@ public class WithdrawFunctions {
         }
 
         return result;
+    }
+
+    /**
+     * 签署经纪服务公司【51010609】
+     */
+    public JsonObject signServiceCompany(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId, serviceCompanyId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
+            serviceCompanyId = CommonUtil.getJsonParamInt(jsonObject, "serviceCompanyId", 0, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        try {
+
+            Result<Boolean> signResult = userBankService.signServiceCompany(userId, serviceCompanyId);
+            if(signResult.getCode().equals(CommonStateCode.SUCCESS) && signResult.getData() != null) {
+                result.addProperty("signResult", signResult.getData());
+                return result;
+            }
+
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error signServiceCompany()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
     }
 
 }
