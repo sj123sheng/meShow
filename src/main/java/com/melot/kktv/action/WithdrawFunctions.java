@@ -436,6 +436,8 @@ public class WithdrawFunctions {
                     UserVerifyDO payeeUserVerifyDO = userVerifyService.getUserVerifyDO(actorPayeeDO.getPayeeUserId()).getData();
                     if(payeeUserVerifyDO != null) {
                         result.addProperty("clientSignStatus", payeeUserVerifyDO.getSignElectronicContract());
+                    }else {
+                        result.addProperty("clientSignStatus", SignElectronicContractStatusEnum.NOT_SIGN);
                     }
                 }
             }
