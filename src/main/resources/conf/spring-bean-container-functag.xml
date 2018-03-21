@@ -2985,6 +2985,10 @@
         <constructor-arg name="t" ref="withdrawFunctions" />
         <constructor-arg name="methodName" value="getWithdrawList" />
     </bean>
+    <bean id="51010609" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="withdrawFunctions" />
+        <constructor-arg name="methodName" value="signServiceCompany" />
+    </bean>
 
 	<!-- 心愿商品【众筹】相关接口 -->
 	<bean id="51050501" class="com.melot.sdk.core.function.GenericFunction">
