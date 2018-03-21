@@ -76,6 +76,7 @@ import com.melot.kktv.util.TextFilter;
 import com.melot.kktv.util.confdynamic.MedalConfig;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
+import com.melot.module.iprepository.driver.domain.IpInfo;
 import com.melot.module.iprepository.driver.service.IpRepositoryService;
 import com.melot.module.medal.driver.domain.ConfMedal;
 import com.melot.module.medal.driver.domain.UserActivityMedal;
@@ -615,19 +616,11 @@ public class UserFunctions {
 	    String areaName = null;
 	    String nicknamePre = DEFAULT_NICKNAME;
 	    try {
-	        Integer cityId = CityUtil.getCityIdByIpAddr(ipAddr); 
-	        areaName = CityUtil.getCityName(cityId);
-	        // 北京 天津 上海 重庆
-            if (areaName != null) {
-                if (areaName.indexOf(" ") > 0) {
-                    String province = areaName.split("\\s+")[0].trim();
-                    if (province.equals("北京") || province.equals("天津") || province.equals("上海") || province.equals("重庆")) {
-                        areaName = province;
-                    } else {
-                        areaName = areaName.split("\\s+")[1].trim();
-                    }
-                }
-            }
+	        IpRepositoryService ipRepositoryService = (IpRepositoryService) MelotBeanFactory.getBean("ipRepositoryService");
+	        IpInfo ipInfo = ipRepositoryService.getIpInfo(ipAddr);
+	        if (ipInfo != null) {
+	            areaName = ipInfo.getProvince();
+	        }
 	        if (!StringUtil.strIsNull(areaName)) {
 	            String[] regionNicknames = configService.getRegionNickname().split(REGEX);
 	            for (String regionNickStr : regionNicknames) {
