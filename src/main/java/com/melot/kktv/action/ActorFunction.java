@@ -663,7 +663,7 @@ public class ActorFunction {
 
         // 判断这个用户是否已经在申请主播并且不是驳回状态 驳回状态可以重新申请
         UserApplyActorDO oldApplyActor = userApplyActorService.getUserApplyActorDO(userId).getData();
-        if (oldApplyActor != null && oldApplyActor.getStatus() >= 0 && oldApplyActor.getStatus() != 6) {
+        if (oldApplyActor != null && oldApplyActor.getStatus() >= 0 && oldApplyActor.getStatus() != 6 && oldApplyActor.getStatus() != 12) {
             result.addProperty("TagCode", TagCodeEnum.HAS_APPLY_PLAY);
             return false;
         }
