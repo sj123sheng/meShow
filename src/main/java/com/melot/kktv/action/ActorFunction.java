@@ -640,7 +640,7 @@ public class ActorFunction {
                     return false;
                 }
                 //巡管审核驳回 或 家族驳回
-                if (userApplyActorDO == null || userApplyActorDO.getStatus() < 0 || userApplyActorDO.getStatus() == 6 || userApplyActorDO.getStatus() == 12) {
+                if (userApplyActorDO == null || userApplyActorDO.getStatus() < 0 || userApplyActorDO.getStatus() == 6) {
                     continue;
                 }
                 if (verifyUserId == userId) {
@@ -663,7 +663,7 @@ public class ActorFunction {
 
         // 判断这个用户是否已经在申请主播并且不是驳回状态 驳回状态可以重新申请
         UserApplyActorDO oldApplyActor = userApplyActorService.getUserApplyActorDO(userId).getData();
-        if (oldApplyActor != null && oldApplyActor.getStatus() >= 0 && oldApplyActor.getStatus() != 6 && oldApplyActor.getStatus() != 12) {
+        if (oldApplyActor != null && oldApplyActor.getStatus() >= 0 && oldApplyActor.getStatus() != 6) {
             result.addProperty("TagCode", TagCodeEnum.HAS_APPLY_PLAY);
             return false;
         }
