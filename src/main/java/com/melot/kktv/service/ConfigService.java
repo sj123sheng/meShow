@@ -54,6 +54,11 @@ public class ConfigService {
      * 一起玩大厅配置信息
      */
     private String playTogetherConfig;
+    
+    /**
+     * 一起玩大厅配置信息（IOS）
+     */
+    private String playIOSTogetherConfig;
 
     /**
      * 推荐列表 为了对比多个推荐算法的优劣 用于测试的渠道号列表
@@ -126,6 +131,11 @@ public class ConfigService {
     @DisconfFileItem(name = "playTogether.config", associateField = "playTogetherConfig")
     public String getPlayTogetherConfig() {
         return playTogetherConfig;
+    }
+    
+    @DisconfFileItem(name = "playIOSTogetherConfig.config", associateField = "playIOSTogetherConfig")
+    public String getPlayIOSTogetherConfig() {
+        return playIOSTogetherConfig;
     }
 
     @DisconfFileItem(name = "challenger.family", associateField = "challengerFamily")

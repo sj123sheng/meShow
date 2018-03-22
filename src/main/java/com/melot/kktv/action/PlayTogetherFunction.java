@@ -47,11 +47,12 @@ public class PlayTogetherFunction {
     public JsonObject getTitleList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 
         JsonObject result = new JsonObject();
-        int channel;
+        int channel, platform;
 
         try {
             // 渠道号
             channel = CommonUtil.getJsonParamInt(jsonObject, "c", AppChannelEnum.KK, null, 0, Integer.MAX_VALUE);
+            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 1, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -61,7 +62,12 @@ public class PlayTogetherFunction {
         }
         try {
 
-            String playTogetherConfig = configService.getPlayTogetherConfig();
+            String playTogetherConfig = null;
+            if (platform == PlatformEnum.IPHONE) {
+                playTogetherConfig = configService.getPlayIOSTogetherConfig();
+            } else {
+                playTogetherConfig = configService.getPlayTogetherConfig();
+            }
             JsonArray roomArray = new JsonParser().parse(playTogetherConfig).getAsJsonArray();
             if(channel == 70152) {
                 String playTogetherSpecialChannelConfig = configService.getPlayTogetherSpecialChannelConfig();
