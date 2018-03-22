@@ -309,7 +309,7 @@ public class WithdrawFunctions {
             return result;
         }
 
-        String data = SmsSource.getPhoneSmsData(identifyPhone, String.valueOf(35));
+        String data = SmsSource.getPhoneSmsData(identifyPhone, String.valueOf(38));
         if (data != null && data.equals(verifyCode)) {
             try {
                 Boolean unbindResult = userBankService.unbindBankAccount(userId).getData();
