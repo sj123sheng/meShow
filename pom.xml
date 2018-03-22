@@ -626,7 +626,7 @@
 		<dependency>
 		  <groupId>com.melot.kk</groupId>
 		  <artifactId>kk-crowdfunding-api</artifactId>
-		  <version>1.0.0-SNAPSHOT</version>
+		  <version>1.0.0</version>
 		</dependency>
 		
 		<!-- 收发货模块 -->
