@@ -373,7 +373,7 @@ public class WishGoodsFunctions {
             result.addProperty(PARAM_COUNT, page.getCount());
             JsonArray wishGoodsRichList = new JsonArray();
             if (page.getList() == null) {
-                result.add("wishGoodsRichList", wishGoodsRichList);
+                result.add(PARAM_WISH_GOODS_RICH_LIST, wishGoodsRichList);
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
                 return result;
             }
@@ -437,7 +437,7 @@ public class WishGoodsFunctions {
             result.addProperty(PARAM_COUNT, page.getCount());
             JsonArray wishOrders = new JsonArray();
             if (page.getList() == null) {
-                result.add(PARAM_WISH_GOODS_RICH_LIST, wishOrders);
+                result.add("wishOrders", wishOrders);
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
                 return result;
             }
@@ -575,7 +575,7 @@ public class WishGoodsFunctions {
             result.addProperty(PARAM_COUNT, page.getCount());
             JsonArray wishGoodsList = new JsonArray();
             if (page.getList() == null) {
-                result.add(PARAM_WISH_GOODS_RICH_LIST, wishGoodsList);
+                result.add(PARAM_WISH_GOODS_LIST, wishGoodsList);
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
                 return result;
             }
@@ -602,7 +602,7 @@ public class WishGoodsFunctions {
                 userWishHistJson.add("wishGoodsIcon", wishGoodsIcon);
                 wishGoodsList.add(userWishHistJson);
             }
-            result.add(PARAM_WISH_GOODS_RICH_LIST, wishGoodsList);
+            result.add(PARAM_WISH_GOODS_LIST, wishGoodsList);
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
             return result;
         } catch (Exception e) {
