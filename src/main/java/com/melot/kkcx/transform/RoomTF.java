@@ -214,7 +214,7 @@ public class RoomTF {
         if (roomInfo.getRoomSource() != null) {
             roomObject.addProperty("roomSource", roomInfo.getRoomSource());
         } else {
-            roomObject.addProperty("roomSource", roomObject.get("roomType").getAsString());
+            roomObject.addProperty("roomSource", roomObject.get("roomType").getAsInt());
         }
         
         // 置顶位置
