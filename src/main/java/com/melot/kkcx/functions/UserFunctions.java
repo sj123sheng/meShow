@@ -1,45 +1,16 @@
 
 package com.melot.kkcx.functions;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.dianping.cat.Cat;
 import com.dianping.cat.message.Transaction;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.blacklist.service.BlacklistService;
 import com.melot.kk.logistics.api.domain.UserAddressDO;
 import com.melot.kk.logistics.api.domain.UserAddressParam;
 import com.melot.kk.logistics.api.service.UserAddressService;
-import com.melot.kkcore.account.api.ExtendDataKeys;
-import com.melot.kkcore.account.api.ResLogin;
-import com.melot.kkcore.account.api.ResMobileGuestUser;
-import com.melot.kkcore.account.api.ResRegister;
-import com.melot.kkcore.account.api.ResResetPassword;
-import com.melot.kkcore.user.api.LastLoginInfo;
-import com.melot.kkcore.user.api.ProfileKeys;
-import com.melot.kkcore.user.api.UserInfoDetail;
-import com.melot.kkcore.user.api.UserProfile;
-import com.melot.kkcore.user.api.UserRegistry;
-import com.melot.kkcore.user.api.UserStaticInfo;
+import com.melot.kkcore.account.api.*;
+import com.melot.kkcore.user.api.*;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.model.ActorLevel;
 import com.melot.kkcx.model.RichLevel;
@@ -56,32 +27,14 @@ import com.melot.kktv.redis.AppStatsSource;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.MedalSource;
 import com.melot.kktv.redis.SmsSource;
-import com.melot.kktv.service.AccountService;
-import com.melot.kktv.service.ConfigService;
-import com.melot.kktv.service.DataAcqService;
-import com.melot.kktv.service.UserRelationService;
-import com.melot.kktv.service.UserService;
+import com.melot.kktv.service.*;
 import com.melot.kktv.third.ThirdVerifyUtil;
 import com.melot.kktv.third.service.QQService;
-import com.melot.kktv.util.AppChannelEnum;
-import com.melot.kktv.util.AppIdEnum;
-import com.melot.kktv.util.CityUtil;
-import com.melot.kktv.util.CommonUtil;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.Constant;
-import com.melot.kktv.util.DateUtil;
-import com.melot.kktv.util.HadoopLogger;
-import com.melot.kktv.util.LoginTypeEnum;
-import com.melot.kktv.util.ParameterKeys;
-import com.melot.kktv.util.PlatformEnum;
-import com.melot.kktv.util.SecurityFunctions;
-import com.melot.kktv.util.SmsTypEnum;
-import com.melot.kktv.util.StringUtil;
-import com.melot.kktv.util.TagCodeEnum;
-import com.melot.kktv.util.TextFilter;
+import com.melot.kktv.util.*;
 import com.melot.kktv.util.confdynamic.MedalConfig;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
+import com.melot.module.iprepository.driver.domain.IpInfo;
 import com.melot.module.iprepository.driver.service.IpRepositoryService;
 import com.melot.module.medal.driver.domain.ConfMedal;
 import com.melot.module.medal.driver.domain.UserActivityMedal;
@@ -91,6 +44,16 @@ import com.melot.module.packagegift.driver.service.VipService;
 import com.melot.module.task.driver.service.TaskInterfaceService;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import com.melot.sms.api.service.SmsService;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.servlet.http.HttpServletRequest;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class UserFunctions {
 	
@@ -607,7 +570,7 @@ public class UserFunctions {
             nickname = ProfileServices.getGuestNickName(guestUid);
         }
         if (StringUtil.strIsNull(nickname)) {
-            String clientIp = com.melot.kktv.service.GeneralService.getIpAddr(request, appId, platform, CommonUtil.getIpAddr(request));
+            String clientIp = com.melot.kktv.service.GeneralService.getIpAddr(request, appId, platform, null);
             nickname = getDistrictNickname(clientIp);
             ProfileServices.setGuestNickName(guestUid, nickname);
         }
@@ -621,28 +584,22 @@ public class UserFunctions {
 	    String areaName = null;
 	    String nicknamePre = DEFAULT_NICKNAME;
 	    try {
-	        Integer cityId = CityUtil.getCityIdByIpAddr(ipAddr); 
-	        areaName = CityUtil.getCityName(cityId);
-	        // 北京 天津 上海 重庆
-            if (areaName != null) {
-                if (areaName.indexOf(" ") > 0) {
-                    String province = areaName.split("\\s+")[0].trim();
-                    if (province.equals("北京") || province.equals("天津") || province.equals("上海") || province.equals("重庆")) {
-                        areaName = province;
-                    } else {
-                        areaName = areaName.split("\\s+")[1].trim();
-                    }
-                }
-            }
+	        IpRepositoryService ipRepositoryService = (IpRepositoryService) MelotBeanFactory.getBean("ipRepositoryService");
+	        IpInfo ipInfo = ipRepositoryService.getIpInfo(ipAddr);
+	        if (ipInfo != null) {
+	            areaName = ipInfo.getProvince();
+	        }
+	        String[] regionNicknames = configService.getRegionNickname().split(REGEX);
 	        if (!StringUtil.strIsNull(areaName)) {
-	            String[] regionNicknames = configService.getRegionNickname().split(REGEX);
 	            for (String regionNickStr : regionNicknames) {
 	                if (regionNickStr.contains(areaName)) {
 	                    nicknamePre = regionNickStr;
 	                    break;
 	                }
 	            }
-	        }
+	        } else {
+                nicknamePre = regionNicknames[new Random().nextInt(regionNicknames.length -1)];
+            }
 	    } catch(Exception e) {
 	        logger.info("UserFunctions.getDistrictNickname execute exception, ipAdrr: " + ipAddr, e);
 	    }

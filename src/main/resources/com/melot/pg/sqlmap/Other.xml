@@ -66,6 +66,7 @@
 		<result property="roomLock" column="room_lock"/>
 		<result property="roomId" column="room_id"/>
 		<result property="screenType" column="screen_type"/>
+		<result property="roomSource" column="room_source"/>
 	</resultMap>
 	<select id="getUserGuardActors" parameterClass="java.lang.Integer" resultMap="roomListMap">
 		select distinct b.* from tshow.res_user_guard a, tshow.res_room_info b
