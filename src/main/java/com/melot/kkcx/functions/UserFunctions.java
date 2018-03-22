@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.regex.Matcher;
@@ -634,14 +635,16 @@ public class UserFunctions {
                     }
                 }
             }
+            String[] regionNicknames = configService.getRegionNickname().split(REGEX);
 	        if (!StringUtil.strIsNull(areaName)) {
-	            String[] regionNicknames = configService.getRegionNickname().split(REGEX);
 	            for (String regionNickStr : regionNicknames) {
 	                if (regionNickStr.contains(areaName)) {
 	                    nicknamePre = regionNickStr;
 	                    break;
 	                }
 	            }
+	        } else {
+	            nicknamePre = regionNicknames[new Random().nextInt(regionNicknames.length -1)];
 	        }
 	    } catch(Exception e) {
 	        logger.info("UserFunctions.getDistrictNickname execute exception, ipAdrr: " + ipAddr, e);
