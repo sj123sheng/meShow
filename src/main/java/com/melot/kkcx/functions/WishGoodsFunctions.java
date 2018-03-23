@@ -32,6 +32,7 @@ import com.melot.kktv.payment.conf.PaymentInfoConf;
 import com.melot.kktv.payment.domain.ConfPaymentInfo;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.DateUtil;
 import com.melot.kktv.util.ParameterKeys;
 import com.melot.kktv.util.TagCodeEnum;
@@ -382,7 +383,12 @@ public class WishGoodsFunctions {
                 JsonObject userWishHistJson = new JsonObject();
                 userWishHistJson.addProperty(ParameterKeys.USER_ID, userProfile.getUserId());
                 userWishHistJson.addProperty(ParameterKeys.NICKNAME, userProfile.getNickName());
-                userWishHistJson.addProperty("portrait", userProfile.getPortrait());
+                String portrait = userProfile.getPortrait();
+                if (portrait != null && !portrait.startsWith(ConfigHelper.getHttpdir())
+                        && !portrait.startsWith(ConfigHelper.getHttpdirUp())) {
+                    portrait = ConfigHelper.getHttpdir() + portrait;
+                }
+                userWishHistJson.addProperty("portrait", portrait);
                 userWishHistJson.addProperty(PARAM_WISH_COUNT, userWishHistDTO.getWishCount());
                 
                 wishGoodsRichList.add(userWishHistJson);
