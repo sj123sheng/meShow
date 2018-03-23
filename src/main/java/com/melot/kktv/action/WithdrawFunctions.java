@@ -618,7 +618,6 @@ public class WithdrawFunctions {
             Result<Boolean> signResult = userBankService.signServiceCompany(userId, serviceCompanyId);
             if(signResult.getCode().equals(CommonStateCode.SUCCESS) && signResult.getData() != null) {
                 result.addProperty("signResult", signResult.getData());
-                return result;
             }
 
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);

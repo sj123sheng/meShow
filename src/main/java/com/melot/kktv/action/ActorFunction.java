@@ -518,6 +518,7 @@ public class ActorFunction {
             }
         }
 
+        result.addProperty("userVerifyType", userVerifyType);
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
