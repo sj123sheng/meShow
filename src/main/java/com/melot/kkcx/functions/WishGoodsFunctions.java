@@ -385,7 +385,7 @@ public class WishGoodsFunctions {
                 userWishHistJson.addProperty(ParameterKeys.NICKNAME, userProfile.getNickName());
                 String portrait = userProfile.getPortrait();
                 if (portrait != null && !portrait.startsWith(ConfigHelper.getHttpdir())
-                        && portrait.startsWith(ConfigHelper.getHttpdirUp())) {
+                        && !portrait.startsWith(ConfigHelper.getHttpdirUp())) {
                     portrait = ConfigHelper.getHttpdir() + portrait;
                 }
                 userWishHistJson.addProperty("portrait", portrait);
