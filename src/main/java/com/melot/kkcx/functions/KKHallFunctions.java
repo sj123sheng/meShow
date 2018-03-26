@@ -17,8 +17,6 @@ import com.melot.kk.hall.api.service.WebSkinConfService;
 import com.melot.kkcore.relation.api.ActorRelation;
 import com.melot.kkcore.relation.api.RelationType;
 import com.melot.kkcore.relation.service.ActorRelationService;
-import com.melot.kkcore.user.api.UserRegistry;
-import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.service.RoomService;
 import com.melot.kkcx.transform.RoomTF;
 import com.melot.kktv.base.CommonStateCode;
@@ -297,36 +295,7 @@ public class KKHallFunctions {
             return result;
         }
 
-        boolean meetResult = WhetherMeetTheTestRequirements(userId, channel);
-
-        // 满足推荐列表推荐算法测试需求
-        if(meetResult) {
-
-            String userRecommendAlgorithm = RecommendAlgorithmSource.getUserRecommendAlgorithm(userId);
-
-            if(StringUtils.isEmpty(userRecommendAlgorithm)) {
-                userRecommendAlgorithm = RecommendAlgorithmSource.setUserRecommendAlgorithm(userId);
-            }
-
-            if(StringUtils.isEmpty(userRecommendAlgorithm)) {
-
-                getRecommendAlgorithmB(result, appId, start, offset, platform, userId, firstView, roomListIndex);
-            }else if(userRecommendAlgorithm.equals("A")) {
-
-                getRecommendAlgorithmA(result, appId, start, offset, platform, userId, firstView, roomListIndex);
-            }else if(userRecommendAlgorithm.equals("B")) {
-
-                getRecommendAlgorithmB(result, appId, start, offset, platform, userId, firstView, roomListIndex);
-            }else if(userRecommendAlgorithm.equals("C")) {
-
-                getRecommendAlgorithmC(result, appId, start, offset, platform, userId);
-            }
-
-        }else {
-
-            getRecommendAlgorithmB(result, appId, start, offset, platform, userId, firstView, roomListIndex);
-        }
-
+        getRecommendAlgorithmB(result, appId, start, offset, platform, userId, firstView, roomListIndex);
         result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 
@@ -449,36 +418,6 @@ public class KKHallFunctions {
         } catch (Exception e) {
             logger.error("Fail to call firstPageHandler.getRecommendAlgorithmC(" + userId + ", " + appId + ", " + start + ", " + offset + ")", e);
         }
-    }
-
-    private boolean WhetherMeetTheTestRequirements(int userId, int channel) {
-
-        if(userId == 0) {
-            return false;
-        }
-
-        // 为了对比多个推荐算法的优劣 用于测试的渠道号列表
-        String[] recommendChannelIdArray = configService.getRecommendChannelIds().trim().split(",");
-        List<Integer> recommendChannelIds = Lists.newArrayList();
-        for(String recommendChannelId : recommendChannelIdArray) {
-            recommendChannelIds.add(Integer.parseInt(recommendChannelId));
-        }
-
-        // 为了对比多个推荐算法的优劣 指定开始注册时间后的用户用于测试 时间戳(单位:毫秒)
-        Long recommendRegistrationTime = Long.parseLong(configService.getRecommendRegistrationTime());
-        KkUserService userService = MelotBeanFactory.getBean("kkUserService", KkUserService.class);
-        UserRegistry userRegistry = userService.getUserRegistry(userId);
-        if(userRegistry == null || userRegistry.getOpenPlatform() == 0 || userRegistry.getOpenPlatform() == -5) {
-            return false;
-        }
-
-        long registerTime =  userRegistry.getRegisterTime();
-
-        if(recommendChannelIds.contains(channel) && registerTime >= recommendRegistrationTime) {
-            return true;
-        }
-
-        return false;
     }
 
     /**
@@ -936,40 +875,8 @@ public class KKHallFunctions {
         List<RoomInfo> trumpRoomList = null;
 
         try {
-
             FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
-
-            boolean meetResult = WhetherMeetTheTestRequirements(userId, channel);
-
-            if(meetResult) {
-
-                String userRecommendAlgorithm = RecommendAlgorithmSource.getUserRecommendAlgorithm(userId);
-                if(StringUtils.isEmpty(userRecommendAlgorithm)) {
-
-                    userRecommendAlgorithm = RecommendAlgorithmSource.setUserRecommendAlgorithm(userId);
-                }
-
-                if(StringUtils.isNotEmpty(userRecommendAlgorithm)) {
-                    if(userRecommendAlgorithm.equals("A")) {
-
-                        //  从大数据推荐算法接口中获取置顶位房间id列表
-                        NewRcmdService newRcmdService = MelotBeanFactory.getBean("newRcmdService", NewRcmdService.class);
-                        List<Integer> roomIdList = newRcmdService.getRcmdActorTopList(userId);
-
-                        if (roomIdList != null && roomIdList.size() > 0) {
-                            RoomInfoService roomInfoServie = MelotBeanFactory.getBean("roomInfoService", RoomInfoService.class);
-                            String roomIds = StringUtils.join(roomIdList.toArray(), ",");
-                            trumpRoomList = roomInfoServie.getRoomListByRoomIds(roomIds);
-                        }
-                    }else if(userRecommendAlgorithm.equals("B")) {
-
-                        trumpRoomList = firstPageHandler.getTrumpRooms(offset);
-                    }
-                }
-            }else {
-                trumpRoomList = firstPageHandler.getTrumpRooms(offset);
-            }
-
+            trumpRoomList = firstPageHandler.getTrumpRooms(offset);
         } catch (Exception e) {
             logger.error("Fail to call firstPageHandler.getTrumpRooms offset:" + offset, e);
         }
