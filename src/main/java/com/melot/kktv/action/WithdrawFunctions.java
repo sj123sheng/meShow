@@ -181,6 +181,9 @@ public class WithdrawFunctions {
             if(!pathPrefix.endsWith("/")) {
                 pathPrefix = pathPrefix + "/";
             }
+            if(pathPrefix.endsWith("kktv/")) {
+                pathPrefix = pathPrefix.substring(0, pathPrefix.lastIndexOf("kktv"));
+            }
             if(idPicFont.startsWith("/")) {
                 idPicFont = pathPrefix + idPicFont.substring(1);
             }else {
