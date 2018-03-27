@@ -427,6 +427,7 @@ public class ActorFunction {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_MISSING);
             return result;
         }
+        result.addProperty("userVerifyType", userVerifyType);
 
         // 身份证号码转成大写
         certNo = certNo.toUpperCase();
@@ -518,7 +519,6 @@ public class ActorFunction {
             }
         }
 
-        result.addProperty("userVerifyType", userVerifyType);
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
