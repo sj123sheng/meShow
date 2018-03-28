@@ -421,7 +421,10 @@ public class FamilyHonorSource {
         try {
         	jedis = getInstance();
         	if (StringUtils.isNotBlank(member)) {
-        		return jedis.zscore(String.format(FAMILYRANKING_KEY_NEW, rankType, slotType, familyId), member);
+        	    Double score = jedis.zscore(String.format(FAMILYRANKING_KEY_NEW, rankType, slotType, familyId), member);
+        	    if (score != null) {
+        	        return score;
+        	    }
         	}
         } catch (Exception e) {
             e.printStackTrace();
