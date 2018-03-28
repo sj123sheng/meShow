@@ -4,7 +4,7 @@
 	
 	<appender name="stdout" class="org.apache.log4j.ConsoleAppender">
 		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="%d %p [%c{10}] - %m%n"/>
+			<param name="ConversionPattern" value="%d %p [%l] - %m%n"/>
         </layout>
 	</appender>
 	
@@ -14,7 +14,7 @@
         <param name="Encoding" value="UTF-8"/>
         <param name="DatePattern" value="'.'yyyy-MM-dd"/>
         <layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="%d %p [%c{10}] - %m%n"/>
+			<param name="ConversionPattern" value="%d %p [%l] - %m%n"/>
         </layout>
     </appender>
 	
