@@ -10,6 +10,8 @@ import com.melot.kk.userSecurity.api.domain.param.UserVerifyParam;
 import com.melot.kk.userSecurity.api.service.ActorWithdrawService;
 import com.melot.kk.userSecurity.api.service.UserBankService;
 import com.melot.kk.userSecurity.api.service.UserVerifyService;
+import com.melot.kkcore.actor.api.ActorInfo;
+import com.melot.kkcore.actor.service.ActorService;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Page;
@@ -19,6 +21,7 @@ import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.SecurityFunctions;
 import com.melot.kktv.util.TagCodeEnum;
+import com.melot.sdk.core.util.MelotBeanFactory;
 import org.apache.log4j.Logger;
 
 import javax.annotation.Resource;
@@ -429,6 +432,7 @@ public class WithdrawFunctions {
             result.addProperty("signStatus", userVerifyDO == null ? SignElectronicContractStatusEnum.NOT_SIGN : userVerifyDO.getSignElectronicContract());
 
             ActorPayeeDO actorPayeeDO = actorWithdrawService.getActorPayeeDO(userId).getData();
+            Boolean showWithdraw = false;
             if(actorPayeeDO != null) {
                 int payRoll = actorPayeeDO.getPayRoll();
                 if(payRoll == PayRollEnum.ENTRUST_OTHERS_SEND) {
@@ -443,7 +447,14 @@ public class WithdrawFunctions {
                         result.addProperty("clientSignStatus", SignElectronicContractStatusEnum.NOT_SIGN);
                     }
                 }
+                ActorService actorService = (ActorService) MelotBeanFactory.getBean("actorService");
+                ActorInfo actorInfo = actorService.getActorInfoById(userId);
+                if(actorInfo != null && actorInfo.getFamilyId() == 11222 && payRoll == PayRollEnum.SELF_COLLAR) {
+                    showWithdraw = true;
+                }
             }
+            result.addProperty("showWithdraw", showWithdraw);
+
             ServiceCompanyDO serviceCompanyDO = userBankService.getServiceCompanyDO(userId).getData();
             if(serviceCompanyDO != null) {
                 int signServiceCompany = serviceCompanyDO.getSignServiceCompany();

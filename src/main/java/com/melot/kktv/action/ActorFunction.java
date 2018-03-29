@@ -480,7 +480,7 @@ public class ActorFunction {
         // 更新用户实名认证信息 认证通过
         KkUserService userService = MelotBeanFactory.getBean("kkUserService", KkUserService.class);
         UserProfile userProfile = userService.getUserProfile(userId);
-
+        UserVerifyDO userVerifyDO = userVerifyService.getUserVerifyDO(userId).getData();
         UserVerifyParam userVerifyParam = new UserVerifyParam();
         userVerifyParam.setUserId(userId);
         userVerifyParam.setVerifyType(UserVerifyTypeEnum.SESAME_VERIFY);
@@ -489,8 +489,10 @@ public class ActorFunction {
         userVerifyParam.setCertName(certName);
         userVerifyParam.setVerifyMobile(userProfile.getIdentifyPhone());
         userVerifyParam.setGender(StringUtil.parseFromStr(certNo.substring(16, 17), 0) % 2);
-        userVerifyParam.setIdPicStatus(IdPicStatusEnum.NOT_UPLOADED);
-        userVerifyParam.setSignElectronicContract(0);
+        if(userVerifyDO == null) {
+            userVerifyParam.setIdPicStatus(IdPicStatusEnum.NOT_UPLOADED);
+            userVerifyParam.setSignElectronicContract(0);
+        }
         userVerifyService.updateUserVerify(userVerifyParam);
 
         // 如果是申请主播实名认证
