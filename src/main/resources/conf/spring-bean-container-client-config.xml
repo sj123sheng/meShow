@@ -155,10 +155,18 @@
 
 	<!-- 用户安全模块 -->
 	<kkrpc:reference id="userVerifyService" interface="com.melot.kk.userSecurity.api.service.UserVerifyService" version="1.0.0"/>
+	<kkrpc:reference id="actorWithdrawService" interface="com.melot.kk.userSecurity.api.service.ActorWithdrawService" version="1.0.0"/>
+	<kkrpc:reference id="userBankService" interface="com.melot.kk.userSecurity.api.service.UserBankService" version="1.0.0"/>
 
 	<!-- 新家族模块 -->
 	<kkrpc:reference id="userApplyActorService" interface="com.melot.family.driver.service.UserApplyActorService" version="1.0.0"/>
 
 	<!-- 消消乐 -->
 	<kkrpc:reference id="gembinderService" interface="com.melot.kkactivity.driver.service.GembinderService" version="1.0.0"/>
+	
+	<!-- 众筹【心愿礼物】模块 -->
+	<kkrpc:reference id="crowdFundingService" interface="com.melot.kk.crowdfunding.api.service.CrowdFundingService" version="1.0.0"/>
+	
+	<!-- 用户收货地址信息 -->
+	<kkrpc:reference id="userAddressService" interface="com.melot.kk.logistics.api.service.UserAddressService" version="1.0.0"/>
 </beans>

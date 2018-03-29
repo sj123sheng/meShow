@@ -2947,6 +2947,105 @@
 		<constructor-arg name="methodName" value="encryptAccount" />
 	</bean>
 
+    <!-- 主播提现接口 -->
+    <bean id="51010601" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="withdrawFunctions" />
+        <constructor-arg name="methodName" value="getUserVerifyInfo" />
+    </bean>
+    <bean id="51010602" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="withdrawFunctions" />
+        <constructor-arg name="methodName" value="uploadIDPhoto" />
+    </bean>
+    <bean id="51010603" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="withdrawFunctions" />
+        <constructor-arg name="methodName" value="getUserBindBankCardInfo" />
+    </bean>
+    <bean id="51010604" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="withdrawFunctions" />
+        <constructor-arg name="methodName" value="unbindBankCard" />
+    </bean>
+    <bean id="51010605" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="withdrawFunctions" />
+        <constructor-arg name="methodName" value="bindBankCard" />
+    </bean>
+    <bean id="51010606" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="withdrawFunctions" />
+        <constructor-arg name="methodName" value="getActorWithdrawInfo" />
+    </bean>
+    <bean id="51010607" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="withdrawFunctions" />
+        <constructor-arg name="methodName" value="withdraw" />
+    </bean>
+    <bean id="51010608" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="withdrawFunctions" />
+        <constructor-arg name="methodName" value="getWithdrawList" />
+    </bean>
+    <bean id="51010609" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="withdrawFunctions" />
+        <constructor-arg name="methodName" value="signServiceCompany" />
+    </bean>
+
+	<!-- 心愿商品【众筹】相关接口 -->
+	<bean id="51050501" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="wishGoodsFunctions" />
+		<constructor-arg name="methodName" value="getAllWishGoods" />
+	</bean>
+	
+	<bean id="51050502" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="wishGoodsFunctions" />
+		<constructor-arg name="methodName" value="setUserWishGoods" />
+	</bean>
+	
+	<bean id="51050503" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="wishGoodsFunctions" />
+		<constructor-arg name="methodName" value="getUserWishGoods" />
+	</bean>
+	
+	<bean id="51050504" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="wishGoodsFunctions" />
+		<constructor-arg name="methodName" value="getWishGoodsInfo" />
+	</bean>
+	
+	<bean id="51050505" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="wishGoodsFunctions" />
+		<constructor-arg name="methodName" value="getWishGoodsRichList" />
+	</bean>
+	
+	<bean id="51050507" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="wishGoodsFunctions" />
+		<constructor-arg name="methodName" value="getUserWishOrders" />
+	</bean>
+	
+	<bean id="51050508" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="wishGoodsFunctions" />
+		<constructor-arg name="methodName" value="applyDelivery" />
+	</bean>
+	
+	<bean id="51050509" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="wishGoodsFunctions" />
+		<constructor-arg name="methodName" value="getWishBill" />
+	</bean>
+	
+	<bean id="51050510" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="wishGoodsFunctions" />
+		<constructor-arg name="methodName" value="getBuyWishConfig" />
+	</bean>
+	
+	<bean id="51050511" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="wishGoodsFunctions" />
+		<constructor-arg name="methodName" value="checkWishBillState" />
+	</bean>
+	
+	<bean id="51010102" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="userFunction" />
+		<constructor-arg name="methodName" value="setUserAddressInfo" />
+	</bean>
+	
+	<bean id="51010103" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="userFunction" />
+		<constructor-arg name="methodName" value="getUserAddressInfo" />
+	</bean>
+	
 	<!-- 获取游客昵称(51010105) -->
 	<bean id="51010105" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="userFunction" />

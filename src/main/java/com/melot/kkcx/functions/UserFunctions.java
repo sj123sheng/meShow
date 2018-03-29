@@ -1,43 +1,16 @@
 
 package com.melot.kkcx.functions;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.dianping.cat.Cat;
 import com.dianping.cat.message.Transaction;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.blacklist.service.BlacklistService;
-import com.melot.kkcore.account.api.ExtendDataKeys;
-import com.melot.kkcore.account.api.ResLogin;
-import com.melot.kkcore.account.api.ResMobileGuestUser;
-import com.melot.kkcore.account.api.ResRegister;
-import com.melot.kkcore.account.api.ResResetPassword;
-import com.melot.kkcore.user.api.LastLoginInfo;
-import com.melot.kkcore.user.api.ProfileKeys;
-import com.melot.kkcore.user.api.UserInfoDetail;
-import com.melot.kkcore.user.api.UserProfile;
-import com.melot.kkcore.user.api.UserRegistry;
-import com.melot.kkcore.user.api.UserStaticInfo;
+import com.melot.kk.logistics.api.domain.UserAddressDO;
+import com.melot.kk.logistics.api.domain.UserAddressParam;
+import com.melot.kk.logistics.api.service.UserAddressService;
+import com.melot.kkcore.account.api.*;
+import com.melot.kkcore.user.api.*;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.model.ActorLevel;
 import com.melot.kkcx.model.RichLevel;
@@ -46,34 +19,18 @@ import com.melot.kkcx.service.ProfileServices;
 import com.melot.kkcx.service.UserAssetServices;
 import com.melot.kktv.action.IndexFunctions;
 import com.melot.kktv.action.UserRelationFunctions;
+import com.melot.kktv.base.CommonStateCode;
+import com.melot.kktv.base.Result;
 import com.melot.kktv.domain.SmsConfig;
 import com.melot.kktv.model.MedalInfo;
 import com.melot.kktv.redis.AppStatsSource;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.MedalSource;
 import com.melot.kktv.redis.SmsSource;
-import com.melot.kktv.service.AccountService;
-import com.melot.kktv.service.ConfigService;
-import com.melot.kktv.service.DataAcqService;
-import com.melot.kktv.service.UserRelationService;
-import com.melot.kktv.service.UserService;
+import com.melot.kktv.service.*;
 import com.melot.kktv.third.ThirdVerifyUtil;
 import com.melot.kktv.third.service.QQService;
-import com.melot.kktv.util.AppChannelEnum;
-import com.melot.kktv.util.AppIdEnum;
-import com.melot.kktv.util.CityUtil;
-import com.melot.kktv.util.CommonUtil;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.Constant;
-import com.melot.kktv.util.DateUtil;
-import com.melot.kktv.util.HadoopLogger;
-import com.melot.kktv.util.LoginTypeEnum;
-import com.melot.kktv.util.PlatformEnum;
-import com.melot.kktv.util.SecurityFunctions;
-import com.melot.kktv.util.SmsTypEnum;
-import com.melot.kktv.util.StringUtil;
-import com.melot.kktv.util.TagCodeEnum;
-import com.melot.kktv.util.TextFilter;
+import com.melot.kktv.util.*;
 import com.melot.kktv.util.confdynamic.MedalConfig;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
@@ -87,6 +44,16 @@ import com.melot.module.packagegift.driver.service.VipService;
 import com.melot.module.task.driver.service.TaskInterfaceService;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import com.melot.sms.api.service.SmsService;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.servlet.http.HttpServletRequest;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class UserFunctions {
 	
@@ -2682,6 +2649,143 @@ public class UserFunctions {
         return result;
     }
     
+    /**
+     * 获取用户默认收货地址【51010103】
+     * 没有返回SUCCESS 但没有其他字段
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getUserAddressInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+        
+        int userId = 0;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        try {
+            UserAddressService userAddressService = (UserAddressService) MelotBeanFactory.getBean("userAddressService");
+            Result<UserAddressDO> moduleResult = userAddressService.getUserDefaultAddressDOByUserId(userId);
+            if (moduleResult == null || !CommonStateCode.SUCCESS.equals(moduleResult.getCode())) {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            UserAddressDO userAddressDO = moduleResult.getData();
+            if (userAddressDO != null) {
+                result.addProperty("addressId", userAddressDO.getAddressId());
+                result.addProperty("consigneeName", userAddressDO.getConsigneeName());
+                result.addProperty("consigneeMobile", userAddressDO.getConsigneeMobile());
+                result.addProperty("province", userAddressDO.getProvince());
+                result.addProperty("city", userAddressDO.getCity());
+                result.addProperty("district", userAddressDO.getDistrict());
+                result.addProperty("detailAddress", userAddressDO.getDetailAddress());
+            }
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error(String.format("Module Error: userAddressService.getUserDefaultAddressDOByUserId(userId=%s)", userId), e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            return result;
+        }
+    }
+    
+    /**
+     * 设置用户收货地址信息【51010102】
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject setUserAddressInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+        
+        int userId = 0;
+        int addressId = 0;
+        String consigneeName;
+        String consigneeMobile;
+        String province;
+        String city;
+        String district;
+        String detailAddress;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            addressId = CommonUtil.getJsonParamInt(jsonObject, "addressId", 0, null, 1, Integer.MAX_VALUE);
+            consigneeName = CommonUtil.getJsonParamString(jsonObject, "consigneeName", null, "5101010201", 1 , Integer.MAX_VALUE);
+            consigneeMobile = CommonUtil.getJsonParamString(jsonObject, "consigneeMobile", null, "5101010202", 1 , Integer.MAX_VALUE);
+            province = CommonUtil.getJsonParamString(jsonObject, "province", null, null, 0 , Integer.MAX_VALUE);
+            city = CommonUtil.getJsonParamString(jsonObject, "city", null, null, 0 , Integer.MAX_VALUE);
+            district = CommonUtil.getJsonParamString(jsonObject, "district", null, null, 0 , Integer.MAX_VALUE);
+            detailAddress = CommonUtil.getJsonParamString(jsonObject, "detailAddress", null, "51010102", 1 , Integer.MAX_VALUE);
+            
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        try {
+            UserAddressService userAddressService = (UserAddressService) MelotBeanFactory.getBean("userAddressService");
+            
+            // 设置默认
+            UserAddressParam param = new UserAddressParam();
+            param.setAddressId(addressId <= 0 ? null : addressId);
+            param.setCity(city);
+            param.setConsigneeMobile(consigneeMobile);
+            param.setConsigneeName(consigneeName);
+            param.setDetailAddress(detailAddress);
+            param.setDistrict(district);
+            param.setIsDefaultAddress(1);
+            param.setProvince(province);
+            param.setUserId(userId);
+            
+            Result<Boolean> saveModuleResult = userAddressService.saveUserAddress(param);
+            if (saveModuleResult == null || !CommonStateCode.SUCCESS.equals(saveModuleResult.getCode())) {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            
+            // 获取ID
+            Result<UserAddressDO> moduleResult = userAddressService.getUserDefaultAddressDOByUserId(userId);
+            if (moduleResult == null || !CommonStateCode.SUCCESS.equals(moduleResult.getCode())) {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            UserAddressDO userAddressDO = moduleResult.getData();
+            if (userAddressDO != null) {
+                result.addProperty("addressId", userAddressDO.getAddressId());
+            } else {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error(String.format("Module Error: userAddressService.getUserDefaultAddressDOByUserId(userId=%s)", userId), e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            return result;
+        }
+    }
 	private static JsonObject checkLogin(JsonObject result, ResLogin resLogin, int loginType, JsonObject jsonObject) {
 		if (loginType != -1 && resLogin != null && resLogin.getTagCode() != null) {
         	String TagCode = resLogin.getTagCode();
