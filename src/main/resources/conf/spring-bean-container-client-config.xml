@@ -72,7 +72,7 @@
 	<kkrpc:reference id="privateLetterService" interface="com.melot.letter.driver.service.PrivateLetterService" version="1.0.0"></kkrpc:reference>
 
 	<!-- 敏感词模块 -->
-	<kkrpc:reference id="chatAnalyzerService" interface="com.melot.chat.service.ChatAnalyzerService" version="1.0.0"></kkrpc:reference>
+	<kkrpc:reference id="chatAnalyzerService" interface="com.melot.chat.service.ChatAnalyzerService" version="1.0.1"></kkrpc:reference>
 	<kkrpc:reference id="privateChatAnalyzerService" interface="com.melot.chat.service.PrivateChatAnalyzerService" version="1.0.0"></kkrpc:reference>
 
 	<!-- 轮播房 -->	
