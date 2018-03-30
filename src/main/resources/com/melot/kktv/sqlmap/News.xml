@@ -436,7 +436,7 @@
 	    SELECT d.* from (
 			SELECT c.*, rownum rwn from ( 
 				select newsid, userid, newstype, content, publishedtime, commentcount, mediasource, resourceurl, resourceid, rewardcount, 
-		         nickname, gender, media_title, nvl(customscore, 0) as customscore, viewtimes, mediafrom from
+		          media_title, nvl(customscore, 0) as customscore, viewtimes, mediafrom from
 		          (select un.newsid, un.isrepai, un.userid, un.newstype, un.content, un.publishedtime, un.commentcount, un.mediasource, 
 		                  un.resourceurl, un.resourceid, un.rewardcount, un.viewtimes, un.customscore,un.media_title, ai.actorid, un.mediafrom
 		             from user_news un 
