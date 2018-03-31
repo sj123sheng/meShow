@@ -635,6 +635,13 @@
 		  <artifactId>kk-logistics-api</artifactId>
 		  <version>1.0.0</version>
 		</dependency>
+		
+		<!-- 直播购模块 -->
+		<dependency>
+		  <groupId>com.melot.kk</groupId>
+		  <artifactId>kk-liveshop-api</artifactId>
+		  <version>1.0.0-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
  	
 </project>

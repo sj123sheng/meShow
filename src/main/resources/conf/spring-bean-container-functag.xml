@@ -3057,4 +3057,44 @@
 		<constructor-arg name="methodName" value="getGuestName" />
 	</bean>
 	
+	<!-- 直播购相关接口 -->
+	<bean id="51060502" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="actorAddOrder" />
+	</bean>
+	
+	<bean id="51060503" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getOrderInfo" />
+	</bean>
+	
+	<bean id="51060504" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getOrders" />
+	</bean>
+	
+	<bean id="51060505" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="deliveryOrder" />
+	</bean>
+	
+	<bean id="51060506" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="applySendOrder" />
+	</bean>
+	
+	<bean id="51060507" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="applyRefund" />
+	</bean>
+	
+	<bean id="51060509" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="receiveOrder" />
+	</bean>
+	
+	<bean id="51060510" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="checkOrderState" />
+	</bean>
 </beans>
