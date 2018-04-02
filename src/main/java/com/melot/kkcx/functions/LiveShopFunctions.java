@@ -123,7 +123,7 @@ public class LiveShopFunctions {
         String orderNo;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, "5106050301", 1, Integer.MAX_VALUE);
-            orderNo = CommonUtil.getJsonParamString(jsonObject, PARAM_START, "", "5106050302", 0, Integer.MAX_VALUE);
+            orderNo = CommonUtil.getJsonParamString(jsonObject, PARAM_ORDER_NO, "", "5106050302", 0, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
             return result;
@@ -200,7 +200,7 @@ public class LiveShopFunctions {
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, "5106050401", 1, Integer.MAX_VALUE);
             state = CommonUtil.getJsonParamInt(jsonObject, "state", 0, null, 0, Integer.MAX_VALUE);
-            type = CommonUtil.getJsonParamInt(jsonObject, "type", 0, null, 0, Integer.MAX_VALUE);
+            type = CommonUtil.getJsonParamInt(jsonObject, "type", 1, null, 0, Integer.MAX_VALUE);
             start = CommonUtil.getJsonParamInt(jsonObject, PARAM_START, 0, null, 0, Integer.MAX_VALUE);
             num = CommonUtil.getJsonParamInt(jsonObject, "num", 20, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
@@ -226,6 +226,12 @@ public class LiveShopFunctions {
             Page<LiveShopOrderDTO> page = moduleResult.getData();
             result.addProperty("count", page.getCount());
             JsonArray orders = new JsonArray();
+            if (page.getList() == null) {
+                result.add("orders", orders);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+                return result;
+            }
+            
             for (LiveShopOrderDTO liveShopOrderDTO : page.getList()) {
                 JsonObject orderDTOJson = new JsonObject();
                 LiveShopTF.orderInfo2Json(orderDTOJson, liveShopOrderDTO, null);
@@ -433,6 +439,10 @@ public class LiveShopFunctions {
     public JsonObject receiveOrder(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
         
+        if (!checkTag) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_INCORRECT);
+            return result;
+        }
         int userId;
         String orderNo;
         try {

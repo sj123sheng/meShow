@@ -13,8 +13,8 @@ public class LiveShopTF {
     private LiveShopTF() {}
     
     public static void orderInfo2Json(JsonObject result, LiveShopOrderDTO orderDTO, UserAddressDO addressDO) {
-        result.addProperty("shopUserId", orderDTO.getActorId());
-        result.addProperty("payerId", orderDTO.getUserId());
+        result.addProperty("sellerId", orderDTO.getActorId());
+        result.addProperty("buyerId", orderDTO.getUserId());
         
         result.addProperty("orderNo", orderDTO.getOrderNo());
         result.addProperty("expressMoney", orderDTO.getExpressMoney());
