@@ -13,6 +13,8 @@ import com.melot.kk.logistics.api.domain.UserAddressDO;
 import com.melot.kk.logistics.api.service.UserAddressService;
 import com.melot.kk.recharge.api.dto.ConfPaymentInfoDto;
 import com.melot.kk.recharge.api.service.RechargeService;
+import com.melot.kkcore.user.api.UserProfile;
+import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.transform.LiveShopTF;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Page;
@@ -37,6 +39,9 @@ public class LiveShopFunctions {
     
     @Resource
     RechargeService rechargeService;
+    
+    @Resource
+    KkUserService kkUserService;
     
     /**
      * 主播生成订单【51060502】
@@ -224,6 +229,13 @@ public class LiveShopFunctions {
             for (LiveShopOrderDTO liveShopOrderDTO : page.getList()) {
                 JsonObject orderDTOJson = new JsonObject();
                 LiveShopTF.orderInfo2Json(orderDTOJson, liveShopOrderDTO, null);
+                
+                int relationId = liveShopOrderDTO.getUserId().equals(userId) 
+                        ? liveShopOrderDTO.getActorId() : liveShopOrderDTO.getUserId();
+                UserProfile userProfile = kkUserService.getUserProfile(relationId);
+                orderDTOJson.addProperty("relationId", relationId);
+                orderDTOJson.addProperty("nickname", userProfile.getNickName());
+                
                 orders.add(orderDTOJson);
             }
             
