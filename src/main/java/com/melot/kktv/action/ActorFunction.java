@@ -1,13 +1,22 @@
 package com.melot.kktv.action;
 
+import java.util.Date;
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.antgroup.zmxy.openplatform.api.response.ZhimaCustomerCertificationInitializeResponse;
 import com.antgroup.zmxy.openplatform.api.response.ZhimaCustomerCertificationQueryResponse;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.melot.blacklist.service.BlacklistService;
 import com.melot.family.driver.constant.UserApplyActorStatusEnum;
-import com.melot.family.driver.domain.DO.UserApplyActorDO;
 import com.melot.family.driver.domain.FamilyInfo;
+import com.melot.family.driver.domain.DO.UserApplyActorDO;
 import com.melot.family.driver.service.FamilyOperatorService;
 import com.melot.family.driver.service.UserApplyActorService;
 import com.melot.game.config.sdk.utils.StringUtils;
@@ -31,20 +40,21 @@ import com.melot.kkcx.service.FamilyService;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.redis.GiftRecordSource;
+import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.UserService;
 import com.melot.kktv.third.service.ZmxyService;
-import com.melot.kktv.util.*;
+import com.melot.kktv.util.AppIdEnum;
+import com.melot.kktv.util.BizCodeEnum;
+import com.melot.kktv.util.CollectionUtils;
+import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.ConfigHelper;
+import com.melot.kktv.util.DateUtil;
+import com.melot.kktv.util.StringUtil;
+import com.melot.kktv.util.TagCodeEnum;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import com.melot.share.driver.domain.RankData;
 import com.melot.share.driver.service.ShareActivityService;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import java.util.Date;
-import java.util.List;
 
 /**
  * Title: ActorFunction
@@ -61,6 +71,8 @@ public class ActorFunction {
     private static Logger logger = Logger.getLogger(ActorFunction.class);
     
     private static String REGEX = ",";
+    
+    private static final String RETRIEVEPW_DUSER_KEY = "retrievePwdUser_%s"; 
     
     @Autowired
     private ConfigService configService;
@@ -474,6 +486,10 @@ public class ActorFunction {
             return result;
         }else if(userVerifyType == 1 && !verifyUserVerify(result, userId, certNo)) {
             // 校验普通用户能否实名认证
+            return result;
+        } else if (userVerifyType == 2) {
+            //找回密码
+            HotDataSource.setTempDataString(String.format(RETRIEVEPW_DUSER_KEY, userId), "1", 300);
             return result;
         }
 
