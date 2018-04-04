@@ -2164,6 +2164,7 @@
 	<bean id="55000006" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="kkHallFunction" />
 		<constructor-arg name="methodName" value="getTrumpRoomList" />
+        <constructor-arg name="cacheType" value="60" />
 	</bean>
 	
 	<!-- =============新版公告&帮助================= -->
