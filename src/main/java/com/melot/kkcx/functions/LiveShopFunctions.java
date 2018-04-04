@@ -245,6 +245,14 @@ public class LiveShopFunctions {
                 orderDTOJson.addProperty("relationId", relationId);
                 orderDTOJson.addProperty("nickname", userProfile.getNickName());
                 
+                // 获取支付
+                if (liveShopOrderDTO.getPaymentMode() != null && liveShopOrderDTO.getPaymentMode() > 0) {
+                    Result<ConfPaymentInfoDto> rechargeResult = rechargeService.getConfPaymentInfo(liveShopOrderDTO.getPaymentMode());
+                    if (rechargeResult != null && CommonStateCode.SUCCESS.equals(rechargeResult.getCode())) {
+                        orderDTOJson.addProperty("paymentName", rechargeResult.getData().getPaymentName());
+                    }
+                }
+                
                 orders.add(orderDTOJson);
             }
             
