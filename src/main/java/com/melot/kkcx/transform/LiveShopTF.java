@@ -2,6 +2,7 @@ package com.melot.kkcx.transform;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.melot.kk.liveshop.api.constant.LiveShopOrderState;
 import com.melot.kk.liveshop.api.dto.LiveShopOrderDTO;
 import com.melot.kk.liveshop.api.dto.LiveShopOrderItemDTO;
 import com.melot.kk.liveshop.api.dto.LiveShopOrderPictureDTO;
@@ -19,7 +20,12 @@ public class LiveShopTF {
         result.addProperty("orderNo", orderDTO.getOrderNo());
         result.addProperty("expressMoney", orderDTO.getExpressMoney());
         result.addProperty("orderMoney", orderDTO.getOrderMoney());
-        result.addProperty("orderState", orderDTO.getOrderState());
+        if (orderDTO.getOrderState().equals(LiveShopOrderState.WAIT_RETURN)) {
+            // 管理后台挂起的订单，做为申请退款的订单处理
+            result.addProperty("orderState", LiveShopOrderState.APPLY_REFUND);
+        } else {
+            result.addProperty("orderState", orderDTO.getOrderState());
+        }
         result.addProperty("addTime", orderDTO.getAddTime().getTime());
         
         if (addressDO != null) {

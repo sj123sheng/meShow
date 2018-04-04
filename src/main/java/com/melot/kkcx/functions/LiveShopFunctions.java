@@ -91,6 +91,9 @@ public class LiveShopFunctions {
             } else if ("5".equals(code)) {
                 result.addProperty(ParameterKeys.TAG_CODE, "5106050207");
                 return result;
+            } else if ("6".equals(code)) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5106050208");
+                return result;
             } else if (!CommonStateCode.SUCCESS.equals(code)){
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
                 return result;
