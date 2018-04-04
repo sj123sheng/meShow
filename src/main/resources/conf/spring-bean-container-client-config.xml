@@ -65,7 +65,8 @@
 	<kkrpc:reference id="familyAdminService" interface="com.melot.family.driver.service.FamilyAdminService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="familyOperatorService" interface="com.melot.family.driver.service.FamilyOperatorService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="familyAdminNewService" interface="com.melot.family.driver.service.FamilyAdminNewService" version="1.0.0"></kkrpc:reference>
-	
+	<kkrpc:reference id="familyTopConfService" interface="com.melot.family.driver.service.FamilyTopConfService" version="1.0.0"></kkrpc:reference>
+
 	<kkrpc:reference id="upIdfaService" interface="com.melot.ios.idfa.driver.UpIdfaService" version="1.0.0"></kkrpc:reference>
 
 	<!-- 用户私信设置模块 -->
