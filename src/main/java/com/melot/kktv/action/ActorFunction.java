@@ -288,11 +288,6 @@ public class ActorFunction {
     public JsonObject applyForActor(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         // 定义返回结果
         JsonObject result = new JsonObject();
-        // 该接口需要验证token,未验证的返回错误码
-        if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-            return result;
-        }
 
         int bizCode, userId, appId, familyId, userVerifyType;
         String certName, certNo, returnUrl;
@@ -310,6 +305,12 @@ public class ActorFunction {
             return result;
         } catch (Exception e) {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        // 找回密码无需验证token
+        if (!checkTag && userVerifyType != 2) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
             return result;
         }
 
@@ -412,11 +413,6 @@ public class ActorFunction {
     public JsonObject verifyAuthResult(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 
         JsonObject result = new JsonObject();
-        // 该接口需要验证token,未验证的返回错误码
-        if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-            return result;
-        }
 
         int userId, familyId, appId, userVerifyType;
         String bizNo, certNo;
@@ -432,6 +428,12 @@ public class ActorFunction {
             return result;
         } catch (Exception e) {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        // 找回密码无需验证token
+        if (!checkTag && userVerifyType != 2) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
             return result;
         }
 
@@ -490,6 +492,7 @@ public class ActorFunction {
         } else if (userVerifyType == 2) {
             //找回密码
             HotDataSource.setTempDataString(String.format(RETRIEVEPW_DUSER_KEY, userId), "1", 300);
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
         }
 
