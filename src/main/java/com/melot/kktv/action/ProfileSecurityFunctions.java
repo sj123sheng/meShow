@@ -1168,6 +1168,13 @@ public class ProfileSecurityFunctions {
         if (idNum.length() < 11) {
             retrieveType = 2;
             int userId = Integer.valueOf(idNum);
+            
+            // 黑名单用户或封号用户不能找回密码
+            if (com.melot.kkcx.service.UserService.blackListUser(userId) || UserService.checkUserIsLock(userId)) {
+                result.addProperty("TagCode", "5101010603");
+                return result;
+            }
+            
             UserProfile userProfile = UserService.getUserInfoNew(userId);
             if (userProfile != null) {
                 result.addProperty("userId", userId);

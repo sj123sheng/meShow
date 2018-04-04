@@ -17,6 +17,7 @@ import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.common.driver.service.StarService;
 import com.melot.goldcoin.domain.UserGoldAssets;
 import com.melot.goldcoin.service.GoldcoinService;
+import com.melot.kkcore.account.service.AccountSecurityService;
 import com.melot.kkcore.user.api.UserAssets;
 import com.melot.kkcore.user.api.UserGameAssets;
 import com.melot.kkcore.user.api.UserInfoDetail;
@@ -1119,5 +1120,24 @@ public class UserService {
             logger.error("call KkUserService getUserStaticInfo catched exception, userId : " + userId, e);
         }
         return result;
+    }
+    
+    /**
+     * 校验用户有没有被封号
+     * @param userId
+     * @return  true—封号，false—没有
+     */
+    public static boolean checkUserIsLock(int userId) {
+        boolean isLock = false;
+        try {
+            AccountSecurityService accountSecurityService = MelotBeanFactory.getBean("accountSecurityService", AccountSecurityService.class);
+            if (accountSecurityService.isLock(userId)) {
+                isLock = true;
+            }
+        } catch (Exception e) {
+            logger.error("call AccountSecurityService.isLock(" + userId + ") execute exception", e);
+        }
+        
+        return isLock;
     }
 }
