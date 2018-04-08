@@ -53,7 +53,10 @@ public class LiveShopTF {
             JsonArray refundUrls = new JsonArray();
             if (orderDTO.getOrderPictures() != null) {
                 for (LiveShopOrderPictureDTO pictureDTO : orderDTO.getOrderPictures()) {
-                    refundUrls.add(pictureDTO.getResourceUrl());
+                    JsonObject urlJson = new JsonObject();
+                    urlJson.addProperty("phone_big", pictureDTO.getResourceUrl());
+                    urlJson.addProperty("phone_small", pictureDTO.getResourceUrl() + "!256");
+                    refundUrls.add(urlJson);
                 }
             }
             refundInfo.add("refundUrls", refundUrls);
@@ -65,7 +68,7 @@ public class LiveShopTF {
             JsonObject product = new JsonObject();
             product.addProperty("productId", itemDTO.getProductId());
             product.addProperty("productName", itemDTO.getProductName());
-            product.addProperty("productUrl", itemDTO.getResourceUrl());
+            product.addProperty("productUrl", itemDTO.getResourceUrl() + "!256");
             product.addProperty("productPrice", itemDTO.getProductPrice());
             product.addProperty("productCount", itemDTO.getProductCount());
             products.add(product);
