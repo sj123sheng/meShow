@@ -156,7 +156,7 @@ public class LiveShopFunctions {
                 return result;
             }
             UserAddressDO addressDO = null;
-            Result<UserAddressDO> addressResult = userAddressService.getUserDefaultAddressDOByUserId(userId);
+            Result<UserAddressDO> addressResult = userAddressService.getUserDefaultAddressDOByUserId(orderDTO.getUserId());
             if (addressResult != null && CommonStateCode.SUCCESS.equals(addressResult.getCode())) {
                 addressDO = addressResult.getData();
             }
