@@ -314,6 +314,9 @@ public class LiveShopFunctions {
             } else  if ("3".equals(code)) {
                 result.addProperty(ParameterKeys.TAG_CODE, "5106050506");
                 return result;
+            } else  if ("4".equals(code)) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5106050507");
+                return result;
             } else if (!CommonStateCode.SUCCESS.equals(code) || moduleResult.getData() == null){
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
                 return result;
