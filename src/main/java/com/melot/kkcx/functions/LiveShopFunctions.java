@@ -238,6 +238,9 @@ public class LiveShopFunctions {
             for (LiveShopOrderDTO liveShopOrderDTO : page.getList()) {
                 JsonObject orderDTOJson = new JsonObject();
                 LiveShopTF.orderInfo2Json(orderDTOJson, liveShopOrderDTO, null);
+                // 移除不必要的字段
+                orderDTOJson.remove("refundInfo");
+                orderDTOJson.remove("expressInfo");
                 
                 int relationId = liveShopOrderDTO.getUserId().equals(userId) 
                         ? liveShopOrderDTO.getActorId() : liveShopOrderDTO.getUserId();
