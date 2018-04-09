@@ -91,6 +91,9 @@ public class LiveShopFunctions {
             } else if ("5".equals(code)) {
                 result.addProperty(ParameterKeys.TAG_CODE, "5106050207");
                 return result;
+            } else if ("6".equals(code)) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5106050208");
+                return result;
             } else if (!CommonStateCode.SUCCESS.equals(code)){
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
                 return result;
@@ -153,7 +156,7 @@ public class LiveShopFunctions {
                 return result;
             }
             UserAddressDO addressDO = null;
-            Result<UserAddressDO> addressResult = userAddressService.getUserDefaultAddressDOByUserId(userId);
+            Result<UserAddressDO> addressResult = userAddressService.getUserDefaultAddressDOByUserId(orderDTO.getUserId());
             if (addressResult != null && CommonStateCode.SUCCESS.equals(addressResult.getCode())) {
                 addressDO = addressResult.getData();
             }
@@ -235,12 +238,23 @@ public class LiveShopFunctions {
             for (LiveShopOrderDTO liveShopOrderDTO : page.getList()) {
                 JsonObject orderDTOJson = new JsonObject();
                 LiveShopTF.orderInfo2Json(orderDTOJson, liveShopOrderDTO, null);
+                // 移除不必要的字段
+                orderDTOJson.remove("refundInfo");
+                orderDTOJson.remove("expressInfo");
                 
                 int relationId = liveShopOrderDTO.getUserId().equals(userId) 
                         ? liveShopOrderDTO.getActorId() : liveShopOrderDTO.getUserId();
                 UserProfile userProfile = kkUserService.getUserProfile(relationId);
                 orderDTOJson.addProperty("relationId", relationId);
                 orderDTOJson.addProperty("nickname", userProfile.getNickName());
+                
+                // 获取支付
+                if (liveShopOrderDTO.getPaymentMode() != null && liveShopOrderDTO.getPaymentMode() > 0) {
+                    Result<ConfPaymentInfoDto> rechargeResult = rechargeService.getConfPaymentInfo(liveShopOrderDTO.getPaymentMode());
+                    if (rechargeResult != null && CommonStateCode.SUCCESS.equals(rechargeResult.getCode())) {
+                        orderDTOJson.addProperty("paymentName", rechargeResult.getData().getPaymentName());
+                    }
+                }
                 
                 orders.add(orderDTOJson);
             }
@@ -299,6 +313,9 @@ public class LiveShopFunctions {
                 return result;
             } else  if ("3".equals(code)) {
                 result.addProperty(ParameterKeys.TAG_CODE, "5106050506");
+                return result;
+            } else  if ("4".equals(code)) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5106050507");
                 return result;
             } else if (!CommonStateCode.SUCCESS.equals(code) || moduleResult.getData() == null){
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);

@@ -1484,6 +1484,16 @@
 		<constructor-arg name="t" ref="profileSecurityFunction" />
 		<constructor-arg name="methodName" value="insertToDB" />
 	</bean>
+	<!-- 根据id或手机号获取账户信息-->
+	<bean id="51010106" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="profileSecurityFunction" />
+		<constructor-arg name="methodName" value="getAccountInfo" />
+	</bean>
+	<!-- 找回密码 -->
+	<bean id="51010107" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="profileSecurityFunction" />
+		<constructor-arg name="methodName" value="retrieveNewPassword" />
+	</bean>
 	
 	<!-- 系统资源相关的接口类 -->
 	<!-- 商城车市获取车辆列表 -->
