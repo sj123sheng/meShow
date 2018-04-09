@@ -1226,6 +1226,8 @@ public class ProfileSecurityFunctions {
                 if (userVerifyDOResult.getCode().equals(CommonStateCode.SUCCESS) && userVerifyDOResult.getData() != null) {
                     UserVerifyDO userVerifyDO = userVerifyDOResult.getData();
                     result.addProperty("verifyStatus", userVerifyDO.getVerifyStatus());
+                } else {
+                    result.addProperty("verifyStatus", 0);
                 }
             } else {
                 result.addProperty("TagCode", "5101010602");
