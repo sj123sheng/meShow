@@ -28,7 +28,8 @@ public class LiveShopTF {
         }
         result.addProperty("addTime", orderDTO.getAddTime().getTime());
         
-        if (addressDO != null) {
+        if (addressDO != null && 
+                !StringUtil.strIsNull(orderDTO.getConsigneeName())) {
             JsonObject addrInfo = new JsonObject();
             addrInfo.addProperty("addressId", addressDO.getAddressId());
             addrInfo.addProperty("consigneeName", orderDTO.getConsigneeName());
