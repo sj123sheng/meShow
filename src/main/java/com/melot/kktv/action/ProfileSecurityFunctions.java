@@ -1201,7 +1201,17 @@ public class ProfileSecurityFunctions {
                 }
                 result.addProperty("userId", userId);
                 if (userProfile.getIdentifyPhone() != null) {
-                    result.addProperty("phoneNum", userProfile.getIdentifyPhone());
+                    String phoneNum = userProfile.getIdentifyPhone();
+                    try {
+                        BlacklistService blacklistService = (BlacklistService) MelotBeanFactory.getBean("blacklistService");
+                        if (blacklistService.isPhoneNumBlacklist(phoneNum)) {
+                            result.addProperty("TagCode", "5101010603");
+                            return result;
+                        }
+                    } catch (Exception e) {
+                        logger.error("fail to BlacklistService, phone: " + phoneNum, e);
+                    }   
+                    result.addProperty("phoneNum", phoneNum);
                 }
                 
                 ResUserBoundAccount resUserBoundAccount = AccountService.getUserBoundAccount(userId);
@@ -1247,6 +1257,15 @@ public class ProfileSecurityFunctions {
                 return result;
             }
         } else {
+            try {
+                BlacklistService blacklistService = (BlacklistService) MelotBeanFactory.getBean("blacklistService");
+                if (blacklistService.isPhoneNumBlacklist(idNum)) {
+                    result.addProperty("TagCode", "5101010603");
+                    return result;
+                }
+            } catch (Exception e) {
+                logger.error("fail to BlacklistService, phone: " + idNum, e);
+            }  
             KkUserService kkUserService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
             if (kkUserService != null) {
                 List<Integer> userIds = kkUserService.getUserIdsByIdentifyPhone(idNum);
