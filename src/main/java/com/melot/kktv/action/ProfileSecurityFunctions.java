@@ -12,6 +12,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.melot.blacklist.service.BlacklistService;
+import com.melot.common.melot_utils.StringUtils;
 import com.melot.kk.module.resource.domain.QiNiuTokenConf;
 import com.melot.kk.module.resource.service.ResourceNewService;
 import com.melot.kk.userSecurity.api.domain.DO.UserVerifyDO;
@@ -1177,6 +1178,27 @@ public class ProfileSecurityFunctions {
             
             UserProfile userProfile = UserService.getUserInfoNew(userId);
             if (userProfile != null) {
+                //获取实名认证信息
+                Result<UserVerifyDO> userVerifyDOResult = userVerifyService.getUserVerifyDO(userId);
+                if (userVerifyDOResult.getCode().equals(CommonStateCode.SUCCESS) && userVerifyDOResult.getData() != null) {
+                    UserVerifyDO userVerifyDO = userVerifyDOResult.getData();
+                    try {
+                        if (userVerifyDO != null && StringUtils.isNotEmpty(userVerifyDO.getCertNo())) {
+                            //身份证黑名单不得找回密码
+                            BlacklistService blacklistService = (BlacklistService) MelotBeanFactory.getBean("blacklistService");
+                            boolean flag = blacklistService.isIdentityBlacklist(userVerifyDO.getCertNo());
+                            if (flag) {
+                                result.addProperty("TagCode", "5101010603");
+                                return result;
+                            }
+                        }
+                    } catch (Exception e) {
+                        logger.error("Fail to check user is IdentityBlacklist, userId: " + userId, e);
+                    }
+                    result.addProperty("verifyStatus", userVerifyDO.getVerifyStatus());
+                } else {
+                    result.addProperty("verifyStatus", 0);
+                }
                 result.addProperty("userId", userId);
                 if (userProfile.getIdentifyPhone() != null) {
                     result.addProperty("phoneNum", userProfile.getIdentifyPhone());
@@ -1219,15 +1241,6 @@ public class ProfileSecurityFunctions {
                         }
                         result.add("boundAccounts", accountArray);
                     }
-                }
-                
-                //获取实名认证信息
-                Result<UserVerifyDO> userVerifyDOResult = userVerifyService.getUserVerifyDO(userId);
-                if (userVerifyDOResult.getCode().equals(CommonStateCode.SUCCESS) && userVerifyDOResult.getData() != null) {
-                    UserVerifyDO userVerifyDO = userVerifyDOResult.getData();
-                    result.addProperty("verifyStatus", userVerifyDO.getVerifyStatus());
-                } else {
-                    result.addProperty("verifyStatus", 0);
                 }
             } else {
                 result.addProperty("TagCode", "5101010602");
