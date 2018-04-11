@@ -1,22 +1,14 @@
 package com.melot.kktv.action;
 
-import java.util.Date;
-import java.util.List;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-
+import com.alibaba.fastjson.JSONArray;
 import com.antgroup.zmxy.openplatform.api.response.ZhimaCustomerCertificationInitializeResponse;
 import com.antgroup.zmxy.openplatform.api.response.ZhimaCustomerCertificationQueryResponse;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.melot.blacklist.service.BlacklistService;
 import com.melot.family.driver.constant.UserApplyActorStatusEnum;
-import com.melot.family.driver.domain.FamilyInfo;
 import com.melot.family.driver.domain.DO.UserApplyActorDO;
+import com.melot.family.driver.domain.FamilyInfo;
 import com.melot.family.driver.service.FamilyOperatorService;
 import com.melot.family.driver.service.UserApplyActorService;
 import com.melot.game.config.sdk.utils.StringUtils;
@@ -28,6 +20,7 @@ import com.melot.kk.userSecurity.api.domain.DO.UserVerifyDO;
 import com.melot.kk.userSecurity.api.domain.DO.ZmrzApplyDO;
 import com.melot.kk.userSecurity.api.domain.param.UserVerifyParam;
 import com.melot.kk.userSecurity.api.service.UserVerifyService;
+import com.melot.kk.userSecurity.api.service.ZmrzApplyService;
 import com.melot.kkcore.actor.api.ActorInfo;
 import com.melot.kkcore.actor.service.ActorService;
 import com.melot.kkcore.user.api.ShowMoneyHistory;
@@ -44,17 +37,17 @@ import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.UserService;
 import com.melot.kktv.third.service.ZmxyService;
-import com.melot.kktv.util.AppIdEnum;
-import com.melot.kktv.util.BizCodeEnum;
-import com.melot.kktv.util.CollectionUtils;
-import com.melot.kktv.util.CommonUtil;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.DateUtil;
-import com.melot.kktv.util.StringUtil;
-import com.melot.kktv.util.TagCodeEnum;
+import com.melot.kktv.util.*;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import com.melot.share.driver.domain.RankData;
 import com.melot.share.driver.service.ShareActivityService;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Title: ActorFunction
@@ -82,6 +75,9 @@ public class ActorFunction {
 
     @Resource
     UserVerifyService userVerifyService;
+
+    @Resource
+    ZmrzApplyService zmrzApplyService;
 
     /**
      * 获取主播代言团列表【51020101】
@@ -477,6 +473,19 @@ public class ActorFunction {
         // 更新芝麻认证记录的状态
         int verifyStatus = verifyResult ? ZmrzStatusEnum.VERIFY_PASS.getId() : ZmrzStatusEnum.VERIFY_FAIL.getId();
         userVerifyService.updateZmrzApplyStatus(bizNo, verifyStatus);
+        // 更新芝麻认证记录的面部照片
+        try {
+            String channelStatuses = response.getChannelStatuses();
+            if(!StringUtils.isEmpty(channelStatuses)) {
+                JSONArray jsonArray = JSONArray.parseArray(channelStatuses);
+                if(jsonArray != null && jsonArray.size() > 0) {
+                    String facialPicture = jsonArray.getJSONObject(0).getJSONObject("materials").getString("FACIAL_PICTURE_FRONT");
+                    zmrzApplyService.updateZmrzFacialPicture(bizNo, facialPicture);
+                }
+            }
+        }catch (Exception e) {
+            logger.error("更新芝麻认证记录的面部照片失败 bizNo:" + bizNo, e);
+        }
 
         if (!verifyResult) {
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
