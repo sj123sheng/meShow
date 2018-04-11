@@ -323,7 +323,7 @@ public class ActorFunction {
                 }
             }
             if (!checkCertNo) {
-                result.addProperty("TagCode", "5202010101");
+                result.addProperty("TagCode", "5202010102");
                 return result;
             }
         } else {
