@@ -929,7 +929,7 @@ public class ProfileFunctions {
 			                            	result.addProperty("familyName", family.getFamilyName());
 			                	        	t = Cat.getProducer().newTransaction("MRedis", "MedalSource.addUserMedal");
 			                				try {
-			                					MedalSource.addUserMedal(userId, family.getFamilyMedal(), -1);
+			                					//MedalSource.addUserMedal(userId, family.getFamilyMedal(), -1);
 			                					t.setStatus(Transaction.SUCCESS);
 			                				} catch (Exception e) {
 			                					Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息

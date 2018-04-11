@@ -11,6 +11,9 @@ import com.melot.api.menu.sdk.dao.domain.SysMenu;
 import com.melot.api.menu.sdk.handler.FirstPageHandler;
 import com.melot.api.menu.sdk.redis.KKHallSource;
 import com.melot.api.menu.sdk.service.RoomInfoService;
+import com.melot.family.driver.domain.DO.ResRoomInfoDO;
+import com.melot.family.driver.domain.FamilyTopConf;
+import com.melot.family.driver.service.FamilyTopConfService;
 import com.melot.kk.demo.api.service.NewRcmdService;
 import com.melot.kk.hall.api.domain.WebSkinConf;
 import com.melot.kk.hall.api.service.WebSkinConfService;
@@ -32,6 +35,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
@@ -53,6 +57,9 @@ public class KKHallFunctions {
 
     @Autowired
     private ConfigService configService;
+
+    @Resource
+    FamilyTopConfService familyTopConfService;
 
     /**
      * 获取用户有关的房间列表接口（55000001）：守护+管理+关注
@@ -871,20 +878,43 @@ public class KKHallFunctions {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-
-        List<RoomInfo> trumpRoomList = null;
-
+        
+        JsonArray roomArray = new JsonArray();
+        List<ResRoomInfoDO> resRoomInfoDOS;
+        
         try {
-            FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
-            trumpRoomList = firstPageHandler.getTrumpRooms(offset);
+            FamilyTopConf familyTopConf = familyTopConfService.getFamilyTopConf().getData();
+            if(familyTopConf != null) {
+                int familyId = familyTopConf.getFamilyId();
+                resRoomInfoDOS = familyTopConfService.getAliveRoomInfoByFamilyId(familyId).getData();
+                if(resRoomInfoDOS != null) {
+                    for(ResRoomInfoDO resRoomInfoDO : resRoomInfoDOS) {
+                        RoomInfo roomInfo = BeanMapper.map(resRoomInfoDO, RoomInfo.class);
+                        JsonObject roomInfoJsonObject = RoomTF.roomInfoToJson(roomInfo, platform);
+                        roomInfoJsonObject.addProperty("sideLabelContent", familyTopConf.getFamilyLabel());
+                        roomInfoJsonObject.addProperty("sideLabelColor", "1");
+                        roomArray.add(roomInfoJsonObject);
+                    }
+                }
+            }
         } catch (Exception e) {
-            logger.error("Fail to call firstPageHandler.getTrumpRooms offset:" + offset, e);
+            logger.error("Fail to execute getAliveActorIdsByFamilyId", e);
         }
 
-        JsonArray roomArray = new JsonArray();
-        if (trumpRoomList != null && !trumpRoomList.isEmpty()) {
-            for (RoomInfo roomInfo : trumpRoomList) {
-                roomArray.add(RoomTF.roomInfoToJson(roomInfo, platform));
+        if(roomArray.size() < 3) {
+            try {
+                FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
+                List<RoomInfo> trumpRoomList = firstPageHandler.getTrumpRooms(offset);
+                if (trumpRoomList != null && !trumpRoomList.isEmpty()) {
+                    for (RoomInfo roomInfo : trumpRoomList) {
+                        if(roomArray.size() >= 3) {
+                            break;
+                        }
+                        roomArray.add(RoomTF.roomInfoToJson(roomInfo, platform));
+                    }
+                }
+            } catch (Exception e) {
+                logger.error("Fail to call firstPageHandler.getTrumpRooms offset:" + offset, e);
             }
         }
 

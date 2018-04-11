@@ -4,7 +4,7 @@
 	
 	<appender name="stdout" class="org.apache.log4j.ConsoleAppender">
 		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="%d %p [%l] - %m%n"/>
+			<param name="ConversionPattern" value="%d %p [%c{10}] - %m%n"/>
         </layout>
 	</appender>
 	
@@ -14,7 +14,7 @@
         <param name="Encoding" value="UTF-8"/>
         <param name="DatePattern" value="'.'yyyy-MM-dd"/>
         <layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="%d %p [%l] - %m%n"/>
+			<param name="ConversionPattern" value="%d %p [%c{10}] - %m%n"/>
         </layout>
     </appender>
 	
@@ -48,6 +48,50 @@
         </layout>
     </appender>
 	
+	<appender name="errorlogfile" class="org.apache.log4j.RollingFileAppender">
+		<param name="File" value="/data/logstash/logs/${kk.monitor.error.log.tag}.log"/>
+        <param name="Append" value="true"/>
+        <param name="MaxBackupIndex" value="1"/>
+        <layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="[%-d{yyyy-MM-dd HH:mm:ss}] [log_tag::${kk.monitor.error.log.tag}] [log_type::errlog] [ %t:%r ] - [ %p ] %m%n"/>
+        </layout>
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+			<param name="LevelMin" value="ERROR"/>
+            <param name="LevelMax" value="FATAL"/>
+        </filter>
+        <!-- <filter class="com.melot.monitor.filter.ErrorRateAndStringFilter">
+                <param name="LogRate" value="3/s"/>
+                <param name="FilterStr" value="haha"/>
+        </filter> -->
+    </appender>
+	
+	<appender name="apiStatsLogFile" class="org.apache.log4j.RollingFileAppender">
+		<param name="File" value="/data/logstash/logs/${kk.monitor.api.log.tag}.log"/>
+		<param name="MaxFileSize" value="512KB"/>
+		<param name="MaxBackupIndex" value="1"/>
+        <layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="[%-d{yyyy-MM-dd HH:mm:ss}] [log_tag::${kk.monitor.api.log.tag}] %m%n"/>
+        </layout>
+    </appender>
+	
+	<appender name="traceLogFile" class="org.apache.log4j.RollingFileAppender">
+        <param name="File" value="/data/logstash/logs/${kk.monitor.trace.log.tag}.log"/>
+        <param name="MaxFileSize" value="512KB"/>
+        <param name="MaxBackupIndex" value="1"/>
+        <layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="[%-d{yyyy-MM-dd HH:mm:ss}] [log_tag::${kk.monitor.trace.log.tag}] %m%n"/>
+        </layout>
+    </appender>
+	
+	<appender name="druidLogFile" class="org.apache.log4j.RollingFileAppender">
+        <param name="File" value="/data/logstash/logs/${kk.monitor.druid.log.tag}.log"/>
+        <param name="MaxFileSize" value="512KB"/>
+        <param name="MaxBackupIndex" value="1"/>
+        <layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="[%-d{yyyy-MM-dd HH:mm:ss}] [log_tag::${kk.monitor.druid.log.tag}] [log_type::druidstat] %m%n"/>
+        </layout>
+    </appender>
+    
     <appender name="showMoneyLogFile" class="org.apache.log4j.DailyRollingFileAppender">
 		<param name="File" value="${catalina.home}/logs/meshow/showMoney.log"/>
 		<param name="Append" value="true"/>
@@ -76,6 +120,24 @@
 		<appender-ref ref="hadoopLogfile" />
     </logger>
     
+	<!-- 监控后台-接口调用日志 -->
+    <logger name="ApiStatsLogger" additivity="false">
+		<level value="DEBUG"/>
+		<appender-ref ref="apiStatsLogFile" />
+    </logger>
+    
+	<!-- 监控后台-调用链日志 -->
+    <logger name="TracingLogger" additivity="false">
+		<level value="DEBUG"/>
+		<appender-ref ref="traceLogFile" />
+    </logger>
+	
+	<!-- 监控后台-数据源日志 -->
+    <logger name="com.alibaba.druid.pool.DruidDataSourceStatLoggerImpl" additivity="false">
+		<level value="INFO"/>
+		<appender-ref ref="druidLogFile" />
+    </logger>
+	
 	<!-- 秀币日志 -->
     <logger name="showMoneyLogger" additivity="false">
 		<level value="INFO"/>
@@ -83,9 +145,10 @@
     </logger>
 	
 	<root>
-		<priority value ="WARN" />
+		<priority value ="ERROR" />
         <appender-ref ref="stdout" />
         <appender-ref ref="logfile" />
+        <appender-ref ref="errorlogfile" />
     </root>
     
 </log4j:configuration>  
