@@ -23,6 +23,18 @@
 		<result property="topMobileUrl" column="topmobileurl" javaType="java.lang.String" jdbcType="VARCHAR"/>
 		<result property="topMobileUrlIOS" column="topmobileurlios" javaType="java.lang.String" jdbcType="VARCHAR"/>
 	</resultMap>
+	
+	<resultMap class="com.melot.kktv.model.RecommendedMsg" id="shareRecommendedMsgMap">
+	    <result property="msgId" column="msgid"/>
+	    <result property="imgUrl" column="imgurl" javaType="java.lang.String" jdbcType="VARCHAR"/>
+	    <result property="url" column="url" javaType="java.lang.String" jdbcType="VARCHAR"/>
+	    <result property="imgUrlIOS" column="imgurlios" javaType="java.lang.String" jdbcType="VARCHAR"/>
+	    <result property="title" column="title" javaType="java.lang.String" jdbcType="VARCHAR"/>
+	    <result property="startTime" column="starttime" javaType="java.util.Date" jdbcType="TIMESTAMP"/>
+	    <result property="endDate" column="endtime" javaType="java.util.Date" jdbcType="TIMESTAMP"/>
+	    <result property="content" column="content" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result property="shareImgUrl" column="shareimgurl"/>
+	</resultMap>
 
 	<parameterMap id="getRecMsgParamMap" class="java.util.Map">
 		<parameter property="startTime" mode="IN" javaType="java.util.Date" jdbcType="TIMESTAMP" />
@@ -67,6 +79,12 @@
 	
 	<select id="getRecommendedMsgHtml" parameterClass="java.lang.Integer" resultClass="java.lang.String">
 		SELECT t.htmlcontent FROM conf_recommended_msgs t WHERE t.msgid = #msgId#
+	</select>
+	
+	<select id="getShareRecommendedMsg" parameterClass="java.lang.String" resultMap="shareRecommendedMsgMap">
+		 select b.*  from  
+		        (SELECT msgid, imgurl, url, imgurlios, title, starttime, endtime, content, 
+		         shareimgurl FROM conf_recommended_msgs t WHERE t.url = #url# order by dtime desc ) b where rownum = 1
 	</select>
 	
 </sqlMap>

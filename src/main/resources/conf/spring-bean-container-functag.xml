@@ -1794,6 +1794,11 @@
 		<constructor-arg name="cacheType" value="300" />
 		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
 	</bean>
+	<!-- 获取分享新鲜播报详情 -->
+	<bean id="51010801" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="messageBoxV2Function" />
+		<constructor-arg name="methodName" value="getShareRecommendedMsg" />
+	</bean>
 	
 	<!-- 守护功能类 -->
 	<!-- 获取守护购买列表 -->
