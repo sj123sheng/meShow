@@ -1264,7 +1264,7 @@ public class NewsV2Functions {
         }
 
         // 若是推荐话题则返回图片和简介
-        Set<String> hotTopic = NewsV2Source.getHotTopic(0, -1);
+        Set<String> hotTopic = NewsService.getPopularTopic(0, -1);
         if (hotTopic != null && hotTopic.size() > 0) {
             for (String str : hotTopic) {
                 try {
