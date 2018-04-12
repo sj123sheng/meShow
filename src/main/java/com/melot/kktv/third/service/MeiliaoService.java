@@ -9,6 +9,8 @@ import java.util.Date;
 
 import org.apache.log4j.Logger;
 
+import com.dianping.cat.Cat;
+import com.dianping.cat.message.Transaction;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.kktv.third.BaseService;
@@ -29,6 +31,7 @@ public class MeiliaoService extends BaseService {
 	public String verifyUser(String u, String sessionId) {
 		boolean isValid = false;
 		HttpURLConnection url_con = null;
+		Transaction t = Cat.getProducer().newTransaction("MCall", "MeiliaoService.verifyUser");
         try {
         	String ts = StringUtil.formatDateTime(new Date());
         	String s = CommonUtil.md5(u+ts+u).toLowerCase();
@@ -47,6 +50,7 @@ public class MeiliaoService extends BaseService {
             while ((tempLine = rd.readLine()) != null) {
                 tempStr.append(tempLine);
             }
+            t.setStatus(Transaction.SUCCESS);
             JsonObject jsonObj = new JsonParser().parse(tempStr.toString()).getAsJsonObject();		
 			if(jsonObj.has("code")&&jsonObj.get("code").getAsInt() != 0)
 				logger.error("美聊服务端验证用户失败, respose:" + jsonObj.toString());
@@ -56,8 +60,12 @@ public class MeiliaoService extends BaseService {
             in.close();
         } catch (Exception e) {
         	logger.error("美聊服务端验证用户请求异常", e);
+        	t.setStatus(e);
         } finally {
-            if (url_con != null) url_con.disconnect();
+            if (url_con != null) {
+                url_con.disconnect();
+            }
+            t.complete();
         }
         if (isValid) {
         	return TagCodeEnum.SUCCESS;

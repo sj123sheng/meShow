@@ -11,6 +11,8 @@ import java.util.Date;
 
 import org.apache.log4j.Logger;
 
+import com.dianping.cat.Cat;
+import com.dianping.cat.message.Transaction;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.kktv.third.BaseService;
@@ -44,6 +46,7 @@ public class HaofangService extends BaseService{
     @Override
     public String verifyUser(String uuid, String sessionId) {
         HttpURLConnection url_con = null;
+        Transaction t = Cat.getProducer().newTransaction("MCall", "HaofangService.verifyUser");
         try {
             int version = 1;
             String appid = "kk";
@@ -70,7 +73,8 @@ public class HaofangService extends BaseService{
             String tempLine = null;
             while ((tempLine = rd.readLine()) != null) {
                 tempStr.append(tempLine);
-            }   
+            }
+            t.setStatus(Transaction.SUCCESS);
 
             JsonObject jsonObj = new JsonParser().parse(tempStr.toString()).getAsJsonObject();
             if (jsonObj.get("Result") != null && jsonObj.get("Result").getAsInt() == 0 && jsonObj.get("Data") != null 
@@ -85,10 +89,12 @@ public class HaofangService extends BaseService{
             in.close();
         } catch (Exception e) {
             logger.error("浩方服务端验证用户请求异常", e);
+            t.setStatus(e);
         } finally {
             if (url_con != null) {
                 url_con.disconnect();
             }
+            t.complete();
         }
         return null;
     }
