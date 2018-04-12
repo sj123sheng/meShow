@@ -73,11 +73,6 @@
 		<constructor-arg name="cacheType" value="60" />
 		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
 	</bean>
-	<!-- 更新主播游戏标签 -->
-	<bean id="20010307" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="hallFunction" />
-		<constructor-arg name="methodName" value="setRoomGameTag" />
-	</bean>
 	<!-- 获取看过的房间列表 -->
 	<bean id="10002033" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="hallFunction" />

@@ -17,6 +17,8 @@ import com.melot.family.driver.service.FamilyInfoService;
 import com.melot.family.driver.service.UserApplyActorService;
 import com.melot.kk.userSecurity.api.domain.DO.UserVerifyDO;
 import com.melot.kk.userSecurity.api.service.UserVerifyService;
+import com.melot.kkcore.actor.api.RoomInfoKeys;
+import com.melot.kkcore.actor.service.ActorService;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcx.model.RecentFamilyMatch;
 import com.melot.kkcx.service.FamilyService;
@@ -74,6 +76,9 @@ public class FamilyAction {
 
 	@Resource
     UserVerifyService userVerifyService;
+	
+	@Resource
+    ActorService actorService;
 
     private static String encode = Charsets.ISO_8859_1.name();
 
@@ -2225,10 +2230,9 @@ public class FamilyAction {
 			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
 			return result;
 		}
-		RoomInfo roomInfo =  new RoomInfo();
-		roomInfo.setActorId(roomId);
-		roomInfo.setRoomLock(roomLock);
-		if (RoomService.updateRoomInfo(roomInfo)) {
+		Map<String, Object> map = new HashMap<>();
+        map.put(RoomInfoKeys.ROOMLOCK.key(), roomLock);
+        if (actorService.updateRoomInfoById(roomId, map) == 1) {
 			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 		} else {
 			result.addProperty("TagCode", TagCodeEnum.CHANGE_FAIL);

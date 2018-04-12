@@ -10,6 +10,9 @@ import com.melot.kk.logistics.api.domain.UserAddressDO;
 import com.melot.kk.logistics.api.domain.UserAddressParam;
 import com.melot.kk.logistics.api.service.UserAddressService;
 import com.melot.kkcore.account.api.*;
+import com.melot.kkcore.actor.api.ActorInfoKeys;
+import com.melot.kkcore.actor.api.RoomInfoKeys;
+import com.melot.kkcore.actor.service.ActorService;
 import com.melot.kkcore.user.api.*;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.model.ActorLevel;
@@ -47,6 +50,7 @@ import com.melot.sms.api.service.SmsService;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.sql.SQLException;
 import java.util.*;
@@ -65,6 +69,9 @@ public class UserFunctions {
 	
 	@Autowired
     private ConfigService configService;
+	
+	@Resource
+    ActorService actorService;
 	
 	private static final String DEFAULT_NICKNAME = "北京爷们儿";
 	
@@ -1412,10 +1419,9 @@ public class UserFunctions {
                     if (ri != null 
                     		&& (ri.getRegisterCity() == null || ri.getRegisterCity() > 0 
                     				|| (ri.getRegisterCity() <= 0 && !GeneralService.isValidCity(ri.getRegisterCity())))) {
-                        RoomInfo roomInfo = new RoomInfo();
-                        roomInfo.setActorId(userId);
-                        roomInfo.setRegisterCity(cityMap.get("city").intValue());
-                        com.melot.kktv.service.RoomService.updateRoomInfo(roomInfo);
+                        Map<String, Object> actorMap = new HashMap<>();
+                        actorMap.put(ActorInfoKeys.REGISTERCITY.key(), cityMap.get("city").intValue());
+                        actorService.updateActorInfoById(userId, actorMap);
                         //更新oracleUserInfo(city)
                         Map<String, Object> map = new HashMap<String, Object>();
                         map.put("cityId", cityMap.get("city").intValue());
@@ -2268,10 +2274,9 @@ public class UserFunctions {
                     		|| ri.getRegisterCity() > 0 
                     		|| (ri.getRegisterCity() <= 0 
                     				&& !GeneralService.isValidCity(ri.getRegisterCity())))) {
-                        RoomInfo roomInfo = new RoomInfo();
-                        roomInfo.setActorId(userId);
-                        roomInfo.setRegisterCity(cityMap.get("city").intValue());
-                        com.melot.kktv.service.RoomService.updateRoomInfo(roomInfo);
+                        Map<String, Object> actorMap = new HashMap<>();
+                        actorMap.put(ActorInfoKeys.REGISTERCITY.key(), cityMap.get("city").intValue());
+                        actorService.updateActorInfoById(userId, actorMap);
                         
                         //更新oracleUserInfo(city)
                         Map<String, Object> map = new HashMap<String, Object>();
