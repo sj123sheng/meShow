@@ -976,6 +976,7 @@ public class ProfileSecurityFunctions {
 					} else {
 						//验证手机号成功，绑定手机号失败
 						result.addProperty("TagCode", "01440006");
+						logger.error("绑定手机号失败，bindCode:" + bindCode);
 					}
 				} else if (tagCode.equals("02")) {
 					//手机号认证超过10个账号
