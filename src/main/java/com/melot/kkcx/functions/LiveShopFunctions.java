@@ -395,10 +395,10 @@ public class LiveShopFunctions {
     public JsonObject applyRefund(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
         
-        if (!checkTag) {
-            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_INCORRECT);
-            return result;
-        }
+//        if (!checkTag) {
+//            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_INCORRECT);
+//            return result;
+//        }
         
         int userId;
         String orderNo;
@@ -408,7 +408,7 @@ public class LiveShopFunctions {
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, "5106050701", 1, Integer.MAX_VALUE);
             orderNo = CommonUtil.getJsonParamString(jsonObject, PARAM_ORDER_NO, null, "5106050702", 1, Integer.MAX_VALUE);
-            refundPrice = CommonUtil.getJsonParamLong(jsonObject, "refundPrice", 0, "5106050703", 1, Integer.MAX_VALUE);
+            refundPrice = CommonUtil.getJsonParamLong(jsonObject, "refundPrice", 0, "5106050703", 1, Long.MAX_VALUE);
             refundDesc = CommonUtil.getJsonParamString(jsonObject, "refundDesc", null, null, 0, Integer.MAX_VALUE);
             resourceIds = CommonUtil.getJsonParamString(jsonObject, "resourceIds", null, null, 0, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
