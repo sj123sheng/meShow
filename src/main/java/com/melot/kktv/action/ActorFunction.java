@@ -1,5 +1,6 @@
 package com.melot.kktv.action;
 
+import com.alibaba.fastjson.JSONArray;
 import com.antgroup.zmxy.openplatform.api.response.ZhimaCustomerCertificationInitializeResponse;
 import com.antgroup.zmxy.openplatform.api.response.ZhimaCustomerCertificationQueryResponse;
 import com.google.gson.JsonArray;
@@ -19,6 +20,7 @@ import com.melot.kk.userSecurity.api.domain.DO.UserVerifyDO;
 import com.melot.kk.userSecurity.api.domain.DO.ZmrzApplyDO;
 import com.melot.kk.userSecurity.api.domain.param.UserVerifyParam;
 import com.melot.kk.userSecurity.api.service.UserVerifyService;
+import com.melot.kk.userSecurity.api.service.ZmrzApplyService;
 import com.melot.kkcore.actor.api.ActorInfo;
 import com.melot.kkcore.actor.service.ActorService;
 import com.melot.kkcore.user.api.ShowMoneyHistory;
@@ -31,6 +33,7 @@ import com.melot.kkcx.service.FamilyService;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.redis.GiftRecordSource;
+import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.UserService;
 import com.melot.kktv.third.service.ZmxyService;
@@ -62,6 +65,8 @@ public class ActorFunction {
     
     private static String REGEX = ",";
     
+    private static final String RETRIEVEPW_DUSER_KEY = "retrievePwdUser_%s"; 
+    
     @Autowired
     private ConfigService configService;
 
@@ -70,6 +75,9 @@ public class ActorFunction {
 
     @Resource
     UserVerifyService userVerifyService;
+
+    @Resource
+    ZmrzApplyService zmrzApplyService;
 
     /**
      * 获取主播代言团列表【51020101】
@@ -276,11 +284,6 @@ public class ActorFunction {
     public JsonObject applyForActor(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         // 定义返回结果
         JsonObject result = new JsonObject();
-        // 该接口需要验证token,未验证的返回错误码
-        if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-            return result;
-        }
 
         int bizCode, userId, appId, familyId, userVerifyType;
         String certName, certNo, returnUrl;
@@ -299,6 +302,31 @@ public class ActorFunction {
         } catch (Exception e) {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
+        }
+        
+        // 找回密码无需验证token，需要验证userId和身份证对应关系
+        if (userVerifyType == 2) {
+            boolean checkCertNo = false;
+            if (userId > 0 && certNo != null) {
+                Result<UserVerifyDO> userVerifyDOResult = userVerifyService.getUserVerifyDO(userId);
+                if (userVerifyDOResult.getCode().equals(CommonStateCode.SUCCESS) && userVerifyDOResult.getData() != null) {
+                    UserVerifyDO userVerifyDO = userVerifyDOResult.getData();
+                    if (userVerifyDO != null && !StringUtils.isEmpty(userVerifyDO.getCertNo())) {
+                        if (certNo.equals(userVerifyDO.getCertNo())) {
+                            checkCertNo = true;
+                        }
+                    }
+                }
+            }
+            if (!checkCertNo) {
+                result.addProperty("TagCode", "5202010102");
+                return result;
+            }
+        } else {
+            if (!checkTag) {
+                result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+                return result;
+            }
         }
 
         if (!StringUtil.strIsNull(certNo) && (certNo.length() == 15 || certNo.length() == 18)) {
@@ -400,11 +428,6 @@ public class ActorFunction {
     public JsonObject verifyAuthResult(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 
         JsonObject result = new JsonObject();
-        // 该接口需要验证token,未验证的返回错误码
-        if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-            return result;
-        }
 
         int userId, familyId, appId, userVerifyType;
         String bizNo, certNo;
@@ -420,6 +443,12 @@ public class ActorFunction {
             return result;
         } catch (Exception e) {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        // 找回密码无需验证token
+        if (!checkTag && userVerifyType != 2) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
             return result;
         }
 
@@ -463,6 +492,19 @@ public class ActorFunction {
         // 更新芝麻认证记录的状态
         int verifyStatus = verifyResult ? ZmrzStatusEnum.VERIFY_PASS.getId() : ZmrzStatusEnum.VERIFY_FAIL.getId();
         userVerifyService.updateZmrzApplyStatus(bizNo, verifyStatus);
+        // 更新芝麻认证记录的面部照片
+        try {
+            String channelStatuses = response.getChannelStatuses();
+            if(!StringUtils.isEmpty(channelStatuses)) {
+                JSONArray jsonArray = JSONArray.parseArray(channelStatuses);
+                if(jsonArray != null && jsonArray.size() > 0) {
+                    String facialPicture = jsonArray.getJSONObject(0).getJSONObject("materials").getString("FACIAL_PICTURE_FRONT");
+                    zmrzApplyService.updateZmrzFacialPicture(bizNo, facialPicture);
+                }
+            }
+        }catch (Exception e) {
+            logger.error("更新芝麻认证记录的面部照片失败 bizNo:" + bizNo, e);
+        }
 
         if (!verifyResult) {
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
@@ -474,6 +516,11 @@ public class ActorFunction {
             return result;
         }else if(userVerifyType == 1 && !verifyUserVerify(result, userId, certNo)) {
             // 校验普通用户能否实名认证
+            return result;
+        } else if (userVerifyType == 2) {
+            //找回密码
+            HotDataSource.setTempDataString(String.format(RETRIEVEPW_DUSER_KEY, userId), "1", 300);
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
         }
 
