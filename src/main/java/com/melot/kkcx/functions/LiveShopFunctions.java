@@ -395,10 +395,10 @@ public class LiveShopFunctions {
     public JsonObject applyRefund(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
         
-//        if (!checkTag) {
-//            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_INCORRECT);
-//            return result;
-//        }
+        if (!checkTag) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_INCORRECT);
+            return result;
+        }
         
         int userId;
         String orderNo;
