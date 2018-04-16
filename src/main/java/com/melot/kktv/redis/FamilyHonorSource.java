@@ -350,7 +350,9 @@ public class FamilyHonorSource {
 							roomId = roomInfo.getActorId();
 							nickname = roomInfo.getNickname();
 							portrait = roomInfo.getPortrait();
-                            iconTag = roomInfo.getIcon();
+							if (roomInfo.getIcon() != null) {
+							    iconTag = roomInfo.getIcon();
+							}
                             gender = roomInfo.getGender();
                             
                             result.addProperty("earnTotal", total);
