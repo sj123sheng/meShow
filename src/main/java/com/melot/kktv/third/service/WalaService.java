@@ -8,6 +8,8 @@ import java.net.URL;
 
 import org.apache.log4j.Logger;
 
+import com.dianping.cat.Cat;
+import com.dianping.cat.message.Transaction;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.kktv.third.BaseService;
@@ -39,6 +41,7 @@ public class WalaService extends BaseService {
 	public String verifyUser(String openid, String sessionid) {
 		boolean isValid = false;
 		HttpURLConnection url_con = null;
+		Transaction t = Cat.getProducer().newTransaction("MCall", "WalaService.verifyUser");
         try {
 			String queryParams = "?sessionid=" + sessionid + "&openid=" + openid;
         	logger.info("WalaService verifyUser : " + serverUrl + queryParams);
@@ -56,6 +59,7 @@ public class WalaService extends BaseService {
             while ((tempLine = rd.readLine()) != null) {
                 tempStr.append(tempLine);
             }
+            t.setStatus(Transaction.SUCCESS);
             JsonObject jsonObj = new JsonParser().parse(tempStr.toString()).getAsJsonObject();		
 			if(jsonObj.has("rc") && jsonObj.get("rc").getAsInt() != 0)
 				logger.error("哇啦服务端验证用户失败, respose:" + jsonObj.toString());
@@ -65,8 +69,12 @@ public class WalaService extends BaseService {
             in.close();
         } catch (Exception e) {
         	logger.error("哇啦服务端验证用户请求异常", e);
+        	t.setStatus(e);
         } finally {
-            if (url_con != null) url_con.disconnect();
+            if (url_con != null) {
+                url_con.disconnect();
+            }
+            t.complete();
         }
         if (isValid) {
         	return TagCodeEnum.SUCCESS;

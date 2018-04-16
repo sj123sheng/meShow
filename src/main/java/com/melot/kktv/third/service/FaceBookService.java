@@ -2,6 +2,8 @@ package com.melot.kktv.third.service;
 
 import org.apache.log4j.Logger;
 
+import com.dianping.cat.Cat;
+import com.dianping.cat.message.Transaction;
 import com.github.scribejava.apis.FacebookApi;
 import com.github.scribejava.core.builder.ServiceBuilder;
 import com.github.scribejava.core.model.OAuth2AccessToken;
@@ -38,12 +40,14 @@ public class FaceBookService extends BaseService{
     
     public String verifyUser(String uuid, String sessionId) {
         String result = null;
+        Transaction t = Cat.getProducer().newTransaction("MCall", "FaceBookService.verifyUser");
         try {
             OAuth20Service service = new ServiceBuilder(clientId).apiSecret(clientSecret).build(FacebookApi.instance());
             OAuth2AccessToken accessToken = new OAuth2AccessToken(sessionId);
             OAuthRequest request = new OAuthRequest(Verb.GET, serverUrl);
             service.signRequest(accessToken, request);
             Response response = service.execute(request);
+            t.setStatus(Transaction.SUCCESS);
             if (response.getCode() == 200 && !StringUtil.strIsNull(response.getBody())) {
                 JsonObject jsonObj = new JsonParser().parse(response.getBody()).getAsJsonObject();
                 JsonArray jsonArray = (JsonArray) jsonObj.get("data");
@@ -58,6 +62,9 @@ public class FaceBookService extends BaseService{
             }
         } catch (Exception e) {
             logger.error("facebook服务端验证用户请求异常", e);
+            t.setStatus(e);
+        } finally {
+            t.complete();
         }
         return result;
     }

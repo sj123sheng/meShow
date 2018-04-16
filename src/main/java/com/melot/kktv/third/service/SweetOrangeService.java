@@ -11,6 +11,8 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.log4j.Logger;
 
+import com.dianping.cat.Cat;
+import com.dianping.cat.message.Transaction;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.kktv.third.BaseService;
@@ -42,6 +44,7 @@ public class SweetOrangeService extends BaseService {
 	 */
 	public String verifyUser(String userId, String userToken) {
 		boolean isValid = false;
+		Transaction t = Cat.getProducer().newTransaction("MCall", "SweetOrangeService.verifyUser");
 		try {
 			String approve = CommonUtil.md5(userId + userToken + ACCESS_TOKEN);
 			String param = "{\"approve\":\"" + approve + "\",\"userId\":\"" + userId + "\",\"userToken\":\"" + userToken + "\"}";
@@ -86,6 +89,7 @@ public class SweetOrangeService extends BaseService {
 				out.append(new String(b, 0, n));
 			}
 			
+			 t.setStatus(Transaction.SUCCESS);
 			JsonObject jsonObj = new JsonParser().parse(out.toString()).getAsJsonObject();
 			if (jsonObj.has("result") && jsonObj.get("result").getAsString().equals("OK")) {
 				isValid = true;
@@ -97,6 +101,9 @@ public class SweetOrangeService extends BaseService {
 			input.close();
         } catch (Exception e) {
         	logger.error("甜橙服务端验证用户请求异常", e);
+        	t.setStatus(e);
+        } finally {
+            t.complete();   
         }
 		if (isValid) {
         	return TagCodeEnum.SUCCESS;

@@ -180,27 +180,6 @@ public class RoomService {
     }
     
     /**
-     * 更新房间信息(pg)
-     * @param roomInfo
-     * @return
-     */
-    public static boolean updateRoomInfo(RoomInfo roomInfo) {
-    	
-    	boolean ret = false;
-    	
-    	if (roomInfo != null) {
-    		try {
-    			RoomInfoService roomInfoService = MelotBeanFactory.getBean("roomInfoService", RoomInfoService.class);
-    			ret = roomInfoService.updateRoomInfo(roomInfo);
-    		} catch (Exception e) {
-    			logger.error("RoomService.updateRoomInfo, roomInfo : " + new Gson().toJson(roomInfo), e);
-    		}
-    	}
-    	
-    	return ret;
-    }
-    
-    /**
      * 获取用户房间信息(pg)
      * @param roomIds 房间Ids
      * @return

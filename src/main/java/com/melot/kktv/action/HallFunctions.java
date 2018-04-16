@@ -3,11 +3,13 @@ package com.melot.kktv.action;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
@@ -24,6 +26,8 @@ import com.melot.api.menu.sdk.handler.FirstPageHandler;
 import com.melot.api.menu.sdk.service.HomeService;
 import com.melot.content.config.domain.GameTagConfig;
 import com.melot.content.config.game.service.GameTagService;
+import com.melot.kkcore.actor.api.RoomInfoKeys;
+import com.melot.kkcore.actor.service.ActorService;
 import com.melot.kkcx.service.GeneralService;
 import com.melot.kkcx.transform.RoomTF;
 import com.melot.kktv.service.ConfigService;
@@ -48,6 +52,9 @@ public class HallFunctions {
     @Autowired
     private ConfigService configService;
 	
+    @Resource
+    ActorService actorService;
+    
 	private static Logger logger = Logger.getLogger(HallFunctions.class);
 	
 	/**
@@ -539,38 +546,6 @@ public class HallFunctions {
 			result.add("roomTagList", roomTagList);
 		} else {
 			result.addProperty("TagCode", TagCodeEnum.FAIL_TO_CALL_API_MENU_MODULE);
-		}
-		
-		return result;
-	}
-	
-	/**
-	 * 更新主播游戏标签(20010307)
-	 * @return
-	 */
-	public JsonObject setRoomGameTag(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-		JsonObject result = new JsonObject();
-		
-		int actorId = 0;
-		String roomTag = null;
-		try {
-			actorId = CommonUtil.getJsonParamInt(jsonObject, "actorId", 0, TagCodeEnum.ACTORID_MISSING, 1, Integer.MAX_VALUE);
-			roomTag = CommonUtil.getJsonParamString(jsonObject, "roomTag", null, TagCodeEnum.GAME_TAG_MISSING, 0, 20);
-		} catch (CommonUtil.ErrorGetParameterException e) {
-			result.addProperty("TagCode", e.getErrCode());
-			return result;
-		} catch (Exception e) {
-			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-			return result;
-		}
-		
-		RoomInfo roomInfo = new RoomInfo();
-		roomInfo.setActorId(actorId);
-		roomInfo.setRoomTag(roomTag);
-		if (RoomService.updateRoomInfo(roomInfo)) {
-			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-		} else {
-			result.addProperty("TagCode", TagCodeEnum.FAIL_TO_UPDATE_GAME_TAG);
 		}
 		
 		return result;

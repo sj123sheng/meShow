@@ -8,6 +8,8 @@ import java.net.URL;
 
 import org.apache.log4j.Logger;
 
+import com.dianping.cat.Cat;
+import com.dianping.cat.message.Transaction;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.kktv.third.BaseService;
@@ -21,6 +23,7 @@ public class QQService extends BaseService {
 	
 	public String verifyUser(String uuid, String sessionId) {
 		HttpURLConnection url_con = null;
+		Transaction t = Cat.getProducer().newTransaction("MCall", "QQService.verifyUser");
 		try {
 		    String param = "?access_token=" + sessionId + "&unionid=1";
 			URL url = new URL(unionServerUrl + param);			
@@ -37,6 +40,7 @@ public class QQService extends BaseService {
             while ((tempLine = rd.readLine()) != null) {
                 tempStr.append(tempLine);
             }
+            t.setStatus(Transaction.SUCCESS);
             JsonObject jsonObj = new JsonParser().parse(tempStr.toString().substring(tempStr.indexOf("{"), tempStr.lastIndexOf("}") + 1)).getAsJsonObject();
             if (jsonObj.get("unionid") != null) {
                 return TagCodeEnum.SUCCESS;
@@ -47,8 +51,12 @@ public class QQService extends BaseService {
             in.close();
 		} catch (Exception e) {
 			logger.error("qq服务端验证用户请求异常", e);
+			t.setStatus(e);
 		} finally {
-            if (url_con != null) url_con.disconnect();
+            if (url_con != null) {
+                url_con.disconnect();
+            }
+            t.complete();
         }
 		return null;
 	}

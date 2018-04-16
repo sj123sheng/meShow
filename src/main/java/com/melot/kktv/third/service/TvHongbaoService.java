@@ -18,6 +18,8 @@ import java.util.Date;
 
 import org.apache.log4j.Logger;
 
+import com.dianping.cat.Cat;
+import com.dianping.cat.message.Transaction;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.kktv.third.BaseService;
@@ -55,6 +57,7 @@ public class TvHongbaoService extends BaseService{
     @Override
     public String verifyUser(String uuid, String sessionId) {
         HttpURLConnection url_con = null;
+        Transaction t = Cat.getProducer().newTransaction("MCall", "TvHongbaoService.verifyUser");
         try {
             long time = new Date().getTime()/1000L;
             String nonce = String.format(NONCE_KEY, time);
@@ -87,6 +90,7 @@ public class TvHongbaoService extends BaseService{
                 tempStr.append(tempLine);
             }   
 
+            t.setStatus(Transaction.SUCCESS);
             JsonObject jsonObj = new JsonParser().parse(tempStr.toString()).getAsJsonObject();
             if (jsonObj.get("status").getAsInt() == 0) {
                 return TagCodeEnum.SUCCESS;
@@ -99,10 +103,12 @@ public class TvHongbaoService extends BaseService{
             in.close();
         } catch (Exception e) {
             logger.error("电视红包服务端验证用户请求异常", e);
+            t.setStatus(e);
         } finally {
             if (url_con != null) {
                 url_con.disconnect();
             }
+            t.complete();
         }
         return null;
     }

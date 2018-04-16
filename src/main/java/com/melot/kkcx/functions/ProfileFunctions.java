@@ -1,74 +1,35 @@
 package com.melot.kkcx.functions;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.dianping.cat.Cat;
 import com.dianping.cat.message.Transaction;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
-import com.melot.family.driver.domain.FamilyInfo;
 import com.melot.family.driver.domain.DO.UserApplyActorDO;
+import com.melot.family.driver.domain.FamilyInfo;
 import com.melot.family.driver.service.UserApplyActorService;
 import com.melot.kk.opus.api.constant.OpusCostantEnum;
 import com.melot.kk.userSecurity.api.domain.DO.UserVerifyDO;
 import com.melot.kk.userSecurity.api.service.UserVerifyService;
-import com.melot.kkcore.user.api.ProfileKeys;
-import com.melot.kkcore.user.api.UserInfoDetail;
-import com.melot.kkcore.user.api.UserProfile;
-import com.melot.kkcore.user.api.UserRegistry;
+import com.melot.kkcore.actor.api.RoomInfoKeys;
+import com.melot.kkcore.actor.service.ActorService;
+import com.melot.kkcore.user.api.*;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.model.ActorLevel;
 import com.melot.kkcx.model.CommonDevice;
 import com.melot.kkcx.model.RichLevel;
 import com.melot.kkcx.model.StarInfo;
-import com.melot.kkcx.service.FamilyService;
-import com.melot.kkcx.service.GeneralService;
-import com.melot.kkcx.service.MessageBoxServices;
-import com.melot.kkcx.service.ProfileServices;
-import com.melot.kkcx.service.UserAssetServices;
-import com.melot.kkcx.service.UserService;
+import com.melot.kkcx.service.*;
 import com.melot.kkgame.redis.LiveTypeSource;
-import com.melot.kktv.model.BuyProperties;
-import com.melot.kktv.model.ConsumerRecord;
-import com.melot.kktv.model.Family;
-import com.melot.kktv.model.GiftRecord;
-import com.melot.kktv.model.Honor;
-import com.melot.kktv.model.LiveRecord;
-import com.melot.kktv.model.MedalInfo;
-import com.melot.kktv.model.WinLotteryRecord;
+import com.melot.kktv.model.*;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.MedalSource;
 import com.melot.kktv.redis.QQVipSource;
 import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.LiveVideoService;
 import com.melot.kktv.service.UserRelationService;
-import com.melot.kktv.util.AppChannelEnum;
-import com.melot.kktv.util.AppIdEnum;
-import com.melot.kktv.util.CityUtil;
-import com.melot.kktv.util.CommonUtil;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.DateUtil;
-import com.melot.kktv.util.PlatformEnum;
-import com.melot.kktv.util.StringUtil;
-import com.melot.kktv.util.TagCodeEnum;
-import com.melot.kktv.util.TextFilter;
+import com.melot.kktv.util.*;
 import com.melot.kktv.util.confdynamic.MedalConfig;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
@@ -80,9 +41,17 @@ import com.melot.module.packagegift.driver.domain.ResUserXman;
 import com.melot.module.packagegift.driver.domain.ResXman;
 import com.melot.module.packagegift.driver.service.XmanService;
 import com.melot.sdk.core.util.MelotBeanFactory;
+import com.melot.showmoney.driver.domain.PageGameMoneyHistory;
 import com.melot.showmoney.driver.domain.PageShowMoneyHistory;
 import com.melot.showmoney.driver.domain.ShowMoneyHistory;
 import com.melot.showmoney.driver.service.ShowMoneyService;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import java.sql.SQLException;
+import java.util.*;
 
 public class ProfileFunctions {
 	
@@ -97,6 +66,9 @@ public class ProfileFunctions {
 
 	@Resource
     UserVerifyService userVerifyService;
+	
+	@Resource
+	ActorService actorService;
 
 	private LiveTypeSource liveTypeSource;
 
@@ -2500,11 +2472,9 @@ public class ProfileFunctions {
             return result;
         }
         
-        RoomInfo roomInfo = new RoomInfo();
-    	roomInfo.setActorId(userId);
-		roomInfo.setRoomTheme(roomTheme);
-		
-		if (com.melot.kktv.service.RoomService.updateRoomInfo(roomInfo)) {
+		Map<String, Object> map = new HashMap<>();
+		map.put(RoomInfoKeys.ROOMTHEME.key(), roomTheme);
+		if (actorService.updateRoomInfoById(userId, map) == 1) {
 			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 			
 			// 通知Node房间刷新缓存
@@ -3112,6 +3082,106 @@ public class ProfileFunctions {
         }
         
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+    
+    /**
+     * 获取用户游戏币消费列表(51010104)
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getUserGameMoneyConsumeList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+        int userId, start, offset;
+        long startTime, endTime;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            startTime = CommonUtil.getJsonParamLong(jsonObject, "startTime", 0, "5101010401", DateUtil.getDayBeginTime(System.currentTimeMillis()) - 180 * 24 * 3600 * 1000L, Long.MAX_VALUE);
+            endTime = CommonUtil.getJsonParamLong(jsonObject, "endTime", 0, "5101010402", startTime, Long.MAX_VALUE);
+            start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, null, 0, Integer.MAX_VALUE);
+            offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 10, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        JsonArray moneyList = new JsonArray();
+        ShowMoneyService showmoneyService = (ShowMoneyService) MelotBeanFactory.getBean("showMoneyService");
+        List<GameMoneyHistory> list = new ArrayList<GameMoneyHistory>();
+        if (showmoneyService != null) {
+            PageGameMoneyHistory pageGameMoneyHistory = showmoneyService.getUserGameMoneyConsume(userId, startTime, endTime, start, offset);
+            if (pageGameMoneyHistory != null) {
+                list = pageGameMoneyHistory.getPageList();
+                result.addProperty("listCount", pageGameMoneyHistory.getPageCount());
+                if (list != null && list.size() > 0) {
+
+                    List<Integer> userIds  = Lists.newArrayList();
+                    for(GameMoneyHistory hist : list) {
+                        if(hist.getToUserId() != null) {
+                            userIds.add(hist.getToUserId());
+                        }
+                    }
+
+                    // 获取用户信息列表
+                    KkUserService kkUserService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
+                    List<UserProfile> userProfiles = kkUserService.getUserProfileBatch(userIds);
+                    Map<Integer, UserProfile> userProfileMap = Maps.newHashMap();
+                    if (userProfiles != null) {
+                        for (UserProfile userProfile : userProfiles) {
+                            userProfileMap.put(userProfile.getUserId(), userProfile);
+                        }
+                    }
+
+                    for (GameMoneyHistory hist : list) {
+                        JsonObject moneyObj = new JsonObject();
+                        if (hist.getConsumeAmount() != null) {
+                            moneyObj.addProperty("amount", hist.getConsumeAmount());
+                        }
+                        if (hist.getToUserId() != null && hist.getToUserId() > 0) {
+
+                            UserProfile userProfile = userProfileMap.get(hist.getToUserId());
+                            if (userProfile != null && userProfile.getNickName() != null) {
+                                moneyObj.addProperty("nickname", userProfile.getNickName());
+                            }
+                            moneyObj.addProperty("toUserId", hist.getToUserId());
+                        }
+                        if (hist.getXmanDesc() != null && hist.getXmanDesc().contains("dxmanId")) {
+                            try {
+                                JsonObject xmanDesc = new JsonParser().parse(hist.getXmanDesc()).getAsJsonObject();
+                                if (xmanDesc.has("dxmanId") && xmanDesc.get("dxmanId") != null) {
+                                    moneyObj.addProperty("toUserId", xmanDesc.get("dxmanId").getAsInt());
+                                    moneyObj.addProperty("nickname", "神秘人" + xmanDesc.get("dxmanId").getAsInt() % 1000);
+                                }
+                            } catch (Exception e) {
+                            }
+                        }
+                        if (hist.getTypeDesc() != null) {
+                            moneyObj.addProperty("typeDesc", hist.getTypeDesc());
+                        }
+                        if (hist.getDtime() != null) {
+                            moneyObj.addProperty("time", hist.getDtime().getTime());
+                        }
+                        moneyList.add(moneyObj);
+                    }
+
+                }
+            }
+        } else {
+            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            return result;
+        }
+        
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        result.add("consumeList", moneyList);
         return result;
     }
 	

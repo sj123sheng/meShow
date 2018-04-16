@@ -9,6 +9,8 @@ import java.net.URL;
 
 import org.apache.log4j.Logger;
 
+import com.dianping.cat.Cat;
+import com.dianping.cat.message.Transaction;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.kktv.third.BaseService;
@@ -24,6 +26,7 @@ public class QunduiService extends BaseService {
 		
 		HttpURLConnection url_con = null;
 		String qunduiUrl = serverUrl + "?sessionID=" + sessionID;
+		Transaction t = Cat.getProducer().newTransaction("MCall", "QunduiService.verifyUser");
 		try {
             URL url = new URL(qunduiUrl);
             url_con = (HttpURLConnection) url.openConnection();
@@ -45,6 +48,7 @@ public class QunduiService extends BaseService {
                 tempStr.append(tempLine);
                 tempLine = rd.readLine();
             }
+            t.setStatus(Transaction.SUCCESS);
             String resData = tempStr.toString();
             try {
             	JsonObject resJson = new JsonParser().parse(resData).getAsJsonObject();
@@ -61,10 +65,14 @@ public class QunduiService extends BaseService {
             in.close();
         } catch (Exception e) {
         	logger.error("群队用户验证请求异常", e);
+        	t.setStatus(e);
         	return null;
         } finally {
-            if (url_con != null) url_con.disconnect();
-        }
+            if (url_con != null) {
+                url_con.disconnect();
+            }
+            t.complete();
+            }
         return TagCodeEnum.SUCCESS;
 	}
 
