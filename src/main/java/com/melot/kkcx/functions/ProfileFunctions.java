@@ -192,8 +192,8 @@ public class ProfileFunctions {
 			if (hotData.containsKey("backgroundscroll")) {
 				result.addProperty("backgroundscroll", hotData.get("backgroundscroll"));
 			}
-			if (hotData.containsKey("livevideoquality")) {
-				result.addProperty("livevideoquality", Long.valueOf(hotData.get("livevideoquality")));
+			if (hotData.containsKey("livevideoquality") && !StringUtil.strIsNull(hotData.get("livevideoquality"))) {
+			    result.addProperty("livevideoquality", Long.valueOf(hotData.get("livevideoquality")));
 			}
 			if (hotData.containsKey("tags")) {
 				result.addProperty("tags", hotData.get("tags"));
