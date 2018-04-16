@@ -40,7 +40,6 @@ import com.melot.kkcore.user.api.UserStaticInfo;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.model.DynamicEmoticon;
 import com.melot.kkcx.model.Sticker;
-import com.melot.kkcx.redis.PeopleCountSource;
 import com.melot.kkcx.service.FamilyService;
 import com.melot.kkcx.service.ProfileServices;
 import com.melot.kkcx.service.RoomService;
