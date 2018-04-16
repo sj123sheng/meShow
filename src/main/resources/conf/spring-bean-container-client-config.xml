@@ -24,8 +24,8 @@
 
 	<!-- 配置要发布的服务实现 -->
 	<kkrpc:reference id="redEnvelopersService" interface="com.melot.redenvelopers.driver.service.RedEnvelopersService" version="1.0.0"></kkrpc:reference>
-	<kkrpc:reference id="virtualIdService" interface="com.melot.asset.driver.service.VirtualIdService" version="1.0.1"></kkrpc:reference>
-	<kkrpc:reference id="assetService" interface="com.melot.asset.driver.service.AssetService" version="1.0.1"></kkrpc:reference>
+	<kkrpc:reference id="virtualIdService" interface="com.melot.asset.driver.service.VirtualIdService" version="1.0.2"></kkrpc:reference>
+	<kkrpc:reference id="assetService" interface="com.melot.asset.driver.service.AssetService" version="1.0.2"></kkrpc:reference>
 	<kkrpc:reference id="kkActivityService" interface="com.melot.kkactivity.driver.service.KkActivityService" version="1.0.3"></kkrpc:reference>
 	<kkrpc:reference id="taskInterfaceService" interface="com.melot.module.task.driver.service.TaskInterfaceService" version="1.0.2"></kkrpc:reference>
 	<kkrpc:reference id="activityMedalService" interface="com.melot.module.medal.driver.service.ActivityMedalService" version="1.0.1"></kkrpc:reference>
@@ -172,4 +172,8 @@
 	
 	<!-- 用户收货地址信息 -->
 	<kkrpc:reference id="userAddressService" interface="com.melot.kk.logistics.api.service.UserAddressService" version="1.0.0"/>
+	
+	<kkrpc:reference id="liveShopService" interface="com.melot.kk.liveshop.api.service.LiveShopService" version="1.0.0"/>
+	
+	<kkrpc:reference id="rechargeService" interface="com.melot.kk.recharge.api.service.RechargeService" version="1.0.0"/>
 </beans>

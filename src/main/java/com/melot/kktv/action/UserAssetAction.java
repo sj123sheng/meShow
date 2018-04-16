@@ -775,6 +775,12 @@ public class UserAssetAction {
                 luckyIdJson.addProperty("idState", resVirtualIdInfo.getIdState());
                 luckyIdJson.addProperty("isEnable", resVirtualIdInfo.getIsEnable());
                 luckyIdJson.addProperty("remainDays", resVirtualIdInfo.getRemainDays());
+                if (resVirtualIdInfo.getIsRenew() != null && resVirtualIdInfo.getIsRenew() == 0) {
+                    luckyIdJson.addProperty("isRenew", 0);
+                } else {
+                    luckyIdJson.addProperty("isRenew", 1);
+                }
+                
                 
                 // 该靓号续费的配置信息
                 if (reletVirtualIdConfig != null) {

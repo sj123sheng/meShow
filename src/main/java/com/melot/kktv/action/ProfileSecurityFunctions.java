@@ -1,20 +1,33 @@
 package com.melot.kktv.action;
 
 import java.net.URLDecoder;
+import java.util.List;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
-import com.melot.kk.module.resource.domain.QiNiuTokenConf;
-import com.melot.kk.module.resource.service.ResourceNewService;
 import org.apache.log4j.Logger;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.melot.blacklist.service.BlacklistService;
+import com.melot.common.melot_utils.StringUtils;
+import com.melot.kk.module.resource.domain.QiNiuTokenConf;
+import com.melot.kk.module.resource.service.ResourceNewService;
+import com.melot.kk.userSecurity.api.domain.DO.UserVerifyDO;
+import com.melot.kk.userSecurity.api.service.UserVerifyService;
+import com.melot.kkcore.account.api.ResResetPassword;
+import com.melot.kkcore.account.api.ResUserBoundAccount;
 import com.melot.kkcore.user.api.UserProfile;
+import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.functions.ProfileFunctions;
 import com.melot.kkcx.functions.UserFunctions;
 import com.melot.kkcx.service.GeneralService;
+import com.melot.kkcx.service.ProfileServices;
+import com.melot.kkcx.service.UserService;
+import com.melot.kktv.base.CommonStateCode;
+import com.melot.kktv.base.Result;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.SmsSource;
 import com.melot.kktv.service.AccountService;
@@ -35,6 +48,15 @@ public class ProfileSecurityFunctions {
 	private static Logger loginLogger = Logger.getLogger("loginLogger");
 	
 	private static Logger logger = Logger.getLogger(ProfileSecurityFunctions.class);
+	
+	private static final String IDENTIFYPHONE_KEY = "identifyFormalPhone_%s";
+	
+	private static final String RETRIEVEPWDPHONE_KEY = "retrievePwdPhone_%s";
+	
+	private static final String RETRIEVEPW_DUSER_KEY = "retrievePwdUser_%s"; 
+	
+	@Resource
+    UserVerifyService userVerifyService;
 
 	private static JsonObject setUserNameAndPassword(JsonObject jsonObject, String up){
 
@@ -811,10 +833,6 @@ public class ProfileSecurityFunctions {
 		}
 
 		JsonObject result = new JsonObject();
-		if (!checkTag) {
-			result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-			return result;
-		}
 
 		String phoneNum, verifyCode;
 		int type, userId;
@@ -823,7 +841,7 @@ public class ProfileSecurityFunctions {
 			if (phoneNum != null) phoneNum = CommonUtil.validatePhoneNum(phoneNum, "86");
 			verifyCode = CommonUtil.getJsonParamString(jsonObject, "verifyCode", null, "01440002", 1, Integer.MAX_VALUE);
 			type = CommonUtil.getJsonParamInt(jsonObject, "type", 0, "01042401", 1, Integer.MAX_VALUE);
-			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
 		} catch(CommonUtil.ErrorGetParameterException e) {
 			result.addProperty("TagCode", e.getErrCode());
 			return result;
@@ -831,11 +849,36 @@ public class ProfileSecurityFunctions {
 			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
 			return result;
 		}
+		
+		//找回密码不需验证token
+        if (!checkTag && type != 39) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
 
 		String data = SmsSource.getPhoneSmsData(phoneNum, String.valueOf(type));
 		if (data != null && data.equals(verifyCode)) {
 			if (type == 30) {
-				HotDataSource.setTempDataString("identifyFormalPhone_" + userId, "1", 300);
+				HotDataSource.setTempDataString(String.format(IDENTIFYPHONE_KEY, userId), "1", 300);
+			} else if (type == 39){
+			    HotDataSource.setTempDataString(String.format(RETRIEVEPWDPHONE_KEY, phoneNum), "1", 300);
+			    KkUserService kkUserService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
+			    if (kkUserService != null) {
+			        List<Integer> userIds = kkUserService.getUserIdsByIdentifyPhone(phoneNum);
+			        if (!userIds.isEmpty()) {
+			            JsonArray accountList = new JsonArray();
+			            for (Integer idNum : userIds) {
+			                JsonObject jsonObj = new JsonObject();
+			                jsonObj.addProperty("userId", idNum);
+			                String nickname = UserService.getUserNickname(idNum);
+			                if (!StringUtil.strIsNull(nickname)) {
+			                    jsonObj.addProperty("nickname", nickname);
+			                }
+			                accountList.add(jsonObj);
+			            }
+			            result.add("accountList", accountList);
+			        }
+			    }
 			}
 			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 		} else {
@@ -1093,4 +1136,223 @@ public class ProfileSecurityFunctions {
 		}
 		return null;
 	}
+	
+	/**
+     * 根据id或手机号获取账户信息(51010106)
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getAccountInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+        JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
+        if (rtJO != null) {
+            return rtJO;
+        }
+
+        JsonObject result = new JsonObject();
+
+        String idNum;
+        int platform;
+        try {
+            idNum = CommonUtil.getJsonParamString(jsonObject, "idNum", null, "5101010601", 1, Integer.MAX_VALUE);
+            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, TagCodeEnum.PLATFORM_MISSING, 1, Integer.MAX_VALUE);
+        } catch(CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch(Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        int retrieveType = 1;
+        //小于11位账户查询
+        if (idNum.length() < 11) {
+            retrieveType = 2;
+            int userId = Integer.valueOf(idNum);
+            
+            // 黑名单用户或封号用户不能找回密码
+            if (com.melot.kkcx.service.UserService.blackListUser(userId) || UserService.checkUserIsLock(userId)) {
+                result.addProperty("TagCode", "5101010603");
+                return result;
+            }
+            
+            UserProfile userProfile = UserService.getUserInfoNew(userId);
+            if (userProfile != null) {
+                //获取实名认证信息
+                Result<UserVerifyDO> userVerifyDOResult = userVerifyService.getUserVerifyDO(userId);
+                if (userVerifyDOResult.getCode().equals(CommonStateCode.SUCCESS) && userVerifyDOResult.getData() != null) {
+                    UserVerifyDO userVerifyDO = userVerifyDOResult.getData();
+                    try {
+                        if (userVerifyDO != null && StringUtils.isNotEmpty(userVerifyDO.getCertNo())) {
+                            //身份证黑名单不得找回密码
+                            BlacklistService blacklistService = (BlacklistService) MelotBeanFactory.getBean("blacklistService");
+                            boolean flag = blacklistService.isIdentityBlacklist(userVerifyDO.getCertNo());
+                            if (flag) {
+                                result.addProperty("TagCode", "5101010603");
+                                return result;
+                            }
+                        }
+                    } catch (Exception e) {
+                        logger.error("Fail to check user is IdentityBlacklist, userId: " + userId, e);
+                    }
+                    result.addProperty("verifyStatus", userVerifyDO.getVerifyStatus());
+                } else {
+                    result.addProperty("verifyStatus", 0);
+                }
+                result.addProperty("userId", userId);
+                if (userProfile.getIdentifyPhone() != null) {
+                    String phoneNum = userProfile.getIdentifyPhone();
+                    try {
+                        BlacklistService blacklistService = (BlacklistService) MelotBeanFactory.getBean("blacklistService");
+                        if (blacklistService.isPhoneNumBlacklist(phoneNum)) {
+                            result.addProperty("TagCode", "5101010603");
+                            return result;
+                        }
+                    } catch (Exception e) {
+                        logger.error("fail to BlacklistService, phone: " + phoneNum, e);
+                    }   
+                    result.addProperty("phoneNum", phoneNum);
+                }
+                
+                ResUserBoundAccount resUserBoundAccount = AccountService.getUserBoundAccount(userId);
+                if (resUserBoundAccount != null && resUserBoundAccount.getTagCode() != null) {
+                    String TagCode = resUserBoundAccount.getTagCode();
+                    if (TagCode.equals(TagCodeEnum.SUCCESS)) {
+                        JsonArray accountArray = new JsonArray();
+                        // 获取QQ账号
+                        String qqNickname = resUserBoundAccount.getQqNickname();
+                        if (qqNickname != null) {
+                            JsonObject qqJson = new JsonObject();
+                            qqJson.addProperty("type", LoginTypeEnum.QQ);
+                            if (!qqNickname.equals("nicknameIsNull")) {
+                                qqJson.addProperty("nickname", qqNickname.toString());
+                            }
+                            accountArray.add(qqJson);
+                        }
+                        //获取微信号
+                        String wechatNickname = resUserBoundAccount.getWechatNickname();
+                        if (wechatNickname != null) {
+                            JsonObject wechatJson = new JsonObject();
+                            wechatJson.addProperty("type", LoginTypeEnum.WEIXIN);
+                            if (!wechatNickname.equals("nicknameIsNull")) {
+                                wechatJson.addProperty("nickname", wechatNickname.toString());
+                            }
+                            accountArray.add(wechatJson);
+                        }
+                        // 获取weibo账号
+                        String weiboNickname = resUserBoundAccount.getWeiboNickname();
+                        if (weiboNickname != null) {
+                            JsonObject weiboJson = new JsonObject();
+                            weiboJson.addProperty("type", LoginTypeEnum.WEIBO);
+                            if (!weiboNickname.equals("nicknameIsNull")) {
+                                weiboJson.addProperty("nickname", weiboNickname.toString());
+                            }
+                            accountArray.add(weiboJson);
+                        }
+                        result.add("boundAccounts", accountArray);
+                    }
+                }
+            } else {
+                result.addProperty("TagCode", "5101010602");
+                return result;
+            }
+        } else {
+            try {
+                BlacklistService blacklistService = (BlacklistService) MelotBeanFactory.getBean("blacklistService");
+                if (blacklistService.isPhoneNumBlacklist(idNum)) {
+                    result.addProperty("TagCode", "5101010603");
+                    return result;
+                }
+            } catch (Exception e) {
+                logger.error("fail to BlacklistService, phone: " + idNum, e);
+            }  
+            KkUserService kkUserService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
+            if (kkUserService != null) {
+                List<Integer> userIds = kkUserService.getUserIdsByIdentifyPhone(idNum);
+                if (!userIds.isEmpty()) {
+                    result.addProperty("phoneNum", idNum);
+                } else {
+                    result.addProperty("TagCode", "5101010602");
+                    return result;
+                }
+            }
+        }
+
+        result.addProperty("retrieveType", retrieveType);
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+	
+	/**
+     * 找回密码(51010107)
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject retrieveNewPassword(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+        JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
+        if (rtJO != null) {
+            return rtJO;
+        }
+
+        JsonObject result = new JsonObject();
+
+        String psword;
+        int userId, platform;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            psword = CommonUtil.getJsonParamString(jsonObject, "psword", null, "5101010702", 1, Integer.MAX_VALUE);
+            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, TagCodeEnum.PLATFORM_MISSING, 1, Integer.MAX_VALUE);
+            if ((psword.length() != 32 && (psword.length() > 16 || psword.length() < 6 ) || psword.matches("[0-9]+"))) {
+                result.addProperty("TagCode", "5101010703");
+                return result;
+            }
+        } catch(CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch(Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        UserProfile userProfile = UserService.getUserInfoNew(userId);
+        if (userProfile != null) {
+            String phoneNum = userProfile.getIdentifyPhone();
+            if ("1".equals(HotDataSource.getTempDataString(String.format(RETRIEVEPWDPHONE_KEY, phoneNum))) || 
+                    "1".equals(HotDataSource.getTempDataString(String.format(RETRIEVEPW_DUSER_KEY, userId)))) {
+                try {
+                    int level = ProfileServices.getPasswordSafetyRank(psword);
+                    ResResetPassword resetPassword = AccountService.resetPassword(userId, com.melot.kkcx.service.UserService.getMD5Password(psword), platform, 
+                            com.melot.kktv.service.GeneralService.getIpAddr(request, AppIdEnum.AMUSEMENT, platform, null), level);
+                    String TagCode = resetPassword.getTagCode();
+                    if (TagCode.equals(TagCodeEnum.SUCCESS)) {
+                        com.melot.kkcx.service.UserService.insertTempUserPassword(userId, psword);
+                        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                        HotDataSource.delTempData(String.format(RETRIEVEPWDPHONE_KEY, phoneNum));
+                        HotDataSource.delTempData(String.format(RETRIEVEPWDPHONE_KEY, phoneNum));
+                    } else if (TagCode.equals("02")) {
+                        // 未找到该用户
+                        result.addProperty("TagCode", "5101010701");
+                    } else if (TagCode.equals("03")) {
+                        // ID登录为唯一登录方式时不允许纯数字
+                        result.addProperty("TagCode", "5101010703");
+                    } else {
+                        // 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
+                        logger.error("调用用户中心(AccountService.resetPassword( " + "userId :" + userId  + ")未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
+                        result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
+                    }
+                } catch (Exception e) {
+                    logger.error("未能正常调用用户中心", e);
+                    result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
+                }
+            } else {
+                result.addProperty("TagCode", "5101010701");
+            }
+        } else {
+            result.addProperty("TagCode", "5101010701");
+        }
+        return result;
+    }
 }
