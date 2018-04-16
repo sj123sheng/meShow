@@ -33,6 +33,8 @@ import com.melot.sdk.core.util.MelotBeanFactory;
 public class ProfileSecurityFunctions {
 
 	private static Logger loginLogger = Logger.getLogger("loginLogger");
+	
+	private static Logger logger = Logger.getLogger(ProfileSecurityFunctions.class);
 
 	private static JsonObject setUserNameAndPassword(JsonObject jsonObject, String up){
 
