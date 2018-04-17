@@ -1504,7 +1504,7 @@ public class UserFunctions {
         // 隐藏的调用获取用户关注列用户ID列表
         JsonObject getUserFollowedIdsResult = new JsonObject();
         try {
-            String followIdsStr = UserRelationService.getFollowIdsString(userId, 0, -1);
+            String followIdsStr = UserRelationService.getFollowIdsString(userId, 0, 500);
             if (followIdsStr != null) {
                 getUserFollowedIdsResult.addProperty("followedIds", followIdsStr);
                 getUserFollowedIdsResult.addProperty("TagCode", TagCodeEnum.SUCCESS);
@@ -2359,7 +2359,7 @@ public class UserFunctions {
         // 隐藏的调用获取用户关注列用户ID列表
         JsonObject getUserFollowedIdsResult = new JsonObject();
         try {
-            String followIdsStr = UserRelationService.getFollowIdsString(userId, 0, -1);
+            String followIdsStr = UserRelationService.getFollowIdsString(userId, 0, 500);
             if (followIdsStr != null) {
                 getUserFollowedIdsResult.addProperty("followedIds", followIdsStr);
                 getUserFollowedIdsResult.addProperty("TagCode", TagCodeEnum.SUCCESS);
