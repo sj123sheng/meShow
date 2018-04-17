@@ -72,6 +72,7 @@ public class LiveShopTF {
             product.addProperty("productId", itemDTO.getProductId());
             product.addProperty("productName", itemDTO.getProductName());
             product.addProperty("productUrl", itemDTO.getResourceUrl() + "!256");
+            product.addProperty("productUrl_big", itemDTO.getResourceUrl());
             product.addProperty("productPrice", itemDTO.getProductPrice());
             product.addProperty("productCount", itemDTO.getProductCount());
             product.addProperty("productSpec", itemDTO.getProductSpec());
