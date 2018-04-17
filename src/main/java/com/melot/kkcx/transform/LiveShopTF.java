@@ -6,6 +6,7 @@ import com.melot.kk.liveshop.api.constant.LiveShopOrderState;
 import com.melot.kk.liveshop.api.dto.LiveShopOrderDTO;
 import com.melot.kk.liveshop.api.dto.LiveShopOrderItemDTO;
 import com.melot.kk.liveshop.api.dto.LiveShopOrderPictureDTO;
+import com.melot.kk.liveshop.api.dto.LiveShopProductDTO;
 import com.melot.kk.logistics.api.domain.UserAddressDO;
 import com.melot.kktv.util.StringUtil;
 
@@ -20,6 +21,7 @@ public class LiveShopTF {
         result.addProperty("orderNo", orderDTO.getOrderNo());
         result.addProperty("expressMoney", orderDTO.getExpressMoney());
         result.addProperty("orderMoney", orderDTO.getOrderMoney());
+        result.addProperty("orderType", orderDTO.getOrderType());
         if (orderDTO.getOrderState().equals(LiveShopOrderState.WAIT_RETURN)) {
             // 管理后台挂起的订单，做为申请退款的订单处理
             result.addProperty("orderState", LiveShopOrderState.APPLY_REFUND);
@@ -70,11 +72,40 @@ public class LiveShopTF {
             product.addProperty("productId", itemDTO.getProductId());
             product.addProperty("productName", itemDTO.getProductName());
             product.addProperty("productUrl", itemDTO.getResourceUrl() + "!256");
+            product.addProperty("productUrl_big", itemDTO.getResourceUrl());
             product.addProperty("productPrice", itemDTO.getProductPrice());
             product.addProperty("productCount", itemDTO.getProductCount());
+            product.addProperty("productSpec", itemDTO.getProductSpec());
             products.add(product);
         }
         result.add("products", products);
     }
 
+    /**
+     * 商品信息转JSON
+     * @param result
+     * @param productDTO
+     */
+    public static void product2Json(JsonObject result, LiveShopProductDTO productDTO) {
+        result.addProperty("productId", productDTO.getProductId());
+        result.addProperty("productName", productDTO.getProductName());
+        result.addProperty("productPrice", productDTO.getProductPrice());
+        result.addProperty("expressPrice", productDTO.getExpressPrice());
+        result.addProperty("productSpec", productDTO.getProductSpec());
+        result.addProperty("productDetailDesc", productDTO.getProductDetailDesc());
+        result.addProperty("stockNum", productDTO.getStockNum());
+        result.addProperty("actorId", productDTO.getActorId());
+        
+        JsonArray productBannerUrls = new JsonArray();
+        for (String pictrueUrl : productDTO.getPictrueUrls()) {
+            productBannerUrls.add(pictrueUrl);
+        }
+        result.add("productBannerUrls", productBannerUrls);
+        
+        JsonArray productDetailUrls = new JsonArray();
+        for (String pictrueDetailUrl : productDTO.getDetailPictureUrls()) {
+            productDetailUrls.add(pictrueDetailUrl);
+        }
+        result.add("productDetailUrls", productDetailUrls);
+    }
 }
