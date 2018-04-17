@@ -640,7 +640,7 @@
 		<dependency>
 		  <groupId>com.melot.kk</groupId>
 		  <artifactId>kk-liveshop-api</artifactId>
-		  <version>1.0.1</version>
+		  <version>1.0.2-SNAPSHOT</version>
 		</dependency>
 		
 		<!-- 充值模块 -->

@@ -3108,4 +3108,19 @@
 		<constructor-arg name="t" ref="liveShopFunctions" />
 		<constructor-arg name="methodName" value="checkOrderState" />
 	</bean>
+	
+	<bean id="51060511" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getProducts" />
+	</bean>
+	
+	<bean id="51060512" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getProductInfo" />
+	</bean>
+	
+	<bean id="51060513" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="addDistributorOrder" />
+	</bean>
 </beans>
