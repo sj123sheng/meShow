@@ -20,7 +20,6 @@ public class LiveShopTF {
         result.addProperty("orderNo", orderDTO.getOrderNo());
         result.addProperty("expressMoney", orderDTO.getExpressMoney());
         result.addProperty("orderMoney", orderDTO.getOrderMoney());
-        result.addProperty("orderType", orderDTO.getOrderType());
         if (orderDTO.getOrderState().equals(LiveShopOrderState.WAIT_RETURN)) {
             // 管理后台挂起的订单，做为申请退款的订单处理
             result.addProperty("orderState", LiveShopOrderState.APPLY_REFUND);
@@ -71,6 +70,7 @@ public class LiveShopTF {
             product.addProperty("productId", itemDTO.getProductId());
             product.addProperty("productName", itemDTO.getProductName());
             product.addProperty("productUrl", itemDTO.getResourceUrl() + "!256");
+            product.addProperty("productUrl_big", itemDTO.getResourceUrl());
             product.addProperty("productPrice", itemDTO.getProductPrice());
             product.addProperty("productCount", itemDTO.getProductCount());
             products.add(product);
