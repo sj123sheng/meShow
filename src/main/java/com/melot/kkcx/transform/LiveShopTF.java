@@ -90,11 +90,14 @@ public class LiveShopTF {
         result.addProperty("productName", productDTO.getProductName());
         result.addProperty("productPrice", productDTO.getProductPrice());
         result.addProperty("expressPrice", productDTO.getExpressPrice());
-        result.addProperty("productSpec", productDTO.getProductSpec());
-        result.addProperty("productDetailDesc", productDTO.getProductDetailDesc());
+        if (productDTO.getProductSpec() != null) {
+            result.addProperty("productSpec", productDTO.getProductSpec());
+        }
+        if (productDTO.getProductDetailDesc() != null) {
+            result.addProperty("productDetailDesc", productDTO.getProductDetailDesc());
+        }
         result.addProperty("stockNum", productDTO.getStockNum());
         result.addProperty("actorId", productDTO.getActorId());
-        
         JsonArray productBannerUrls = new JsonArray();
         JsonArray productDetailUrls = new JsonArray();
         List<LiveShopProductPictureDTO> productPictureDTOList = productDTO.getProductPictureDTOList();
