@@ -74,7 +74,7 @@ public class LiveShopTF {
             product.addProperty("productUrl_big", itemDTO.getResourceUrl());
             product.addProperty("productPrice", itemDTO.getProductPrice());
             product.addProperty("productCount", itemDTO.getProductCount());
-//            product.addProperty("productSpec", itemDTO.getProductSpec());
+            product.addProperty("productSpec", itemDTO.getProductSpec());
             products.add(product);
         }
         result.add("products", products);
@@ -85,32 +85,32 @@ public class LiveShopTF {
      * @param result
      * @param productDTO
      */
-//    public static void product2Json(JsonObject result, LiveShopProductDTO productDTO) {
-//        result.addProperty("productId", productDTO.getProductId());
-//        result.addProperty("productName", productDTO.getProductName());
-//        result.addProperty("productPrice", productDTO.getProductPrice());
-//        result.addProperty("expressPrice", productDTO.getExpressPrice());
-//        if (productDTO.getProductSpec() != null) {
-//            result.addProperty("productSpec", productDTO.getProductSpec());
-//        }
-//        if (productDTO.getProductDetailDesc() != null) {
-//            result.addProperty("productDetailDesc", productDTO.getProductDetailDesc());
-//        }
-//        result.addProperty("stockNum", productDTO.getStockNum());
-//        result.addProperty("actorId", productDTO.getActorId());
-//        JsonArray productBannerUrls = new JsonArray();
-//        JsonArray productDetailUrls = new JsonArray();
-//        List<LiveShopProductPictureDTO> productPictureDTOList = productDTO.getProductPictureDTOList();
-//
-//        for (LiveShopProductPictureDTO productPictureDTO : productPictureDTOList) {
-//            // 1-显示图片，2-详情图片
-//            if (productPictureDTO.getPictureType() == 1) {
-//                productBannerUrls.add(productPictureDTO.getResourceUrl());
-//            } else {
-//                productDetailUrls.add(productPictureDTO.getResourceUrl());
-//            }
-//        }
-//        result.add("productBannerUrls", productBannerUrls);
-//        result.add("productDetailUrls", productDetailUrls);
-//    }
+    public static void product2Json(JsonObject result, LiveShopProductDTO productDTO) {
+        result.addProperty("productId", productDTO.getProductId());
+        result.addProperty("productName", productDTO.getProductName());
+        result.addProperty("productPrice", productDTO.getProductPrice());
+        result.addProperty("expressPrice", productDTO.getExpressPrice());
+        if (productDTO.getProductSpec() != null) {
+            result.addProperty("productSpec", productDTO.getProductSpec());
+        }
+        if (productDTO.getProductDetailDesc() != null) {
+            result.addProperty("productDetailDesc", productDTO.getProductDetailDesc());
+        }
+        result.addProperty("stockNum", productDTO.getStockNum());
+        result.addProperty("actorId", productDTO.getActorId());
+        JsonArray productBannerUrls = new JsonArray();
+        JsonArray productDetailUrls = new JsonArray();
+        List<LiveShopProductPictureDTO> productPictureDTOList = productDTO.getProductPictureDTOList();
+
+        for (LiveShopProductPictureDTO productPictureDTO : productPictureDTOList) {
+            // 1-显示图片，2-详情图片
+            if (productPictureDTO.getPictureType() == 1) {
+                productBannerUrls.add(productPictureDTO.getResourceUrl());
+            } else {
+                productDetailUrls.add(productPictureDTO.getResourceUrl());
+            }
+        }
+        result.add("productBannerUrls", productBannerUrls);
+        result.add("productDetailUrls", productDetailUrls);
+    }
 }
