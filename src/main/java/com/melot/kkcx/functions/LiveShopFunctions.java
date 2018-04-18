@@ -571,34 +571,34 @@ public class LiveShopFunctions {
         }
         
         try {
-            Result<Page<LiveShopProductDTO>> moduleResult = liveShopService.getProductsByDistributorId(distributorId, start, num);
-            
-            if (moduleResult == null) {
-                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
-                return result;
-            }
-            String code = moduleResult.getCode();
-            if (!CommonStateCode.SUCCESS.equals(code) || moduleResult.getData() == null){
-                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
-                return result;
-            }
-            Page<LiveShopProductDTO> page = moduleResult.getData();
-            result.addProperty("count", page.getCount());
-            JsonArray orders = new JsonArray();
-            if (page.getList() == null) {
-                result.add("products", orders);
-                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
-                return result;
-            }
-            
-            for (LiveShopProductDTO productDTO : page.getList()) {
-                JsonObject productJson = new JsonObject();
-                productJson.addProperty("productId", productDTO.getProductId());
-                productJson.addProperty("pictureUrl", productDTO.getResourceUrl());
-                orders.add(productJson);
-            }
-            
-            result.add("products", orders);
+//            Result<Page<LiveShopProductDTO>> moduleResult = liveShopService.getProductsByDistributorId(distributorId, start, num);
+//            
+//            if (moduleResult == null) {
+//                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
+//                return result;
+//            }
+//            String code = moduleResult.getCode();
+//            if (!CommonStateCode.SUCCESS.equals(code) || moduleResult.getData() == null){
+//                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+//                return result;
+//            }
+//            Page<LiveShopProductDTO> page = moduleResult.getData();
+//            result.addProperty("count", page.getCount());
+//            JsonArray orders = new JsonArray();
+//            if (page.getList() == null) {
+//                result.add("products", orders);
+//                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+//                return result;
+//            }
+//            
+//            for (LiveShopProductDTO productDTO : page.getList()) {
+//                JsonObject productJson = new JsonObject();
+//                productJson.addProperty("productId", productDTO.getProductId());
+//                productJson.addProperty("pictureUrl", productDTO.getResourceUrl());
+//                orders.add(productJson);
+//            }
+//            
+//            result.add("products", orders);
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
             return result;
         } catch (Exception e) {
@@ -630,22 +630,22 @@ public class LiveShopFunctions {
         }
         
         try {
-            Result<LiveShopProductDTO> moduleResult = liveShopService.getProductInfoByProductId(productId);
-            if (moduleResult == null) {
-                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
-                return result;
-            }
-            String code = moduleResult.getCode();
-            if ("2".equals(code)) {
-                result.addProperty(ParameterKeys.TAG_CODE, "5106050303");
-                return result;
-            } else if (!CommonStateCode.SUCCESS.equals(code) || moduleResult.getData() == null){
-                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
-                return result;
-            }
-            LiveShopProductDTO productDTO = moduleResult.getData();
-            
-            LiveShopTF.product2Json(result, productDTO);
+//            Result<LiveShopProductDTO> moduleResult = liveShopService.getProductInfoByProductId(productId);
+//            if (moduleResult == null) {
+//                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
+//                return result;
+//            }
+//            String code = moduleResult.getCode();
+//            if ("2".equals(code)) {
+//                result.addProperty(ParameterKeys.TAG_CODE, "5106050303");
+//                return result;
+//            } else if (!CommonStateCode.SUCCESS.equals(code) || moduleResult.getData() == null){
+//                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+//                return result;
+//            }
+//            LiveShopProductDTO productDTO = moduleResult.getData();
+//            
+//            LiveShopTF.product2Json(result, productDTO);
             
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
             return result;
@@ -690,20 +690,20 @@ public class LiveShopFunctions {
         }
         
         try {
-            Result<String> addOrderResult = liveShopService.addDistributorOrder(userId, distributorId, productId, count, addressId);
-            if (addOrderResult == null) {
-                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
-                return result;
-            }
-            String code = addOrderResult.getCode();
-            if ("2".equals(code)) {
-                result.addProperty(ParameterKeys.TAG_CODE, "5106050204");
-                return result;
-            } else if (!CommonStateCode.SUCCESS.equals(code)){
-                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
-                return result;
-            }
-            result.addProperty(PARAM_ORDER_NO, addOrderResult.getData());
+//            Result<String> addOrderResult = liveShopService.addDistributorOrder(userId, distributorId, productId, count, addressId);
+//            if (addOrderResult == null) {
+//                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
+//                return result;
+//            }
+//            String code = addOrderResult.getCode();
+//            if ("2".equals(code)) {
+//                result.addProperty(ParameterKeys.TAG_CODE, "5106050204");
+//                return result;
+//            } else if (!CommonStateCode.SUCCESS.equals(code)){
+//                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+//                return result;
+//            }
+//            result.addProperty(PARAM_ORDER_NO, addOrderResult.getData());
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
             return result;
         } catch (Exception e) {
