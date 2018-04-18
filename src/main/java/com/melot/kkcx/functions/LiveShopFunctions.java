@@ -595,6 +595,7 @@ public class LiveShopFunctions {
                 JsonObject productJson = new JsonObject();
                 productJson.addProperty("productId", productDTO.getProductId());
                 productJson.addProperty("pictureUrl", productDTO.getResourceUrl());
+                orders.add(productJson);
             }
             
             result.add("products", orders);
@@ -616,11 +617,7 @@ public class LiveShopFunctions {
      */
     public JsonObject getProductInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
-        
-        if (!checkTag) {
-            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_INCORRECT);
-            return result;
-        }
+
         int productId;
         try {
             productId = CommonUtil.getJsonParamInt(jsonObject, "productId", 0, "5106051201", 1, Integer.MAX_VALUE);
