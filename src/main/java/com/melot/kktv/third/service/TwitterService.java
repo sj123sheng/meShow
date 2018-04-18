@@ -2,6 +2,8 @@ package com.melot.kktv.third.service;
 
 import org.apache.log4j.Logger;
 
+import com.dianping.cat.Cat;
+import com.dianping.cat.message.Transaction;
 import com.github.scribejava.apis.TwitterApi;
 import com.github.scribejava.core.builder.ServiceBuilder;
 import com.github.scribejava.core.model.OAuth1AccessToken;
@@ -37,6 +39,7 @@ public class TwitterService extends BaseService{
     
     public String verifyUser(String uuid, String sessionId) {
         String result = null;
+        Transaction t = Cat.getProducer().newTransaction("MCall", "TwitterService.verifyUser");
         try {
             final OAuth10aService service = new ServiceBuilder(clientId).apiSecret(clientSecret).build(TwitterApi.instance());
             String[] params = sessionId.split(",");
@@ -47,6 +50,7 @@ public class TwitterService extends BaseService{
                 final OAuthRequest request = new OAuthRequest(Verb.GET, serverUrl);
                 service.signRequest(accessToken, request);
                 final Response response = service.execute(request);
+                t.setStatus(Transaction.SUCCESS);
                 if (response.getCode() == 200 && !StringUtil.strIsNull(response.getBody())) {
                     JsonObject jsonObj = new JsonParser().parse(response.getBody()).getAsJsonObject();
                     if (jsonObj.get("id_str").getAsString().equals(uuid)) {
@@ -56,6 +60,9 @@ public class TwitterService extends BaseService{
             }
         } catch (Exception e) {
             logger.error("twitter服务端验证用户请求异常", e);
+            t.setStatus(e);
+        } finally {
+            t.complete();
         }
         return result;
     }

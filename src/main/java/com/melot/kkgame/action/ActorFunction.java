@@ -8,16 +8,22 @@
  */
 package com.melot.kkgame.action;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.log4j.Logger;
+
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.melot.api.menu.sdk.dao.domain.RoomInfo;
-import com.melot.api.menu.sdk.service.RoomInfoService;
 import com.melot.family.driver.domain.DO.UserApplyActorDO;
 import com.melot.family.driver.service.UserApplyActorService;
 import com.melot.game.config.sdk.actor.service.ActorLiveInfoService;
 import com.melot.game.config.sdk.domain.ActorLiveInfo;
 import com.melot.ios.idfa.driver.UpIdfaService;
-import com.melot.kkcx.service.GeneralService;
 import com.melot.kkgame.logger.HadoopLogger;
 import com.melot.kktv.redis.RankingListSource;
 import com.melot.kktv.util.AppIdEnum;
@@ -26,13 +32,6 @@ import com.melot.kktv.util.TagCodeEnum;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import com.melot.stream.driver.service.LiveStreamConfigService;
 import com.melot.stream.driver.service.domain.ClientDetail;
-import org.apache.log4j.Logger;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 
 /**
  * Title: ActorFunction
@@ -51,46 +50,6 @@ public class ActorFunction extends BaseAction {
 
     @Resource
     UserApplyActorService userApplyActorService;
-    
-    /**
-     * 修改房间主题（10005055）
-     * 
-     */
-    public JsonObject changeRoomTheme(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-        JsonObject result = new JsonObject();
-        if (!checkTag) {
-            result.addProperty(TAG_CODE, TagCodeEnum.TOKEN_NOT_CHECKED);
-            return result;
-        }
-        int userId;
-        String roomTheme;
-        try{
-            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.APPID_MISSING, 1, Integer.MAX_VALUE);
-            roomTheme = CommonUtil.getJsonParamString(jsonObject, "roomTheme", null, "05550001", 1, 50);
-            if (GeneralService.hasSensitiveWords(userId, roomTheme)) {
-                result.addProperty("TagCode", "05550003");
-                return result;
-            }
-        }catch (CommonUtil.ErrorGetParameterException e) {
-            result.addProperty(TAG_CODE, e.getErrCode());
-            return result;
-        } catch (Exception e) {
-            result.addProperty(TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
-            return result;
-        }
-        
-        RoomInfoService roomInfoServie = MelotBeanFactory.getBean("roomInfoService", RoomInfoService.class);
-        RoomInfo roomInfo = new RoomInfo();
-        roomInfo.setActorId(userId);
-        roomInfo.setRoomTheme(roomTheme);
-        boolean updateFlag = roomInfoServie.updateRoomInfo(roomInfo);
-        if (updateFlag) {
-            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        } else {
-            result.addProperty("TagCode", TagCodeEnum.FAIL_TO_UPDATE);
-        }
-        return result;
-    }
     
     /**
      * 获取主播屏幕分辨率信息  [fucTag=60001001]

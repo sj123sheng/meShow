@@ -1593,4 +1593,58 @@ public class MessageBoxV2Functions {
         return result;
     }
     
+    /**
+     * 获取分享新鲜播报详情(51010801)
+     * getShareRecommendedMsg
+     */
+    public JsonObject getShareRecommendedMsg(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+        JsonObject result = new JsonObject();
+    
+        String activityUrl;
+        
+        try {
+            activityUrl = CommonUtil.getJsonParamString(jsonObject, "activityUrl", null, "5101080101", 1, 500);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        try {
+            RecommendedMsg recommendedMsg = (RecommendedMsg) SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("RecommendedMessage.getShareRecommendedMsg", activityUrl);
+            if (recommendedMsg != null) {
+                result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+                if (recommendedMsg.getTitle() != null) {
+                    result.addProperty("title", recommendedMsg.getTitle());
+                }
+                if (recommendedMsg.getMessage() != null) {
+                    result.addProperty("message", recommendedMsg.getMessage());
+                }
+                if (recommendedMsg.getUrl() != null) {
+                    result.addProperty("activityURL", recommendedMsg.getUrl());
+                }
+                if (recommendedMsg.getTopMobileUrl() != null) {
+                    result.addProperty("topMobileURL", recommendedMsg.getTopMobileUrl());
+                }
+                if (recommendedMsg.getImgUrl() != null) {
+                    result.addProperty("img", recommendedMsg.getImgUrl());
+                }
+                if (recommendedMsg.getEndDate() != null) {
+                    result.addProperty("et", recommendedMsg.getEndDate().getTime());
+                }
+                if (recommendedMsg.getShareImgUrl() != null) {
+                    result.addProperty("shareImgUrl", recommendedMsg.getShareImgUrl());
+                }
+            }
+        } catch (Exception e) {
+            logger.error("未能正常调用存储过程 RecommendedMessage.getShareRecommendedMsg", e);
+            result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
+        }
+
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+    
 }

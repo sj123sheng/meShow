@@ -11,6 +11,8 @@ import com.alipay.api.request.AlipaySystemOauthTokenRequest;
 import com.alipay.api.request.AlipayUserUserinfoShareRequest;
 import com.alipay.api.response.AlipaySystemOauthTokenResponse;
 import com.alipay.api.response.AlipayUserUserinfoShareResponse;
+import com.dianping.cat.Cat;
+import com.dianping.cat.message.Transaction;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.kktv.third.BaseService;
@@ -60,14 +62,19 @@ public class AlipayService extends BaseService {
 		AlipayClient client = new DefaultAlipayClient(serverUrl, appId, privateKey, format, charset);
 		// 返回结果对象
 		AlipaySystemOauthTokenResponse res;
+		Transaction t = Cat.getProducer().newTransaction("MCall", "AlipayService.getToken");
 		try {
 			res = client.execute(req);
+			t.setStatus(Transaction.SUCCESS);
 			if (res != null && res.getBody() != null) {
 				return res.getBody();
 			}
 		} catch (AlipayApiException e) {
 			logger.error("fail to call alipay server to get token", e);
-		}
+			t.setStatus(e);
+		} finally {
+            t.complete();
+        }
 
 		return null;
 	}

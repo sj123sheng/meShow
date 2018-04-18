@@ -12,6 +12,8 @@ import com.melot.family.driver.service.UserApplyActorService;
 import com.melot.kk.opus.api.constant.OpusCostantEnum;
 import com.melot.kk.userSecurity.api.domain.DO.UserVerifyDO;
 import com.melot.kk.userSecurity.api.service.UserVerifyService;
+import com.melot.kkcore.actor.api.RoomInfoKeys;
+import com.melot.kkcore.actor.service.ActorService;
 import com.melot.kkcore.user.api.*;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.model.ActorLevel;
@@ -64,6 +66,9 @@ public class ProfileFunctions {
 
 	@Resource
     UserVerifyService userVerifyService;
+	
+	@Resource
+	ActorService actorService;
 
 	private LiveTypeSource liveTypeSource;
 
@@ -187,8 +192,8 @@ public class ProfileFunctions {
 			if (hotData.containsKey("backgroundscroll")) {
 				result.addProperty("backgroundscroll", hotData.get("backgroundscroll"));
 			}
-			if (hotData.containsKey("livevideoquality")) {
-				result.addProperty("livevideoquality", Long.valueOf(hotData.get("livevideoquality")));
+			if (hotData.containsKey("livevideoquality") && !StringUtil.strIsNull(hotData.get("livevideoquality"))) {
+			    result.addProperty("livevideoquality", Long.valueOf(hotData.get("livevideoquality")));
 			}
 			if (hotData.containsKey("tags")) {
 				result.addProperty("tags", hotData.get("tags"));
@@ -2467,11 +2472,9 @@ public class ProfileFunctions {
             return result;
         }
         
-        RoomInfo roomInfo = new RoomInfo();
-    	roomInfo.setActorId(userId);
-		roomInfo.setRoomTheme(roomTheme);
-		
-		if (com.melot.kktv.service.RoomService.updateRoomInfo(roomInfo)) {
+		Map<String, Object> map = new HashMap<>();
+		map.put(RoomInfoKeys.ROOMTHEME.key(), roomTheme);
+		if (actorService.updateRoomInfoById(userId, map) == 1) {
 			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 			
 			// 通知Node房间刷新缓存

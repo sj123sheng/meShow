@@ -12,6 +12,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.melot.blacklist.service.BlacklistService;
+import com.melot.common.melot_utils.StringUtils;
 import com.melot.kk.module.resource.domain.QiNiuTokenConf;
 import com.melot.kk.module.resource.service.ResourceNewService;
 import com.melot.kk.userSecurity.api.domain.DO.UserVerifyDO;
@@ -975,6 +976,7 @@ public class ProfileSecurityFunctions {
 					} else {
 						//验证手机号成功，绑定手机号失败
 						result.addProperty("TagCode", "01440006");
+						logger.info("绑定手机号失败，bindCode:" + bindCode);
 					}
 				} else if (tagCode.equals("02")) {
 					//手机号认证超过10个账号
@@ -1177,9 +1179,40 @@ public class ProfileSecurityFunctions {
             
             UserProfile userProfile = UserService.getUserInfoNew(userId);
             if (userProfile != null) {
+                //获取实名认证信息
+                Result<UserVerifyDO> userVerifyDOResult = userVerifyService.getUserVerifyDO(userId);
+                if (userVerifyDOResult.getCode().equals(CommonStateCode.SUCCESS) && userVerifyDOResult.getData() != null) {
+                    UserVerifyDO userVerifyDO = userVerifyDOResult.getData();
+                    try {
+                        if (userVerifyDO != null && StringUtils.isNotEmpty(userVerifyDO.getCertNo())) {
+                            //身份证黑名单不得找回密码
+                            BlacklistService blacklistService = (BlacklistService) MelotBeanFactory.getBean("blacklistService");
+                            boolean flag = blacklistService.isIdentityBlacklist(userVerifyDO.getCertNo());
+                            if (flag) {
+                                result.addProperty("TagCode", "5101010603");
+                                return result;
+                            }
+                        }
+                    } catch (Exception e) {
+                        logger.error("Fail to check user is IdentityBlacklist, userId: " + userId, e);
+                    }
+                    result.addProperty("verifyStatus", userVerifyDO.getVerifyStatus());
+                } else {
+                    result.addProperty("verifyStatus", 0);
+                }
                 result.addProperty("userId", userId);
                 if (userProfile.getIdentifyPhone() != null) {
-                    result.addProperty("phoneNum", userProfile.getIdentifyPhone());
+                    String phoneNum = userProfile.getIdentifyPhone();
+                    try {
+                        BlacklistService blacklistService = (BlacklistService) MelotBeanFactory.getBean("blacklistService");
+                        if (blacklistService.isPhoneNumBlacklist(phoneNum)) {
+                            result.addProperty("TagCode", "5101010603");
+                            return result;
+                        }
+                    } catch (Exception e) {
+                        logger.error("fail to BlacklistService, phone: " + phoneNum, e);
+                    }   
+                    result.addProperty("phoneNum", phoneNum);
                 }
                 
                 ResUserBoundAccount resUserBoundAccount = AccountService.getUserBoundAccount(userId);
@@ -1220,20 +1253,20 @@ public class ProfileSecurityFunctions {
                         result.add("boundAccounts", accountArray);
                     }
                 }
-                
-                //获取实名认证信息
-                Result<UserVerifyDO> userVerifyDOResult = userVerifyService.getUserVerifyDO(userId);
-                if (userVerifyDOResult.getCode().equals(CommonStateCode.SUCCESS) && userVerifyDOResult.getData() != null) {
-                    UserVerifyDO userVerifyDO = userVerifyDOResult.getData();
-                    result.addProperty("verifyStatus", userVerifyDO.getVerifyStatus());
-                } else {
-                    result.addProperty("verifyStatus", 0);
-                }
             } else {
                 result.addProperty("TagCode", "5101010602");
                 return result;
             }
         } else {
+            try {
+                BlacklistService blacklistService = (BlacklistService) MelotBeanFactory.getBean("blacklistService");
+                if (blacklistService.isPhoneNumBlacklist(idNum)) {
+                    result.addProperty("TagCode", "5101010603");
+                    return result;
+                }
+            } catch (Exception e) {
+                logger.error("fail to BlacklistService, phone: " + idNum, e);
+            }  
             KkUserService kkUserService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
             if (kkUserService != null) {
                 List<Integer> userIds = kkUserService.getUserIdsByIdentifyPhone(idNum);
@@ -1270,8 +1303,12 @@ public class ProfileSecurityFunctions {
         int userId, platform;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-            psword = CommonUtil.getJsonParamString(jsonObject, "psword", null, "5101010702", 1, Integer.MAX_VALUE);
             platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, TagCodeEnum.PLATFORM_MISSING, 1, Integer.MAX_VALUE);
+            psword = SecurityFunctions.decodeNewPassword(jsonObject);
+            if(psword == null){
+                result.addProperty("TagCode", "5101010702");
+                return result;
+            }
             if ((psword.length() != 32 && (psword.length() > 16 || psword.length() < 6 ) || psword.matches("[0-9]+"))) {
                 result.addProperty("TagCode", "5101010703");
                 return result;

@@ -304,10 +304,29 @@ public class ActorFunction {
             return result;
         }
         
-        // 找回密码无需验证token
-        if (!checkTag && userVerifyType != 2) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-            return result;
+        // 找回密码无需验证token，需要验证userId和身份证对应关系
+        if (userVerifyType == 2) {
+            boolean checkCertNo = false;
+            if (userId > 0 && certNo != null) {
+                Result<UserVerifyDO> userVerifyDOResult = userVerifyService.getUserVerifyDO(userId);
+                if (userVerifyDOResult.getCode().equals(CommonStateCode.SUCCESS) && userVerifyDOResult.getData() != null) {
+                    UserVerifyDO userVerifyDO = userVerifyDOResult.getData();
+                    if (userVerifyDO != null && !StringUtils.isEmpty(userVerifyDO.getCertNo())) {
+                        if (certNo.equals(userVerifyDO.getCertNo())) {
+                            checkCertNo = true;
+                        }
+                    }
+                }
+            }
+            if (!checkCertNo) {
+                result.addProperty("TagCode", "5202010102");
+                return result;
+            }
+        } else {
+            if (!checkTag) {
+                result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+                return result;
+            }
         }
 
         if (!StringUtil.strIsNull(certNo) && (certNo.length() == 15 || certNo.length() == 18)) {

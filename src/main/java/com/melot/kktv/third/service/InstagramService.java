@@ -8,6 +8,8 @@ import java.net.URL;
 
 import org.apache.log4j.Logger;
 
+import com.dianping.cat.Cat;
+import com.dianping.cat.message.Transaction;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.kktv.third.BaseService;
@@ -31,6 +33,7 @@ public class InstagramService extends BaseService{
     
     public String verifyUser(String uuid, String sessionId) {
         HttpURLConnection url_con = null;
+        Transaction t = Cat.getProducer().newTransaction("MCall", "InstagramService.verifyUser");
         try {
             String param = "?access_token=" + sessionId;
             URL url = new URL(serverUrl + param);          
@@ -47,6 +50,7 @@ public class InstagramService extends BaseService{
             while ((tempLine = rd.readLine()) != null) {
                 tempStr.append(tempLine);
             }
+            t.setStatus(Transaction.SUCCESS);
             JsonObject jsonObj = new JsonParser().parse(tempStr.toString()).getAsJsonObject();
             if (jsonObj.get("meta").getAsJsonObject().get("code").getAsInt() == 200
                     && jsonObj.get("data").getAsJsonObject().get("id").getAsString().equals(uuid)) {
@@ -58,8 +62,12 @@ public class InstagramService extends BaseService{
             in.close();
         } catch (Exception e) {
             logger.error("Instagram服务端验证用户请求异常", e);
+            t.setStatus(e);
         } finally {
-            if (url_con != null) url_con.disconnect();
+            if (url_con != null) {
+                url_con.disconnect();
+            }
+            t.complete();
         }
         return null;
     }

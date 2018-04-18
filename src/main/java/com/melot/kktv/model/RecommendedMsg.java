@@ -28,6 +28,7 @@ public class RecommendedMsg {
 	private String topUrl;
 	private String topMobileUrl;
 	private String topMobileUrlIOS;
+	private String shareImgUrl;
 	
 	/** 
 	 * @return JsonObject
@@ -239,5 +240,13 @@ public class RecommendedMsg {
 	public void setTopMobileUrlIOS(String topMobileUrlIOS) {
 		this.topMobileUrlIOS = topMobileUrlIOS;
 	}
+    
+    public String getShareImgUrl() {
+        return shareImgUrl;
+    }
+    
+    public void setShareImgUrl(String shareImgUrl) {
+        this.shareImgUrl = shareImgUrl;
+    }
 	
 }

@@ -8,6 +8,8 @@ import java.net.URL;
 
 import org.apache.log4j.Logger;
 
+import com.dianping.cat.Cat;
+import com.dianping.cat.message.Transaction;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.kktv.third.BaseService;
@@ -30,6 +32,7 @@ public class KascendService extends BaseService{
 	public String verifyUser(String openid, String sessionkey) {
 		boolean isValid = false;
 		HttpURLConnection url_con = null;
+		Transaction t = Cat.getProducer().newTransaction("MCall", "KascendService.verifyUser");
         try {
 			String queryParams = "?kasappid=" + appid + "&kasappsecret=" + appsecret
         			+ "&userid=" + openid + "&usersessionid=" + sessionkey;
@@ -48,6 +51,7 @@ public class KascendService extends BaseService{
             while ((tempLine = rd.readLine()) != null) {
                 tempStr.append(tempLine);
             }
+            t.setStatus(Transaction.SUCCESS);
             JsonObject jsonObj = new JsonParser().parse(tempStr.toString()).getAsJsonObject();		
 			if(jsonObj.has("rc")&&jsonObj.get("rc").getAsInt()!=0)
 				logger.error("开讯服务端验证用户失败, respose:" + jsonObj.toString());
@@ -57,8 +61,12 @@ public class KascendService extends BaseService{
             in.close();
         } catch (Exception e) {
         	logger.error("开讯服务端验证用户请求异常", e);
+        	t.setStatus(e);
         } finally {
-            if (url_con != null) url_con.disconnect();
+            if (url_con != null) {
+                url_con.disconnect();
+            }
+            t.complete();
         }
         if (isValid) {
         	return TagCodeEnum.SUCCESS;

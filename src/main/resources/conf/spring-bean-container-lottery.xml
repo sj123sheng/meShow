@@ -23,47 +23,47 @@
 	</bean>
 
 	<bean id="gift1" class="com.melot.kkcx.model.LotteryPrize">
-		<property name="prizeIcon"   value="http://www.kktv1.com/Share/other/svip.png" />
+		<property name="prizeIcon"   value="http://apk.kktv8.com/share/other/svip.png" />
 		<property name="prizeDesc" value="恭喜您获得3天SVIP体验" />
 	</bean>
 	
 	<bean id="gift2" class="com.melot.kkcx.model.LotteryPrize">
-		<property name="prizeIcon"   value="http://www.kktv1.com/Share/other/vip.png" />
+		<property name="prizeIcon"   value="http://apk.kktv8.com/share/other/vip.png" />
 		<property name="prizeDesc" value="恭喜您获得3天VIP体验" />
 	</bean>
 	
 	<bean id="gift3" class="com.melot.kkcx.model.LotteryPrize">
-		<property name="prizeIcon"   value="http://www.kktv1.com/Share/other/lbjn.png" />
+		<property name="prizeIcon"   value="http://apk.kktv8.com/share/other/lbjn.png" />
 		<property name="prizeDesc" value="恭喜您获得1天兰博基尼座驾体验" />
 	</bean>
 	
 	<bean id="gift4" class="com.melot.kkcx.model.LotteryPrize">
-		<property name="prizeIcon"   value="http://www.kktv1.com/Share/other/msld.png" />
+		<property name="prizeIcon"   value="http://apk.kktv8.com/share/other/msld.png" />
 		<property name="prizeDesc" value="恭喜您获得3天玛莎拉蒂座驾体验" />
 	</bean>
 	
 	<bean id="gift5" class="com.melot.kkcx.model.LotteryPrize">
-		<property name="prizeIcon"   value="http://www.kktv1.com/Share/other/jb.png" />
+		<property name="prizeIcon"   value="http://apk.kktv8.com/share/other/jb.png" />
 		<property name="prizeDesc" value="恭喜您获得10万秀币" />
 	</bean>
 	
 	<bean id="gift6" class="com.melot.kkcx.model.LotteryPrize">
-		<property name="prizeIcon"   value="http://www.kktv1.com/Share/other/jb.png" />
+		<property name="prizeIcon"   value="http://apk.kktv8.com/share/other/jb.png" />
 		<property name="prizeDesc" value="恭喜您获得1万秀币" />
 	</bean>
 	
 	<bean id="gift7" class="com.melot.kkcx.model.LotteryPrize">
-		<property name="prizeIcon"   value="http://www.kktv1.com/Share/other/jb.png" />
+		<property name="prizeIcon"   value="http://apk.kktv8.com/share/other/jb.png" />
 		<property name="prizeDesc" value="恭喜您获得1000秀币" />
 	</bean>
 	
 	<bean id="gift8" class="com.melot.kkcx.model.LotteryPrize">
-		<property name="prizeIcon"   value="http://www.kktv1.com/Share/other/jb.png" />
+		<property name="prizeIcon"   value="http://apk.kktv8.com/share/other/jb.png" />
 		<property name="prizeDesc" value="恭喜您获得200秀币" />
 	</bean>
 	
 	<bean id="gift9" class="com.melot.kkcx.model.LotteryPrize">
-		<property name="prizeIcon"   value="http://www.kktv1.com/Share/other/yg.png" />
+		<property name="prizeIcon"   value="http://apk.kktv8.com/share/other/yg.png" />
 		<property name="prizeDesc" value="恭喜您获得30个阳光" />
 	</bean>
 
