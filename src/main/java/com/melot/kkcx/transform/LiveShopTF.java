@@ -3,12 +3,11 @@ package com.melot.kkcx.transform;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.melot.kk.liveshop.api.constant.LiveShopOrderState;
-import com.melot.kk.liveshop.api.dto.LiveShopOrderDTO;
-import com.melot.kk.liveshop.api.dto.LiveShopOrderItemDTO;
-import com.melot.kk.liveshop.api.dto.LiveShopOrderPictureDTO;
-import com.melot.kk.liveshop.api.dto.LiveShopProductDTO;
+import com.melot.kk.liveshop.api.dto.*;
 import com.melot.kk.logistics.api.domain.UserAddressDO;
 import com.melot.kktv.util.StringUtil;
+
+import java.util.List;
 
 public class LiveShopTF {
 
@@ -97,15 +96,18 @@ public class LiveShopTF {
         result.addProperty("actorId", productDTO.getActorId());
         
         JsonArray productBannerUrls = new JsonArray();
-        for (String pictrueUrl : productDTO.getPictrueUrls()) {
-            productBannerUrls.add(pictrueUrl);
+        JsonArray productDetailUrls = new JsonArray();
+        List<LiveShopProductPictureDTO> productPictureDTOList = productDTO.getProductPictureDTOList();
+
+        for (LiveShopProductPictureDTO productPictureDTO : productPictureDTOList) {
+            // 1-显示图片，2-详情图片
+            if (productPictureDTO.getPictureType() == 1) {
+                productBannerUrls.add(productPictureDTO.getResourceUrl());
+            } else {
+                productDetailUrls.add(productPictureDTO.getResourceUrl());
+            }
         }
         result.add("productBannerUrls", productBannerUrls);
-        
-        JsonArray productDetailUrls = new JsonArray();
-        for (String pictrueDetailUrl : productDTO.getDetailPictureUrls()) {
-            productDetailUrls.add(pictrueDetailUrl);
-        }
         result.add("productDetailUrls", productDetailUrls);
     }
 }
