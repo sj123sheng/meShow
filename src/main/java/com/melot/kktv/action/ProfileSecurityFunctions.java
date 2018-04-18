@@ -1303,8 +1303,12 @@ public class ProfileSecurityFunctions {
         int userId, platform;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-            psword = CommonUtil.getJsonParamString(jsonObject, "psword", null, "5101010702", 1, Integer.MAX_VALUE);
             platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, TagCodeEnum.PLATFORM_MISSING, 1, Integer.MAX_VALUE);
+            psword = SecurityFunctions.decodeNewPassword(jsonObject);
+            if(psword == null){
+                result.addProperty("TagCode", "5101010702");
+                return result;
+            }
             if ((psword.length() != 32 && (psword.length() > 16 || psword.length() < 6 ) || psword.matches("[0-9]+"))) {
                 result.addProperty("TagCode", "5101010703");
                 return result;
