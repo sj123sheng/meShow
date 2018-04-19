@@ -137,7 +137,7 @@ public class CallbackAction extends ActionSupport {
 			out.close();
 
 		} else if (pictureType == PictureTypeEnum.family_poster) { // 5:家族海报
-			FamilyPoster familyPoster = new FamilyPoster();
+			com.melot.family.driver.domain.FamilyPoster familyPoster = new com.melot.family.driver.domain.FamilyPoster();
 			try {
 				JsonParser parser = new JsonParser();
 				JsonObject fsParamsJson = parser.parse(fsParams).getAsJsonObject();
