@@ -105,9 +105,9 @@ public class LiveShopTF {
         for (LiveShopProductPictureDTO productPictureDTO : productPictureDTOList) {
             // 1-显示图片，2-详情图片
             if (productPictureDTO.getPictureType() == 1) {
-                productBannerUrls.add(productPictureDTO.getResourceUrl());
+                productBannerUrls.add(productPictureDTO.getResourceUrl() + "!1280");
             } else {
-                productDetailUrls.add(productPictureDTO.getResourceUrl());
+                productDetailUrls.add(productPictureDTO.getResourceUrl() + "!50rs");
             }
         }
         result.add("productBannerUrls", productBannerUrls);

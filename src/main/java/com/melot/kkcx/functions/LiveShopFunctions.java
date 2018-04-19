@@ -594,7 +594,7 @@ public class LiveShopFunctions {
             for (LiveShopProductDTO productDTO : page.getList()) {
                 JsonObject productJson = new JsonObject();
                 productJson.addProperty("productId", productDTO.getProductId());
-                productJson.addProperty("pictureUrl", productDTO.getResourceUrl());
+                productJson.addProperty("pictureUrl", productDTO.getResourceUrl() + "!174");
                 orders.add(productJson);
             }
             
