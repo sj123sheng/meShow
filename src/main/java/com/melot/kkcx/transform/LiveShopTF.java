@@ -98,22 +98,29 @@ public class LiveShopTF {
         }
         result.addProperty("stockNum", productDTO.getStockNum());
         result.addProperty("actorId", productDTO.getActorId());
+        
+        // banner图
         JsonArray productBannerUrls = new JsonArray();
-        JsonArray productDetailUrls = new JsonArray();
         List<LiveShopProductPictureDTO> productPictureDTOList = productDTO.getProductPictureDTOList();
-
         for (LiveShopProductPictureDTO productPictureDTO : productPictureDTOList) {
-            // 1-显示图片，2-详情图片
-            if (productPictureDTO.getPictureType() == 1) {
-                JsonObject json = new JsonObject();
-                json.addProperty("productUrl", productPictureDTO.getResourceUrl() + "!512");
-                json.addProperty("productUrl_big", productPictureDTO.getResourceUrl() + "!1280");
-                productBannerUrls.add(json);
-            } else {
-                productDetailUrls.add(productPictureDTO.getResourceUrl() + "!50rs");
-            }
+            JsonObject json = new JsonObject();
+            json.addProperty("productUrl", productPictureDTO.getResourceUrl() + "!512");
+            json.addProperty("productUrl_big", productPictureDTO.getResourceUrl() + "!1280");
+            productBannerUrls.add(json);
         }
         result.add("productBannerUrls", productBannerUrls);
+        
+        // 详情图
+        JsonArray productDetailUrls = new JsonArray();
+        List<LiveShopProductPictureDTO> productPictureDTODetailList = productDTO.getProductPictureDTODetailList();
+        for (LiveShopProductPictureDTO liveShopProductPictureDTO : productPictureDTODetailList) {
+            JsonObject json = new JsonObject();
+            json.addProperty("productUrl", liveShopProductPictureDTO.getResourceUrl() + "!512");
+            json.addProperty("pictureWidth", liveShopProductPictureDTO.getPictureWidth());
+            json.addProperty("pictureHeight", liveShopProductPictureDTO.getPictureHeight());
+            productDetailUrls.add(json);
+
+        }
         result.add("productDetailUrls", productDetailUrls);
     }
 }
