@@ -3,6 +3,7 @@ package com.melot.kkcx.functions;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import com.melot.kk.liveshop.api.constant.LiveShopErrorMsg;
 import org.apache.log4j.Logger;
 
 import com.google.gson.JsonArray;
@@ -559,7 +560,7 @@ public class LiveShopFunctions {
         int start;
         int num;
         try {
-            distributorId = CommonUtil.getJsonParamInt(jsonObject, "distributorId", 0, "5106051101", 1, Integer.MAX_VALUE);
+            distributorId = CommonUtil.getJsonParamInt(jsonObject, "distributorId", 0, TagCodeEnum.ERROR_DISTRIBUTOR_ID, 1, Integer.MAX_VALUE);
             start = CommonUtil.getJsonParamInt(jsonObject, PARAM_START, 0, null, 0, Integer.MAX_VALUE);
             num = CommonUtil.getJsonParamInt(jsonObject, "num", 20, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
@@ -572,12 +573,16 @@ public class LiveShopFunctions {
         
         try {
             Result<Page<LiveShopProductDTO>> moduleResult = liveShopService.getProductsByDistributorId(distributorId, start, num);
-            
+
             if (moduleResult == null) {
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
                 return result;
             }
             String code = moduleResult.getCode();
+            if (LiveShopErrorMsg.NOT_DISTRIBUTOR_CODE.equals(code)) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.NOT_DISTRIBUTOR);
+                return result;
+            }
             if (!CommonStateCode.SUCCESS.equals(code) || moduleResult.getData() == null){
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
                 return result;
@@ -594,7 +599,9 @@ public class LiveShopFunctions {
             for (LiveShopProductDTO productDTO : page.getList()) {
                 JsonObject productJson = new JsonObject();
                 productJson.addProperty("productId", productDTO.getProductId());
-                productJson.addProperty("pictureUrl", productDTO.getResourceUrl() + "!174");
+                if (productDTO.getResourceUrl() != null) {
+                    productJson.addProperty("pictureUrl", productDTO.getResourceUrl() + "!174");
+                }
                 orders.add(productJson);
             }
             
@@ -620,7 +627,7 @@ public class LiveShopFunctions {
 
         int productId;
         try {
-            productId = CommonUtil.getJsonParamInt(jsonObject, "productId", 0, "5106051201", 1, Integer.MAX_VALUE);
+            productId = CommonUtil.getJsonParamInt(jsonObject, "productId", 0, TagCodeEnum.ERROR_PRODUCT_ID, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
             return result;
@@ -636,8 +643,8 @@ public class LiveShopFunctions {
                 return result;
             }
             String code = moduleResult.getCode();
-            if ("2".equals(code)) {
-                result.addProperty(ParameterKeys.TAG_CODE, "5106050303");
+            if (LiveShopErrorMsg.NOT_EXIST_PRODUCT_CODE.equals(code)) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.NOT_EXIST_PRODUCT);
                 return result;
             } else if (!CommonStateCode.SUCCESS.equals(code) || moduleResult.getData() == null){
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
@@ -696,8 +703,14 @@ public class LiveShopFunctions {
                 return result;
             }
             String code = addOrderResult.getCode();
-            if ("2".equals(code)) {
-                result.addProperty(ParameterKeys.TAG_CODE, "5106050204");
+            if (LiveShopErrorMsg.NOT_MATCH_DISTRIBUTOR_PRODUCT_CODE.equals(code)) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.NOT_MATCH_DISTRIBUTOR_PRODUCT);
+                return result;
+            } else if (LiveShopErrorMsg.NOT_VALID_PRODUCT_CODE.equals(code)) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.NOT_VALID_PRODUCT);
+                return result;
+            } else if (LiveShopErrorMsg.STOCK_NOT_FULL_CODE.equals(code)) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.STOCK_NOT_FULL);
                 return result;
             } else if (!CommonStateCode.SUCCESS.equals(code)){
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
@@ -712,7 +725,4 @@ public class LiveShopFunctions {
             return result;
         }
     }
-    
-    
-
 }
