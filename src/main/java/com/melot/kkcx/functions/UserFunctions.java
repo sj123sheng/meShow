@@ -1504,7 +1504,7 @@ public class UserFunctions {
         // 隐藏的调用获取用户关注列用户ID列表
         JsonObject getUserFollowedIdsResult = new JsonObject();
         try {
-            String followIdsStr = UserRelationService.getFollowIdsString(userId, 0, -1);
+            String followIdsStr = UserRelationService.getFollowIdsString(userId, 0, 500);
             if (followIdsStr != null) {
                 getUserFollowedIdsResult.addProperty("followedIds", followIdsStr);
                 getUserFollowedIdsResult.addProperty("TagCode", TagCodeEnum.SUCCESS);
@@ -1623,28 +1623,40 @@ public class UserFunctions {
 	    JsonObject result = new JsonObject();
 	    
 	    String phoneNum = null, verifyCode = null, isSafe = null;
-		int userId = 0, platform;
+		int userId = 0, platform, versionCode;
 		int gpsCityId = 0;
 		try {
 			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 0, Integer.MAX_VALUE);
-			if (userId != 0) {
-				// 校验userId绑定手机号
-				phoneNum = UserService.getPhoneNumberOfUser(userId);
-				if (phoneNum == null) {
-					result.addProperty("TagCode", "01290002");
-					return result;
-				}
-			} else {
-				phoneNum = CommonUtil.getJsonParamString(jsonObject, "phoneNum", null, "01290003", 0, 30);
-				phoneNum = CommonUtil.validatePhoneNum(phoneNum, "86");
-				int s_userId = UserService.getUserOfPhoneNumber(phoneNum);
-				if (s_userId == 0) {
-					result.addProperty("TagCode", "01290010");
-					return result;
-				}
-				userId = Integer.valueOf(s_userId);
-			}
 			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, "01290007", 0, Integer.MAX_VALUE);
+			versionCode = CommonUtil.getJsonParamInt(jsonObject, "v", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+			//新版本验证手机号兼容
+			if ((platform == PlatformEnum.ANDROID && versionCode >= 122) || (platform == PlatformEnum.IPHONE && versionCode >= 174)) {
+			    phoneNum = CommonUtil.getJsonParamString(jsonObject, "phoneNum", null, "01290003", 0, 30);
+			    phoneNum = CommonUtil.validatePhoneNum(phoneNum, "86");
+			    UserProfile userProfile = UserService.getUserInfoV2(userId);
+			    if (userProfile == null || !phoneNum.equals(userProfile.getIdentifyPhone())) {
+			        result.addProperty("TagCode", "01290002");
+                    return result;
+			    }
+			} else {
+			    if (userId != 0) {
+	                // 校验userId绑定手机号
+	                phoneNum = UserService.getPhoneNumberOfUser(userId);
+	                if (phoneNum == null) {
+	                    result.addProperty("TagCode", "01290002");
+	                    return result;
+	                }
+	            } else {
+	                phoneNum = CommonUtil.getJsonParamString(jsonObject, "phoneNum", null, "01290003", 0, 30);
+	                phoneNum = CommonUtil.validatePhoneNum(phoneNum, "86");
+	                int s_userId = UserService.getUserOfPhoneNumber(phoneNum);
+	                if (s_userId == 0) {
+	                    result.addProperty("TagCode", "01290010");
+	                    return result;
+	                }
+	                userId = Integer.valueOf(s_userId);
+	            }
+			}
 			if (platform != PlatformEnum.WEB && platform != PlatformEnum.ANDROID && platform != PlatformEnum.IPHONE && platform != PlatformEnum.IPAD) {
 				result.addProperty("TagCode", "01290008");
 				return result;
@@ -1714,7 +1726,7 @@ public class UserFunctions {
 				// 隐藏的登陆操作,调用login_new得到结果
 				try {
 				    JsonObject params = new JsonObject();
-				    params.addProperty("loginType", LoginTypeEnum.PHONE);
+				    params.addProperty("loginType", LoginTypeEnum.IDPASSWORD);
 				    params.addProperty("userId", userId);
 				    params.addProperty("phoneNum", phoneNum);
 				    params.addProperty("psword", password);
@@ -2359,7 +2371,7 @@ public class UserFunctions {
         // 隐藏的调用获取用户关注列用户ID列表
         JsonObject getUserFollowedIdsResult = new JsonObject();
         try {
-            String followIdsStr = UserRelationService.getFollowIdsString(userId, 0, -1);
+            String followIdsStr = UserRelationService.getFollowIdsString(userId, 0, 500);
             if (followIdsStr != null) {
                 getUserFollowedIdsResult.addProperty("followedIds", followIdsStr);
                 getUserFollowedIdsResult.addProperty("TagCode", TagCodeEnum.SUCCESS);
