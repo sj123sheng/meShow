@@ -1726,7 +1726,7 @@ public class UserFunctions {
 				// 隐藏的登陆操作,调用login_new得到结果
 				try {
 				    JsonObject params = new JsonObject();
-				    params.addProperty("loginType", LoginTypeEnum.PHONE);
+				    params.addProperty("loginType", LoginTypeEnum.IDPASSWORD);
 				    params.addProperty("userId", userId);
 				    params.addProperty("phoneNum", phoneNum);
 				    params.addProperty("psword", password);

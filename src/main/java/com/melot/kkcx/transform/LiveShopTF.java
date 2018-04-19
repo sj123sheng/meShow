@@ -3,12 +3,11 @@ package com.melot.kkcx.transform;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.melot.kk.liveshop.api.constant.LiveShopOrderState;
-import com.melot.kk.liveshop.api.dto.LiveShopOrderDTO;
-import com.melot.kk.liveshop.api.dto.LiveShopOrderItemDTO;
-import com.melot.kk.liveshop.api.dto.LiveShopOrderPictureDTO;
-import com.melot.kk.liveshop.api.dto.LiveShopProductDTO;
+import com.melot.kk.liveshop.api.dto.*;
 import com.melot.kk.logistics.api.domain.UserAddressDO;
 import com.melot.kktv.util.StringUtil;
+
+import java.util.List;
 
 public class LiveShopTF {
 
@@ -91,21 +90,30 @@ public class LiveShopTF {
         result.addProperty("productName", productDTO.getProductName());
         result.addProperty("productPrice", productDTO.getProductPrice());
         result.addProperty("expressPrice", productDTO.getExpressPrice());
-        result.addProperty("productSpec", productDTO.getProductSpec());
-        result.addProperty("productDetailDesc", productDTO.getProductDetailDesc());
+        if (productDTO.getProductSpec() != null) {
+            result.addProperty("productSpec", productDTO.getProductSpec());
+        }
+        if (productDTO.getProductDetailDesc() != null) {
+            result.addProperty("productDetailDesc", productDTO.getProductDetailDesc());
+        }
         result.addProperty("stockNum", productDTO.getStockNum());
         result.addProperty("actorId", productDTO.getActorId());
-        
         JsonArray productBannerUrls = new JsonArray();
-        for (String pictrueUrl : productDTO.getPictrueUrls()) {
-            productBannerUrls.add(pictrueUrl);
+        JsonArray productDetailUrls = new JsonArray();
+        List<LiveShopProductPictureDTO> productPictureDTOList = productDTO.getProductPictureDTOList();
+
+        for (LiveShopProductPictureDTO productPictureDTO : productPictureDTOList) {
+            // 1-显示图片，2-详情图片
+            if (productPictureDTO.getPictureType() == 1) {
+                JsonObject json = new JsonObject();
+                json.addProperty("productUrl", productPictureDTO.getResourceUrl() + "!512");
+                json.addProperty("productUrl_big", productPictureDTO.getResourceUrl() + "!1280");
+                productBannerUrls.add(json);
+            } else {
+                productDetailUrls.add(productPictureDTO.getResourceUrl() + "!50rs");
+            }
         }
         result.add("productBannerUrls", productBannerUrls);
-        
-        JsonArray productDetailUrls = new JsonArray();
-        for (String pictrueDetailUrl : productDTO.getDetailPictureUrls()) {
-            productDetailUrls.add(pictrueDetailUrl);
-        }
         result.add("productDetailUrls", productDetailUrls);
     }
 }

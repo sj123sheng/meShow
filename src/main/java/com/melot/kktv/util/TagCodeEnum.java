@@ -545,4 +545,24 @@ public class TagCodeEnum {
     /** 身份证照片已上传 */
     public static final String IDPHOTO_UPLOADED_ERROR = "53010605";
 
+
+	/*------直播购接口 -------*/
+	/** 分销id非法 */
+	public static final String ERROR_DISTRIBUTOR_ID = "5106051101";
+	/** 分销id不存在 */
+	public static final String NOT_DISTRIBUTOR = "5106051102";
+
+	/** 商品id非法 */
+	public static final String ERROR_PRODUCT_ID = "5106051201";
+	/** 商品id不存在 */
+	public static final String NOT_EXIST_PRODUCT = "5106051202";
+
+	/** 分销商与商品不匹配 */
+	public static final String NOT_MATCH_DISTRIBUTOR_PRODUCT = "5106051306";
+	/** 商品已下架 */
+	public static final String NOT_VALID_PRODUCT = "5106051307";
+	/** 商品库存不足 */
+	public static final String STOCK_NOT_FULL = "5106051308";
+
+
 }
