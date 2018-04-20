@@ -428,7 +428,7 @@ public class GeneralService {
                 ChatAnalyzerService chatAnalyzerService = (ChatAnalyzerService) MelotBeanFactory.getBean("chatAnalyzerService");
                 if (chatAnalyzerService != null) {
                     PrivateLetter privateLetter = chatAnalyzerService.checkPhraseAndReturnDetails(userId, 0, word);
-                    return StringUtil.strIsNull(privateLetter.getSensitiveWord());
+                    return !StringUtil.strIsNull(privateLetter.getSensitiveWord());
                 }
             } catch (Exception e) {
                 logger.error("ChatAnalyzerService.checkPhrase(" + userId + ", " + word + ") execute exception.", e);
