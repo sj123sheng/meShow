@@ -1,6 +1,15 @@
 package com.melot.kktv.action;
 
-import com.google.gson.*;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.api.menu.sdk.dao.domain.SysMenu;
 import com.melot.api.menu.sdk.handler.FirstPageHandler;
@@ -11,14 +20,12 @@ import com.melot.kkcx.transform.RoomTF;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.service.ConfigService;
-import com.melot.kktv.util.*;
+import com.melot.kktv.util.AppChannelEnum;
+import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.ConfigHelper;
+import com.melot.kktv.util.PlatformEnum;
+import com.melot.kktv.util.TagCodeEnum;
 import com.melot.sdk.core.util.MelotBeanFactory;
-import org.apache.commons.io.Charsets;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.servlet.http.HttpServletRequest;
-import java.util.List;
 
 /**
  * Title: PlayTogetherFunction
@@ -37,9 +44,7 @@ public class PlayTogetherFunction {
     @Autowired
     private ConfigService configService;
 
-    private static String encode = Charsets.ISO_8859_1.name();
-
-    private static String decode = Charsets.UTF_8.name();
+    private static String REGEX = ",";
 
     /**
      * 获取一起玩大厅栏目列表【51070201】
@@ -69,7 +74,19 @@ public class PlayTogetherFunction {
                 playTogetherConfig = configService.getPlayTogetherConfig();
             }
             JsonArray roomArray = new JsonParser().parse(playTogetherConfig).getAsJsonArray();
-            if(channel == 70152) {
+            
+            boolean isLimit = false;
+            //渠道版本号限制
+            String[] channels = configService.getSpecifyChannel().trim().split(REGEX);
+            if (channels != null && channels.length > 0) {
+                for (String speicalChannel : channels) {
+                    if (Integer.valueOf(speicalChannel) == channel) {
+                        isLimit = true;
+                        break;
+                    }
+                }
+            }
+            if(isLimit) {
                 String playTogetherSpecialChannelConfig = configService.getPlayTogetherSpecialChannelConfig();
                 roomArray = new JsonParser().parse(playTogetherSpecialChannelConfig).getAsJsonArray();
             }
