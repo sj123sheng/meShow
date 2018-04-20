@@ -683,6 +683,7 @@ public class FamilyService {
 			FamilyAdminNewService familyAdminNewService =
 					(FamilyAdminNewService) MelotBeanFactory.getBean("familyAdminNewService");
 			Map<String,Object> map = familyAdminNewService.removeFamilyMember(userId,userIds,family.getFamilyId());
+			resMap.put("TagCode",map.get("TagCode"));
 			if (TagCodeEnum.SUCCESS.equals(map.get("TagCode"))) {
 				
 				// 更新家族成员个数和家族主播个数
