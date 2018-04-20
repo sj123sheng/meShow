@@ -846,11 +846,11 @@ public class FamilyAction {
 	public JsonObject searchFamilyMember(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 		
 		// 该接口需要验证token,未验证的返回错误码
-//		if (!checkTag) {
-//			JsonObject result = new JsonObject();
-//			result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-//			return result;
-//		}
+		if (!checkTag) {
+			JsonObject result = new JsonObject();
+			result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+			return result;
+		}
 		
 		// 定义使用的参数
 		int userId = 0;
