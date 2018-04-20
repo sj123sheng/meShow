@@ -15,6 +15,7 @@ import org.springframework.beans.BeanUtils;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.melot.chat.domain.PrivateLetter;
 import com.melot.chat.service.ChatAnalyzerService;
 import com.melot.content.config.domain.ReportFlowRecord;
 import com.melot.content.config.report.service.ReportFlowRecordService;
@@ -408,7 +409,7 @@ public class GeneralService {
             try {
                 ChatAnalyzerService chatAnalyzerService = (ChatAnalyzerService) MelotBeanFactory.getBean("chatAnalyzerService");
                 if (chatAnalyzerService != null) {
-                    return chatAnalyzerService.checkPhrase(userId, 0, word);
+                    return chatAnalyzerService.checkPhraseAndReturnDetails(userId, 0, word).getNewWord();
                 }
             } catch (Exception e) {
                 logger.error("ChatAnalyzerService.checkPhrase(" + userId + ", " + word + ") execute exception.", e);
@@ -426,7 +427,8 @@ public class GeneralService {
             try {
                 ChatAnalyzerService chatAnalyzerService = (ChatAnalyzerService) MelotBeanFactory.getBean("chatAnalyzerService");
                 if (chatAnalyzerService != null) {
-                    return chatAnalyzerService.checkPhrase(userId, 0, word).contains("*");
+                    PrivateLetter privateLetter = chatAnalyzerService.checkPhraseAndReturnDetails(userId, 0, word);
+                    return StringUtil.strIsNull(privateLetter.getSensitiveWord());
                 }
             } catch (Exception e) {
                 logger.error("ChatAnalyzerService.checkPhrase(" + userId + ", " + word + ") execute exception.", e);
