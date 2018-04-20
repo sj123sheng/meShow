@@ -4,9 +4,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Maps;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.melot.common.driver.base.ResultCode;
-import com.melot.common.driver.domain.AgoraInfo;
-import com.melot.common.driver.service.ConfigInfoService;
+import com.melot.kk.config.api.domain.AgoraInfo;
+import com.melot.kk.config.api.service.ConfigInfoService;
 import com.melot.kk.doll.api.constant.CatchDollRecordStatusEnum;
 import com.melot.kk.doll.api.constant.DollMachineStatusEnum;
 import com.melot.kk.doll.api.constant.ExchangeStatusEnum;
@@ -214,12 +213,12 @@ public class CatchDollFunction {
             roomId = dollMachineDO.getRoomId();
 
             ConfigInfoService configInfoService = MelotBeanFactory.getBean("configInfoService", ConfigInfoService.class);
-            com.melot.common.driver.base.Result<AgoraInfo> agoraInfoResult = configInfoService.getAgoraInfo(roomId, 16);
+            Result<AgoraInfo> agoraInfoResult = configInfoService.getAgoraInfo(roomId, 16);
             if (agoraInfoResult == null || agoraInfoResult.getCode() == null) {
                 result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
                 return result;
             }
-            if (ResultCode.SUCCESS.equals(agoraInfoResult.getCode())) {
+            if (CommonStateCode.SUCCESS.equals(agoraInfoResult.getCode())) {
                 AgoraInfo info = agoraInfoResult.getData();
                 result.addProperty("appId", info.getAppId());
                 result.addProperty("channelId", info.getChannelId());

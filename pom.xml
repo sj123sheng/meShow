@@ -649,6 +649,13 @@
 		  <artifactId>kk-recharge-api</artifactId>
 		  <version>1.0.2</version>
 		</dependency>
+		
+		<dependency>
+		  <groupId>com.melot.kk</groupId>
+		  <artifactId>kk-config-api</artifactId>
+		  <version>1.0.0-SNAPSHOT</version>
+		</dependency>
+
 	</dependencies>
  	
 </project>

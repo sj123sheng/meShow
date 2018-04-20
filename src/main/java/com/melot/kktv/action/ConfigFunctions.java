@@ -1,14 +1,14 @@
 package com.melot.kktv.action;
 
 import com.google.gson.*;
-import com.melot.common.driver.base.Result;
-import com.melot.common.driver.base.ResultCode;
-import com.melot.common.driver.domain.AgoraInfo;
-import com.melot.common.driver.domain.ConfigInfo;
 import com.melot.common.driver.domain.FriendEmoticon;
-import com.melot.common.driver.service.ConfigInfoService;
 import com.melot.common.driver.service.FriendEmoticonService;
+import com.melot.kk.config.api.domain.AgoraInfo;
+import com.melot.kk.config.api.domain.ConfigInfo;
+import com.melot.kk.config.api.service.ConfigInfoService;
 import com.melot.kkcx.transform.FriendEmoticonTF;
+import com.melot.kktv.base.CommonStateCode;
+import com.melot.kktv.base.Result;
 import com.melot.kktv.domain.ConfigGiftInfo;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConfigHelper;
@@ -398,7 +398,7 @@ public class ConfigFunctions {
                 result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
                 return result;
             }
-            if (ResultCode.SUCCESS.equals(agoraInfoResult.getCode())) {
+            if (CommonStateCode.SUCCESS.equals(agoraInfoResult.getCode())) {
                 AgoraInfo info = agoraInfoResult.getData();
                 result.addProperty("appId", info.getAppId());
                 result.addProperty("channelId", info.getChannelId());
