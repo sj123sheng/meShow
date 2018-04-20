@@ -809,18 +809,18 @@ public class FamilyService {
 			}
 			FamilyAdminNewService familyAdminNewService =
 					(FamilyAdminNewService)MelotBeanFactory.getBean("familyAdminNewService");
-			familyAdminNewService.getFamilyApplicantList(map);
+			Map<String,Object> result = familyAdminNewService.getFamilyApplicantList(map);
 
-			String TagCode = (String) map.get("TagCode");
+			String TagCode = (String) result.get("TagCode");
 			resMap.put("TagCode", TagCode);
 			if (TagCode.equals(TagCodeEnum.SUCCESS)) {
 				
 				// 成员总数
-				Integer total = (Integer) map.get("total");
+				Integer total = (Integer) result.get("total");
 				if (total != null && total.intValue() > 0) {
 					resMap.put("pageTotal", CommonUtil.getPageTotal(total.intValue(), countPerPage));
 					@SuppressWarnings("unchecked")
-					List<FamilyApplicantMeshow> applicantList = (List<FamilyApplicantMeshow>) map.get("applicantList");
+					List<FamilyApplicantMeshow> applicantList = (List<FamilyApplicantMeshow>) result.get("applicantList");
 					resMap.put("applicantList", applicantList);
 				} else {
 					resMap.put("pageTotal", 0l);
