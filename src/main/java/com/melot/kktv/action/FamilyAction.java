@@ -6,11 +6,9 @@ import com.google.gson.reflect.TypeToken;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.blacklist.service.BlacklistService;
 import com.melot.family.driver.constant.UserApplyActorStatusEnum;
-import com.melot.family.driver.domain.ActorTransferHistV2;
-import com.melot.family.driver.domain.ApplyFamilyHist;
+import com.melot.family.driver.domain.*;
 import com.melot.family.driver.domain.DO.UserApplyActorDO;
-import com.melot.family.driver.domain.FamilyInfo;
-import com.melot.family.driver.domain.RespMsg;
+import com.melot.family.driver.domain.FamilyPoster;
 import com.melot.family.driver.service.FamilyAdminNewService;
 import com.melot.family.driver.service.FamilyAdminService;
 import com.melot.family.driver.service.FamilyInfoService;
@@ -30,6 +28,8 @@ import com.melot.kktv.base.Page;
 import com.melot.kktv.domain.Honour;
 import com.melot.kktv.domain.PreviewAct;
 import com.melot.kktv.model.*;
+import com.melot.kktv.model.FamilyApplicant;
+import com.melot.kktv.model.FamilyMember;
 import com.melot.kktv.redis.FamilyApplySource;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.MatchSource;
@@ -1266,11 +1266,11 @@ public class FamilyAction {
 								result.addProperty("pageTotal", pageTotal);
 								// 返回条件下成员列表
 								@SuppressWarnings("unchecked")
-								List<FamilyApplicant> applicantList = (List<FamilyApplicant>) retMap.get("applicantList");
+								List<FamilyApplicantMeshow> applicantList = (List<FamilyApplicantMeshow>) retMap.get("applicantList");
 								if (applicantList != null && applicantList.size() > 0) {
 									JsonArray jApplicantList = new JsonArray();
-									for (FamilyApplicant applicant : applicantList) {
-										jApplicantList.add(applicant.toJsonObject(platform));
+									for (FamilyApplicantMeshow applicant : applicantList) {
+										jApplicantList.add(familyApplicantToJsonObject(platform,applicant));
 									}
 									result.add("applicantList", jApplicantList);
 								}
@@ -1294,6 +1294,35 @@ public class FamilyAction {
 		}
 		
 		return result;
+	}
+
+	private JsonObject familyApplicantToJsonObject(int platform,FamilyApplicantMeshow familyApplicantMeshow) {
+		JsonObject jsonObject = new JsonObject();
+		jsonObject.addProperty("userId", familyApplicantMeshow.getUserId());
+		jsonObject.addProperty("nickname", familyApplicantMeshow.getNickname());
+		jsonObject.addProperty("actorTag", familyApplicantMeshow.getActorTag());
+		jsonObject.addProperty("applyTime", familyApplicantMeshow.getApplyTime().getTime());
+		jsonObject.addProperty("baseNumber", familyApplicantMeshow.getBaseNumber());
+		jsonObject.addProperty("introductionWay",familyApplicantMeshow.getIntroductionWay());
+		if (familyApplicantMeshow.getPortrait_path_original() != null) {
+			switch (platform) {
+				case PlatformEnum.WEB:
+					jsonObject.addProperty("portrait_path_256", familyApplicantMeshow.getPortrait_path_original() + "!256");
+					break;
+				case PlatformEnum.ANDROID:
+				case PlatformEnum.IPHONE:
+				case PlatformEnum.IPAD:
+					jsonObject.addProperty("portrait_path_128", familyApplicantMeshow.getPortrait_path_original() + "!128");
+					break;
+				default:
+					break;
+			}
+		}
+		jsonObject.addProperty("actorLevel", UserService.getActorLevel(familyApplicantMeshow.getUserId()));
+		jsonObject.addProperty("richLevel", UserService.getRichLevel(familyApplicantMeshow.getUserId()));
+		jsonObject.addProperty("roomSource", AppIdEnum.AMUSEMENT);
+		jsonObject.addProperty("roomType", AppIdEnum.AMUSEMENT);
+		return jsonObject;
 	}
 	
 	/**
