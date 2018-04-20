@@ -37,9 +37,7 @@ public class PlayTogetherFunction {
     @Autowired
     private ConfigService configService;
 
-    private static String encode = Charsets.ISO_8859_1.name();
-
-    private static String decode = Charsets.UTF_8.name();
+    private static String REGEX = ",";
 
     /**
      * 获取一起玩大厅栏目列表【51070201】
@@ -69,7 +67,19 @@ public class PlayTogetherFunction {
                 playTogetherConfig = configService.getPlayTogetherConfig();
             }
             JsonArray roomArray = new JsonParser().parse(playTogetherConfig).getAsJsonArray();
-            if(channel == 70152) {
+            
+            boolean isLimit = false;
+            //渠道版本号限制
+            String[] channels = configService.getSpecifyChannel().trim().split(REGEX);
+            if (channels != null && channels.length > 0) {
+                for (String speicalChannel : channels) {
+                    if (Integer.valueOf(speicalChannel) == channel) {
+                        isLimit = true;
+                        break;
+                    }
+                }
+            }
+            if(isLimit) {
                 String playTogetherSpecialChannelConfig = configService.getPlayTogetherSpecialChannelConfig();
                 roomArray = new JsonParser().parse(playTogetherSpecialChannelConfig).getAsJsonArray();
             }

@@ -648,11 +648,11 @@ public class FamilyService {
 			resMap.put("TagCode", TagCode);
 			if (TagCode.equals(TagCodeEnum.SUCCESS)) {
 				// 成员总数
-				Integer total = (Integer) map.get("total");
+				Integer total = (Integer) result.get("total");
 				if (total != null && total.intValue() > 0) {
 					resMap.put("pageTotal", CommonUtil.getPageTotal(total.intValue(), countPerPage));
 					@SuppressWarnings("unchecked")
-					List<FamilyMember> memberList = (List<FamilyMember>) map.get("memberList");
+					List<FamilyMember> memberList = (List<FamilyMember>) result.get("memberList");
 					resMap.put("memberList", memberList);
 				} else {
 					resMap.put("pageTotal", 0l);
