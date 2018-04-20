@@ -105,7 +105,7 @@ public class LiveShopTF {
         for (LiveShopProductPictureDTO productPictureDTO : productPictureDTOList) {
             JsonObject json = new JsonObject();
             json.addProperty("productUrl", productPictureDTO.getResourceUrl() + "!512");
-            json.addProperty("productUrl_big", productPictureDTO.getResourceUrl() + "!1280");
+            json.addProperty("productUrlBig", productPictureDTO.getResourceUrl() + "!1280");
             productBannerUrls.add(json);
         }
         result.add("productBannerUrls", productBannerUrls);
