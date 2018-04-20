@@ -108,6 +108,11 @@ public class ConfigService {
      */
     private String lotteryContent;
     
+    /**
+     * 一起玩大厅特殊渠道号
+     */
+    private String specifyChannel;
+    
     @DisconfFileItem(name = "playTogether.specialChannel.config", associateField = "playTogetherSpecialChannelConfig")
     public String getPlayTogetherSpecialChannelConfig() {
         return playTogetherSpecialChannelConfig;
@@ -289,6 +294,15 @@ public class ConfigService {
 
     public void setRegionNickname(String regionNickname) {
         this.regionNickname = regionNickname;
+    }
+    
+    @DisconfFileItem(name = "playTogether.specifyChannel", associateField = "specifyChannel")
+    public String getSpecifyChannel() {
+        return specifyChannel;
+    }
+
+    public void setSpecifyChannel(String specifyChannel) {
+        this.specifyChannel = specifyChannel;
     }
 
 }
