@@ -21,6 +21,8 @@ public class LiveShopTF {
         result.addProperty("expressMoney", orderDTO.getExpressMoney());
         result.addProperty("orderMoney", orderDTO.getOrderMoney());
         result.addProperty("orderType", orderDTO.getOrderType());
+        
+        result.addProperty("distributorId", orderDTO.getDistributorId() == null ? 0 : orderDTO.getDistributorId());
         if (orderDTO.getOrderState().equals(LiveShopOrderState.WAIT_RETURN)) {
             // 管理后台挂起的订单，做为申请退款的订单处理
             result.addProperty("orderState", LiveShopOrderState.APPLY_REFUND);
