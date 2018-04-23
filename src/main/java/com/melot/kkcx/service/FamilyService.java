@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import com.melot.family.driver.domain.FamilyApplicantMeshow;
+import com.melot.family.driver.service.FamilyAdminNewService;
 import org.apache.log4j.Logger;
 
 import com.google.gson.Gson;
@@ -28,7 +30,6 @@ import com.melot.family.driver.service.FamilyOperatorService;
 import com.melot.kkcx.transform.RoomTF;
 import com.melot.kktv.domain.Honour;
 import com.melot.kktv.model.Family;
-import com.melot.kktv.model.FamilyApplicant;
 import com.melot.kktv.model.FamilyHonor;
 import com.melot.kktv.model.FamilyMember;
 import com.melot.kktv.model.FamilyPoster;
@@ -492,18 +493,9 @@ public class FamilyService {
 		Map<String, Object> resMap = new HashMap<String, Object>();
 		
 		try {
-			Map<Object, Object> map = new HashMap<Object, Object>();
-			map.put("familyId", familyId);
-			map.put("userId", userId);
-			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Family.applyJoinFamily", map);
-			String TagCode = (String) map.get("TagCode");
-			resMap.put("TagCode", TagCode);
-			if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-				// 取消之前的家族加入申请
-				FamilyApplySource.cancelJoinFamily("*", String.valueOf(userId));
-				// 申请加入家族
-				FamilyApplySource.applyJoinFamily(String.valueOf(familyId), String.valueOf(userId));
-			}
+			FamilyAdminNewService familyAdminNewService =
+					(FamilyAdminNewService)MelotBeanFactory.getBean("familyAdminNewService");
+			resMap = familyAdminNewService.applyJoinFamily(userId,familyId);
 		} catch (Exception e) {
 			logger.error("fail to execute procedure Family.applyJoinFamily", e);
 		}
@@ -558,38 +550,14 @@ public class FamilyService {
 	 * TagCode:返回码
 	 */
 	public static Map<String, Object> quitFamily(int userId, int familyId, Integer familyMedal) {
-		
-		Map<String, Object> resMap = new HashMap<String, Object>();
-		
+		Map<String, Object> resMap = new HashMap<>();
 		try {
-			Map<Object, Object> map = new HashMap<Object, Object>();
-			map.put("familyId", familyId);
-			map.put("userId", userId);
-			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Family.quitFamily", map);
-			String TagCode = (String) map.get("TagCode");
-			resMap.put("TagCode", TagCode);
-			if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-				// 更新家族成员个数和家族主播个数
-				Integer memberCount = (Integer) map.get("memberCount");
-				if (memberCount != null) {
-					updateFamilyMemberCount(familyId, memberCount.intValue());
-				}
-				// 删除REDIS用户家族
-				FamilySource.delFamilyMember(String.valueOf(userId));
-				// 家族勋章失效
-				try {
-					if (familyMedal != null) {
-						MedalSource.delUserMedal(userId, familyMedal.intValue());
-					}
-				} catch (Exception e) {
-					logger.error("FamilyService.quitFamily(delUserMedal) exception, userId : " + userId 
-							+ " ,familyMedal : " + familyMedal, e);
-				}
-			}
+			FamilyAdminNewService familyAdminNewService =
+					(FamilyAdminNewService)MelotBeanFactory.getBean("familyAdminNewService");
+			resMap = familyAdminNewService.quitFamily(userId,familyId,familyMedal);
 		} catch (Exception e) {
 			logger.error("fail to execute procedure Family.quitFamily", e);
 		}
-		
 		return resMap;
 	}
 	
@@ -605,13 +573,10 @@ public class FamilyService {
 		Map<String, Object> resMap = new HashMap<String, Object>();
 		
 		try {
-			Map<Object, Object> map = new HashMap<Object, Object>();
-			map.put("familyId", familyId);
-			map.put("notice", notice);
-			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Family.setFamilyNotice", map);
-			String TagCode = (String) map.get("TagCode");
-			resMap.put("TagCode", TagCode);
-		} catch (SQLException e) {
+			FamilyAdminNewService familyAdminNewService =
+					(FamilyAdminNewService)MelotBeanFactory.getBean("familyAdminNewService");
+			resMap = familyAdminNewService.setFamilyNotice(familyId,notice);
+		} catch (Exception e) {
 			logger.error("fail to execute procedure Family.setFamilyNotice", e);
 		}
 		
@@ -626,23 +591,10 @@ public class FamilyService {
 	 * @return Map <String, Object>
 	 * TagCode:返回码
 	 */
-	public static Map<String, Object> setFamilyPoster(int familyId, FamilyPoster familyPoster) {
-		
-		Map<String, Object> resMap = new HashMap<String, Object>();
-		
-		String posterJsonString = new Gson().toJson(familyPoster);
-		Map<Object, Object> map = new HashMap<Object, Object>();
-		map.put("familyId", familyId);
-		map.put("posterJsonStr", posterJsonString);
-		try {
-			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Family.setFamilyPoster", map);
-			String TagCode = (String) map.get("TagCode");
-			resMap.put("TagCode", TagCode);
-		} catch (SQLException e) {
-			logger.error("fail to execute procedure Family.setFamilyPoster", e);
-		}
-		
-		return resMap;
+	public static Map<String, Object> setFamilyPoster(int familyId, com.melot.family.driver.domain.FamilyPoster familyPoster) {
+		FamilyAdminNewService familyAdminNewService =
+				(FamilyAdminNewService)MelotBeanFactory.getBean("familyAdminNewService");
+		return  familyAdminNewService.setFamilyPoster(familyId,familyPoster);
 	}
 	
 	/**
@@ -663,7 +615,7 @@ public class FamilyService {
 		Map<String, Object> resMap = new HashMap<String, Object>();
 		
 		try {
-			Map<Object, Object> map = new HashMap<Object, Object>();
+			Map<String, Object> map = new HashMap<>();
 			map.put("familyId", familyId);
 			map.put("pageIndex", pageIndex);
 			map.put("countPerPage", countPerPage);
@@ -689,22 +641,24 @@ public class FamilyService {
 					map.put("fuzzyString", fuzzyString);
 				}
 			}
-			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Family.getFamilyMemberList", map);
-			String TagCode = (String) map.get("TagCode");
+			FamilyAdminNewService familyAdminNewService =
+					(FamilyAdminNewService)MelotBeanFactory.getBean("familyAdminNewService");
+			Map<String,Object> result = familyAdminNewService.getMeshowFamilyMemberList(map);
+			String TagCode = (String) result.get("TagCode");
 			resMap.put("TagCode", TagCode);
 			if (TagCode.equals(TagCodeEnum.SUCCESS)) {
 				// 成员总数
-				Integer total = (Integer) map.get("total");
+				Integer total = (Integer) result.get("total");
 				if (total != null && total.intValue() > 0) {
 					resMap.put("pageTotal", CommonUtil.getPageTotal(total.intValue(), countPerPage));
 					@SuppressWarnings("unchecked")
-					List<FamilyMember> memberList = (List<FamilyMember>) map.get("memberList");
+					List<FamilyMember> memberList = (List<FamilyMember>) result.get("memberList");
 					resMap.put("memberList", memberList);
 				} else {
 					resMap.put("pageTotal", 0l);
 				}
 			}
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			logger.error("fail to execute procedure Family.getFamilyMemberList", e);
 		}
 		
@@ -726,14 +680,11 @@ public class FamilyService {
 		Map<String, Object> resMap = new HashMap<String, Object>();
 		
 		try {
-			Map<Object, Object> map = new HashMap<Object, Object>();
-			map.put("familyId", family.getFamilyId());
-			map.put("userId", userId);
-			map.put("userIds", userIds);
-			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Family.removeFamilyMember", map);
-			String TagCode = (String) map.get("TagCode");
-			resMap.put("TagCode", TagCode);
-			if (TagCode.equals(TagCodeEnum.SUCCESS)) {
+			FamilyAdminNewService familyAdminNewService =
+					(FamilyAdminNewService) MelotBeanFactory.getBean("familyAdminNewService");
+			Map<String,Object> map = familyAdminNewService.removeFamilyMember(userId,userIds,family.getFamilyId());
+			resMap.put("TagCode",map.get("TagCode"));
+			if (TagCodeEnum.SUCCESS.equals(map.get("TagCode"))) {
 				
 				// 更新家族成员个数和家族主播个数
 				Integer memberCount = (Integer) map.get("memberCount");
@@ -774,7 +725,7 @@ public class FamilyService {
 					MessageService.genMedalInvalidMsg(noticeIds, userId, family.getFamilyId(), family.getFamilyName());
 				}
 			}
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			logger.error("fail to call removeFamilyMember!", e);
 		}
 		
@@ -830,7 +781,7 @@ public class FamilyService {
 		Map<String, Object> resMap = new HashMap<String, Object>();
 		
 		try {
-			Map<Object, Object> map = new HashMap<Object, Object>();
+			Map<String, Object> map = new HashMap<>();
 			map.put("familyId", familyId);
 			map.put("pageIndex", pageIndex);
 			map.put("countPerPage", countPerPage);
@@ -857,17 +808,20 @@ public class FamilyService {
 					map.put("fuzzyString", fuzzyString);
 				}
 			}
-			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Family.getFamilyApplicantList", map);
-			String TagCode = (String) map.get("TagCode");
+			FamilyAdminNewService familyAdminNewService =
+					(FamilyAdminNewService)MelotBeanFactory.getBean("familyAdminNewService");
+			Map<String,Object> result = familyAdminNewService.getFamilyApplicantList(map);
+
+			String TagCode = (String) result.get("TagCode");
 			resMap.put("TagCode", TagCode);
 			if (TagCode.equals(TagCodeEnum.SUCCESS)) {
 				
 				// 成员总数
-				Integer total = (Integer) map.get("total");
+				Integer total = (Integer) result.get("total");
 				if (total != null && total.intValue() > 0) {
 					resMap.put("pageTotal", CommonUtil.getPageTotal(total.intValue(), countPerPage));
 					@SuppressWarnings("unchecked")
-					List<FamilyApplicant> applicantList = (List<FamilyApplicant>) map.get("applicantList");
+					List<FamilyApplicantMeshow> applicantList = (List<FamilyApplicantMeshow>) result.get("applicantList");
 					resMap.put("applicantList", applicantList);
 				} else {
 					resMap.put("pageTotal", 0l);
@@ -882,7 +836,7 @@ public class FamilyService {
 				    new ApplyFamilyUsersToRedis(familyId).start();
 				}
 			}
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			logger.error("fail to execute procedure Family.getFamilyMemberList", e);
 		}
 
@@ -899,54 +853,9 @@ public class FamilyService {
 	 * notPassUserids:删除失败用户
 	 */
 	public static Map<String, Object> agreeJoinFamily(int userId, String userIds, Family family) {
-		
-		Map<String, Object> resMap = new HashMap<String, Object>();
-		
-		try {
-			Map<Object, Object> map = new HashMap<Object, Object>();
-			map.put("familyId", family.getFamilyId());
-			map.put("userIds", userIds);
-			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Family.agreeJoinFamily", map);
-			String TagCode = (String) map.get("TagCode");
-			resMap.put("TagCode", TagCode);
-			if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-				
-				// 更新家族成员个数和家族主播个数
-				Integer memberCount = (Integer) map.get("memberCount");
-				if (memberCount != null) {
-					updateFamilyMemberCount(family.getFamilyId().intValue(), memberCount.intValue());
-				}
-				
-				List<String> notPassUseridsList = new ArrayList<String>();
-				if (map.containsKey("notPassUserids")
-						&& (String) map.get("notPassUserids") != null) {
-					String notPassUserids = (String) map.get("notPassUserids");
-					String[] notPassUseridsArr = notPassUserids.split(",");
-					notPassUseridsList = Arrays.asList(notPassUseridsArr);
-					resMap.put("notPassUserids", notPassUserids);
-				}
-				
-				for (String uid : userIds.split(",")) {
-					Integer i_userId = Integer.valueOf(uid);
-					if (!String.valueOf(userId).equals(uid) && !notPassUseridsList.contains(uid)) {
-						// 删除REDIS
-						FamilyApplySource.cancelJoinFamily(family.getFamilyId().toString(), String.valueOf(uid));
-						FamilySource.setFamilyMember(family.getFamilyId().toString(), String.valueOf(uid));
-						// Mysql中插入familyUser信息
-						map.put("userId", i_userId);
-						
-						// 主播加入家族后自动拥有家族勋章
-						boolean isActor = UserService.isActor(i_userId.intValue());
-						if (isActor && family.getFamilyMedal() != null) {
-							MedalSource.addUserMedal(i_userId, family.getFamilyMedal(), -1);
-						}
-					}
-				}
-			}
-		} catch (SQLException e) {
-			logger.error("fail to call agreeJoinFamily!", e);
-		}
-		
+		FamilyAdminNewService familyAdminNewService =
+				(FamilyAdminNewService)MelotBeanFactory.getBean("familyAdminNewService");
+		Map<String, Object> resMap  = familyAdminNewService.agreeJoinFamily(userId,userIds,family.getFamilyId(),family.getFamilyMedal());
 		return resMap;
 	}
 	
@@ -960,37 +869,9 @@ public class FamilyService {
 	 * notPassUserids:删除失败用户
 	 */
 	public static Map<String, Object> refuseJoinFamily(int userId, String userIds, Family family) {
-		
-		Map<String, Object> resMap = new HashMap<String, Object>();
-		
-		try {
-			Map<Object, Object> map = new HashMap<Object, Object>();
-			map.put("familyId", family.getFamilyId());
-			map.put("userIds", userIds);
-			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Family.refuseJoinFamily", map);
-			String TagCode = (String) map.get("TagCode");
-			resMap.put("TagCode", TagCode);
-			if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-				
-				List<String> notPassUseridsList = new ArrayList<String>();
-				if (map.containsKey("notPassUserids")
-						&& (String) map.get("notPassUserids") != null) {
-					String notPassUserids = (String) map.get("notPassUserids");
-					String[] notPassUseridsArr = notPassUserids.split(",");
-					notPassUseridsList = Arrays.asList(notPassUseridsArr);
-					resMap.put("notPassUserids", notPassUserids);
-				}
-				for (String uid : userIds.split(",")) {
-					if (!String.valueOf(userId).equals(uid) && !notPassUseridsList.contains(uid)) {
-						// 删除REDIS
-						FamilyApplySource.cancelJoinFamily(family.getFamilyId().toString(), String.valueOf(uid));
-					}
-				}
-			}
-		} catch (SQLException e) {
-			logger.error("fail to call refuseJoinFamily!", e);
-		}
-		
+		FamilyAdminNewService familyAdminNewService =
+				(FamilyAdminNewService)MelotBeanFactory.getBean("familyAdminNewService");
+		Map<String, Object> resMap = familyAdminNewService.refuseJoinFamily(userId,userIds,family.getFamilyId());
 		return resMap;
 	}
 	

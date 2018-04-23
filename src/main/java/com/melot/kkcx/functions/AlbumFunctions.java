@@ -20,14 +20,11 @@ import com.google.gson.JsonObject;
 import com.melot.kk.module.resource.service.ResourceNewService;
 import com.melot.kk.opus.api.constant.OpusCostantEnum;
 import com.melot.kk.opus.api.domain.TempUserResource;
-import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcx.service.AlbumServices;
 import com.melot.kkcx.service.ProfileServices;
-import com.melot.kkcx.service.UserService;
 import com.melot.kktv.action.FamilyAction;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
-import com.melot.kktv.model.FamilyPoster;
 import com.melot.kktv.model.Photo;
 import com.melot.kktv.model.PhotoComment;
 import com.melot.kktv.service.ConfigService;
@@ -992,7 +989,7 @@ public class AlbumFunctions {
 				result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
 			}
 		} else if (pictureType == PictureTypeEnum.family_poster) { // 5:家族海报
-			FamilyPoster familyPoster = new FamilyPoster();
+			com.melot.family.driver.domain.FamilyPoster familyPoster = new com.melot.family.driver.domain.FamilyPoster();
 			try {
 				familyPoster.setPath_original(url);
 				FamilyAction familyAction = MelotBeanFactory.getBean("familyFunction", FamilyAction.class);
@@ -1113,13 +1110,13 @@ public class AlbumFunctions {
 			} else if(pictureType == 2) { // 2:相册图片
 				result = AlbumServices.addPictureNewV2(resId, userId, pictureType, fileUrl, pictureName);
 			} else if (pictureType == PictureTypeEnum.family_poster) { // 5:家族海报
-				FamilyPoster familyPoster = new FamilyPoster();
+				com.melot.family.driver.domain.FamilyPoster familyPoster = new com.melot.family.driver.domain.FamilyPoster();
 				familyPoster.setPath_original(fileUrl);
 				FamilyAction familyAction = MelotBeanFactory.getBean("familyFunction", FamilyAction.class);
 				result = familyAction.setFamilyPoster(userId, familyId, familyPoster);
 			}
 			else if (pictureType == PictureTypeEnum.family_poster) { // 5:家族海报
-				FamilyPoster familyPoster = new FamilyPoster();
+				com.melot.family.driver.domain.FamilyPoster familyPoster = new com.melot.family.driver.domain.FamilyPoster();
 				familyPoster.setPath_original(fileUrl);
 				FamilyAction familyAction = MelotBeanFactory.getBean("familyFunction", FamilyAction.class);
 				result = familyAction.setFamilyPoster(userId, familyId, familyPoster);
