@@ -98,6 +98,7 @@ public class LiveShopTF {
         }
         result.addProperty("stockNum", productDTO.getStockNum());
         result.addProperty("actorId", productDTO.getActorId());
+        result.addProperty("isValid", productDTO.getIsValid());
         
         // banner图
         JsonArray productBannerUrls = new JsonArray();
