@@ -1619,8 +1619,8 @@ public class MessageBoxV2Functions {
                 if (recommendedMsg.getTitle() != null) {
                     result.addProperty("title", recommendedMsg.getTitle());
                 }
-                if (recommendedMsg.getMessage() != null) {
-                    result.addProperty("message", recommendedMsg.getMessage());
+                if (recommendedMsg.getContent() != null) {
+                    result.addProperty("message", recommendedMsg.getContent());
                 }
                 if (recommendedMsg.getUrl() != null) {
                     result.addProperty("activityURL", recommendedMsg.getUrl());
