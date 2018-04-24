@@ -1620,7 +1620,7 @@ public class MessageBoxV2Functions {
                     result.addProperty("title", recommendedMsg.getTitle());
                 }
                 if (recommendedMsg.getMessage() != null) {
-                    result.addProperty("message", recommendedMsg.getMessage());
+                    result.addProperty("message", recommendedMsg.getContent());
                 }
                 if (recommendedMsg.getUrl() != null) {
                     result.addProperty("activityURL", recommendedMsg.getUrl());
