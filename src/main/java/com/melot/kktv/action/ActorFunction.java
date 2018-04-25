@@ -375,7 +375,7 @@ public class ActorFunction {
 
                 response = ZmxyService.getBizNo(userId, bizCode, certName, certNo);
 
-                if (response.isSuccess()) {
+                if (response != null && response.isSuccess()) {
                     bizNo = response.getBizNo();
                     if (StringUtils.isEmpty(bizNo)) {
                         result.addProperty("TagCode", response.getErrorCode());
@@ -388,9 +388,13 @@ public class ActorFunction {
                         result.addProperty("merchantId", ZmxyService.MERCHANT_ID);
                     }
                     result.addProperty("bizNo", bizNo);
-                } else {
+                } else if(response != null) {
                     result.addProperty("TagCode", response.getErrorCode());
                     result.addProperty("errorMessage", response.getErrorMessage());
+                    return result;
+                } else {
+                    result.addProperty("TagCode", TagCodeEnum.GET_BIZNO_ERROR);
+                    result.addProperty("errorMessage", "获取bizNo异常");
                     return result;
                 }
 
