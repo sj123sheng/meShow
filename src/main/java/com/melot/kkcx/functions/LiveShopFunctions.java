@@ -684,7 +684,7 @@ public class LiveShopFunctions {
         int addressId;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, "5106051301", 1, Integer.MAX_VALUE);
-            distributorId = CommonUtil.getJsonParamInt(jsonObject, "distributorId", 0, "5106051302", 1, Integer.MAX_VALUE);
+            distributorId = CommonUtil.getJsonParamInt(jsonObject, "distributorId", 0, "5106051302", 0, Integer.MAX_VALUE);
             productId = CommonUtil.getJsonParamInt(jsonObject, "productId", 0, "5106051303", 1, Integer.MAX_VALUE);
             count = CommonUtil.getJsonParamInt(jsonObject, "count", 0, "5106051304", 1, Integer.MAX_VALUE);
             addressId = CommonUtil.getJsonParamInt(jsonObject, "addressId", 0, "5106051305", 1, Integer.MAX_VALUE);

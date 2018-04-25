@@ -601,7 +601,7 @@
         <dependency>
             <groupId>com.melot.module</groupId>
             <artifactId>kk-family-api</artifactId>
-            <version>1.0.7-SNAPSHOT</version>
+            <version>1.0.8</version>
         </dependency>
 
 		<dependency>
@@ -640,7 +640,7 @@
 		<dependency>
 		  <groupId>com.melot.kk</groupId>
 		  <artifactId>kk-liveshop-api</artifactId>
-		  <version>1.0.2-SNAPSHOT</version>
+		  <version>1.0.2</version>
 		</dependency>
 		
 		<!-- 充值模块 -->
@@ -649,6 +649,13 @@
 		  <artifactId>kk-recharge-api</artifactId>
 		  <version>1.0.2</version>
 		</dependency>
+		
+		<dependency>
+		  <groupId>com.melot.kk</groupId>
+		  <artifactId>kk-config-api</artifactId>
+		  <version>1.0.0</version>
+		</dependency>
+
 	</dependencies>
  	
 </project>
