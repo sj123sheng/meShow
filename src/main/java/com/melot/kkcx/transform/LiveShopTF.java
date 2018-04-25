@@ -3,11 +3,11 @@ package com.melot.kkcx.transform;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.melot.kk.liveshop.api.constant.LiveShopOrderState;
-import com.melot.kk.liveshop.api.dto.LiveShopOrderDTO;
-import com.melot.kk.liveshop.api.dto.LiveShopOrderItemDTO;
-import com.melot.kk.liveshop.api.dto.LiveShopOrderPictureDTO;
+import com.melot.kk.liveshop.api.dto.*;
 import com.melot.kk.logistics.api.domain.UserAddressDO;
 import com.melot.kktv.util.StringUtil;
+
+import java.util.List;
 
 public class LiveShopTF {
 
@@ -20,6 +20,9 @@ public class LiveShopTF {
         result.addProperty("orderNo", orderDTO.getOrderNo());
         result.addProperty("expressMoney", orderDTO.getExpressMoney());
         result.addProperty("orderMoney", orderDTO.getOrderMoney());
+        result.addProperty("orderType", orderDTO.getOrderType());
+        
+        result.addProperty("distributorId", orderDTO.getDistributorId() == null ? 0 : orderDTO.getDistributorId());
         if (orderDTO.getOrderState().equals(LiveShopOrderState.WAIT_RETURN)) {
             // 管理后台挂起的订单，做为申请退款的订单处理
             result.addProperty("orderState", LiveShopOrderState.APPLY_REFUND);
@@ -73,9 +76,54 @@ public class LiveShopTF {
             product.addProperty("productUrl_big", itemDTO.getResourceUrl());
             product.addProperty("productPrice", itemDTO.getProductPrice());
             product.addProperty("productCount", itemDTO.getProductCount());
+            product.addProperty("productSpec", itemDTO.getProductSpec());
             products.add(product);
         }
         result.add("products", products);
     }
 
+    /**
+     * 商品信息转JSON
+     * @param result
+     * @param productDTO
+     */
+    public static void product2Json(JsonObject result, LiveShopProductDTO productDTO) {
+        result.addProperty("productId", productDTO.getProductId());
+        result.addProperty("productName", productDTO.getProductName());
+        result.addProperty("productPrice", productDTO.getProductPrice());
+        result.addProperty("expressPrice", productDTO.getExpressPrice());
+        if (productDTO.getProductSpec() != null) {
+            result.addProperty("productSpec", productDTO.getProductSpec());
+        }
+        if (productDTO.getProductDetailDesc() != null) {
+            result.addProperty("productDetailDesc", productDTO.getProductDetailDesc());
+        }
+        result.addProperty("stockNum", productDTO.getStockNum());
+        result.addProperty("actorId", productDTO.getActorId());
+        result.addProperty("isValid", productDTO.getIsValid());
+        
+        // banner图
+        JsonArray productBannerUrls = new JsonArray();
+        List<LiveShopProductPictureDTO> productPictureDTOList = productDTO.getProductPictureDTOList();
+        for (LiveShopProductPictureDTO productPictureDTO : productPictureDTOList) {
+            JsonObject json = new JsonObject();
+            json.addProperty("productUrl", productPictureDTO.getResourceUrl() + "!512");
+            json.addProperty("productUrlBig", productPictureDTO.getResourceUrl() + "!1280");
+            productBannerUrls.add(json);
+        }
+        result.add("productBannerUrls", productBannerUrls);
+        
+        // 详情图
+        JsonArray productDetailUrls = new JsonArray();
+        List<LiveShopProductPictureDTO> productPictureDTODetailList = productDTO.getProductPictureDTODetailList();
+        for (LiveShopProductPictureDTO liveShopProductPictureDTO : productPictureDTODetailList) {
+            JsonObject json = new JsonObject();
+            json.addProperty("productDetailUrl", liveShopProductPictureDTO.getResourceUrl() + "!512");
+            json.addProperty("pictureWidth", liveShopProductPictureDTO.getPictureWidth());
+            json.addProperty("pictureHeight", liveShopProductPictureDTO.getPictureHeight());
+            productDetailUrls.add(json);
+
+        }
+        result.add("productDetailUrls", productDetailUrls);
+    }
 }

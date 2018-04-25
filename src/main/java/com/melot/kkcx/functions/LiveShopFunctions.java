@@ -3,11 +3,13 @@ package com.melot.kkcx.functions;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import com.melot.kk.liveshop.api.constant.LiveShopErrorMsg;
 import org.apache.log4j.Logger;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.melot.kk.liveshop.api.dto.LiveShopOrderDTO;
+import com.melot.kk.liveshop.api.dto.LiveShopProductDTO;
 import com.melot.kk.liveshop.api.service.LiveShopService;
 import com.melot.kk.logistics.api.domain.UserAddressDO;
 import com.melot.kk.logistics.api.service.UserAddressService;
@@ -544,4 +546,183 @@ public class LiveShopFunctions {
         }
     }
 
+    /**
+     * 获取商品列表【51060511】
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getProducts(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        int distributorId;
+        int start;
+        int num;
+        try {
+            distributorId = CommonUtil.getJsonParamInt(jsonObject, "distributorId", 0, TagCodeEnum.ERROR_DISTRIBUTOR_ID, 1, Integer.MAX_VALUE);
+            start = CommonUtil.getJsonParamInt(jsonObject, PARAM_START, 0, null, 0, Integer.MAX_VALUE);
+            num = CommonUtil.getJsonParamInt(jsonObject, "num", 20, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        try {
+            Result<Page<LiveShopProductDTO>> moduleResult = liveShopService.getProductsByDistributorId(distributorId, start, num);
+
+            if (moduleResult == null) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            String code = moduleResult.getCode();
+            if (LiveShopErrorMsg.NOT_DISTRIBUTOR_CODE.equals(code)) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.NOT_DISTRIBUTOR);
+                return result;
+            }
+            if (!CommonStateCode.SUCCESS.equals(code) || moduleResult.getData() == null){
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+                return result;
+            }
+            Page<LiveShopProductDTO> page = moduleResult.getData();
+            result.addProperty("count", page.getCount());
+            JsonArray orders = new JsonArray();
+            if (page.getList() == null) {
+                result.add("products", orders);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+                return result;
+            }
+            
+            for (LiveShopProductDTO productDTO : page.getList()) {
+                JsonObject productJson = new JsonObject();
+                productJson.addProperty("productId", productDTO.getProductId());
+                if (productDTO.getResourceUrl() != null) {
+                    productJson.addProperty("pictureUrl", productDTO.getResourceUrl() + "!174");
+                }
+                orders.add(productJson);
+            }
+            
+            result.add("products", orders);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error(String.format("Module Error：liveShopService.getProductsByDistributorId(distributorId=%s, start=%s, num=%s)", distributorId, start, num), e);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 获取商品详情【51060512】
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getProductInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        int productId;
+        try {
+            productId = CommonUtil.getJsonParamInt(jsonObject, "productId", 0, TagCodeEnum.ERROR_PRODUCT_ID, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        try {
+            Result<LiveShopProductDTO> moduleResult = liveShopService.getProductInfoByProductId(productId);
+            if (moduleResult == null) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            String code = moduleResult.getCode();
+            if (LiveShopErrorMsg.NOT_EXIST_PRODUCT_CODE.equals(code)) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.NOT_EXIST_PRODUCT);
+                return result;
+            } else if (!CommonStateCode.SUCCESS.equals(code) || moduleResult.getData() == null){
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+                return result;
+            }
+            LiveShopProductDTO productDTO = moduleResult.getData();
+            
+            LiveShopTF.product2Json(result, productDTO);
+            
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error(String.format("Module Error：liveShopService.getProductInfoByProductId(productId=%s)", productId), e);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 生成分销商品订单【51060513】
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject addDistributorOrder(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        if (!checkTag) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_INCORRECT);
+            return result;
+        }
+        int userId;
+        int distributorId;
+        int productId;
+        int count;
+        int addressId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, "5106051301", 1, Integer.MAX_VALUE);
+            distributorId = CommonUtil.getJsonParamInt(jsonObject, "distributorId", 0, "5106051302", 0, Integer.MAX_VALUE);
+            productId = CommonUtil.getJsonParamInt(jsonObject, "productId", 0, "5106051303", 1, Integer.MAX_VALUE);
+            count = CommonUtil.getJsonParamInt(jsonObject, "count", 0, "5106051304", 1, Integer.MAX_VALUE);
+            addressId = CommonUtil.getJsonParamInt(jsonObject, "addressId", 0, "5106051305", 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        try {
+            Result<String> addOrderResult = liveShopService.addDistributorOrder(userId, distributorId, productId, count, addressId);
+            if (addOrderResult == null) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            String code = addOrderResult.getCode();
+            if (LiveShopErrorMsg.NOT_MATCH_DISTRIBUTOR_PRODUCT_CODE.equals(code)) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.NOT_MATCH_DISTRIBUTOR_PRODUCT);
+                return result;
+            } else if (LiveShopErrorMsg.NOT_VALID_PRODUCT_CODE.equals(code)) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.NOT_VALID_PRODUCT);
+                return result;
+            } else if (LiveShopErrorMsg.STOCK_NOT_FULL_CODE.equals(code)) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.STOCK_NOT_FULL);
+                return result;
+            } else if (!CommonStateCode.SUCCESS.equals(code)){
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+                return result;
+            }
+            result.addProperty(PARAM_ORDER_NO, addOrderResult.getData());
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error(String.format("Module Error：liveShopService.addDistributorOrder(userId=%s, distributorId=%s, productId=%s, count=%s, addressId=%s)", userId, distributorId, productId, count, addressId), e);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
 }
