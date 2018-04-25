@@ -105,25 +105,29 @@ public class LiveShopTF {
         // banner图
         JsonArray productBannerUrls = new JsonArray();
         List<LiveShopProductPictureDTO> productPictureDTOList = productDTO.getProductPictureDTOList();
-        for (LiveShopProductPictureDTO productPictureDTO : productPictureDTOList) {
-            JsonObject json = new JsonObject();
-            json.addProperty("productUrl", productPictureDTO.getResourceUrl() + "!512");
-            json.addProperty("productUrlBig", productPictureDTO.getResourceUrl() + "!1280");
-            productBannerUrls.add(json);
+        if (productPictureDTOList != null) {
+            for (LiveShopProductPictureDTO productPictureDTO : productPictureDTOList) {
+                JsonObject json = new JsonObject();
+                json.addProperty("productUrl", productPictureDTO.getResourceUrl() + "!512");
+                json.addProperty("productUrlBig", productPictureDTO.getResourceUrl() + "!1280");
+                productBannerUrls.add(json);
+            }
+            result.add("productBannerUrls", productBannerUrls);
         }
-        result.add("productBannerUrls", productBannerUrls);
-        
+
         // 详情图
         JsonArray productDetailUrls = new JsonArray();
         List<LiveShopProductPictureDTO> productPictureDTODetailList = productDTO.getProductPictureDTODetailList();
-        for (LiveShopProductPictureDTO liveShopProductPictureDTO : productPictureDTODetailList) {
-            JsonObject json = new JsonObject();
-            json.addProperty("productDetailUrl", liveShopProductPictureDTO.getResourceUrl() + "!512");
-            json.addProperty("pictureWidth", liveShopProductPictureDTO.getPictureWidth());
-            json.addProperty("pictureHeight", liveShopProductPictureDTO.getPictureHeight());
-            productDetailUrls.add(json);
+        if (productPictureDTODetailList != null) {
+            for (LiveShopProductPictureDTO liveShopProductPictureDTO : productPictureDTODetailList) {
+                JsonObject json = new JsonObject();
+                json.addProperty("productDetailUrl", liveShopProductPictureDTO.getResourceUrl() + "!512");
+                json.addProperty("pictureWidth", liveShopProductPictureDTO.getPictureWidth());
+                json.addProperty("pictureHeight", liveShopProductPictureDTO.getPictureHeight());
+                productDetailUrls.add(json);
 
+            }
+            result.add("productDetailUrls", productDetailUrls);
         }
-        result.add("productDetailUrls", productDetailUrls);
     }
 }
