@@ -989,7 +989,7 @@ public class IndexFunctions {
             recordCount = roomInfoServie.getFuzzyRoomCount(actorId, nickname);
             if (recordCount > 0) {
                 List<String> newList = new ArrayList<String>();
-                List<RoomInfo> roomInfoList = roomInfoServie.getFuzzyRoomList(actorId, nickname, pageNum, pageCount);
+                List<RoomInfo> roomInfoList = roomInfoServie.getFuzzyRoomList(actorId, nickname, 0, pageCount);
                 if (!roomInfoList.isEmpty()) {
                     for (RoomInfo rinfo : roomInfoList) {
                         JsonObject roomJson = RoomTF.roomInfoToJson(rinfo, platform, true);
@@ -1002,32 +1002,32 @@ public class IndexFunctions {
                     }
                 }
             }
-        } else {
-            long start, end;
-            recordCount = (int) SearchWordsSource.getSearchResultPageCount(fuzzyString);
-            if (recordCount > 0) {
-                // pageNum和pageCount未传入，查询全部
-                if (pageNum == 0 || pageCount == 0) {
-                    start = 0;
-                    end = recordCount - 1;
-                } else {
-                    start = (pageNum - 1) * pageCount;
-                    end = pageNum * pageCount - 1;
-                }
-                Set<String> tempSet = SearchWordsSource.getSearchResultPage(fuzzyString, start, end);
-                if (tempSet != null && !tempSet.isEmpty()) {
-                    for (String tempStr : tempSet) {
-                        JsonObject jObject = new JsonParser().parse(tempStr).getAsJsonObject();
-                        if (jObject != null) {
-                            jRoomList.add(jObject);
-                        }
+        } 
+
+        long start, end;
+        recordCount = (int) SearchWordsSource.getSearchResultPageCount(fuzzyString);
+        if (recordCount > 0) {
+            // pageNum和pageCount未传入，查询全部
+            if (pageNum == 0 || pageCount == 0) {
+                start = 0;
+                end = recordCount - 1;
+            } else {
+                start = (pageNum - 1) * pageCount;
+                end = pageNum * pageCount - 1;
+            }
+            Set<String> tempSet = SearchWordsSource.getSearchResultPage(fuzzyString, start, end);
+            if (tempSet != null && !tempSet.isEmpty()) {
+                for (String tempStr : tempSet) {
+                    JsonObject jObject = new JsonParser().parse(tempStr).getAsJsonObject();
+                    if (jObject != null) {
+                        jRoomList.add(jObject);
                     }
-                    
-                    // 搜索成功后更新关键字搜索次数
-                    if (pageNum ==0 || pageNum == 1) {
-                        if (!SearchWordsSource.incScore(fuzzyString)) {
-                            logger.error("SearchWordsSource.incScore Fail to increase score " + fuzzyString);
-                        }
+                }
+                
+                // 搜索成功后更新关键字搜索次数
+                if (pageNum ==0 || pageNum == 1) {
+                    if (!SearchWordsSource.incScore(fuzzyString)) {
+                        logger.error("SearchWordsSource.incScore Fail to increase score " + fuzzyString);
                     }
                 }
             }
