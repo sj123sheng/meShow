@@ -1,19 +1,47 @@
 
 package com.melot.kkcx.functions;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.dianping.cat.Cat;
 import com.dianping.cat.message.Transaction;
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.blacklist.service.BlacklistService;
 import com.melot.kk.logistics.api.domain.UserAddressDO;
 import com.melot.kk.logistics.api.domain.UserAddressParam;
 import com.melot.kk.logistics.api.service.UserAddressService;
-import com.melot.kkcore.account.api.*;
+import com.melot.kkcore.account.api.ExtendDataKeys;
+import com.melot.kkcore.account.api.ResLogin;
+import com.melot.kkcore.account.api.ResMobileGuestUser;
+import com.melot.kkcore.account.api.ResRegister;
+import com.melot.kkcore.account.api.ResResetPassword;
 import com.melot.kkcore.actor.api.ActorInfoKeys;
-import com.melot.kkcore.actor.api.RoomInfoKeys;
 import com.melot.kkcore.actor.service.ActorService;
-import com.melot.kkcore.user.api.*;
+import com.melot.kkcore.user.api.LastLoginInfo;
+import com.melot.kkcore.user.api.ProfileKeys;
+import com.melot.kkcore.user.api.UserInfoDetail;
+import com.melot.kkcore.user.api.UserProfile;
+import com.melot.kkcore.user.api.UserRegistry;
+import com.melot.kkcore.user.api.UserStaticInfo;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.model.ActorLevel;
 import com.melot.kkcx.model.RichLevel;
@@ -30,10 +58,29 @@ import com.melot.kktv.redis.AppStatsSource;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.MedalSource;
 import com.melot.kktv.redis.SmsSource;
-import com.melot.kktv.service.*;
+import com.melot.kktv.service.AccountService;
+import com.melot.kktv.service.ConfigService;
+import com.melot.kktv.service.DataAcqService;
+import com.melot.kktv.service.UserRelationService;
+import com.melot.kktv.service.UserService;
 import com.melot.kktv.third.ThirdVerifyUtil;
 import com.melot.kktv.third.service.QQService;
-import com.melot.kktv.util.*;
+import com.melot.kktv.util.AppChannelEnum;
+import com.melot.kktv.util.AppIdEnum;
+import com.melot.kktv.util.CityUtil;
+import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.ConfigHelper;
+import com.melot.kktv.util.Constant;
+import com.melot.kktv.util.DateUtil;
+import com.melot.kktv.util.HadoopLogger;
+import com.melot.kktv.util.LoginTypeEnum;
+import com.melot.kktv.util.ParameterKeys;
+import com.melot.kktv.util.PlatformEnum;
+import com.melot.kktv.util.SecurityFunctions;
+import com.melot.kktv.util.SmsTypEnum;
+import com.melot.kktv.util.StringUtil;
+import com.melot.kktv.util.TagCodeEnum;
+import com.melot.kktv.util.TextFilter;
 import com.melot.kktv.util.confdynamic.MedalConfig;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
@@ -44,20 +91,8 @@ import com.melot.module.medal.driver.domain.UserActivityMedal;
 import com.melot.module.medal.driver.service.ActivityMedalService;
 import com.melot.module.medal.driver.service.UserMedalService;
 import com.melot.module.packagegift.driver.service.VipService;
-import com.melot.module.task.driver.service.TaskInterfaceService;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import com.melot.sms.api.service.SmsService;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class UserFunctions {
 	
@@ -1257,7 +1292,17 @@ public class UserFunctions {
         } else if (loginType == LoginTypeEnum.PHONE) {
             resLogin = accountService.loginViaPhoneNumPasswordNew(phoneNum, psword, platform, deviceUId, ipAddr, appId, channel, port, extendData);
         } else {
-            resLogin = accountService.loginViaOpenPlatformNew(loginType, uuid, unionid, platform, deviceUId, ipAddr, appId, channel, port, extendData);
+            Transaction t;
+            t = Cat.getProducer().newTransaction("MCall", "accountService.loginViaOpenPlatformNew");
+            try {
+                resLogin = accountService.loginViaOpenPlatformNew(loginType, uuid, unionid, platform, deviceUId, ipAddr, appId, channel, port, extendData);
+                t.setStatus(Transaction.SUCCESS);
+            } catch (Exception e) {
+                Cat.getProducer().logError(e);
+                t.setStatus(e);
+            } finally {
+                t.complete();
+            }
         }
         
         Integer defPwd = null;
@@ -1281,9 +1326,6 @@ public class UserFunctions {
                     if (resLogin.getDefPwd() != null) {
                         defPwd = resLogin.getDefPwd();
                     }
-
-                    // 登录完成每日签到任务
-                    DailyCheckIn.add(userId, appId, platform);
                     
                     // 注册日志
                     HadoopLogger.loginLog(userId, new Date(), platform, ipAddr, loginType, appId, SecurityFunctions.decodeED(jsonObject));
@@ -2251,9 +2293,6 @@ public class UserFunctions {
             ProfileServices.setUserCommonDevice(userId, deviceUId, deviceName, deviceModel);
         }
         
-        // 登录完成每日签到任务
-        DailyCheckIn.add(userId, appId, platform);
-        
         // 注册日志
         HadoopLogger.loginLog(userId, new Date(), platform, ipAddr, loginType, appId, SecurityFunctions.decodeED(jsonObject));
         
@@ -2871,54 +2910,4 @@ public class UserFunctions {
         }
 	}
 	
-}
-
-/** 用户每日连续签到 */
-class DailyCheckIn implements Runnable {
-
-    /** 日志记录对象 */
-    private static Logger logger = Logger.getLogger(DailyCheckIn.class);
-    
-    private static BlockingQueue<Map<String, Integer>> factoryQueue = new LinkedBlockingQueue<Map<String, Integer>>();
-
-    private static Thread instance = new Thread(new DailyCheckIn());
-    static {
-        instance.start();
-    }
-    
-    private DailyCheckIn(){}
-    
-    public static void add(Integer userId, Integer appId, Integer platform) {
-        Map<String, Integer> map = new HashMap<String, Integer>();
-        map.put("userId", userId);
-        map.put("appId", appId);
-        map.put("platform", platform);
-        
-        try {
-        	factoryQueue.offer(map);
-		} catch (Exception e) {
-			logger.error("DailyCheckIn execute factoryQueue.offer(" + userId + ", " + appId + ", " + platform + ") exception.", e);
-		}
-    }
-
-    @Override
-    public void run() {
-    	TaskInterfaceService taskInterfaceService = (TaskInterfaceService) MelotBeanFactory.getBean("taskInterfaceService");
-    	Map<String, Integer> map = null;
-        while (true) {
-            try {
-            	while ((map = factoryQueue.poll()) != null) {
-            		taskInterfaceService.addUserCheckinDays(map.get("userId"), map.get("platform"), map.get("appId"));
-				}
-                Thread.sleep(1000l);
-            } catch (Exception e) {
-            	if (map != null) {
-                    logger.error("DailyCheckIn execute TaskInterfaceService.addUserCheckinDays(" + new Gson().toJson(map) + ") exception.", e);
-				} else {
-					logger.error("DailyCheckIn execute exception.", e);
-				}
-            }
-        }
-    }
-
 }
