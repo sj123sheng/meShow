@@ -993,7 +993,6 @@ public class IndexFunctions {
                 if (!roomInfoList.isEmpty()) {
                     for (RoomInfo rinfo : roomInfoList) {
                         JsonObject roomJson = RoomTF.roomInfoToJson(rinfo, platform, true);
-                        jRoomList.add(roomJson);
                         newList.add(roomJson.toString());
                     }
                     
