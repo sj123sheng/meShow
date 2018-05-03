@@ -989,7 +989,7 @@ public class IndexFunctions {
             recordCount = roomInfoServie.getFuzzyRoomCount(actorId, nickname);
             if (recordCount > 0) {
                 List<String> newList = new ArrayList<String>();
-                List<RoomInfo> roomInfoList = roomInfoServie.getFuzzyRoomList(actorId, nickname, 0, pageCount);
+                List<RoomInfo> roomInfoList = roomInfoServie.getFuzzyRoomList(actorId, nickname, 0, 1000);
                 if (!roomInfoList.isEmpty()) {
                     for (RoomInfo rinfo : roomInfoList) {
                         JsonObject roomJson = RoomTF.roomInfoToJson(rinfo, platform, true);
