@@ -3001,7 +3001,7 @@
         <constructor-arg name="methodName" value="signServiceCompany" />
     </bean>
     <bean id="52010610" class="com.melot.sdk.core.function.GenericFunction">
-        <constructor-arg name="t" ref="withdrawFunctions" />
+        <constructor-arg name="t" ref="profileSecurityFunction" />
         <constructor-arg name="methodName" value="identifyByAnswer" />
     </bean>
 
