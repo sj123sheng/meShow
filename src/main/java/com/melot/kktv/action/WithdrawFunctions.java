@@ -1,10 +1,25 @@
 package com.melot.kktv.action;
 
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.log4j.Logger;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.melot.common.melot_utils.StringUtils;
-import com.melot.kk.userSecurity.api.constant.*;
-import com.melot.kk.userSecurity.api.domain.DO.*;
+import com.melot.kk.userSecurity.api.constant.IdPicStatusEnum;
+import com.melot.kk.userSecurity.api.constant.PayRollEnum;
+import com.melot.kk.userSecurity.api.constant.SignElectronicContractStatusEnum;
+import com.melot.kk.userSecurity.api.constant.UserVerifyStatusEnum;
+import com.melot.kk.userSecurity.api.constant.WithdrawStatusEnum;
+import com.melot.kk.userSecurity.api.domain.DO.ActorKbiDO;
+import com.melot.kk.userSecurity.api.domain.DO.ActorPayeeDO;
+import com.melot.kk.userSecurity.api.domain.DO.ActorWithdrawDO;
+import com.melot.kk.userSecurity.api.domain.DO.ServiceCompanyDO;
+import com.melot.kk.userSecurity.api.domain.DO.UserBankAccountDO;
+import com.melot.kk.userSecurity.api.domain.DO.UserElectronicContractDO;
+import com.melot.kk.userSecurity.api.domain.DO.UserVerifyDO;
 import com.melot.kk.userSecurity.api.domain.param.UserBankAccountParam;
 import com.melot.kk.userSecurity.api.domain.param.UserVerifyParam;
 import com.melot.kk.userSecurity.api.service.ActorWithdrawService;
@@ -22,10 +37,6 @@ import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.SecurityFunctions;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.sdk.core.util.MelotBeanFactory;
-import org.apache.log4j.Logger;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @description: 主播提现接口
@@ -54,7 +65,7 @@ public class WithdrawFunctions {
 
     @Resource
     UserBankService userBankService;
-
+    
     /**
      * 获取用户实名认证信息【51010601】
      */

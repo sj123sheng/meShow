@@ -25,22 +25,6 @@
 		<result property="actorTag" column="actorTag" />
 	</resultMap>
 	
-	<!-- 查找房间列表 -->
-	<parameterMap id="findRoomListMap" class="java.util.Map">
-		<parameter property="fuzzyString" mode="IN" javaType="java.lang.String"
-			jdbcType="VARCHAR" />
-		<parameter property="idString" mode="IN" javaType="java.lang.String"
-			jdbcType="VARCHAR" />
-		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
-			jdbcType="VARCHAR" />
-		<parameter property="roomList" mode="OUT" jdbcType="ORACLECURSOR"
-			javaType="java.sql.ResultSet" resultMap="room" />
-	</parameterMap>
-	<procedure id="findRoomList" parameterMap="findRoomListMap">
-		{call
-		p_findRoomList(?,?,?,?)}
-	</procedure>
-	
 	<!-- 查询用户管理的在线主播列表 -->
 	<select id="getUserAdminRoomList" parameterClass="java.lang.Integer" resultClass="java.lang.Integer">
 		SELECT a.roomid FROM room_admin a, actor_info b

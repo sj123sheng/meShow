@@ -36,7 +36,8 @@
                 <value>28</value>  
                 <value>30</value>  
                 <value>31</value>  
-                <value>35</value>  
+                <value>35</value>
+                <value>56</value>
             </set>  
 		</constructor-arg>
 	</bean>	

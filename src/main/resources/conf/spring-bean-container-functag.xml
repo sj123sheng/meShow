@@ -131,6 +131,7 @@
 	<bean id="10002008" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="indexFunction" />
 		<constructor-arg name="methodName" value="findRoomList" />
+		<constructor-arg name="cacheType" value="120" />
 	</bean>
 	<!-- 获取公告详细 -->
 	<bean id="10002012" class="com.melot.sdk.core.function.GenericFunction">
@@ -2998,6 +2999,10 @@
     <bean id="51010609" class="com.melot.sdk.core.function.GenericFunction">
         <constructor-arg name="t" ref="withdrawFunctions" />
         <constructor-arg name="methodName" value="signServiceCompany" />
+    </bean>
+    <bean id="52010610" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="profileSecurityFunction" />
+        <constructor-arg name="methodName" value="identifyByAnswer" />
     </bean>
 
 	<!-- 心愿商品【众筹】相关接口 -->

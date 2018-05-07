@@ -514,6 +514,9 @@ public class ActorFunction {
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
         }
+        
+      //实名认证成功后可以认证新手机号
+        HotDataSource.setTempDataString(String.format("identifyFormalPhone_%s", userId), "1", 300);
 
         // 如果是申请主播实名认证 插入主播申请记录
         if(userVerifyType == 0 && !verifyAndApplyForActor(result, userId, certNo, familyId, appId)) {

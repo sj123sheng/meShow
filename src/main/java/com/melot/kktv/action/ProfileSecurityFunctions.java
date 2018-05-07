@@ -1,6 +1,7 @@
 package com.melot.kktv.action;
 
 import java.net.URLDecoder;
+import java.util.Date;
 import java.util.List;
 
 import javax.annotation.Resource;
@@ -15,11 +16,14 @@ import com.melot.blacklist.service.BlacklistService;
 import com.melot.common.melot_utils.StringUtils;
 import com.melot.kk.module.resource.domain.QiNiuTokenConf;
 import com.melot.kk.module.resource.service.ResourceNewService;
+import com.melot.kk.recharge.api.dto.RecharingRecordDto;
+import com.melot.kk.recharge.api.service.RechargeService;
 import com.melot.kk.userSecurity.api.domain.DO.UserVerifyDO;
 import com.melot.kk.userSecurity.api.service.UserVerifyService;
 import com.melot.kkcore.account.api.ResResetPassword;
 import com.melot.kkcore.account.api.ResUserBoundAccount;
 import com.melot.kkcore.user.api.UserProfile;
+import com.melot.kkcore.user.api.UserRegistry;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.functions.ProfileFunctions;
 import com.melot.kkcx.functions.UserFunctions;
@@ -57,6 +61,9 @@ public class ProfileSecurityFunctions {
 	
 	@Resource
     UserVerifyService userVerifyService;
+	
+	@Resource
+    RechargeService rechargeService;
 
 	private static JsonObject setUserNameAndPassword(JsonObject jsonObject, String up){
 
@@ -1359,4 +1366,86 @@ public class ProfileSecurityFunctions {
         }
         return result;
     }
+    
+	/**
+	 * 通过回答问题进入认证手机号状态【52010610】
+	 * 
+	 * @throws Exception
+	 */
+	public JsonObject identifyByAnswer(JsonObject jsonObject, boolean checkTag, HttpServletRequest request)
+			throws Exception {
+		JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
+		if (rtJO != null) {
+			return rtJO;
+		}
+
+		JsonObject result = new JsonObject();
+		int userId, platform, lastRechargePrice, city;
+		long registTime, lastRechargeTime;
+		try {
+			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1,
+					Integer.MAX_VALUE);
+			registTime = CommonUtil.getJsonParamLong(jsonObject, "registTime", 0, "5201061001", Long.MIN_VALUE,
+					Long.MAX_VALUE);
+			city = CommonUtil.getJsonParamInt(jsonObject, "city", 0, "5201061001", 1, Integer.MAX_VALUE);
+			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, "5201061001", 1, Integer.MAX_VALUE);
+			lastRechargePrice = CommonUtil.getJsonParamInt(jsonObject, "lastRechargePrice", 0, "5201061001", 1,
+					Integer.MAX_VALUE);
+			lastRechargeTime = CommonUtil.getJsonParamLong(jsonObject, "lastRechargeTime", 0, "5201061001",
+					Long.MIN_VALUE, Long.MAX_VALUE);
+		} catch (CommonUtil.ErrorGetParameterException e) {
+			result.addProperty("TagCode", e.getErrCode());
+			return result;
+		} catch (Exception e) {
+			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+			return result;
+		}
+		// 封号用户不能申述
+		if (UserService.checkUserIsLock(userId)) {
+			result.addProperty("TagCode", "5201061002");
+			return result;
+		}
+		// 用户有实名认证信息，请通过实名认证方式认证手机号
+		Result<UserVerifyDO> userVerifyDOResult = userVerifyService.getUserVerifyDO(userId);
+		if (userVerifyDOResult.getCode().equals(CommonStateCode.SUCCESS) && userVerifyDOResult.getData() != null && userVerifyDOResult.getData().getVerifyStatus() != 0) {
+			result.addProperty("TagCode", "5201061003");
+			return result;
+		}
+
+		int vPlatform, vLastRechargePrice, vCity;
+		long vRegistTime;
+		Date vLastRechargeTime;
+
+		try {
+			UserRegistry userRegistry = UserService.getUserRegistryInfo(userId);
+			vRegistTime = userRegistry.getRegisterTime();
+			vCity = userRegistry.getCityId();
+			vPlatform = userRegistry.getTerminal();
+			Result<List<RecharingRecordDto>> RecharingRecordDtoResult = rechargeService.getUserRechargingRecords(userId, null, 1);
+			if (RecharingRecordDtoResult.getCode().equals(CommonStateCode.SUCCESS)
+					&& RecharingRecordDtoResult.getData() != null) {
+				List<RecharingRecordDto> RecharingRecordDtolist = RecharingRecordDtoResult.getData();
+				vLastRechargeTime = RecharingRecordDtolist.get(0).getRechargetime();
+				vLastRechargePrice = RecharingRecordDtolist.get(0).getAmount().intValue();
+			} else {
+				result.addProperty("TagCode", TagCodeEnum.GET_RELATED_INFO_FAIL);
+				return result;
+			}
+		} catch (Exception e) {
+			result.addProperty("TagCode", TagCodeEnum.GET_RELATED_INFO_FAIL);
+			return result;
+		}
+		// 答案校验不符
+		if (vPlatform != platform || vLastRechargePrice != lastRechargePrice
+				|| !org.apache.commons.lang.time.DateUtils.isSameDay(vLastRechargeTime, new Date(lastRechargeTime))
+				|| !org.apache.commons.lang.time.DateUtils.isSameDay(new Date(vRegistTime * 1000), new Date(registTime))
+				|| vCity != city) {
+			result.addProperty("TagCode", "5201061004");
+			return result;
+		}
+		// 答案校验通过后可以去认证新手机号
+		HotDataSource.setTempDataString(String.format("identifyFormalPhone_%s", userId), "1", 300);
+		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+		return result;
+	}
 }
