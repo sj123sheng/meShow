@@ -11,13 +11,16 @@ package com.melot.kkcx.functions;
 import java.util.Date;
 import java.util.List;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
-import com.melot.kktv.util.ParameterKeys;
 import org.apache.log4j.Logger;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.melot.family.driver.service.UserApplyActorService;
+import com.melot.game.risk.management.AutoExchangeInfoDTO;
+import com.melot.game.risk.management.RiskManageService;
 import com.melot.goldcoin.domain.GoldcoinHistory;
 import com.melot.goldcoin.domain.UserGoldAssets;
 import com.melot.goldcoin.service.GoldcoinService;
@@ -25,6 +28,7 @@ import com.melot.kkcx.service.UserService;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.ParameterKeys;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.module.medal.driver.service.ActivityMedalService;
 import com.melot.module.packagegift.driver.domain.CatalogGift;
@@ -51,6 +55,9 @@ import com.melot.storehouse.service.StorehouseService;
 public class MallFunctions {
     
     private Logger logger = Logger.getLogger(MallFunctions.class);
+    
+    @Resource
+    RiskManageService riskManageService;
     
     /**
      * 购买游戏勋章 (51030101)
@@ -587,8 +594,10 @@ public class MallFunctions {
         }
 
         try {
-            MallService mallService = (MallService) MelotBeanFactory.getBean("mallService");
-            result.addProperty("showMoneyToGameMoney", mallService.getGameMoneyAutoExchangeState(userId));
+            AutoExchangeInfoDTO autoExchangeInfoDTO = riskManageService.getGameMoneyAutoExchangeState(userId);
+            result.addProperty("showMoneyToGameMoney", autoExchangeInfoDTO.getExchangeStatus());
+            result.addProperty("exchangeMoney", autoExchangeInfoDTO.getExchangeMoney());
+            result.addProperty("tipFlag", autoExchangeInfoDTO.getTipFlag() ? 1 : 0);
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
         } catch (Exception e) {
             logger.error("mallService.getGameMoneyAutoExchangeState(userId: " + userId + ") return exception.", e);
@@ -628,8 +637,7 @@ public class MallFunctions {
         }
 
         try {
-            MallService mallService = (MallService) MelotBeanFactory.getBean("mallService");
-            boolean tag = mallService.updateGameMoneyAutoExchangeState(userId, showMoneyToGameMoney);
+            boolean tag = riskManageService.updateGameMoneyAutoExchangeState(userId, showMoneyToGameMoney);
             if (tag) {
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
             } else {
