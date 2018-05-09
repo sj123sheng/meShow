@@ -587,7 +587,7 @@
         <dependency>
 		  <groupId>com.melot.kk</groupId>
 		  <artifactId>kk-nobility-api</artifactId>
-		  <version>1.0.5</version>
+		  <version>1.0.7-SNAPSHOT</version>
 		</dependency>
 
         <!-- 用户安全模块 -->

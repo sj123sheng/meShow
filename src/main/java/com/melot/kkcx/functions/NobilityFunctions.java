@@ -11,7 +11,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.kk.nobility.api.domain.NobilityInfo;
+import com.melot.kk.nobility.api.domain.NobilityPointGift;
 import com.melot.kk.nobility.api.domain.NobilityUserInfo;
+import com.melot.kk.nobility.api.service.NobilityPointGiftService;
 import com.melot.kk.nobility.api.service.NobilityService;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.api.UserRegistry;
@@ -385,6 +387,144 @@ public class NobilityFunctions {
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
         }
         
+        return result;
+    }
+
+    /**
+     * 获取积分礼物列表[52010406]
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     * @throws Exception
+     */
+    public JsonObject getNobilityGifts(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+        JsonObject result = new JsonObject();
+        
+        int start;
+        int offset;
+        try {
+            start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, null, 0, Integer.MAX_VALUE);
+            offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 10, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        NobilityPointGiftService nobilityPointGiftService = (NobilityPointGiftService)MelotBeanFactory.getBean("nobilityPointGiftService");
+        try {
+            Result<Page<NobilityPointGift>> pageResult = nobilityPointGiftService.getNobilityPointGifts(start, offset);
+            if (pageResult == null) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            
+            if (CommonStateCode.SUCCESS.equals(pageResult.getCode())) {
+                Page<NobilityPointGift> page = pageResult.getData();
+                List<NobilityPointGift> list = page.getList();
+                JsonArray giftList = new JsonArray();
+                if (list == null) {
+                    result.add("giftList", giftList);
+                    result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+                    return result;
+                }
+                for (NobilityPointGift nobilityPointGift : list) {
+                    JsonObject infoJson = new JsonObject();
+                    infoJson.addProperty("giftId", nobilityPointGift.getGiftId());
+                    infoJson.addProperty("giftName", nobilityPointGift.getGiftName());
+                    infoJson.addProperty("nobilityPoint", nobilityPointGift.getNobilityPoint());
+                    infoJson.addProperty("showMoney", nobilityPointGift.getShowMoney());
+                    
+                    giftList.add(infoJson);
+                }
+                result.add("giftList", giftList);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+            } else {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            }
+        } catch (Exception e) {
+            log.error(String.format("Module error nobilityPointGiftService.getNobilityPointGifts(start=%s, offset=%s)",start, offset), e);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+        }
+        return result;
+    }
+
+    /**
+     * 兑换积分礼物[52010407]
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     * @throws Exception
+     */
+    public JsonObject exchangeNobilityGift(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+        JsonObject result = new JsonObject();
+        if (!checkTag) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+        
+        int userId;
+        int giftId;
+        int amount;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            giftId = CommonUtil.getJsonParamInt(jsonObject, "giftId", 0, "5201040701", 1, Integer.MAX_VALUE);
+            amount = CommonUtil.getJsonParamInt(jsonObject, "amount", 1, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        NobilityService nobilityService = (NobilityService)MelotBeanFactory.getBean(NOBILITY_SERVICE_STR);
+        NobilityPointGiftService nobilityPointGiftService = (NobilityPointGiftService)MelotBeanFactory.getBean("nobilityPointGiftService");
+        try {
+            Result<Boolean> resp = nobilityPointGiftService.addNobilityPointGift(userId, giftId, amount);
+            if (resp == null) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            if (CommonStateCode.SUCCESS.equals(resp.getCode())) {
+                long money;
+                int userNobilityPoint;
+                try {
+                    money = UserService.getUserShowMoney(userId);
+                } catch (Exception e) {
+                    log.error("getUserShowMoney error:" + userId, e);
+                    money = 0;
+                }
+                
+                try {
+                    userNobilityPoint = nobilityService.getNobilityUserInfo(userId).getData().getUserNobilityPoint();
+                } catch (Exception e) {
+                    log.error("getUserNobilityPoint error:" + userId, e);
+                    userNobilityPoint = 0;
+                }
+                
+                result.addProperty("showMoney", money);
+                result.addProperty("nobilityPoint", userNobilityPoint);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+            } else if ("2".equals(resp.getCode())) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5201040702");
+            } else if ("3".equals(resp.getCode())) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5201040703");
+            } else if ("4".equals(resp.getCode())) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5201040704");
+            } else if ("5".equals(resp.getCode())) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5201040705");
+            } else {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            }
+        } catch (Exception e) {
+            log.error(String.format("Module error nobilityPointGiftService.addNobilityPointGift(userId=%s, giftId=%s, amount=%s)",userId, giftId, amount), e);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+        }
         return result;
     }
 }
