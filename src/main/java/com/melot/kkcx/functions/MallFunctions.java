@@ -598,6 +598,7 @@ public class MallFunctions {
             result.addProperty("showMoneyToGameMoney", autoExchangeInfoDTO.getExchangeStatus());
             result.addProperty("exchangeMoney", autoExchangeInfoDTO.getExchangeMoney());
             result.addProperty("tipFlag", autoExchangeInfoDTO.getTipFlag() ? 1 : 0);
+            result.addProperty("tipMoney", autoExchangeInfoDTO.getTipMoney());
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
         } catch (Exception e) {
             logger.error("mallService.getGameMoneyAutoExchangeState(userId: " + userId + ") return exception.", e);
