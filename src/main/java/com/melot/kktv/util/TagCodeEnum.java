@@ -532,6 +532,8 @@ public class TagCodeEnum {
     public static final String ID_NOT_MATCH = "5202010201";
     /**根据bizNo获取芝麻认证信息错误*/
     public static final String GET_VERIFY_INFO_ERROR = "5202010202";
+    /**获取bizNo错误*/
+    public static final String GET_BIZNO_ERROR = "5202010203";
 
     /*------提现接口 -------*/
     /**未实名认证*/

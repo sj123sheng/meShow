@@ -13,6 +13,8 @@ import com.melot.kk.doll.api.domain.DO.*;
 import com.melot.kk.doll.api.domain.queryDO.AppRecordQueryDO;
 import com.melot.kk.doll.api.service.CatchDollRecordService;
 import com.melot.kk.doll.api.service.DollMachineService;
+import com.melot.kk.logistics.api.domain.UserAddressDO;
+import com.melot.kk.logistics.api.service.UserAddressService;
 import com.melot.kkcore.actor.api.RoomInfo;
 import com.melot.kkcore.actor.service.ActorService;
 import com.melot.kkcore.user.api.UserProfile;
@@ -27,6 +29,7 @@ import com.melot.stream.driver.service.domain.ClientDetail;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.List;
@@ -67,6 +70,9 @@ public class CatchDollFunction {
      * 天数
      */
     private static final long DAY = 24 * HOUR;
+
+    @Resource
+    UserAddressService userAddressService;
 
     /**
      * 51060201
@@ -602,10 +608,14 @@ public class CatchDollFunction {
                     exchangedsRecordJson.addProperty("dollName", catchDollRecordDO.getDollName());
                     exchangedsRecordJson.addProperty("exchangedNum", catchDollRecordDO.getExchangeNum());
                     exchangedsRecordJson.addProperty("pictureUrl", catchDollRecordDO.getDollPictureUrl());
-                    exchangedsRecordJson.addProperty("catchTime", catchDollRecordDO.getEndTime().getTime());
+                    if (catchDollRecordDO.getEndTime() != null ) {
+                        exchangedsRecordJson.addProperty("catchTime", catchDollRecordDO.getEndTime().getTime());
+                    }
 
                     exchangedsRecordJson.addProperty("exchangeStatus", catchDollRecordDO.getExchangeStatus());
-                    exchangedsRecordJson.addProperty("exchangeTime", catchDollRecordDO.getExchangeTime().getTime());
+                    if (catchDollRecordDO.getExchangeTime() != null) {
+                        exchangedsRecordJson.addProperty("exchangeTime", catchDollRecordDO.getExchangeTime().getTime());
+                    }
                     exchangedsRecordJson.addProperty("waybillNumber", catchDollRecordDO.getWaybillNumber());
                     exchangedsRecordJson.addProperty("courierCompany", catchDollRecordDO.getCourierCompany());
                     exchangedsRecordJson.addProperty("consignee", catchDollRecordDO.getConsignee());
@@ -957,22 +967,15 @@ public class CatchDollFunction {
 
         try {
 
-            CatchDollRecordService catchDollRecordService = (CatchDollRecordService) MelotBeanFactory.getBean("catchDollRecordService");
+            UserAddressDO userDefaultAddressDO = userAddressService.getUserDefaultAddressDOByUserId(userId).getData();
 
-            Result<CatchDollRecordDO> recentDeliveryDOResult = catchDollRecordService.getRecentDeliverDOByUserId(userId);
-            CatchDollRecordDO catchDollRecordDO = new CatchDollRecordDO();
-            if(recentDeliveryDOResult.getCode().equals(CommonStateCode.SUCCESS)) {
-                catchDollRecordDO = recentDeliveryDOResult.getData();
-            }else {
-                result.addProperty("TagCode", "5110902");
-                return result;
+            if(userDefaultAddressDO != null) {
+
+                result.addProperty("consignee", userDefaultAddressDO.getConsigneeName());
+                result.addProperty("mobile", userDefaultAddressDO.getConsigneeMobile());
+                result.addProperty("address", userDefaultAddressDO.getDetailAddress());
             }
 
-            if(catchDollRecordDO != null) {
-                result.addProperty("consignee", catchDollRecordDO.getConsignee());
-                result.addProperty("mobile", catchDollRecordDO.getMobile());
-                result.addProperty("address", catchDollRecordDO.getAddress());
-            }
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
         } catch (Exception e) {

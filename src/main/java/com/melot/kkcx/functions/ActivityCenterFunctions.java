@@ -206,6 +206,7 @@ public class ActivityCenterFunctions {
                     jsonObj.addProperty("actTitle", kkPreviewAct.getActTitle());
                     if (kkPreviewAct.getPoster() != null) {
                         jsonObj.addProperty("poster", kkPreviewAct.getPoster());
+                        jsonObj.addProperty("poster_256", kkPreviewAct.getPoster() + "!256");
                     }
                     if (kkPreviewAct.getStartTime() != null) {
                         jsonObj.addProperty("startTime", kkPreviewAct.getStartTime().getTime());
