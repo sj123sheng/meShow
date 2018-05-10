@@ -2954,12 +2954,14 @@
 	<bean id="51010403" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="nobilityFunctions" />
 		<constructor-arg name="methodName" value="getNobilityList" />
+		<constructor-arg name="cacheType" value="60" />
 	</bean>
 	
 	<!-- 获取贵族爵位详情 -->
 	<bean id="51010404" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="nobilityFunctions" />
 		<constructor-arg name="methodName" value="getNobilityInfo" />
+		<constructor-arg name="cacheType" value="60" />
 	</bean>
 	
 	<!-- 开通/续费爵位信息 -->
