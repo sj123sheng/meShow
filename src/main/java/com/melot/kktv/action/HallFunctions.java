@@ -1,44 +1,36 @@
 package com.melot.kktv.action;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.melot.api.menu.sdk.dao.SysMenuDao;
 import com.melot.api.menu.sdk.dao.domain.HomePage;
-import com.melot.api.menu.sdk.dao.domain.HotRoomInfo;
-import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.api.menu.sdk.dao.domain.SysMenu;
 import com.melot.api.menu.sdk.handler.FirstPageHandler;
-import com.melot.api.menu.sdk.service.HomeService;
+import com.melot.kk.hall.api.domain.*;
+import com.melot.kk.hall.api.service.HallRoomService;
+import com.melot.kk.hall.api.service.HomeService;
+import com.melot.kk.hall.api.service.SysMenuService;
+import com.melot.kkcx.transform.HallRoomTF;
+import com.melot.kkcx.transform.RoomTF;
+import com.melot.kktv.base.CommonStateCode;
+import com.melot.kktv.base.Result;
+import com.melot.kktv.util.*;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.content.config.domain.GameTagConfig;
 import com.melot.content.config.game.service.GameTagService;
-import com.melot.kkcore.actor.api.RoomInfoKeys;
-import com.melot.kkcore.actor.service.ActorService;
 import com.melot.kkcx.service.GeneralService;
-import com.melot.kkcx.transform.RoomTF;
 import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.RoomService;
-import com.melot.kktv.util.AppIdEnum;
-import com.melot.kktv.util.CityUtil;
-import com.melot.kktv.util.CommonUtil;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.ConstantEnum;
-import com.melot.kktv.util.PlatformEnum;
-import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.confdynamic.SystemConfig;
 import com.melot.sdk.core.util.MelotBeanFactory;
 
@@ -51,9 +43,15 @@ public class HallFunctions {
 
     @Autowired
     private ConfigService configService;
-	
+
     @Resource
-    ActorService actorService;
+	private HallRoomService hallRoomService;
+
+    @Resource
+	private SysMenuService hallPartService;
+
+	@Resource
+	private HomeService hallHomeService;
     
 	private static Logger logger = Logger.getLogger(HallFunctions.class);
 	
@@ -278,9 +276,9 @@ public class HallFunctions {
 	public JsonObject getSubCataList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 		JsonObject result = new JsonObject();
 		
-		int appId = AppIdEnum.AMUSEMENT;
-		int limit = 0;
-		int cataId = 0;
+		int appId;
+		int limit;
+		int cataId;
 		try {
 			appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 1, Integer.MAX_VALUE);
 			limit = CommonUtil.getJsonParamInt(jsonObject, "limit", 0, null, 1, Integer.MAX_VALUE);
@@ -292,31 +290,33 @@ public class HallFunctions {
 			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
 			return result;
 		}
-		
-		SysMenu sysMenu = null;
+
+		Result<HallPartConfDTO> hallPartConfDTOResult = null;
+		HallPartConfDTO hallPartConfDTO = null;
 
 		try {
-			FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
 			if (appId == AppIdEnum.AMUSEMENT) {
-			    sysMenu = firstPageHandler.getSysMenuList(cataId);
+				hallPartConfDTOResult = hallPartService.getSubSysMenuList(cataId);
 			} else {
-			    if (limit == 0) {
-			        sysMenu = firstPageHandler.getSysMenuList(cataId, appId, null);
-			    }else{
-			        sysMenu = firstPageHandler.getSysMenuList(cataId, appId, limit);
+			    if (limit <= 0) {
+					hallPartConfDTOResult = hallPartService.getSysMenuList(cataId, appId, Integer.MAX_VALUE);
+			    } else {
+					hallPartConfDTOResult = hallPartService.getSysMenuList(cataId, appId, limit);
 			    }
 			}
 		} catch(Exception e) {
 			logger.error("Fail to call firstPageHandler.getCataList ", e);
 		}
-		
-		if (sysMenu != null) {
-			result.addProperty("parentCataId", sysMenu.getTitleId());
-			result.addProperty("parentCataName", sysMenu.getTitleName());
+		if (hallPartConfDTOResult != null) {
+			hallPartConfDTO = hallPartConfDTOResult.getData();
+		}
+		if (hallPartConfDTO != null) {
+			result.addProperty("parentCataId", hallPartConfDTO.getTitleId());
+			result.addProperty("parentCataName", hallPartConfDTO.getTitleName());
 			
 			JsonArray cataList = new JsonArray();
-			if (sysMenu.getSysMenus() != null) {
-				for(SysMenu temp : sysMenu.getSysMenus()) {
+			if (CollectionUtils.isNotEmpty(hallPartConfDTO.getSysMenus())) {
+				for(HallPartConfDTO temp : hallPartConfDTO.getSysMenus()) {
 					JsonObject json = new JsonObject();
 					json.addProperty("cataId", temp.getTitleId());
 					json.addProperty("cataName", temp.getTitleName());
@@ -324,13 +324,11 @@ public class HallFunctions {
 					cataList.add(json);
 				}
 			}
-			
 			result.add("cataList", cataList);
 			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 		} else {
 			result.addProperty("TagCode", TagCodeEnum.FAIL_TO_CALL_API_MENU_MODULE);
 		}
-		
 		return result;
 	}
 	
@@ -341,9 +339,8 @@ public class HallFunctions {
 	 */
 	public JsonObject getKKRecommended(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 		JsonObject result = new JsonObject();
-		
 		int appId, count, platform;
-		String parentIds = null;
+		String parentIds;
 		try {
 			appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.GAME, TagCodeEnum.APPID_MISSING, 1, Integer.MAX_VALUE);
 			count = CommonUtil.getJsonParamInt(jsonObject, "count", 1, null, 1, Integer.MAX_VALUE);
@@ -357,58 +354,59 @@ public class HallFunctions {
 			return result;
 		}
 		
-		List<SysMenu> sysMenuList = null;
-		
+
 		try {
-            if(platform == 2 || platform == 3){ //2015-6-26 移动端暂开放全部栏目
-                count = Integer.MAX_VALUE;
-            }
-		    
-			FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
-			sysMenuList = firstPageHandler.getRecommendSysMenus(parentIds, appId, count);
-		} catch(Exception e) {
-			logger.error("Fail to call firstPageHandler.getKKRecommended ", e);
-		}
-		
-		if (sysMenuList != null) {
+			//2015-6-26 移动端暂开放全部栏目
+			if(platform == 2 || platform == 3){
+				count = Integer.MAX_VALUE;
+			}
+			Result<List<HallPartConfDTO>> hallPartResult = hallPartService.getRecommendSysMenus(parentIds, appId, count);
+			if (hallPartResult == null || !CommonStateCode.SUCCESS.equals(hallPartResult.getCode())) {
+				result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+				return result;
+			}
+			List<HallPartConfDTO> hallPartConfDTOList = hallPartResult.getData();
 			JsonArray cataList = new JsonArray();
-			for (SysMenu sysMenu : sysMenuList) {
+			for (HallPartConfDTO hallPartConfDTO : hallPartConfDTOList) {
 				JsonObject json = new JsonObject();
-				if(sysMenu.getTitleName() != null) {
-					json.addProperty("cataName", sysMenu.getTitleName());
+				if(hallPartConfDTO.getTitleName() != null) {
+					json.addProperty("cataName", hallPartConfDTO.getTitleName());
 				}
-				if(sysMenu.getTitleId() != null) {
-					json.addProperty("cataId", sysMenu.getTitleId());
+				if(hallPartConfDTO.getTitleId() != null) {
+					json.addProperty("cataId", hallPartConfDTO.getTitleId());
 				}
-				if(sysMenu.getPosterPic() != null) {
-					json.addProperty("cataPic", sysMenu.getPosterPic());
+				if(hallPartConfDTO.getPosterPic() != null) {
+					json.addProperty("cataPic", hallPartConfDTO.getPosterPic());
 				}
-                if(sysMenu.getCoverPic()!= null) {  //返回封面图片, 配置ipad横屏展示需要的图片资源, cataPic和coverPic和一个图片的横竖两种
-                    json.addProperty("coverPic", sysMenu.getCoverPic());
-                }
-				if(sysMenu.getPeopleInRoom() != null) {
-					json.addProperty("cataPeople", sysMenu.getPeopleInRoom());
+				//返回封面图片, 配置ipad横屏展示需要的图片资源, cataPic和coverPic和一个图片的横竖两种
+				if(hallPartConfDTO.getCoverPic()!= null) {
+					json.addProperty("coverPic", hallPartConfDTO.getCoverPic());
+				}
+				if(hallPartConfDTO.getPeopleInRoom() != null) {
+					json.addProperty("cataPeople", hallPartConfDTO.getPeopleInRoom());
 				}
 				cataList.add(json);
 			}
 			result.add("cataList", cataList);
-			
-			try {
-				GameTagService gameTagService = MelotBeanFactory.getBean("gameTagService", GameTagService.class);
-				Integer iRet = gameTagService.getLiveTagCount(appId);
-				if (iRet != null) {
-					result.addProperty("livingCataCount", iRet);
-				}
-			} catch (Exception e) {
-				logger.error("Fail to call gameTagService.getLiveTagCount", e);
-			}
-			
-			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-			result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
-		} else {
-			result.addProperty("TagCode", TagCodeEnum.FAIL_TO_CALL_API_MENU_MODULE);
+		} catch (Exception e) {
+			logger.error(String.format("Module Error：sysMenuService.getRecommendSysMenus(parentIds=%s, appId=%s, count=%s);",
+					parentIds, appId, count), e);
+			result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+			return result;
 		}
-		
+
+		try {
+			GameTagService gameTagService = MelotBeanFactory.getBean("gameTagService", GameTagService.class);
+			Integer iRet = gameTagService.getLiveTagCount(appId);
+			if (iRet != null) {
+				result.addProperty("livingCataCount", iRet);
+			}
+		} catch (Exception e) {
+			logger.error("Fail to call gameTagService.getLiveTagCount", e);
+		}
+		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+		result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+
 		return result;
 	}
 	
@@ -432,54 +430,62 @@ public class HallFunctions {
 			return result;
 		}
 		
-		List<SysMenu> sysMenuList = null;
+		List<HallPartConfDTO> hallPartConfDTOList = null;
 		
 		try {
-			FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
-			if(platform != PlatformEnum.IPAD){
-                sysMenuList = firstPageHandler.getAllSysMenuList(appId);
-            }else{ //pad版本需要返回栏目下房间人数
-                sysMenuList = fetchSysMenuList(appId);
+			Result<List<HallPartConfDTO>> hallPartResult;
+			if(platform != PlatformEnum.IPAD) {
+				hallPartResult = hallPartService.getAllSysMenuList(appId);
+            } else { //pad版本需要返回栏目下房间人数
+				hallPartResult = hallPartService.fetchSysMenuList(appId);
             }
+			if (hallPartResult == null || !CommonStateCode.SUCCESS.equals(hallPartResult.getCode())) {
+				result.addProperty("TagCode", TagCodeEnum.FAIL_TO_CALL_API_MENU_MODULE);
+				return result;
+			}
+			hallPartConfDTOList = hallPartResult.getData();
 		} catch(Exception e) {
-			logger.error("Fail to call firstPageHandler.getAllCataList ", e);
+			logger.error("Fail to call sysMenuService.getAllCataList ", e);
 		}
 		
-		if (sysMenuList != null) {
+		if (hallPartConfDTOList != null) {
 			JsonArray totalList = new JsonArray();
-			for(SysMenu sysMenu : sysMenuList) {
+			for(HallPartConfDTO hallPartConfDTO : hallPartConfDTOList) {
 				JsonObject tempJson = new JsonObject();
-				tempJson.addProperty("parentCataId", sysMenu.getTitleId());
-				tempJson.addProperty("parentCataName", sysMenu.getTitleName());
-                tempJson.addProperty("parentIconW", ConstantEnum.FUN_ICON_WHITE+sysMenu.getTitleId()+".png");
-                tempJson.addProperty("parentIconB", ConstantEnum.FUN_ICON_BLACK+sysMenu.getTitleId()+".png");
-                if(sysMenu.getSubTitle() != null){
-                    tempJson.addProperty("alianceCataName", sysMenu.getSubTitle());
+				tempJson.addProperty("parentCataId", hallPartConfDTO.getTitleId());
+				tempJson.addProperty("parentCataName", hallPartConfDTO.getTitleName());
+                tempJson.addProperty("parentIconW", ConstantEnum.FUN_ICON_WHITE+hallPartConfDTO.getTitleId()+".png");
+                tempJson.addProperty("parentIconB", ConstantEnum.FUN_ICON_BLACK+hallPartConfDTO.getTitleId()+".png");
+                if(hallPartConfDTO.getSubTitle() != null){
+                    tempJson.addProperty("alianceCataName", hallPartConfDTO.getSubTitle());
                 }
 				JsonArray sonList = new JsonArray();
-				for (SysMenu temp : sysMenu.getSysMenus()) {
-					JsonObject json = new JsonObject();
-					json.addProperty("cataId", temp.getTitleId());
-					json.addProperty("cataName", temp.getTitleName());
-					json.addProperty("cdnState", temp.getCdnState());
-                    if(temp.getPosterPic() != null) {
-                        json.addProperty("cataPic", temp.getPosterPic());
-                    }
-                    if(temp.getCoverPic()!= null) {  //返回封面图片, 配置ipad横屏展示需要的图片资源, cataPic和coverPic和一个图片的横竖两种
-                        json.addProperty("coverPic", temp.getCoverPic());
-                    }
-                    if(temp.getIcon() != null){
-                        json.addProperty("icon", temp.getIcon());
-                    }
-                    if(temp.getWebIcon() != null){
-                        json.addProperty("webIcon", temp.getWebIcon());
-                    }
-                    if(temp.getPeopleInRoom() != null) {
-                        json.addProperty("cataPeople", temp.getPeopleInRoom());
-                    }else {
-                        json.addProperty("cataPeople", 0);
-                    }
-					sonList.add(json);
+                if (hallPartConfDTO.getSysMenus() != null) {
+					for (HallPartConfDTO temp : hallPartConfDTO.getSysMenus()) {
+						JsonObject json = new JsonObject();
+						json.addProperty("cataId", temp.getTitleId());
+						json.addProperty("cataName", temp.getTitleName());
+						json.addProperty("cdnState", temp.getCdnState());
+						if(temp.getPosterPic() != null) {
+							json.addProperty("cataPic", temp.getPosterPic());
+						}
+						//返回封面图片, 配置ipad横屏展示需要的图片资源, cataPic和coverPic和一个图片的横竖两种
+						if(temp.getCoverPic()!= null) {
+							json.addProperty("coverPic", temp.getCoverPic());
+						}
+						if(temp.getIcon() != null){
+							json.addProperty("icon", temp.getIcon());
+						}
+						if(temp.getWebIcon() != null){
+							json.addProperty("webIcon", temp.getWebIcon());
+						}
+						if(temp.getPeopleInRoom() != null) {
+							json.addProperty("cataPeople", temp.getPeopleInRoom());
+						}else {
+							json.addProperty("cataPeople", 0);
+						}
+						sonList.add(json);
+					}
 				}
 				tempJson.add("cataList", sonList);
 				totalList.add(tempJson);
@@ -494,26 +500,6 @@ public class HallFunctions {
 		
 		return result;
 	}
-    
-    
-    /**
-     *  ipad获取栏目及子栏目,需要返回栏目下的房间数 
-     * 
-     */
-    private List<SysMenu> fetchSysMenuList(Integer appId){
-        SysMenuDao sysMenuDao = MelotBeanFactory.getBean("sysMenuDao", SysMenuDao.class);
-        List<SysMenu> sysMenus = sysMenuDao.getSysMenusByParentId(0, appId);
-        for (SysMenu sysMenu : sysMenus) {
-            List<SysMenu> subSysMenuList = sysMenuDao.getSubSysMenusByParentId(sysMenu.getTitleId(),1,null);
-            Collections.sort(subSysMenuList, new Comparator<SysMenu>(){
-                public int compare(SysMenu arg0, SysMenu arg1) {
-                    return arg0.getSortIndex().compareTo(arg1.getSortIndex());
-                }
-            });
-            sysMenu.setSysMenus(subSysMenuList);
-        }
-        return sysMenus;
-    }
 	
 	/**
 	 * 查询配置的直播游戏类别(20010306)
@@ -581,13 +567,16 @@ public class HallFunctions {
 				// 最大查询数限制
 				int count = 20;
 				String value = SystemConfig.getValue(SystemConfig.maxViewedQueryCount, appId);
-				if (value != null) count = Integer.parseInt(value);
+				if (value != null) {
+					count = Integer.parseInt(value);
+				}
 				if (strArr.length > count) {
 					result.addProperty("TagCode", "02330003");
 					return result;
 				}
-				for (String str : strArr)
+				for (String str : strArr) {
 					userIdList.add(Integer.parseInt(str));
+				}
 			} catch (Exception e) {
 				result.addProperty("TagCode", "02330002");
 				return result;
@@ -712,15 +701,16 @@ public class HallFunctions {
         }
         int liveCount = 0;
         Iterator<RoomInfo> it = rooms.iterator();
-        while (it.hasNext()) { //队列本身已经根据开播状态做好了排序 
+		// 队列本身已经根据开播状态做好了排序
+        while (it.hasNext()) {
             if (it.next().isOnLive()) {  
                 liveCount++;
             } else {
                 break; 
             }
-        }  
-        
-        if (liveCount == 0) { //栏目下房间都是未开播状态
+        }
+		// 栏目下房间都是未开播状态
+        if (liveCount == 0) {
             return null;
         }
         
@@ -740,11 +730,10 @@ public class HallFunctions {
      */
     public JsonObject getSquareTitleList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
-        
         int appId;
         int channel;
-        int city = 0;
-        int platform = 0;
+        int city;
+        int platform;
         try {
             appId = CommonUtil.getJsonParamInt(jsonObject, "a", 0, TagCodeEnum.APPID_MISSING, 0, Integer.MAX_VALUE);
             channel = CommonUtil.getJsonParamInt(jsonObject, "c", 0, TagCodeEnum.CHANNEL_MISSING, 0, Integer.MAX_VALUE);
@@ -758,22 +747,23 @@ public class HallFunctions {
             return result;
         }
         
-        List<HomePage> titleList = null;
-        
+        Result<List<FirstPageConfDTO>> firstPageListResult;
+		List<FirstPageConfDTO> titleList = null;
         try {
             if (configService.getIsAbroad()) {
                 // 根据city获取默认渠道ID
                 if (city == 0) {
                     String clientIp = com.melot.kktv.service.GeneralService.getIpAddr(request, appId, platform, null);
                     city = CityUtil.getCityIdByIpAddr(clientIp);
-                 }
-                 int defaultChannel = CityUtil.getCityDefaultChannel(city);
-                 HomeService homeService = MelotBeanFactory.getBean("homeService", HomeService.class);
-                 titleList = homeService.getPartListInHome(appId, channel, defaultChannel);
+                }
+                int defaultChannel = CityUtil.getCityDefaultChannel(city);
+				firstPageListResult = hallHomeService.getPartListInHome(appId, channel, defaultChannel);
             } else {
-                FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
-                titleList = firstPageHandler.getSquareTitleList(appId, channel);
+				firstPageListResult = hallHomeService.getSquareTitleList(appId, channel);
             }
+            if (firstPageListResult != null) {
+				titleList = firstPageListResult.getData();
+			}
             
         } catch(Exception e) {
             logger.error("Fail to call firstPageHandler.getFistPagelist ", e);
@@ -781,7 +771,7 @@ public class HallFunctions {
         
         if (titleList != null) {
             JsonArray plateList = new JsonArray();
-            for (HomePage hp : titleList) {
+            for (FirstPageConfDTO hp : titleList) {
                 JsonObject json = new JsonObject();
                 json.addProperty("position", hp.getSeatId());
                 if (hp.getTitleName() != null) {
@@ -822,8 +812,8 @@ public class HallFunctions {
      * @return
      */
     public JsonObject getHotRoomInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
         JsonObject result = new JsonObject();
-        
         int roomId;
         try {
             roomId = CommonUtil.getJsonParamInt(jsonObject, "roomId", 0, TagCodeEnum.ROOMID_MISSING, 0, Integer.MAX_VALUE);
@@ -834,12 +824,13 @@ public class HallFunctions {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-        
-        HotRoomInfo hotRoomInfo = null;
-        
+
+		HotRoomInfoDTO hotRoomInfo = null;
         try {
-            FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
-            hotRoomInfo = firstPageHandler.getHotRoomInfo(roomId);
+        	Result<HotRoomInfoDTO> hotRoomResult = hallRoomService.getHotRoomInfo(roomId);
+        	if (hotRoomResult != null) {
+				hotRoomInfo = hotRoomResult.getData();
+			}
         } catch(Exception e) {
             logger.error("Fail to call firstPageHandler.getFistPagelist ", e);
         }
