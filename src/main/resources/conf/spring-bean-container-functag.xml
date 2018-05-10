@@ -3127,4 +3127,16 @@
 		<constructor-arg name="t" ref="liveShopFunctions" />
 		<constructor-arg name="methodName" value="addDistributorOrder" />
 	</bean>
+	
+	<!-- 获取积分礼物列表 -->
+	<bean id="52010406" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="nobilityFunctions" />
+		<constructor-arg name="methodName" value="getNobilityGifts" />
+	</bean>
+	
+	<!-- 兑换积分礼物 -->
+	<bean id="52010407" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="nobilityFunctions" />
+		<constructor-arg name="methodName" value="exchangeNobilityGift" />
+	</bean>
 </beans>

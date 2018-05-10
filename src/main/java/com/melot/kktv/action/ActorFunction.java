@@ -304,8 +304,8 @@ public class ActorFunction {
             return result;
         }
         
-        // 找回密码无需验证token，需要验证userId和身份证对应关系
-        if (userVerifyType == 2) {
+        // 找回密码或更换密码时无需验证token，需要验证userId和身份证对应关系
+        if (userVerifyType == 2 || userVerifyType == 3) {
             boolean checkCertNo = false;
             if (userId > 0 && certNo != null) {
                 Result<UserVerifyDO> userVerifyDOResult = userVerifyService.getUserVerifyDO(userId);
@@ -450,8 +450,8 @@ public class ActorFunction {
             return result;
         }
         
-        // 找回密码无需验证token
-        if (!checkTag && userVerifyType != 2) {
+        // 找回密码或更换手机号时无需验证token
+        if (!checkTag && !(userVerifyType == 2 || userVerifyType == 3)) {
             result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
             return result;
         }
@@ -515,9 +515,6 @@ public class ActorFunction {
             return result;
         }
         
-      //实名认证成功后可以认证新手机号
-        HotDataSource.setTempDataString(String.format("identifyFormalPhone_%s", userId), "1", 300);
-
         // 如果是申请主播实名认证 插入主播申请记录
         if(userVerifyType == 0 && !verifyAndApplyForActor(result, userId, certNo, familyId, appId)) {
             return result;
@@ -527,6 +524,11 @@ public class ActorFunction {
         } else if (userVerifyType == 2) {
             //找回密码
             HotDataSource.setTempDataString(String.format(RETRIEVEPW_DUSER_KEY, userId), "1", 300);
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        }else if(userVerifyType == 3){
+        	//如果是更换手机号实名认证，使账号短时间可以更换手机号
+            HotDataSource.setTempDataString(String.format("identifyFormalPhone_%s", userId), "1", 300);
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
         }

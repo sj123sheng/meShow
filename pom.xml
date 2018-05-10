@@ -587,7 +587,7 @@
         <dependency>
 		  <groupId>com.melot.kk</groupId>
 		  <artifactId>kk-nobility-api</artifactId>
-		  <version>1.0.5</version>
+		  <version>1.0.7-SNAPSHOT</version>
 		</dependency>
 
         <!-- 用户安全模块 -->
@@ -655,6 +655,12 @@
 		  <artifactId>kk-config-api</artifactId>
 		  <version>1.0.0</version>
 		</dependency>
+		
+		<dependency>
+            <groupId>com.melot</groupId>
+            <artifactId>game-risk-controller-client</artifactId>
+            <version>1.1.3-SNAPSHOT</version>
+        </dependency>
 
 	</dependencies>
  	
