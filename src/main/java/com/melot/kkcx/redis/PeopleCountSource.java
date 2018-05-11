@@ -43,17 +43,13 @@ public class PeopleCountSource {
         Jedis jedis = null;
         JedisWrapper jedisWrapper = null;
         try {
-            jedisWrapper = getInstance();
-            if (jedisWrapper != null) {
-                jedis = jedisWrapper.getJedis();
-                Double limitTime = jedis.zscore(GAME_BLACK_LIST, userKey);
-                if(limitTime == null){
-                    limitTime = new Double(0);
-                }
-                flag = limitTime.longValue() < System.currentTimeMillis();
-            }else {
-                throw new Exception("get jedisWrapper is null");
-            }
+			jedisWrapper = getInstance();
+			jedis = jedisWrapper.getJedis();
+			Double limitTime = jedis.zscore(GAME_BLACK_LIST, userKey);
+			if (limitTime == null) {
+				limitTime = new Double(0);
+			}
+			flag = limitTime.longValue() < System.currentTimeMillis();
         } catch (Throwable e) {
             errHappend = true;
             t = e;

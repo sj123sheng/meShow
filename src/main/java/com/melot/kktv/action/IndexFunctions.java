@@ -423,9 +423,9 @@ public class IndexFunctions {
 		if (list != null && list.size() > 0) {
 			Comparator<RoomInfo> comparator = new Comparator<RoomInfo>() {
 				public int compare(RoomInfo room1, RoomInfo room2) {
-					if (room1.getPeopleInRoom().intValue() > room1.getPeopleInRoom().intValue())
+					if (room1.getPeopleInRoom().intValue() > room2.getPeopleInRoom().intValue())
 			            return -1;
-			        else if (room1.getPeopleInRoom().intValue() < room1.getPeopleInRoom().intValue())
+			        else if (room1.getPeopleInRoom().intValue() < room2.getPeopleInRoom().intValue())
 			            return 1;
 			        else
 			            return 0;

@@ -47,51 +47,6 @@ public class AssetService {
     }
     
     /**
-     * 赠送汽车
-     * @param carId 汽车Id
-     * @param userId 用户Id
-     * @param days 赠送天数
-     * @param type 赠送类型
-     * @param sendDesc 赠送描述
-     */
-    public static void sendCarToUser(int carId, int userId, int days, int type, String sendDesc) {
-		try {
-			CarService carService = (CarService) MelotBeanFactory.getBean("vipService");
-			carService.insertSendCar(userId, carId, days, type, sendDesc);
-		} catch (MelotModuleException e) {
-			switch (e.getErrCode()) {
-			case 106:
-//				logger.error("fail to send car, carId : " + carId + " ,userId : " + userId + " ,type : " + type + ", 售完（超过最大限制）");
-				break;
-				
-			case 107:
-//				logger.error("已经是永久汽车");
-				break;
-			
-			case 108:
-//				logger.error("赠送汽车异常");
-				break;
-				
-			case 102:
-//				logger.error("获取汽车相关信息异常");
-				break;
-				
-			case 104:
-//				logger.error("用户不存在");
-				break;
-				
-			default:
-				break;
-			}
-		} catch (Exception e) {
-			logger.error("CarService.insertSendCar exception, userId : " + userId
-                    + " ,carId : " + carId
-                    + " ,days : " + days
-                    + " ,type : " + type, e);
-		}
-    }
-    
-    /**
      * 购买道具（VIP）
      * @param userId 用户Id
      * @param propId 道具Id

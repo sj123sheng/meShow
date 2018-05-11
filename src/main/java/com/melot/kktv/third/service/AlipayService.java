@@ -135,7 +135,7 @@ public class AlipayService extends BaseService {
 			} catch (Exception e) {
 				logger.error("fail to parse string to jsonobject, tokenString " + tokenString);
 			}
-			if (accessToken != null && alipayUserId.equals(openId)) {
+			if (accessToken != null && alipayUserId != null && alipayUserId.equals(openId)) {
 				String infoString = getInfo(accessToken);
 				if (infoString != null) {
 					try {

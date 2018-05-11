@@ -1056,9 +1056,9 @@ public class NewsFunctions {
 							if (userProfile.getNickName() != null) {
 								newsInfo.setNickname(userProfile.getNickName());
 							}
-						}
-						if (userProfile.getPortrait() != null) {
-							newsInfo.setPortrait_path_original(userProfile.getPortrait());
+							if (userProfile.getPortrait() != null) {
+								newsInfo.setPortrait_path_original(userProfile.getPortrait());
+							}
 						}
 						newsInfo.setGender(userProfile.getGender());
 					}
@@ -1073,7 +1073,7 @@ public class NewsFunctions {
 						JsonArray ns = NewsTF.toRewardJsonObject(newsInfo, platform, rewardsInfoList);
 						result.add("newsRewardList", ns);   
 					}
-					if (newsInfo.getMediaFrom() == null || newsInfo.getMediaFrom().intValue() == 1) {
+					if (newsInfo != null && (newsInfo.getMediaFrom() == null || newsInfo.getMediaFrom().intValue() == 1)) {
 						result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
 						result.addProperty("mediaPathPrefix", ConfigHelper.getMediahttpdir()); // 多媒体前缀
 					} else {

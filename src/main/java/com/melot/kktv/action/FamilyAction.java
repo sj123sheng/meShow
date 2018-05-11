@@ -2091,13 +2091,16 @@ public class FamilyAction {
 		
         // 增加家族收益
         try {
-            if (resultByFamilyMedal != null && resultByFamilyMedal.getTagCode().equals(TagCodeEnum.SUCCESS)) {
-                RoomService.incActorIncome(userId, 0, familyId, medalId, 1, resultByFamilyMedal.getCost().intValue(), 0, 60, 12, 0);
-                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-                result.addProperty("showMoney", resultByFamilyMedal.getShowMoney());
-            } else {
-                result.addProperty("TagCode", resultByFamilyMedal.getTagCode());
-            }
+			if (resultByFamilyMedal != null) {
+				if (resultByFamilyMedal.getTagCode().equals(TagCodeEnum.SUCCESS)) {
+					RoomService.incActorIncome(userId, 0, familyId, medalId, 1,
+							resultByFamilyMedal.getCost().intValue(), 0, 60, 12, 0);
+					result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+					result.addProperty("showMoney", resultByFamilyMedal.getShowMoney());
+				} else {
+					result.addProperty("TagCode", resultByFamilyMedal.getTagCode());
+				}
+			}
         } catch (Exception e) {
             logger.error("增加家族收益异常, userId: " + userId + ", familyId: " + familyId + ", refId: " + medalId + ", count: 1"
                     + ", price: " + resultByFamilyMedal.getCost() + ", actorRate: 0, familyRate: 60, type:12, addShowMoney: 0", e);

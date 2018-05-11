@@ -1201,7 +1201,7 @@ public class AlbumFunctions {
 			logger.error("call PosterService getUploadPosterUrl error userId:" + userId + ",pictureType:" + pictureType + ",localUrl:" + localUrl, e);
 		}
 
-		if (upYunInfo.getPolicy() != null) {
+		if (upYunInfo != null && upYunInfo.getPolicy() != null) {
 			result.addProperty("policy", upYunInfo.getPolicy());
 		}
 		if (upYunInfo.getSignature() != null) {
