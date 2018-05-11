@@ -81,8 +81,10 @@ public class ZmxyService extends BaseService {
         //getUrl(bizNo,"http://www.taobao.com");
         ZhimaCustomerCertificationInitializeResponse response = getBizNo(131866717, 1, "修贺贺", "341223199510274518");
         System.out.println(new Gson().toJson(response));
-        ZhimaCustomerCertificationQueryResponse queryResponse = getResult(response.getBizNo());
-        System.out.println(new Gson().toJson(queryResponse));
+		if (response != null) {
+			ZhimaCustomerCertificationQueryResponse queryResponse = getResult(response.getBizNo());
+			System.out.println(new Gson().toJson(queryResponse));
+		}
     }
     
     /**

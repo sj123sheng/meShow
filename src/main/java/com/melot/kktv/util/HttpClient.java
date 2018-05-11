@@ -64,9 +64,9 @@ public abstract class HttpClient {
                     exp = e;
                 }
             }
-            if (exp != null) {
-                throw new CertificateException(exp);
-            }
+//            if (exp != null) {
+//                throw new CertificateException(exp);
+//            }
         }
     }
 
