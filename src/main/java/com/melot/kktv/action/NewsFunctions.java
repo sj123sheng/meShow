@@ -155,115 +155,115 @@ public class NewsFunctions {
 	public JsonObject getUserNewsList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
 		
 		JsonObject result = new JsonObject();
-		// 定义所需参数
-		int userId;
-		int pageIndex = 1;
-		int countPerPage = Constant.return_news_count;
-		int platform = 0;
-		int inRoom = 0;
-		int version = 1;
-		// 解析参数
-		try {
-			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 1, "06040001", 1, Integer.MAX_VALUE);
-			pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
-			countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", Constant.return_news_count, null, 1, Integer.MAX_VALUE);
-			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
-			inRoom = CommonUtil.getJsonParamInt(jsonObject, "inRoom", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
-			version = CommonUtil.getJsonParamInt(jsonObject, "version", 1, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
-		} catch (ErrorGetParameterException e) {
-			result.addProperty("TagCode", e.getErrCode());
-			return result;
-		}
-
-		List<News> checkList = new ArrayList<News>();
-		HashSet<Integer> checkIds = new HashSet<Integer>();
-		if (checkTag) {
-			List<NewsInfo> newsList = NewsService.getSelfNewsList(userId, (pageIndex - 1) * countPerPage, countPerPage, 1, 0);
-			if (newsList != null && newsList.size() > 0) {
-				for (NewsInfo newsInfo : newsList) {
-					if (newsInfo.getState() == 3) {
-						News news = new News();
-						news.setNewsId(newsInfo.getNewsId());
-						news.setNewsType(newsInfo.getNewsType());
-						news.setMediaFrom(1);
-						news.setMediaSource("{\"mediaType\":1,\"imageUrl\":\"/picture/offical/checkingpicture.jpg\"}");
-						news.setPublishedTime(newsInfo.getPublishedTime());
-						news.setContent(newsInfo.getContent());
-						news.setUserId(newsInfo.getUserId());
-						checkIds.add(newsInfo.getNewsId());
-						checkList.add(news);
-					}
-				}
-			}
-		}
-		
-		// 调用存储过程得到结果
-		Map<Object, Object> map = new HashMap<Object, Object>();
-		map.put("userId", userId);
-		map.put("inRoom", inRoom); 
-		map.put("pageIndex", pageIndex);
-		map.put("countPerPage", countPerPage);
-		map.put("version", version);
-		map.put("platform", platform);
-		try {
-			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("News.getUserNewsList", map);
-		} catch (SQLException e) {
-			logger.error("未能正常调用存储过程", e);
-			result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
-			return result;
-		}
-		String TagCode = (String) map.get("TagCode");
-		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-			// 取出列表
-			@SuppressWarnings("unchecked")
-			List<News> newsList = (ArrayList<News>) map.get("newsList");
-			newsList = UserService.addUserExtra(newsList);
-			result.addProperty("TagCode", TagCode);
-			result.addProperty("pageTotal", (Integer) map.get("pageTotal"));
+//		// 定义所需参数
+//		int userId;
+//		int pageIndex = 1;
+//		int countPerPage = Constant.return_news_count;
+//		int platform = 0;
+//		int inRoom = 0;
+//		int version = 1;
+//		// 解析参数
+//		try {
+//			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 1, "06040001", 1, Integer.MAX_VALUE);
+//			pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
+//			countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", Constant.return_news_count, null, 1, Integer.MAX_VALUE);
+//			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+//			inRoom = CommonUtil.getJsonParamInt(jsonObject, "inRoom", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+//			version = CommonUtil.getJsonParamInt(jsonObject, "version", 1, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+//		} catch (ErrorGetParameterException e) {
+//			result.addProperty("TagCode", e.getErrCode());
+//			return result;
+//		}
+//
+//		List<News> checkList = new ArrayList<News>();
+//		HashSet<Integer> checkIds = new HashSet<Integer>();
+//		if (checkTag) {
+//			List<NewsInfo> newsList = NewsService.getSelfNewsList(userId, (pageIndex - 1) * countPerPage, countPerPage, 1, 0);
+//			if (newsList != null && newsList.size() > 0) {
+//				for (NewsInfo newsInfo : newsList) {
+//					if (newsInfo.getState() == 3) {
+//						News news = new News();
+//						news.setNewsId(newsInfo.getNewsId());
+//						news.setNewsType(newsInfo.getNewsType());
+//						news.setMediaFrom(1);
+//						news.setMediaSource("{\"mediaType\":1,\"imageUrl\":\"/picture/offical/checkingpicture.jpg\"}");
+//						news.setPublishedTime(newsInfo.getPublishedTime());
+//						news.setContent(newsInfo.getContent());
+//						news.setUserId(newsInfo.getUserId());
+//						checkIds.add(newsInfo.getNewsId());
+//						checkList.add(news);
+//					}
+//				}
+//			}
+//		}
+//
+//		// 调用存储过程得到结果
+//		Map<Object, Object> map = new HashMap<Object, Object>();
+//		map.put("userId", userId);
+//		map.put("inRoom", inRoom);
+//		map.put("pageIndex", pageIndex);
+//		map.put("countPerPage", countPerPage);
+//		map.put("version", version);
+//		map.put("platform", platform);
+//		try {
+//			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("News.getUserNewsList", map);
+//		} catch (SQLException e) {
+//			logger.error("未能正常调用存储过程", e);
+//			result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
+//			return result;
+//		}
+//		String TagCode = (String) map.get("TagCode");
+//		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
+//			// 取出列表
+//			@SuppressWarnings("unchecked")
+//			List<News> newsList = (ArrayList<News>) map.get("newsList");
+//			newsList = UserService.addUserExtra(newsList);
+			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+			result.addProperty("pageTotal",0);
 			JsonArray jNewsList = new JsonArray();
-			
-			if (newsList != null) {
-				for (Object object : newsList) {
-					if (checkIds != null && checkIds.size() > 0) {
-						if (checkIds.contains(((News) object).getNewsId())) {
-							checkIds.remove(((News) object).getNewsId());
-						}
-					}
-					break;
-				}
-			}
-			int flag = checkIds.size();
-			if (newsList != null) {
-				for (Object object : newsList) {
-					if (flag ++ < newsList.size()) {
-						jNewsList.add(NewsTF.toJsonObject((News) object, platform, inRoom));
-					}
-				}
-			}
-			
-			if (checkIds.size() > 0) {
-				for (News news : checkList) {
-					if (checkIds.contains(news.getNewsId())) {
-						jNewsList.add(NewsTF.toJsonObject(news, platform, inRoom));
-					}
-				}
-			}
+//
+//			if (newsList != null) {
+//				for (Object object : newsList) {
+//					if (checkIds != null && checkIds.size() > 0) {
+//						if (checkIds.contains(((News) object).getNewsId())) {
+//							checkIds.remove(((News) object).getNewsId());
+//						}
+//					}
+//					break;
+//				}
+//			}
+//			int flag = checkIds.size();
+//			if (newsList != null) {
+//				for (Object object : newsList) {
+//					if (flag ++ < newsList.size()) {
+//						jNewsList.add(NewsTF.toJsonObject((News) object, platform, inRoom));
+//					}
+//				}
+//			}
+//
+//			if (checkIds.size() > 0) {
+//				for (News news : checkList) {
+//					if (checkIds.contains(news.getNewsId())) {
+//						jNewsList.add(NewsTF.toJsonObject(news, platform, inRoom));
+//					}
+//				}
+//			}
 			
 			// 返回结果
 			result.add("newsList", jNewsList);
 			result.addProperty("pathPrefix", ConfigHelper.getHttpdir()); // 图片前缀
 			result.addProperty("mediaPathPrefix", ConfigHelper.getMediahttpdir()); // 多媒体前缀
 			return result;
-		} else if (TagCode.equals("02")) {
-			/* '02';分页超出范围 */
-			result.addProperty("TagCode", "060401" + TagCode);
-			return result;
-		} else {
-			// 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
-			logger.error("调用存储过程未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
-			result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
-			return result;
-		}
+//		} else if (TagCode.equals("02")) {
+//			/* '02';分页超出范围 */
+//			result.addProperty("TagCode", "060401" + TagCode);
+//			return result;
+//		} else {
+//			// 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
+//			logger.error("调用存储过程未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
+//			result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
+//			return result;
+//		}
 	}
 
 	/**
@@ -1525,97 +1525,97 @@ public class NewsFunctions {
 	public JsonObject getUserNewsListNew(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
 		
 		JsonObject result = new JsonObject();
-		// 定义所需参数
-		int userId =1, pageIndex = 1, platform = PlatformEnum.ANDROID, inRoom = 0, 
-				countPerPage = Constant.return_news_count;
-		// 解析参数
-		try {
-			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 1, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-			pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
-			countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", Constant.return_news_count, null, 1, Integer.MAX_VALUE);
-			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.ANDROID, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
-			inRoom = CommonUtil.getJsonParamInt(jsonObject, "inRoom", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
-		} catch (ErrorGetParameterException e) {
-			result.addProperty("TagCode", e.getErrCode());
-			return result;
-		}
-
-		List<News> checkList = new ArrayList<News>();
-		HashSet<Integer> checkIds = new HashSet<Integer>();
-		if (checkTag) {
-			List<NewsInfo> newsList = NewsService.getSelfNewsList(userId, (pageIndex - 1) * countPerPage, countPerPage, 1, 0);
-			if (newsList != null && newsList.size() > 0) {
-				for (NewsInfo newsInfo : newsList) {
-					if (newsInfo.getState() == 3) {
-						News news = new News();
-						news.setNewsId(newsInfo.getNewsId());
-						news.setNewsType(newsInfo.getNewsType());
-						news.setMediaFrom(1);
-						news.setMediaSource("{\"mediaType\":1,\"imageUrl\":\"/picture/offical/checkingpicture.jpg\"}");
-						news.setPublishedTime(newsInfo.getPublishedTime());
-						news.setContent(newsInfo.getContent());
-						news.setUserId(newsInfo.getUserId());
-						checkIds.add(newsInfo.getNewsId());
-						checkList.add(news);
-					}
-				}
-			}
-		}
-		
-		// 调用存储过程得到结果
-		Map<Object, Object> map = new HashMap<Object, Object>();
-		map.put("userId", userId);
-		map.put("inRoom", inRoom); 
-		map.put("pageIndex", pageIndex);
-		map.put("countPerPage", countPerPage);
-		map.put("platform", platform);
-		if (checkTag) {
-			map.put("isSelf", 1);
-		} else {
-			map.put("isSelf", 0);
-		}
-		try {
-			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("News.getUserNewsListNew", map);
-		} catch (SQLException e) {
-			logger.error("NewsFunctions.getUserNewsListNew(p_getUserNewsListNew) exception", e);
-			result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
-			return result;
-		}
-		String TagCode = (String) map.get("TagCode");
-		
-		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-			// 取出列表
-			@SuppressWarnings("unchecked")
-			List<News> newsList = (ArrayList<News>) map.get("newsList");
-			newsList = UserService.addUserExtra(newsList);
-			result.addProperty("TagCode", TagCode);
-			result.addProperty("pageTotal", (Integer) map.get("pageTotal"));
+//		// 定义所需参数
+//		int userId =1, pageIndex = 1, platform = PlatformEnum.ANDROID, inRoom = 0,
+//				countPerPage = Constant.return_news_count;
+//		// 解析参数
+//		try {
+//			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 1, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+//			pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
+//			countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", Constant.return_news_count, null, 1, Integer.MAX_VALUE);
+//			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.ANDROID, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+//			inRoom = CommonUtil.getJsonParamInt(jsonObject, "inRoom", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+//		} catch (ErrorGetParameterException e) {
+//			result.addProperty("TagCode", e.getErrCode());
+//			return result;
+//		}
+//
+//		List<News> checkList = new ArrayList<News>();
+//		HashSet<Integer> checkIds = new HashSet<Integer>();
+//		if (checkTag) {
+//			List<NewsInfo> newsList = NewsService.getSelfNewsList(userId, (pageIndex - 1) * countPerPage, countPerPage, 1, 0);
+//			if (newsList != null && newsList.size() > 0) {
+//				for (NewsInfo newsInfo : newsList) {
+//					if (newsInfo.getState() == 3) {
+//						News news = new News();
+//						news.setNewsId(newsInfo.getNewsId());
+//						news.setNewsType(newsInfo.getNewsType());
+//						news.setMediaFrom(1);
+//						news.setMediaSource("{\"mediaType\":1,\"imageUrl\":\"/picture/offical/checkingpicture.jpg\"}");
+//						news.setPublishedTime(newsInfo.getPublishedTime());
+//						news.setContent(newsInfo.getContent());
+//						news.setUserId(newsInfo.getUserId());
+//						checkIds.add(newsInfo.getNewsId());
+//						checkList.add(news);
+//					}
+//				}
+//			}
+//		}
+//
+//		// 调用存储过程得到结果
+//		Map<Object, Object> map = new HashMap<Object, Object>();
+//		map.put("userId", userId);
+//		map.put("inRoom", inRoom);
+//		map.put("pageIndex", pageIndex);
+//		map.put("countPerPage", countPerPage);
+//		map.put("platform", platform);
+//		if (checkTag) {
+//			map.put("isSelf", 1);
+//		} else {
+//			map.put("isSelf", 0);
+//		}
+//		try {
+//			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("News.getUserNewsListNew", map);
+//		} catch (SQLException e) {
+//			logger.error("NewsFunctions.getUserNewsListNew(p_getUserNewsListNew) exception", e);
+//			result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
+//			return result;
+//		}
+//		String TagCode = (String) map.get("TagCode");
+//
+//		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
+//			// 取出列表
+//			@SuppressWarnings("unchecked")
+//			List<News> newsList = (ArrayList<News>) map.get("newsList");
+//			newsList = UserService.addUserExtra(newsList);
+			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+			result.addProperty("pageTotal", 0);
 			JsonArray jNewsList = new JsonArray();
-			
-			if (newsList != null) {
-				for (Object object : newsList) {
-					if (checkIds != null && checkIds.size() > 0) {
-						if (checkIds.contains(((News) object).getNewsId())) {
-							checkIds.remove(((News) object).getNewsId());
-						}
-					}
-					break;
-				}
-			}
-			int flag = checkIds.size();
-			for (Object object : newsList) {
-				if (flag ++ < newsList.size()) {
-					jNewsList.add(NewsTF.toJsonObject((News) object, platform, inRoom));
-				}
-			}
-			
-			if (checkIds.size() > 0) {
-				for (News news : checkList) {
-					if (checkIds.contains(news.getNewsId())) {
-						jNewsList.add(NewsTF.toJsonObject(news, platform, inRoom));
-					}
-				}
-			}
+//
+//			if (newsList != null) {
+//				for (Object object : newsList) {
+//					if (checkIds != null && checkIds.size() > 0) {
+//						if (checkIds.contains(((News) object).getNewsId())) {
+//							checkIds.remove(((News) object).getNewsId());
+//					}
+//					}
+//					break;
+//				}
+//			}
+//			int flag = checkIds.size();
+//			for (Object object : newsList) {
+//				if (flag ++ < newsList.size()) {
+//					jNewsList.add(NewsTF.toJsonObject((News) object, platform, inRoom));
+//				}
+//			}
+//
+//			if (checkIds.size() > 0) {
+//				for (News news : checkList) {
+//					if (checkIds.contains(news.getNewsId())) {
+//						jNewsList.add(NewsTF.toJsonObject(news, platform, inRoom));
+//					}
+//				}
+//			}
 
 			// 返回结果
 			result.add("newsList", jNewsList);
@@ -1623,17 +1623,17 @@ public class NewsFunctions {
 			result.addProperty("mediaPathPrefix", ConfigHelper.getMediahttpdir()); // 多媒体前缀
 			result.addProperty("qiniuPathPrefix", ConfigHelper.getVideoURL()); // 七牛前缀
 			return result;
-		} else if (TagCode.equals("02")) {
-			/* '02';分页超出范围 */
-			result.addProperty("TagCode", "200104" + TagCode);
-			return result;
-		} else {
-			// 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
-			logger.error("NewsFunctions.getUserNewsListNew(p_getUserNewsListNew) exception, TagCode:" + TagCode 
-					+ " ,jsonObject:" + jsonObject.toString());
-			result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
-			return result;
-		}
+//		} else if (TagCode.equals("02")) {
+//			/* '02';分页超出范围 */
+//			result.addProperty("TagCode", "200104" + TagCode);
+//			return result;
+//		} else {
+//			// 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
+//			logger.error("NewsFunctions.getUserNewsListNew(p_getUserNewsListNew) exception, TagCode:" + TagCode
+//					+ " ,jsonObject:" + jsonObject.toString());
+//			result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
+//			return result;
+//		}
 	}
 	
 	/**
