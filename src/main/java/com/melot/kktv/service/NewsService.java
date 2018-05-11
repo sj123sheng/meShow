@@ -736,7 +736,7 @@ public class NewsService {
 				   if (!tupleSet.isEmpty() && tupleSet.iterator().hasNext()) {
 					   for (Tuple tp : tupleSet) {
 						   int newsid = Integer.parseInt(tp.getElement());
-						   double score = Double.valueOf(tp.getScore()).longValue();
+						   double score = (long)tp.getScore();
 						   newsIdList.add(newsid);
 						   newsScoreMap.put(newsid, score);
 					   }

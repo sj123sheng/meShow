@@ -241,7 +241,7 @@ public class NewsSource {
 				}
 				if (manualSet.size() < addedCount && addedCount > 1) {
 					String key = getFilterNewsKey();
-					Set<String> hotNews = jedis.zrevrange(key, 0, addedCount - 1);
+					Set<String> hotNews = jedis.zrevrange(key, 0, addedCount - 1L);
 					if (hotNews != null && hotNews.size() > 0) {
 						Iterator<String> it = hotNews.iterator();  
 						for (int i = 0; i < addedCount && manualSet.size() < addedCount; i++) {
@@ -306,7 +306,7 @@ public class NewsSource {
 			jedis = getInstance();
 			String key = getFilterNewsKey();
 			if (key != null)
-			return jedis.zrevrangeWithScores(key, start - 1, end - 1);
+			return jedis.zrevrangeWithScores(key, start - 1L, end - 1L);
 		} catch (Exception e) {
 			logger.error("NewsSource.getRankOfHotVideoNews exception, start : " + start
 					+ " ,end : " + end, e);
@@ -663,7 +663,7 @@ public class NewsSource {
 		try {
 			jedis = getInstance();
 			String key = getFilterNewsKey();
-			return jedis.zrevrange(key, start - 1, end - 1);
+			return jedis.zrevrange(key, start - 1L, end - 1L);
 		} catch (Exception e) {
 			logger.error("NewsSource.getNewsFactorScore exception, start : " + start
 					+ " ,end : " + end, e);

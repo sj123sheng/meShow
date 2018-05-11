@@ -1009,10 +1009,10 @@ public class IndexFunctions {
             // pageNum和pageCount未传入，查询全部
             if (pageNum == 0 || pageCount == 0) {
                 start = 0;
-                end = recordCount - 1;
+                end = recordCount - 1L;
             } else {
-                start = (pageNum - 1) * pageCount;
-                end = pageNum * pageCount - 1;
+                start = (pageNum - 1L) * pageCount;
+                end = pageNum * pageCount - 1L;
             }
             Set<String> tempSet = SearchWordsSource.getSearchResultPage(fuzzyString, start, end);
             if (tempSet != null && !tempSet.isEmpty()) {

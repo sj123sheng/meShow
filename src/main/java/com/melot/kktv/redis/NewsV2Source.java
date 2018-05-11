@@ -47,7 +47,7 @@ public class NewsV2Source {
 		Jedis jedis = null;
 		try {
 			jedis = getInstance();
-			Set<String> hot = jedis.zrevrange(type > 0 ? HOT_VIDEO : HOT_NEWS, start, start + offset - 1);
+			Set<String> hot = jedis.zrevrange(type > 0 ? HOT_VIDEO : HOT_NEWS, start, start + offset - 1L);
 			return hot;
 		} catch (Exception e) {
 			logger.error("NewsSource.getHotNews exception", e);
@@ -95,7 +95,7 @@ public class NewsV2Source {
 		Jedis jedis = null;
 		try {
 			jedis = getInstance();
-			Set<Tuple> hot = jedis.zrangeByScoreWithScores(VIDEO_TOPIC, start + 1, start + offset);
+			Set<Tuple> hot = jedis.zrangeByScoreWithScores(VIDEO_TOPIC, start + 1D, (double) start + offset);
 			return hot;
 		} catch (Exception e) {
 			logger.error("NewsSource.getVideoTopic exception", e);
@@ -127,7 +127,7 @@ public class NewsV2Source {
 		Jedis jedis = null;
 		try {
 			jedis = getInstance();
-			return jedis.zrange(RECOMMEND_COMMENT, start, start + count);
+			return jedis.zrange(RECOMMEND_COMMENT, start, (long) start + count);
 		} catch (Exception e) {
 			logger.error("NewsSource.getRecommendComment exception", e);
 		} finally {

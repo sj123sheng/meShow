@@ -2567,7 +2567,7 @@ public class FamilyAction {
                         // 家族冻结（用户），多少天后才能创建家族
                         int days = 90;
                         if (family.getUpdateOpenTime() != null) {
-                            days = (int) (90 - Math.ceil((System.currentTimeMillis() - family.getUpdateOpenTime().getTime()) / (1000 * 60 * 60 * 24)));
+                            days = (int) (90 - Math.ceil((System.currentTimeMillis() - family.getUpdateOpenTime().getTime()) / (1000 * 60 * 60 * 24d)));
                         }
                         result.addProperty("days", days);
                         result.addProperty("TagCode", "08280002");
@@ -2624,7 +2624,7 @@ public class FamilyAction {
                     int days = 90;
                     FamilyInfo family = FamilyService.getFamilyInfoByFamilyId(frozenFamilyId.intValue(), appId);
                     if (family != null && family.getUpdateOpenTime() != null) {
-                        days = (int) (90 - Math.ceil((System.currentTimeMillis() - family.getUpdateOpenTime().getTime()) / (1000 * 60 * 60 * 24)));
+                        days = (int) (90 - Math.ceil((System.currentTimeMillis() - family.getUpdateOpenTime().getTime()) / (1000 * 60 * 60 * 24d)));
                     }
                     result.addProperty("days", days);
                     result.addProperty("TagCode", "08280002");
