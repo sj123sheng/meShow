@@ -35,13 +35,9 @@ public class PushMsgSource {
 		JedisWrapper jedisWrapper = null;
 		try {
 			jedisWrapper = getInstance();
-			if (jedisWrapper != null) {
-				jedis = jedisWrapper.getJedis();
-				String json = new Gson().toJson(map);
-				jedis.lpush(key, json);
-			}else {
-				throw new Exception("get jedisWrapper is null");
-			}
+			jedis = jedisWrapper.getJedis();
+			String json = new Gson().toJson(map);
+			jedis.lpush(key, json);
 		} catch (Throwable e) {
 			 errHappend = true;
 			 t = e;

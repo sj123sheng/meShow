@@ -99,7 +99,7 @@ public class FamilySource {
 		Jedis jedis = null;
 		try {
 			jedis = getInstance();
-			set = jedis.zrange(FAMILY_ROOM_KEY + familyId, start, start + offset - 1);
+			set = jedis.zrange(FAMILY_ROOM_KEY + familyId, start, start + offset - 1L);
 		} catch (Exception e) {
 			logger.error("fail to get family room list from redis sorted set, familyId " + familyId,  e);
 		} finally {

@@ -2014,7 +2014,7 @@ public class NewsV2Functions {
                     if (newsInfo == null) {
                         continue;
                     }
-                    NewsInfo stateInfo = NewsService.getNewsInfoById(Integer.valueOf(newsInfo.getNewsId()), checkTag ? userId : 0);
+                    NewsInfo stateInfo = NewsService.getNewsInfoById(newsInfo.getNewsId(), checkTag ? userId : 0);
                     if (stateInfo == null) {
                         continue;
                     }

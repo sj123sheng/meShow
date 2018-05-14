@@ -96,7 +96,7 @@ public class EffectiveActivity {
 		this.title = title;
 	}
 
-	private static SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	public String getActivityDesc(){
 		String s = String.format("{\"actId\":%d,\"message\":\"%s\",\"startDate\":\"%s\"}", 
 				activityId, message, 
@@ -143,8 +143,7 @@ public class EffectiveActivity {
 		} else if (platform == PlatformEnum.IPHONE) {
 			if (this.topMobileUrlIOS != null && !this.topMobileUrlIOS.trim().equals(""))
 				jObject.addProperty("topMobileURL", this.topMobileUrlIOS);
-		} else if (platform == PlatformEnum.IPAD) {
-			if (this.topMobileUrlIOS != null && !this.topMobileUrlIOS.trim().equals(""))
+		} else if (platform == PlatformEnum.IPAD && this.topMobileUrlIOS != null && !this.topMobileUrlIOS.trim().equals("")) {
 				jObject.addProperty("topMobileURL", this.topMobileUrlIOS);
 		}
 		

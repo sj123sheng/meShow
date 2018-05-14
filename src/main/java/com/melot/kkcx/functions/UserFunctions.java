@@ -1462,16 +1462,16 @@ public class UserFunctions {
                     		&& (ri.getRegisterCity() == null || ri.getRegisterCity() > 0 
                     				|| (ri.getRegisterCity() <= 0 && !GeneralService.isValidCity(ri.getRegisterCity())))) {
                         Map<String, Object> actorMap = new HashMap<>();
-                        actorMap.put(ActorInfoKeys.REGISTERCITY.key(), cityMap.get("city").intValue());
+                        actorMap.put(ActorInfoKeys.REGISTERCITY.key(), cityMap.get("city"));
                         actorService.updateActorInfoById(userId, actorMap);
                         //更新oracleUserInfo(city)
                         Map<String, Object> map = new HashMap<String, Object>();
-                        map.put("cityId", cityMap.get("city").intValue());
+                        map.put("cityId", cityMap.get("city"));
                         UserService.updateUserInfoV2(userId, map);
                     }
                     
                     //用实际地址覆盖数据库中地址信息
-                    userInfo.addProperty("city", cityMap.get("city").intValue());                    
+                    userInfo.addProperty("city", cityMap.get("city"));                    
                 }
                 //更新普通用户的区域信息
                 else {
@@ -1497,11 +1497,11 @@ public class UserFunctions {
         							|| (userInfoDetail.getRegisterInfo().getCityId() <= 0 
         								&& !GeneralService.isValidCity(userInfoDetail.getRegisterInfo().getCityId())))) {
                         Map<String, Object> map = new HashMap<String, Object>();
-                        map.put("cityId", cityMap.get("city").intValue());
+                        map.put("cityId", cityMap.get("city"));
                         UserService.updateUserInfoV2(userId, map);
                         
                         //用实际地址覆盖数据库中地址信息
-                        userInfo.addProperty("city", cityMap.get("city").intValue());
+                        userInfo.addProperty("city", cityMap.get("city"));
 					}
 				}
             }
@@ -1696,7 +1696,7 @@ public class UserFunctions {
 	                    result.addProperty("TagCode", "01290010");
 	                    return result;
 	                }
-	                userId = Integer.valueOf(s_userId);
+	                userId = s_userId;
 	            }
 			}
 			if (platform != PlatformEnum.WEB && platform != PlatformEnum.ANDROID && platform != PlatformEnum.IPHONE && platform != PlatformEnum.IPAD) {
@@ -2326,17 +2326,17 @@ public class UserFunctions {
                     		|| (ri.getRegisterCity() <= 0 
                     				&& !GeneralService.isValidCity(ri.getRegisterCity())))) {
                         Map<String, Object> actorMap = new HashMap<>();
-                        actorMap.put(ActorInfoKeys.REGISTERCITY.key(), cityMap.get("city").intValue());
+                        actorMap.put(ActorInfoKeys.REGISTERCITY.key(), cityMap.get("city"));
                         actorService.updateActorInfoById(userId, actorMap);
                         
                         //更新oracleUserInfo(city)
                         Map<String, Object> map = new HashMap<String, Object>();
-                        map.put("cityId", cityMap.get("city").intValue());
+                        map.put("cityId", cityMap.get("city"));
                         UserService.updateUserInfoV2(userId, map);
                     }
                     
                     // 返回的地址信息为实时地址信息
-                    userInfo.addProperty("city", cityMap.get("city").intValue());
+                    userInfo.addProperty("city", cityMap.get("city"));
                 }
                 //普通用户
                 else {
@@ -2362,11 +2362,11 @@ public class UserFunctions {
         							||(userInfoDetail.getRegisterInfo().getCityId() <= 0 
         									&& !GeneralService.isValidCity(userInfoDetail.getRegisterInfo().getCityId())))) {
                         Map<String, Object> map = new HashMap<String, Object>();
-                        map.put("cityId", cityMap.get("city").intValue());
+                        map.put("cityId", cityMap.get("city"));
                         UserService.updateUserInfoV2(userId, map);
                         
                         //用实际地址覆盖数据库中地址信息
-                        userInfo.addProperty("city", cityMap.get("city").intValue());
+                        userInfo.addProperty("city", cityMap.get("city"));
 					}
 				}
             }

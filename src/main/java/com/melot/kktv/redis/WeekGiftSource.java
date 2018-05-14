@@ -144,7 +144,7 @@ private static final String SOURCE_NAME = "WeekGift";
 		try {
 			jedis = getInstance();
 			String key = String.format(WEEKGIFT_TOTAL_RANK, type);
-			return jedis.lrange(key, start - 1, offset - 1);
+			return jedis.lrange(key, start - 1L, offset - 1L);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {

@@ -97,7 +97,7 @@ public class UserRelationSource {
 		try {
 			jedis = getInstance();
 			Transaction trans = jedis.multi();
-			double score = (double)(System.currentTimeMillis()/1000);
+			double score = System.currentTimeMillis()/1000d;
 			trans.zadd(userId+FOLLOWS_SUFFIX, score, followId);
 			trans.zadd(followId+FANS_SUFFIX, score, userId);
 			trans.exec();

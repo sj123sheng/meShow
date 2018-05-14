@@ -298,7 +298,7 @@ public class HotDataSource {
             if (jedis.exists(key))
             	jedis.del(key);
             for (int i = 0; i < list.size(); i++)
-            	jedis.zadd(key, i+1, list.get(i));
+            	jedis.zadd(key, i+1d, list.get(i));
             jedis.expire(key, seconds);
         } catch (Exception e) {
             e.printStackTrace();

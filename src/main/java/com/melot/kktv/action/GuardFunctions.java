@@ -455,7 +455,7 @@ public class GuardFunctions {
     	    
     		for (RoomInfo info : roomList) {
     			JsonObject obj = RoomTF.roomInfoToJson(info, platform, true);
-    			if (obj != null) {
+    			if (obj != null && guardService != null) {
     				state = guardService.getUserGuardCarState(userId, info.getActorId());
     				obj.addProperty("isOpenGuardCar", state == 0 ? false : true);
     			}

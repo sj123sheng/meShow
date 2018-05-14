@@ -608,10 +608,14 @@ public class CatchDollFunction {
                     exchangedsRecordJson.addProperty("dollName", catchDollRecordDO.getDollName());
                     exchangedsRecordJson.addProperty("exchangedNum", catchDollRecordDO.getExchangeNum());
                     exchangedsRecordJson.addProperty("pictureUrl", catchDollRecordDO.getDollPictureUrl());
-                    exchangedsRecordJson.addProperty("catchTime", catchDollRecordDO.getEndTime() == null ? null : catchDollRecordDO.getEndTime().getTime());
+                    if (catchDollRecordDO.getEndTime() != null ) {
+                        exchangedsRecordJson.addProperty("catchTime", catchDollRecordDO.getEndTime().getTime());
+                    }
 
                     exchangedsRecordJson.addProperty("exchangeStatus", catchDollRecordDO.getExchangeStatus());
-                    exchangedsRecordJson.addProperty("exchangeTime", catchDollRecordDO.getExchangeTime() == null ? null : catchDollRecordDO.getExchangeTime().getTime());
+                    if (catchDollRecordDO.getExchangeTime() != null) {
+                        exchangedsRecordJson.addProperty("exchangeTime", catchDollRecordDO.getExchangeTime().getTime());
+                    }
                     exchangedsRecordJson.addProperty("waybillNumber", catchDollRecordDO.getWaybillNumber());
                     exchangedsRecordJson.addProperty("courierCompany", catchDollRecordDO.getCourierCompany());
                     exchangedsRecordJson.addProperty("consignee", catchDollRecordDO.getConsignee());

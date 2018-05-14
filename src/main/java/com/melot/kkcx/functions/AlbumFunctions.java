@@ -1114,14 +1114,7 @@ public class AlbumFunctions {
 				familyPoster.setPath_original(fileUrl);
 				FamilyAction familyAction = MelotBeanFactory.getBean("familyFunction", FamilyAction.class);
 				result = familyAction.setFamilyPoster(userId, familyId, familyPoster);
-			}
-			else if (pictureType == PictureTypeEnum.family_poster) { // 5:家族海报
-				com.melot.family.driver.domain.FamilyPoster familyPoster = new com.melot.family.driver.domain.FamilyPoster();
-				familyPoster.setPath_original(fileUrl);
-				FamilyAction familyAction = MelotBeanFactory.getBean("familyFunction", FamilyAction.class);
-				result = familyAction.setFamilyPoster(userId, familyId, familyPoster);
-			}
-			else if (pictureType == PictureTypeExtendEnum.video_tape) {// 9:录屏分享视频
+			} else if (pictureType == PictureTypeExtendEnum.video_tape) {// 9:录屏分享视频
 				result = AlbumServices.addVideoTape(userId, fileUrl, pictureName);
 			}
 			else { // 1.直播海报(弃用) 2.照片 3.资源图片
@@ -1208,7 +1201,7 @@ public class AlbumFunctions {
 			logger.error("call PosterService getUploadPosterUrl error userId:" + userId + ",pictureType:" + pictureType + ",localUrl:" + localUrl, e);
 		}
 
-		if (upYunInfo.getPolicy() != null) {
+		if (upYunInfo != null && upYunInfo.getPolicy() != null) {
 			result.addProperty("policy", upYunInfo.getPolicy());
 		}
 		if (upYunInfo.getSignature() != null) {

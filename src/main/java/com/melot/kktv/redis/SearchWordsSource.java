@@ -175,7 +175,7 @@ public class SearchWordsSource {
             jedis = getInstance();
             String key = String.format(HOT_SEARCHRESULT_PAGE, searchWord);
             for (int i = 0; i < searchResult.size(); i++) {
-                jedis.zadd(key, i + 1, searchResult.get(i));
+                jedis.zadd(key, i + 1D, searchResult.get(i));
             }
             jedis.expire(key, 60);
             logger.info("SearchWordsSource.setSearchResult(" + searchWord + ", " + searchResult + ")");

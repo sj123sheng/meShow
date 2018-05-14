@@ -24,6 +24,7 @@
 				<entry key="49" value-ref="twitterService" />
 				<entry key="50" value-ref="instagramService" />
 				<entry key="54" value-ref="tvHongbaoService" />
+				<entry key="56" value-ref="shenTianService" />
 			</map>
 		</constructor-arg>
 		<constructor-arg name="ignoreSet">
@@ -37,7 +38,6 @@
                 <value>30</value>  
                 <value>31</value>  
                 <value>35</value>
-                <value>56</value>
             </set>  
 		</constructor-arg>
 	</bean>	
@@ -140,6 +140,12 @@
 		<property name="thirdName" value="电视红包"/>
 		<property name="openPlatform" value="54"/>
 		<property name="serverUrl" value="https://open.yx.tvyouxuan.com"/>
+	</bean>
+	
+	<bean id="shenTianService" class="com.melot.kktv.third.service.ShenTianService">
+		<property name="thirdName" value="盛天"/>
+		<property name="openPlatform" value="56"/>
+		<property name="serverUrl" value="https://account.stnts.com/java/sso/token"/>
 	</bean>
 	
 </beans>

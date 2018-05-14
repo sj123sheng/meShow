@@ -485,7 +485,7 @@ public class ActorFunction {
                 result.addProperty("TagCode", TagCodeEnum.GET_VERIFY_INFO_ERROR);
                 result.addProperty("errorMessage", "根据bizNo获取芝麻认证信息错误");
             }
-        }else if(!response.isSuccess()) {
+        }else if(response != null && !response.isSuccess()) {
             result.addProperty("errorMessage", response.getErrorMessage());
         }else {
             result.addProperty("errorMessage", response.getFailedReason());

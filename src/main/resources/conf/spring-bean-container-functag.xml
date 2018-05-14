@@ -193,6 +193,8 @@
 	<bean id="10002037" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="indexFunction" />
 		<constructor-arg name="methodName" value="getProvinceRoomList" />
+		<constructor-arg name="cacheType" value="60" />
+		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
 	</bean>
 	<!-- 获取用户一定时间内收到礼物个数 -->
 	<bean id="10002041" class="com.melot.sdk.core.function.GenericFunction">
@@ -255,7 +257,7 @@
 	<bean id="10002074" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="indexFunction" />
 		<constructor-arg name="methodName" value="getNewActorWeeklyGiftReport" />
-		<constructor-arg name="cacheType" value="30" />
+		<constructor-arg name="cacheType" value="60" />
 		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
 	</bean>
 	
@@ -1320,6 +1322,8 @@
 	<bean id="50001017" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="otherFunction" />
 		<constructor-arg name="methodName" value="getStickerList" />
+		<constructor-arg name="cacheType" value="300" />
+		<constructor-arg name="cacheKeyExcluedUserId" value="1" /> 
 	</bean>
 	<!-- 获取主播开播权限 -->
 	<bean id="50001019" class="com.melot.sdk.core.function.GenericFunction">
@@ -2132,6 +2136,8 @@
 	<bean id="20010401" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="conflictFunction" />
 		<constructor-arg name="methodName" value="con20010401" />
+		<constructor-arg name="cacheType" value="60" />
+		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
 	</bean>
 	
 	<!-- kkgame:更新用户信息 -->
@@ -2155,6 +2161,8 @@
 	<bean id="55000003" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="kkHallFunction" />
 		<constructor-arg name="methodName" value="getKKHotRoomList" />
+		<constructor-arg name="cacheType" value="60" />
+		<constructor-arg name="cacheKeyExcluedUserId" value="1" />  
 	</bean>
 	<!-- 获取KK大厅显示板块接口 -->
 	<bean id="55000004" class="com.melot.sdk.core.function.GenericFunction">
@@ -2296,6 +2304,8 @@
 	<bean id="50002002" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="activityCenterFunctions" />
 		<constructor-arg name="methodName" value="getKKBannerList" />
+		<constructor-arg name="cacheType" value="60" />
+		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
 	</bean>
 	
 	<!-- 获取节目列表 -->
@@ -2944,12 +2954,14 @@
 	<bean id="51010403" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="nobilityFunctions" />
 		<constructor-arg name="methodName" value="getNobilityList" />
+		<constructor-arg name="cacheType" value="60" />
 	</bean>
 	
 	<!-- 获取贵族爵位详情 -->
 	<bean id="51010404" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="nobilityFunctions" />
 		<constructor-arg name="methodName" value="getNobilityInfo" />
+		<constructor-arg name="cacheType" value="60" />
 	</bean>
 	
 	<!-- 开通/续费爵位信息 -->
@@ -3138,5 +3150,11 @@
 	<bean id="52010407" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="nobilityFunctions" />
 		<constructor-arg name="methodName" value="exchangeNobilityGift" />
+	</bean>
+	
+	<!-- 三人PK主持人数据 -->
+	<bean id="51060406" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="happyPKFunction" />
+		<constructor-arg name="methodName" value="isCompere" />
 	</bean>
 </beans>

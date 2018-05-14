@@ -124,9 +124,7 @@ public class TimService {
 					}else{
 						boolean fromAccountFollow = UserRelationSource.isFollowed(String.valueOf(fromAccount), String.valueOf(toAccount));
 						boolean toAccountFollow = UserRelationSource.isFollowed(String.valueOf(toAccount), String.valueOf(fromAccount));
-						if (fromAccountFollow && toAccountFollow && !isOnline) {
-							PushMsgSource.lpush(map);
-						} else if (toAccountFollow && !isOnline) {
+						if ((fromAccountFollow && toAccountFollow && !isOnline) || (toAccountFollow && !isOnline)) {
 							PushMsgSource.lpush(map);
 						}
 						logger.info("pushMsg,toAccount:" + toAccount + ",fromAccount:" + fromAccount + ",isOnline:" + isOnline + ",fromAccountFollow:" + fromAccountFollow + ",toAccountFollow:" + toAccountFollow + ",msg:" + new Gson().toJson(map) + "");
