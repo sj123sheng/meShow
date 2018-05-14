@@ -179,12 +179,12 @@
 		<dependency>
 			<groupId>com.melot</groupId>
 			<artifactId>melot-util</artifactId>
-			<version>1.0.37</version>
+			<version>1.0.38</version>
 		</dependency>
 		<dependency>
 		  	<groupId>com.melot</groupId>
 		  	<artifactId>melot-api-common</artifactId>
-		  	<version>1.0.5</version>
+		  	<version>1.0.6</version>
 		</dependency>
 		<dependency>
 			<groupId>com.melot.module.api</groupId>
