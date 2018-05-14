@@ -59,7 +59,6 @@ import com.melot.kktv.model.NewsRewardRank;
 import com.melot.kktv.model.Notice;
 import com.melot.kktv.model.PreviewAct;
 import com.melot.kktv.model.RankUser;
-import com.melot.kktv.model.Room;
 import com.melot.kktv.model.WeekStarGift;
 import com.melot.kktv.redis.GiftRecordSource;
 import com.melot.kktv.redis.HotDataSource;
@@ -985,21 +984,43 @@ public class IndexFunctions {
         }
         
         if (!SearchWordsSource.isExistSearchResultKey(fuzzyString)) {
-            RoomInfoService roomInfoServie = (RoomInfoService)MelotBeanFactory.getBean("roomInfoService", RoomInfoService.class);
+            RoomInfoService roomInfoServie = (RoomInfoService) MelotBeanFactory.getBean("roomInfoService");
             recordCount = roomInfoServie.getFuzzyRoomCount(actorId, nickname);
+            List<String> newList = new ArrayList<String>();
             if (recordCount > 0) {
-                List<String> newList = new ArrayList<String>();
                 List<RoomInfo> roomInfoList = roomInfoServie.getFuzzyRoomList(actorId, nickname, 0, 1000);
                 if (!roomInfoList.isEmpty()) {
                     for (RoomInfo rinfo : roomInfoList) {
                         JsonObject roomJson = RoomTF.roomInfoToJson(rinfo, platform, true);
                         newList.add(roomJson.toString());
                     }
-                    
-                    if(!SearchWordsSource.setSearchResultPage(fuzzyString, newList)){
-                        logger.error("SearchWordsSource.setSearchResult Fail to add" + fuzzyString + "searchResult to redis");
+                }
+            } else {
+                //根据id可查询用户
+                if (isId) {
+                    KkUserService userService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
+                    UserProfile userProfile = userService.getUserProfile(Integer.valueOf(fuzzyString));
+                    if (userProfile != null) {
+                        JsonObject jsonObj = new JsonObject();
+                        jsonObj.addProperty("userId", userProfile.getUserId());
+                        jsonObj.addProperty("roomId", userProfile.getUserId());
+                        if (userProfile.getNickName() != null) {
+                            jsonObj.addProperty("nickname", userProfile.getNickName());
+                        }
+                        jsonObj.addProperty("gender", userProfile.getGender());
+                        if (userProfile.getPortrait() != null) {
+                            jsonObj.addProperty("portrait_path_256", ConfigHelper.getHttpdir() + userProfile.getPortrait() + "!256");
+                        }
+                        jsonObj.addProperty("actorLevel", userProfile.getActorLevel());
+                        jsonObj.addProperty("richLevel", userProfile.getUserLevel());
+                        jsonObj.addProperty("starLevel", UserService.getStarLevel(userProfile.getUserId()));
+                        newList.add(jsonObj.toString());
                     }
                 }
+            }
+            
+            if(!SearchWordsSource.setSearchResultPage(fuzzyString, newList)){
+                logger.error("SearchWordsSource.setSearchResult Fail to add" + fuzzyString + "searchResult to redis");
             }
         } 
 
