@@ -3151,4 +3151,10 @@
 		<constructor-arg name="t" ref="nobilityFunctions" />
 		<constructor-arg name="methodName" value="exchangeNobilityGift" />
 	</bean>
+	
+	<!-- 三人PK主持人数据 -->
+	<bean id="51060406" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="happyPKFunction" />
+		<constructor-arg name="methodName" value="isCompere" />
+	</bean>
 </beans>

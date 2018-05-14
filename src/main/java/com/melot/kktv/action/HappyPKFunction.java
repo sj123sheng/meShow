@@ -12,10 +12,13 @@ import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
+import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConfigHelper;
+import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -46,6 +49,11 @@ public class HappyPKFunction {
 
     @Resource
     private KkUserService kkUserService;
+    
+    @Autowired
+    private ConfigService configService;
+
+    private static final String REGEX = ",";
 
     /**
      * 获取天梯赛当前赛季信息【51060401】
@@ -343,5 +351,46 @@ public class HappyPKFunction {
     private String getPortrait(UserProfile userProfile) {
         return userProfile.getPortrait() == null ? null : userProfile.getPortrait() + "!128";
     }
+    
+    public JsonObject isCompere(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 
+        JsonObject result = new JsonObject();
+
+        int userId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        String pkCompereIds = configService.getPkCompereIds().trim();
+        
+        // 默认是不通过
+        result.addProperty("isCompere", 0);
+        
+        // 配置文件设置为0 或者不设置 所有用户都通过
+        if (StringUtil.strIsNull(pkCompereIds) || "0".equals(pkCompereIds)) {
+            result.addProperty("isCompere", 1);
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        }
+        
+        // 设置了白名单并且在白名单列表中，允许为主持人
+        String[] pkCompereIdList = pkCompereIds.split(REGEX);
+        if (pkCompereIdList != null && pkCompereIdList.length > 0) {
+            for (String string : pkCompereIdList) {
+                if (Integer.valueOf(string).equals(userId)) {
+                    result.addProperty("isCompere", 1);
+                    break;
+                }
+            }
+        }
+        
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
 }
