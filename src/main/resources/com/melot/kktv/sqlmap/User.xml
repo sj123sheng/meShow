@@ -68,51 +68,57 @@
 	</select>
 	
 	<select id="getWeeklyFansRanking" resultMap="fansRankingItem" parameterClass="java.util.Map">
-		select t3.userId, t3.contribution, 1 as roomSource 
+		select t3.userId, t3.contribution, ai.type as roomSource 
 		  	from (select t2.userId, t2.contribution
-				  from (select t1.*
+				  from (select t1.*, rownum as rn
 				          from (select t.userid, sum(t.amount) AS contribution
 				                  from gift_history t
 				                 where t.dtime >= trunc(sysdate) - 7
-				                   and <![CDATA[t.dtime < trunc(sysdate)]]>
 				                   <isEqual property="roomSource" compareValue="14">
 			             					and t.roomid = #roomId#
 			         			   </isEqual>
                                    <isNotEqual property="roomSource" compareValue="14">
                                             and t.touserid = #roomId#
                                    </isNotEqual>
+				                   and <![CDATA[t.dtime < trunc(sysdate)]]>
 				                   and not exists(select 1
 				                   		  from hist_xman_consume p
 				                   		 where t.histid = p.histid
 				                   		 and p.dtime >= trunc(sysdate) - 7
 				                   		 and <![CDATA[p.dtime < trunc(sysdate)]]>)
 				                 group by t.userid
-				                 order by 2 desc) t1 where rownum < 21) t2) t3
-			   order by 2 desc
+				                 order by sum(t.amount) desc) t1) t2
+			 where rn >= 1
+			   and <![CDATA[rn < 21]]>) t3
+			   left join actor_info ai on ai.actorid = t3.userId
+			   order by t3.contribution desc
 	</select>
 	
 	<select id="getMonthlyFansRanking" resultMap="fansRankingItem" parameterClass="java.util.Map">
-		select t3.userId, t3.contribution, 1 as roomSource 
+		select t3.userId, t3.contribution, ai.type as roomSource 
 		 	from (select t2.userId, t2.contribution
-			      from (select t1.*
+			      from (select t1.*, rownum as rn
 				          from (select t.userid, sum(t.amount) AS contribution
 				                  from gift_history t
 				                 where t.dtime >= trunc(sysdate) - 30
-				                   and <![CDATA[t.dtime < trunc(sysdate)]]>
 				                   <isEqual property="roomSource" compareValue="14">
 			             					and t.roomid = #roomId#
 			         			   </isEqual>
                                    <isNotEqual property="roomSource" compareValue="14">
                                             and t.touserid = #roomId#
                                    </isNotEqual>
+				                   and <![CDATA[t.dtime < trunc(sysdate)]]>
 				                   and not exists(select 1
 				                   		  from hist_xman_consume p
 				                   		 where t.histid = p.histid
 				                   		 and p.dtime >= trunc(sysdate) - 30
 				                   		 and <![CDATA[p.dtime < trunc(sysdate)]]>)
 				                 group by t.userid
-				                 order by 2 desc) t1 where rownum < 21) t2)t3
-			   order by 2 desc
+				                 order by sum(t.amount) desc) t1) t2
+			 where rn >= 1
+			   and <![CDATA[rn < 21]]>)t3
+			   left join actor_info ai on ai.actorid = t3.userId
+			   order by t3.contribution desc
 	</select>
 	
 	<!-- 插入消费历史(oracle) -->
