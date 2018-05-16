@@ -3127,6 +3127,31 @@
 		<constructor-arg name="t" ref="liveShopFunctions" />
 		<constructor-arg name="methodName" value="addDistributorOrder" />
 	</bean>
+
+	<bean id="51060514" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="sendOrder" />
+	</bean>
+
+	<bean id="51060515" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getBalance" />
+	</bean>
+
+	<bean id="51060516" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="cashApply" />
+	</bean>
+
+	<bean id="51060517" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getTransactionDetail" />
+	</bean>
+
+	<bean id="51060518" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="isSaleActor" />
+	</bean>
 	
 	<!-- 获取积分礼物列表 -->
 	<bean id="52010406" class="com.melot.sdk.core.function.GenericFunction">
