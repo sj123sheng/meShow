@@ -391,7 +391,7 @@ public class NobilityFunctions {
     }
 
     /**
-     * 获取积分礼物列表[52010406]
+     * 获取积分礼物列表[51010406]
      * @param jsonObject
      * @param checkTag
      * @param request
@@ -455,7 +455,7 @@ public class NobilityFunctions {
     }
 
     /**
-     * 兑换积分礼物[52010407]
+     * 兑换积分礼物[51010407]
      * @param jsonObject
      * @param checkTag
      * @param request
