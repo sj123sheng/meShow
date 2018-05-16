@@ -610,7 +610,7 @@ public class MatchSource {
 				freeInstance(jedis);
 			}
 		}
-		return new Long(count).intValue();
+		return (int)count;
 	
 	}
 	
@@ -686,7 +686,7 @@ public class MatchSource {
 				freeInstance(jedis);
 			}
 		}
-		return new Long(count).intValue();
+		return (int)count;
 		
 	}
 	

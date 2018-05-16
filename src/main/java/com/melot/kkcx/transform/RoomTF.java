@@ -1,5 +1,8 @@
 package com.melot.kkcx.transform;
 
+import java.util.Calendar;
+import java.util.Date;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
@@ -13,6 +16,7 @@ import com.melot.kktv.util.CityUtil;
 import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.Constant;
 import com.melot.kktv.util.ConstantEnum;
+import com.melot.kktv.util.DateUtil;
 import com.melot.kktv.util.PlatformEnum;
 import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.confdynamic.SystemConfig;
@@ -187,11 +191,17 @@ public class RoomTF {
         
         if (roomInfo.getIcon() != null) {
             roomObject.addProperty("icon", roomInfo.getIcon());
-            if (roomInfo.getIcon().intValue() == 3) {
-                roomObject.addProperty("isRookie", 1);
-            }
+//            if (roomInfo.getIcon().intValue() == 3) {
+//                roomObject.addProperty("isRookie", 1);
+//            }
             if (roomInfo.getIcon().intValue() == 6) {
                 roomObject.addProperty("isWeekly", 1);
+            }
+        }
+        
+        if (roomInfo.getJoinTime() != null) {
+            if (DateUtil.addOnField(roomInfo.getJoinTime(), Calendar.DATE, 31).getTime() > System.currentTimeMillis()) {
+                roomObject.addProperty("isRookie", 1);
             }
         }
 //        if (!StringUtil.strIsNull(roomInfo.getRoomTheme())) {
@@ -360,13 +370,18 @@ public class RoomTF {
 			}
 			if (roomInfo.getIcon() != null) {
 				roomObject.addProperty("icon", roomInfo.getIcon());
-				if (roomInfo.getIcon().intValue() == 3) {
-					roomObject.addProperty("isRookie", 1);
-				}
+//				if (roomInfo.getIcon().intValue() == 3) {
+//					roomObject.addProperty("isRookie", 1);
+//				}
 				if (roomInfo.getIcon().intValue() == 6) {
 					roomObject.addProperty("isWeekly", 1);
 				}
 			}
+			if (roomInfo.getJoinTime() != null) {
+	            if (DateUtil.addOnField(roomInfo.getJoinTime(), Calendar.DATE, 31).getTime() > System.currentTimeMillis()) {
+	                roomObject.addProperty("isRookie", 1);
+	            }
+	        }
 			if (roomInfo.getRoomMode() != null) {
 				// 房间模式 0:普通房 1:演艺房 2:游戏房
 				roomObject.addProperty("roomMode", roomInfo.getRoomMode());

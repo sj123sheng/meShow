@@ -484,7 +484,7 @@ public class KKHallFunctions {
                         filterSize = roomList.size();
                     }
                     fillCount = offset - filterSize;
-                    if (fillCount > 0) {
+                    if (roomList != null && fillCount > 0) {
                         roomList.addAll(firstPageHandler.getFilterHotRooms(3, gender, filterIds, start, fillCount));
                     }
 

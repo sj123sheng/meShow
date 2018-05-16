@@ -561,7 +561,7 @@ public class MessageBoxFunctions {
 			JsonArray jsonArray=new JsonArray();
 			String keyTemp=key+"_msgsort";
 			Long lTotal = jedis.zcount(keyTemp, Double.MIN_VALUE, Double.MAX_VALUE);
-			Set<String> msgsortValueList= jedis.zrange(keyTemp,(currentPage-1)*prePageCount, currentPage*prePageCount-1);
+			Set<String> msgsortValueList= jedis.zrange(keyTemp,(currentPage-1L)*prePageCount, currentPage*prePageCount-1L);
 			for(Iterator<String> iter=msgsortValueList.iterator();iter.hasNext();){
 				String value=iter.next();
 				int msgtype = 0;
@@ -875,7 +875,7 @@ public class MessageBoxFunctions {
 		String msgOwnUserId = msgMap.get("to");
 		if (jedis.hget("msgTotalCount", msgOwnUserId) != null) {
 			if(newCount != oldCount)
-				jedis.hincrBy("msgTotalCount", msgOwnUserId, newCount - oldCount);
+				jedis.hincrBy("msgTotalCount", msgOwnUserId, (long) newCount - oldCount);
 		} else {
 			jedis.hset("msgTotalCount", msgOwnUserId, String.valueOf(newCount));
 		}

@@ -57,8 +57,8 @@ public class PromotePartnerFunction extends BaseAction{
         int count = 1;
         try {
             channelId = CommonUtil.getJsonParamInt(jsonObject, "c", ChannelEnum.DEFAUL_WEB_CHANNEL, TagCodeEnum.CHANNEL_MISSING, 0 , Integer.MAX_VALUE);
-            cataId = CommonUtil.getJsonParamInt(jsonObject, "cataId", Integer.valueOf(0), null, 0 , Integer.MAX_VALUE);
-            count = CommonUtil.getJsonParamInt(jsonObject, "count", Integer.valueOf(1), null, 0 , Integer.MAX_VALUE);
+            cataId = CommonUtil.getJsonParamInt(jsonObject, "cataId", 0, null, 0 , Integer.MAX_VALUE);
+            count = CommonUtil.getJsonParamInt(jsonObject, "count", 1, null, 0 , Integer.MAX_VALUE);
          // 改接口下新增推荐房间, 用于推广房间   
          //   cataId = 356
         } catch (CommonUtil.ErrorGetParameterException e) {

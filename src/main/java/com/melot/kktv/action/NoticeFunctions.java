@@ -136,20 +136,22 @@ public class NoticeFunctions {
                 // 返回公告列表
                 PageNoticeInfo pageNoticeInfo = noticeService.getNoticeInfoByCataId(cataId, appId, null, pageNum, pageCount);
                 JsonArray jsonArray = new JsonArray();
-                if (pageNoticeInfo != null && pageNoticeInfo.getList() != null && pageNoticeInfo.getList().size() > 0) {
-                    for (NoticeInfo temp : pageNoticeInfo.getList()) {
-                        JsonObject jObject = new JsonObject();
-                        jObject.addProperty("noticeId", temp.getNoticeId());
-                        jObject.addProperty("title", temp.getTitle());
-                        jObject.addProperty("dtime", temp.getDtime().getTime());
-                        jObject.addProperty("noticeUrl", temp.getNoticeUrl());
-                        jObject.addProperty("lastOperator", temp.getLastOperator());
-                        jsonArray.add(jObject);
-                    }
-                }
-                
-                result.add("noticeList", jsonArray);
-                result.addProperty("recordTotal", pageNoticeInfo.getRecordTotal());
+				if (pageNoticeInfo != null) {
+					if (pageNoticeInfo.getList() != null && pageNoticeInfo.getList().size() > 0) {
+						for (NoticeInfo temp : pageNoticeInfo.getList()) {
+							JsonObject jObject = new JsonObject();
+							jObject.addProperty("noticeId", temp.getNoticeId());
+							jObject.addProperty("title", temp.getTitle());
+							jObject.addProperty("dtime", temp.getDtime().getTime());
+							jObject.addProperty("noticeUrl", temp.getNoticeUrl());
+							jObject.addProperty("lastOperator", temp.getLastOperator());
+							jsonArray.add(jObject);
+						}
+					}
+
+					result.add("noticeList", jsonArray);
+					result.addProperty("recordTotal", pageNoticeInfo.getRecordTotal());
+				}
             }
             
             ResNoticeCatalog resNoticeCatalog = noticeService.getNoticeCatalogAndParent(cataId);
@@ -200,19 +202,20 @@ public class NoticeFunctions {
                 result.addProperty("cataName", resNoticeCatalog.getCataName());
                 result.addProperty("parentCataName", resNoticeCatalog.getParentCataName());
             }
-            
-            if (pageNoticeInfo != null && pageNoticeInfo.getList() != null && pageNoticeInfo.getList().size() > 0) {
-                for (NoticeInfo temp : pageNoticeInfo.getList()) {
-                    JsonObject jObject = new JsonObject();
-                    jObject.addProperty("noticeId", temp.getNoticeId());
-                    jObject.addProperty("title", temp.getTitle());
-                    jObject.addProperty("dtime", temp.getDtime().getTime());
-                    jObject.addProperty("noticeUrl", temp.getNoticeUrl());
-                    jObject.addProperty("lastOperator", temp.getLastOperator());
-                    jsonArray.add(jObject);
-                }
-            }
-            result.addProperty("recordTotal", pageNoticeInfo.getRecordTotal());
+			if (pageNoticeInfo != null) {
+				if (pageNoticeInfo.getList() != null && pageNoticeInfo.getList().size() > 0) {
+					for (NoticeInfo temp : pageNoticeInfo.getList()) {
+						JsonObject jObject = new JsonObject();
+						jObject.addProperty("noticeId", temp.getNoticeId());
+						jObject.addProperty("title", temp.getTitle());
+						jObject.addProperty("dtime", temp.getDtime().getTime());
+						jObject.addProperty("noticeUrl", temp.getNoticeUrl());
+						jObject.addProperty("lastOperator", temp.getLastOperator());
+						jsonArray.add(jObject);
+					}
+				}
+				result.addProperty("recordTotal", pageNoticeInfo.getRecordTotal());
+			}
         } catch (Exception e) {
             logger.error("fail to execute getNoticeList, cataId: " + cataId + ", appId: " + appId + ", pageNum: " + pageNum + ", pageCount: " + pageCount, e);
         }

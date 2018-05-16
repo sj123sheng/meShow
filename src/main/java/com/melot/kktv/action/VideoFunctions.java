@@ -286,8 +286,10 @@ public class VideoFunctions {
     	VideoInfoService videoInfoService = (VideoInfoService) MelotBeanFactory.getBean("videoInfoService");
 		List<VideoInfo> vodeoInfoList = videoInfoService.getVideoListByActorId(actorId);
 		JsonArray videoListArray = new JsonArray();
-		if(vodeoInfoList != null && vodeoInfoList.size() > 0){
-			videoListArray = videoInfos2Json(videoListArray,vodeoInfoList);
+		if (vodeoInfoList != null) {
+			if (vodeoInfoList.size() > 0) {
+				videoListArray = videoInfos2Json(videoListArray, vodeoInfoList);
+			}
 		}
 		result.add("videoInfoList", videoListArray);
 		result.addProperty("videoCount", vodeoInfoList.size());

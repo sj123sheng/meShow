@@ -51,7 +51,7 @@ public class ProfileSecurityFunctions {
 	
 	private static final String IDENTIFYPHONE_KEY = "identifyFormalPhone_%s";
 	
-	private static final String RETRIEVEPWDPHONE_KEY = "retrievePwdPhone_%s";
+	private static final String RETRIEVEPW_DPHONE_KEY = "retrievePwdPhone_%s";
 	
 	private static final String RETRIEVEPW_DUSER_KEY = "retrievePwdUser_%s"; 
 	
@@ -861,7 +861,7 @@ public class ProfileSecurityFunctions {
 			if (type == 30) {
 				HotDataSource.setTempDataString(String.format(IDENTIFYPHONE_KEY, userId), "1", 300);
 			} else if (type == 39){
-			    HotDataSource.setTempDataString(String.format(RETRIEVEPWDPHONE_KEY, phoneNum), "1", 300);
+			    HotDataSource.setTempDataString(String.format(RETRIEVEPW_DPHONE_KEY, phoneNum), "1", 300);
 			    KkUserService kkUserService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
 			    if (kkUserService != null) {
 			        List<Integer> userIds = kkUserService.getUserIdsByIdentifyPhone(phoneNum);
@@ -1324,7 +1324,7 @@ public class ProfileSecurityFunctions {
         UserProfile userProfile = UserService.getUserInfoNew(userId);
         if (userProfile != null) {
             String phoneNum = userProfile.getIdentifyPhone();
-            if ("1".equals(HotDataSource.getTempDataString(String.format(RETRIEVEPWDPHONE_KEY, phoneNum))) || 
+            if ("1".equals(HotDataSource.getTempDataString(String.format(RETRIEVEPW_DPHONE_KEY, phoneNum))) || 
                     "1".equals(HotDataSource.getTempDataString(String.format(RETRIEVEPW_DUSER_KEY, userId)))) {
                 try {
                     int level = ProfileServices.getPasswordSafetyRank(psword);
@@ -1334,8 +1334,8 @@ public class ProfileSecurityFunctions {
                     if (TagCode.equals(TagCodeEnum.SUCCESS)) {
                         com.melot.kkcx.service.UserService.insertTempUserPassword(userId, psword);
                         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-                        HotDataSource.delTempData(String.format(RETRIEVEPWDPHONE_KEY, phoneNum));
-                        HotDataSource.delTempData(String.format(RETRIEVEPWDPHONE_KEY, phoneNum));
+                        HotDataSource.delTempData(String.format(RETRIEVEPW_DPHONE_KEY, phoneNum));
+                        HotDataSource.delTempData(String.format(RETRIEVEPW_DPHONE_KEY, phoneNum));
                     } else if (TagCode.equals("02")) {
                         // 未找到该用户
                         result.addProperty("TagCode", "5101010701");

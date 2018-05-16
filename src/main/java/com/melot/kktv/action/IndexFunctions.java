@@ -59,7 +59,6 @@ import com.melot.kktv.model.NewsRewardRank;
 import com.melot.kktv.model.Notice;
 import com.melot.kktv.model.PreviewAct;
 import com.melot.kktv.model.RankUser;
-import com.melot.kktv.model.Room;
 import com.melot.kktv.model.WeekStarGift;
 import com.melot.kktv.redis.GiftRecordSource;
 import com.melot.kktv.redis.HotDataSource;
@@ -423,9 +422,9 @@ public class IndexFunctions {
 		if (list != null && list.size() > 0) {
 			Comparator<RoomInfo> comparator = new Comparator<RoomInfo>() {
 				public int compare(RoomInfo room1, RoomInfo room2) {
-					if (room1.getPeopleInRoom().intValue() > room1.getPeopleInRoom().intValue())
+					if (room1.getPeopleInRoom().intValue() > room2.getPeopleInRoom().intValue())
 			            return -1;
-			        else if (room1.getPeopleInRoom().intValue() < room1.getPeopleInRoom().intValue())
+			        else if (room1.getPeopleInRoom().intValue() < room2.getPeopleInRoom().intValue())
 			            return 1;
 			        else
 			            return 0;
@@ -940,7 +939,7 @@ public class IndexFunctions {
 	public JsonObject findRoomList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
 		JsonObject result = new JsonObject();
 		JsonArray jRoomList = new JsonArray();
-		int platform = 0;
+		int platform = 0, recordCount = 0;
 		String fuzzyString = null;
 		int pageNum, pageCount;
 		try {
@@ -967,102 +966,74 @@ public class IndexFunctions {
 		
 		// 判断是否为纯数字
 		boolean isId = Pattern.compile(Constant.regx_user_id).matcher(fuzzyString).find();
-		
-		// 敏感字验证
-		if (!isId && GeneralService.hasSensitiveWords(0, fuzzyString)) {
-            result.addProperty("TagCode", TagCodeEnum.SENSITIVE_WORD_ERROR);
-            return result;
-        }
 
-		// 如果缓存中没数据，先从oracle查询出全部数据，并添加至缓存
-		if (!SearchWordsSource.isExistSearchResultKey(fuzzyString)) {
-		    Map<Object, Object> map = new HashMap<Object, Object>();
-		    if (isId) {
-		        String idString = fuzzyString;
-		        Integer tmpId = UserAssetServices.luckyIdToUserId(StringUtil.parseFromStr(idString, 0));
-		        if (tmpId != null && tmpId > 0) {
-		            idString = String.valueOf(tmpId);
-		        }
-		        map.put("fuzzyString", idString);
-		    } else {
-		        map.put("fuzzyString", fuzzyString);
-		    }
-		    try {
-		        SqlMapClientHelper.getInstance(DB.BACKUP).queryForObject("Index.findRoomList", map);
-		    } catch (SQLException e) {
-		        logger.error("未能正常调用存储过程", e);
-		        result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
-		        return result;
-		    }
-		    List<String> newList = new ArrayList<String>();
-		    String TagCode = (String) map.get("TagCode");
-		    if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-		        // 取出列表
-		        @SuppressWarnings("unchecked")
-		        List<Room> roomList = (ArrayList<Room>) map.get("roomList");
-		        List<RoomInfo> roomInfoList = null;
-		        if (roomList != null && !roomList.isEmpty()) {
-		            StringBuffer actorIds2 = new StringBuffer();
-		            for (Room room : roomList) {
-		                if (room != null && room.getActorTag() != null && room.getActorTag() == 1) {
-		                    actorIds2.append(room.getUserId());
-		                    actorIds2.append(",");
-		                }
-		            }
-		            if (actorIds2.length() > 0) {
-		                roomInfoList = RoomService.getRoomListByRoomIds(actorIds2.substring(0, actorIds2.length() - 1));
-		            }
-		            
-		            for (Room room : roomList) {
-		                if (room != null) {
-		                    int roomId = room.getUserId();
-		                    if (room.getActorTag() != null && room.getActorTag() == 1
-		                            && roomInfoList != null && !roomInfoList.isEmpty()) {
-		                        boolean include = false;
-		                        for (RoomInfo rinfo : roomInfoList) {
-		                            if (rinfo.getActorId() != null && rinfo.getActorId().intValue() == roomId) {
-		                                newList.add(new Gson().toJson(RoomTF.roomInfoToJson(rinfo, platform, true)));
-		                                include = true;
-		                            }
-		                        }
-		                        if (!include) {
-		                            newList.add(new Gson().toJson(room.toJsonObject(platform, null)));
-		                        }
-		                    } else {
-		                        newList.add(new Gson().toJson(room.toJsonObject(platform, null)));
-		                    }
-		                }
-		            }
-		        }
-		        
-		        if (!newList.isEmpty()) {
-		            if(!SearchWordsSource.setSearchResultPage(fuzzyString, newList)){
-		                logger.error("SearchWordsSource.setSearchResult Fail to add" + fuzzyString + "searchResult to redis");
-		            }
-                } else {
-                    result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-                    result.addProperty("recordCount", 0);
-                    result.add("roomList", jRoomList);
-                    return result;
-                }
-		    } else {
-		        // 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
-		        logger.error("调用存储过程(Index.findRoomList)未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
-		        result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
+        Integer actorId = null;
+        String nickname = null;
+        if (isId) {
+            actorId = UserAssetServices.luckyIdToUserId(StringUtil.parseFromStr(fuzzyString, 0));
+            if (actorId == null || actorId <= 0) {
+                actorId = Integer.valueOf(fuzzyString);
+            }
+        } else {
+            // 敏感字验证
+            if (GeneralService.hasSensitiveWords(0, fuzzyString)) {
+                result.addProperty("TagCode", TagCodeEnum.SENSITIVE_WORD_ERROR);
                 return result;
-		    }
+            }
+            nickname = fuzzyString;
         }
         
+        if (!SearchWordsSource.isExistSearchResultKey(fuzzyString)) {
+            RoomInfoService roomInfoServie = (RoomInfoService) MelotBeanFactory.getBean("roomInfoService");
+            recordCount = roomInfoServie.getFuzzyRoomCount(actorId, nickname);
+            List<String> newList = new ArrayList<String>();
+            if (recordCount > 0) {
+                List<RoomInfo> roomInfoList = roomInfoServie.getFuzzyRoomList(actorId, nickname, 0, 1000);
+                if (!roomInfoList.isEmpty()) {
+                    for (RoomInfo rinfo : roomInfoList) {
+                        JsonObject roomJson = RoomTF.roomInfoToJson(rinfo, platform, true);
+                        newList.add(roomJson.toString());
+                    }
+                }
+            } else {
+                //根据id可查询用户
+                if (isId) {
+                    KkUserService userService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
+                    UserProfile userProfile = userService.getUserProfile(Integer.valueOf(fuzzyString));
+                    if (userProfile != null) {
+                        JsonObject jsonObj = new JsonObject();
+                        jsonObj.addProperty("userId", userProfile.getUserId());
+                        jsonObj.addProperty("roomId", userProfile.getUserId());
+                        if (userProfile.getNickName() != null) {
+                            jsonObj.addProperty("nickname", userProfile.getNickName());
+                        }
+                        jsonObj.addProperty("gender", userProfile.getGender());
+                        if (userProfile.getPortrait() != null) {
+                            jsonObj.addProperty("portrait_path_256", ConfigHelper.getHttpdir() + userProfile.getPortrait() + "!256");
+                        }
+                        jsonObj.addProperty("actorLevel", userProfile.getActorLevel());
+                        jsonObj.addProperty("richLevel", userProfile.getUserLevel());
+                        jsonObj.addProperty("starLevel", UserService.getStarLevel(userProfile.getUserId()));
+                        newList.add(jsonObj.toString());
+                    }
+                }
+            }
+            
+            if(!SearchWordsSource.setSearchResultPage(fuzzyString, newList)){
+                logger.error("SearchWordsSource.setSearchResult Fail to add" + fuzzyString + "searchResult to redis");
+            }
+        } 
+
         long start, end;
-        long recordCount = SearchWordsSource.getSearchResultPageCount(fuzzyString);
+        recordCount = (int) SearchWordsSource.getSearchResultPageCount(fuzzyString);
         if (recordCount > 0) {
             // pageNum和pageCount未传入，查询全部
             if (pageNum == 0 || pageCount == 0) {
                 start = 0;
-                end = recordCount - 1;
+                end = recordCount - 1L;
             } else {
-                start = (pageNum - 1) * pageCount;
-                end = pageNum * pageCount - 1;
+                start = (pageNum - 1L) * pageCount;
+                end = pageNum * pageCount - 1L;
             }
             Set<String> tempSet = SearchWordsSource.getSearchResultPage(fuzzyString, start, end);
             if (tempSet != null && !tempSet.isEmpty()) {

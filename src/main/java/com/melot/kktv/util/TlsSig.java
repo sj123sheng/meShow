@@ -28,17 +28,24 @@ public class TlsSig {
 		File file = new File(pempath);
 		StringBuilder sb = new StringBuilder();
 		String s = "";
-		BufferedReader br;
+		BufferedReader br = null;
 		try {
 			br = new BufferedReader(new FileReader(file));
 			while ((s = br.readLine()) != null) {
 				sb.append(s + "\n");
 			}
-			br.close();
 		} catch (FileNotFoundException e) {
 			logger.error("can't find the file", e);
 		} catch (IOException e) {
 			logger.error("can't find the file", e);
+		} finally {
+			if(br != null){
+				try {
+					br.close();
+				} catch (IOException e) {
+					logger.error("can't find the file", e);
+				}
+			}
 		}
 		ec_key = sb.toString();
 				

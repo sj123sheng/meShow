@@ -1,14 +1,17 @@
 package com.melot.kktv.third.service;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Date;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 
 import com.dianping.cat.Cat;
@@ -20,7 +23,6 @@ import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.DateUtil;
 import com.melot.kktv.util.TagCodeEnum;
 
-@SuppressWarnings("deprecation")
 public class SweetOrangeService extends BaseService {
 	
 	private static Logger logger = Logger.getLogger(SweetOrangeService.class);
@@ -45,7 +47,8 @@ public class SweetOrangeService extends BaseService {
 	public String verifyUser(String userId, String userToken) {
 		boolean isValid = false;
 		Transaction t = Cat.getProducer().newTransaction("MCall", "SweetOrangeService.verifyUser");
-		try {
+		CloseableHttpResponse response = null;
+		try(CloseableHttpClient httpClient =HttpClients.createDefault();) {
 			String approve = CommonUtil.md5(userId + userToken + ACCESS_TOKEN);
 			String param = "{\"approve\":\"" + approve + "\",\"userId\":\"" + userId + "\",\"userToken\":\"" + userToken + "\"}";
 			
@@ -74,14 +77,13 @@ public class SweetOrangeService extends BaseService {
 			entity.setContentType("application/json");
 
 			post.setEntity(entity);
-			@SuppressWarnings("resource")
-            HttpClient httpClient = new DefaultHttpClient();
 
-			HttpResponse response = httpClient.execute(post);
+			response = httpClient.execute(post);
 			// 返回的结果
-			InputStream input = response.getEntity().getContent();
+			HttpEntity httpEntity = response.getEntity();
+			InputStream input = httpEntity.getContent();
 			
-			StringBuffer out = new StringBuffer();
+			StringBuilder out = new StringBuilder();
 			InputStreamReader inread = new InputStreamReader(input, "UTF-8");
 			
 			char[] b = new char[4096];
@@ -99,11 +101,19 @@ public class SweetOrangeService extends BaseService {
 			
 			inread.close();
 			input.close();
+			EntityUtils.consume(httpEntity);
         } catch (Exception e) {
         	logger.error("甜橙服务端验证用户请求异常", e);
         	t.setStatus(e);
         } finally {
-            t.complete();   
+            t.complete();
+            if(response != null){
+            	try {
+					response.close();
+				} catch (IOException e) {
+					logger.error("甜橙服务端验证用户请求异常", e);
+				}
+            }
         }
 		if (isValid) {
         	return TagCodeEnum.SUCCESS;

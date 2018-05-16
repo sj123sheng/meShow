@@ -84,7 +84,7 @@ public class ResourceFunctions {
                         result.addProperty("TagCode", TagCodeEnum.FUNCTAG_LIMIT_EXCEPTION);
                         return result; 
                     }
-                } else if (resType == 1) {
+                } else if (resType == 1 && ProfileServices.checkUserUpdateProfileByType(userId, "3")) {
 //                    try {
 //                        PosterService posterService = MelotBeanFactory.getBean("posterService", PosterService.class);
 //                        List<PosterInfo> posterList = posterService.getPosterList(userId);
@@ -100,11 +100,9 @@ public class ResourceFunctions {
 //                    } catch (Exception e) {
 //                        logger.error("call PosterService getPosterList error userId:" + userId, e);
 //                    }
-                    if (ProfileServices.checkUserUpdateProfileByType(userId, "3")) {
-                        result.addProperty("message", "该用户操作次数超过当日限制");
-                        result.addProperty("TagCode", TagCodeEnum.FUNCTAG_LIMIT_EXCEPTION);
-                        return result; 
-                    }
+                		result.addProperty("message", "该用户操作次数超过当日限制");
+                		result.addProperty("TagCode", TagCodeEnum.FUNCTAG_LIMIT_EXCEPTION);
+                		return result;
                 }
             }
             
@@ -189,18 +187,16 @@ public class ResourceFunctions {
                     result.addProperty("message", "系统维护中，本功能暂时停用");
                     result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
                     return result;
-                } else if (resType == PictureTypeEnum.portrait) {
+                } else if (resType == PictureTypeEnum.portrait && ProfileServices.checkUserUpdateProfileByType(userId, "2")) {
 //                    UserProfile userProfile = UserService.getUserInfoNew(userId);
 //                    if (userProfile != null && userProfile.getPortrait() != null) {
 //                        result.addProperty("message", "系统维护中，本功能暂时停用");
 //                        result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
 //                        return result; 
 //                    }
-                    if (ProfileServices.checkUserUpdateProfileByType(userId, "2")) {
-                        result.addProperty("message", "该用户操作次数超过当日限制");
-                        result.addProperty("TagCode", TagCodeEnum.FUNCTAG_LIMIT_EXCEPTION);
-                        return result; 
-                    }
+                	result.addProperty("message", "该用户操作次数超过当日限制");
+                	result.addProperty("TagCode", TagCodeEnum.FUNCTAG_LIMIT_EXCEPTION);
+                	return result; 
                 }
             }
 
@@ -214,8 +210,10 @@ public class ResourceFunctions {
                 String coverUrl =  fileUrl.substring(0,fileUrl.indexOf(".") + 1) + "jpg";
                 resource.setImageUrl(coverUrl);
                 VideoInfo videoInfo = getVideoInfoByHttp(fileUrl);
-                resource.setFileWidth(videoInfo.getWidth());
-                resource.setFileHeight(videoInfo.getHeight());
+                if (videoInfo != null) {
+					resource.setFileWidth(videoInfo.getWidth());
+					resource.setFileHeight(videoInfo.getHeight());
+				}
             }
             ResourceNewService resourceNewService = (ResourceNewService) MelotBeanFactory.getBean("resourceNewService");
             Result<Integer> resId = resourceNewService.addResource(resource);

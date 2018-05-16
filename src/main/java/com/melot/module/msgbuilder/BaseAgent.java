@@ -39,7 +39,11 @@ public class BaseAgent {
 			mmc = pool.getResource();
 			result = mmc.sendMessage(msgId, message);
 		} catch (MelotModuleClientConnectionException e) {
-			logger.error("failed dure to network error: " + mmc.getHost() + ":" + mmc.getPort(), e);
+			if (mmc != null) {
+				logger.error("failed dure to network error: " + mmc.getHost() + ":" + mmc.getPort(), e);
+			} else {
+				logger.error("Agent: [msgId= " + msgId + "][message= " + message.toString() + "]: failed dure exception : ",e);
+			}
 			bBrokenMMC = true;
 		} catch (Exception e) {
 			logger.error("Agent: [msgId= " + msgId+ "][message= " + message.toString() + "]: failed dure exception : ", e);

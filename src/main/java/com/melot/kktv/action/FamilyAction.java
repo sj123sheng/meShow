@@ -2091,13 +2091,16 @@ public class FamilyAction {
 		
         // 增加家族收益
         try {
-            if (resultByFamilyMedal != null && resultByFamilyMedal.getTagCode().equals(TagCodeEnum.SUCCESS)) {
-                RoomService.incActorIncome(userId, 0, familyId, medalId, 1, resultByFamilyMedal.getCost().intValue(), 0, 60, 12, 0);
-                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-                result.addProperty("showMoney", resultByFamilyMedal.getShowMoney());
-            } else {
-                result.addProperty("TagCode", resultByFamilyMedal.getTagCode());
-            }
+			if (resultByFamilyMedal != null) {
+				if (resultByFamilyMedal.getTagCode().equals(TagCodeEnum.SUCCESS)) {
+					RoomService.incActorIncome(userId, 0, familyId, medalId, 1,
+							resultByFamilyMedal.getCost().intValue(), 0, 60, 12, 0);
+					result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+					result.addProperty("showMoney", resultByFamilyMedal.getShowMoney());
+				} else {
+					result.addProperty("TagCode", resultByFamilyMedal.getTagCode());
+				}
+			}
         } catch (Exception e) {
             logger.error("增加家族收益异常, userId: " + userId + ", familyId: " + familyId + ", refId: " + medalId + ", count: 1"
                     + ", price: " + resultByFamilyMedal.getCost() + ", actorRate: 0, familyRate: 60, type:12, addShowMoney: 0", e);
@@ -2564,7 +2567,7 @@ public class FamilyAction {
                         // 家族冻结（用户），多少天后才能创建家族
                         int days = 90;
                         if (family.getUpdateOpenTime() != null) {
-                            days = (int) (90 - Math.ceil((System.currentTimeMillis() - family.getUpdateOpenTime().getTime()) / (1000 * 60 * 60 * 24)));
+                            days = (int) (90 - Math.ceil((System.currentTimeMillis() - family.getUpdateOpenTime().getTime()) / (1000 * 60 * 60 * 24d)));
                         }
                         result.addProperty("days", days);
                         result.addProperty("TagCode", "08280002");
@@ -2621,7 +2624,7 @@ public class FamilyAction {
                     int days = 90;
                     FamilyInfo family = FamilyService.getFamilyInfoByFamilyId(frozenFamilyId.intValue(), appId);
                     if (family != null && family.getUpdateOpenTime() != null) {
-                        days = (int) (90 - Math.ceil((System.currentTimeMillis() - family.getUpdateOpenTime().getTime()) / (1000 * 60 * 60 * 24)));
+                        days = (int) (90 - Math.ceil((System.currentTimeMillis() - family.getUpdateOpenTime().getTime()) / (1000 * 60 * 60 * 24d)));
                     }
                     result.addProperty("days", days);
                     result.addProperty("TagCode", "08280002");

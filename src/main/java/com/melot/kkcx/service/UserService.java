@@ -758,7 +758,7 @@ public class UserService {
 					userInfo.setOpenPlatform(userRegistry.getOpenPlatform());
 				}
 				if (userInfoDetail.getAssets() != null) {
-					userInfo.setShowMoney(new Long(userInfoDetail.getAssets().getShowMoney()).intValue());
+					userInfo.setShowMoney((int)userInfoDetail.getAssets().getShowMoney());
 				}
 				return userInfo;
 			}
