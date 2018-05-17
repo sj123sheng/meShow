@@ -566,5 +566,17 @@ public class TagCodeEnum {
 	/** 商品库存不足 */
 	public static final String STOCK_NOT_FULL = "5106051308";
 
+	/** 该id不是商家，没有权限*/
+	public static final String NOT_SALE_ACTOR = "5106051406";
+	/** 该id不是用户*/
+	public static final String NOT_USER = "5106051407";
 
+	/** 该id没有余额 */
+	public static final String NOT_HAS_BALANCE_ACTOR = "5106051502";
+
+
+	/** 提现金额不符合规则 */
+	public static final String ERROR_WITHDRAW_MONEY = "5106051604";
+	/** 未绑定银行卡 */
+	public static final String NOT_BIND_BANK_ACCOUNT = "5106051605";
 }
