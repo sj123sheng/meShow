@@ -732,7 +732,7 @@ public class LiveShopFunctions {
     }
 
     /**
-     * 商家像买家发送订单[51060514]
+     * 商家向买家发送订单[51060514]
      * @param jsonObject
      * @param checkTag
      * @param request
@@ -755,8 +755,8 @@ public class LiveShopFunctions {
             buyerId = CommonUtil.getJsonParamInt(jsonObject, "buyerId", 0, "5106051402", 0, Integer.MAX_VALUE);
             resourceId = CommonUtil.getJsonParamInt(jsonObject, "resourceId", 0, "5106051403", 0, Integer.MAX_VALUE);
             productName = CommonUtil.getJsonParamString(jsonObject, "productName", null, "5106051404", 1, Integer.MAX_VALUE);
-            productPrice = CommonUtil.getJsonParamLong(jsonObject, "productPrice", 0, "5106051405", 0, Long.MAX_VALUE);
-            expressMoney = CommonUtil.getJsonParamLong(jsonObject, "expressMoney", 0, null, 0, Long.MAX_VALUE);
+            productPrice = CommonUtil.getJsonParamLong(jsonObject, "productPrice", 0, "5106051405", 1, 99999999L);
+            expressMoney = CommonUtil.getJsonParamLong(jsonObject, "expressMoney", 0, null, 0, 99999L);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
             return result;
@@ -864,7 +864,6 @@ public class LiveShopFunctions {
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
             return result;
         }
-        // 检验token
         if (!checkTag) {
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_INCORRECT);
             return result;
@@ -928,8 +927,8 @@ public class LiveShopFunctions {
         int num;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, "5106051701", 0, Integer.MAX_VALUE);
-            start = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, null, 0, Integer.MAX_VALUE);
-            num = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 20, null, 0, Integer.MAX_VALUE);
+            start = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.START, 0, null, 0, Integer.MAX_VALUE);
+            num = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.NUM, 20, null, 0, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
             return result;
@@ -962,11 +961,10 @@ public class LiveShopFunctions {
                     ele.addProperty("money", liveShopTransactionDetailsDTO.getMoney());
                     ele.addProperty("change", liveShopTransactionDetailsDTO.getChange());
                     ele.addProperty("date", liveShopTransactionDetailsDTO.getAddTime().getTime());
+                    jsonArray.add(ele);
                 }
-                result.add("transactionDetails", jsonArray);
-            } else {
-                result.add("transactionDetails", new JsonArray());
             }
+            result.add("transactionDetails", jsonArray);
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
         } catch (Exception e) {
             logger.error(String.format("Module Error：liveShopService.getTransactionDetails(userId=%s, start=%s, num=%s)", userId, start, num), e);
