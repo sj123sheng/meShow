@@ -2953,12 +2953,14 @@
 	<bean id="51010403" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="nobilityFunctions" />
 		<constructor-arg name="methodName" value="getNobilityList" />
+		<constructor-arg name="cacheType" value="60" />
 	</bean>
 	
 	<!-- 获取贵族爵位详情 -->
 	<bean id="51010404" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="nobilityFunctions" />
 		<constructor-arg name="methodName" value="getNobilityInfo" />
+		<constructor-arg name="cacheType" value="60" />
 	</bean>
 	
 	<!-- 开通/续费爵位信息 -->
@@ -3131,5 +3133,17 @@
 	<bean id="51060513" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="liveShopFunctions" />
 		<constructor-arg name="methodName" value="addDistributorOrder" />
+	</bean>
+	
+	<!-- 获取积分礼物列表 -->
+	<bean id="51010406" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="nobilityFunctions" />
+		<constructor-arg name="methodName" value="getNobilityGifts" />
+	</bean>
+	
+	<!-- 兑换积分礼物 -->
+	<bean id="51010407" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="nobilityFunctions" />
+		<constructor-arg name="methodName" value="exchangeNobilityGift" />
 	</bean>
 </beans>
