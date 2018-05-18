@@ -12,7 +12,7 @@ import com.melot.kk.nobility.api.domain.PowerInfo;
 
 public class NobilityTF {
     
-    private static final long DAY = 1000 * 60 * 60 * 24;
+    private static final long DAY = 1000 * 60 * 60 * 24L;
 
     private NobilityTF(){}
     
@@ -95,6 +95,6 @@ public class NobilityTF {
     }
     
     public static void main(String[] args) {
-        System.out.println(Math.ceil((1519491661000L - System.currentTimeMillis()) / DAY));
+        System.out.println(Math.ceil((1519491661000L - System.currentTimeMillis()) / (double) DAY));
     }
 }
