@@ -2607,6 +2607,10 @@
 		<constructor-arg name="t" ref="otherFunction" />
 		<constructor-arg name="methodName" value="checkPhrase" />
 	</bean>
+	<bean id="51090202" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="otherFunction" />
+		<constructor-arg name="methodName" value="getOpenPage" />
+	</bean>
 
 	<bean id="51100101" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="videoBgmFunction" />

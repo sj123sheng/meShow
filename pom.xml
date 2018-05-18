@@ -651,9 +651,9 @@
 		</dependency>
 		
 		<dependency>
-		  <groupId>com.melot.kk</groupId>
-		  <artifactId>kk-config-api</artifactId>
-		  <version>1.0.0</version>
+  			<groupId>com.melot.kk</groupId>
+  			<artifactId>kk-config-api</artifactId>
+  			<version>1.0.1-SNAPSHOT</version>
 		</dependency>
 		
 		<dependency>

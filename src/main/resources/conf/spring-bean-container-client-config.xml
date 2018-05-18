@@ -181,4 +181,7 @@
 	
 	<!-- 贵族积分礼物服务 -->
 	<kkrpc:reference id="nobilityPointGiftService" interface="com.melot.kk.nobility.api.service.NobilityPointGiftService" version="1.0.0"/>
+	
+	<!-- 区域化开屏页服务 -->
+	<kkrpc:reference id="openPageService" interface="com.melot.kk.config.api.service.OpenPageService" version="1.0.0"/>
 </beans>
