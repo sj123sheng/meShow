@@ -290,10 +290,10 @@ public class VideoFunctions {
 			if (vodeoInfoList.size() > 0) {
 				videoListArray = videoInfos2Json(videoListArray, vodeoInfoList);
 			}
-			result.add("videoInfoList", videoListArray);
-			result.addProperty("videoCount", vodeoInfoList.size());
-			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 		}
+		result.add("videoInfoList", videoListArray);
+		result.addProperty("videoCount", vodeoInfoList.size());
+		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 		return result;
 	}
 	
