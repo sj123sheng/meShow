@@ -113,6 +113,11 @@ public class ConfigService {
      */
     private String specifyChannel;
     
+    /**
+     * 三人欢乐PK主持人ID
+     */
+    private String pkCompereIds;
+    
     @DisconfFileItem(name = "playTogether.specialChannel.config", associateField = "playTogetherSpecialChannelConfig")
     public String getPlayTogetherSpecialChannelConfig() {
         return playTogetherSpecialChannelConfig;
@@ -303,6 +308,15 @@ public class ConfigService {
 
     public void setSpecifyChannel(String specifyChannel) {
         this.specifyChannel = specifyChannel;
+    }
+
+    @DisconfFileItem(name = "happyPK.pkCompereIds", associateField = "pkCompereIds")
+    public String getPkCompereIds() {
+        return pkCompereIds;
+    }
+    
+    public void setPkCompereIds(String pkCompereIds) {
+        this.pkCompereIds = pkCompereIds;
     }
 
 }
