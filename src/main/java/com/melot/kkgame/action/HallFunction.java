@@ -537,6 +537,9 @@ public class HallFunction extends BaseAction{
         
         if (cityId < 1) {
 			cityId = CityUtil.getCityIdByIpAddr(ip);
+		} else {
+		    //cityId若为省份，转为省会城市id
+		    cityId = CityUtil.getProvincialCapital(cityId);
 		}
         
         String cacheKey = String.format("con20010401.kkgame.getActorNearby.%s.%s.%s.%s", cityId, gender, start, offset);
