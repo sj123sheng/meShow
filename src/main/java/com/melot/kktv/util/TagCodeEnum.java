@@ -580,6 +580,6 @@ public class TagCodeEnum {
 	/** 未绑定银行卡 */
 	public static final String NOT_BIND_BANK_ACCOUNT = "5106051605";
 
-	/** 商家id不存在 */
+	/** 商家信息不存在 */
 	public static final String NOT_EXIST_SALE_ACTOR = "5106051903";
 }

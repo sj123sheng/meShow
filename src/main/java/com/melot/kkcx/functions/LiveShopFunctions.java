@@ -1043,6 +1043,7 @@ public class LiveShopFunctions {
             }
             if (shopInfoResult.getData() == null) {
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.NOT_EXIST_SALE_ACTOR);
+                return result;
             }
             result.addProperty("mobileNo", shopInfoResult.getData().getMobileNo());
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
