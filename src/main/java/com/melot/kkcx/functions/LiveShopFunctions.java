@@ -5,6 +5,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.alibaba.fastjson.JSONObject;
 import com.melot.kk.liveshop.api.constant.LiveShopErrorMsg;
+import com.melot.kk.liveshop.api.constant.LiveShopTransactionType;
 import com.melot.kk.liveshop.api.dto.*;
 import com.melot.kktv.util.*;
 import org.apache.commons.collections.CollectionUtils;
@@ -954,7 +955,9 @@ public class LiveShopFunctions {
                 for (LiveShopTransactionDetailsDTO liveShopTransactionDetailsDTO : page.getList()) {
                     JsonObject ele = new JsonObject();
                     ele.addProperty("transactionType", liveShopTransactionDetailsDTO.getTransactionType());
-                    ele.addProperty("status", liveShopTransactionDetailsDTO.getStatus());
+                    if (LiveShopTransactionType.WITHDRAW.equals(liveShopTransactionDetailsDTO.getTransactionType())) {
+                        ele.addProperty("status", liveShopTransactionDetailsDTO.getStatus());
+                    }
                     ele.addProperty("money", liveShopTransactionDetailsDTO.getMoney());
                     ele.addProperty("change", liveShopTransactionDetailsDTO.getChange());
                     ele.addProperty("date", liveShopTransactionDetailsDTO.getAddTime().getTime());
