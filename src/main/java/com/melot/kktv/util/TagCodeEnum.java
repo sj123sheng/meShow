@@ -579,4 +579,7 @@ public class TagCodeEnum {
 	public static final String ERROR_WITHDRAW_MONEY = "5106051604";
 	/** 未绑定银行卡 */
 	public static final String NOT_BIND_BANK_ACCOUNT = "5106051605";
+
+	/** 商家信息不存在 */
+	public static final String NOT_EXIST_SALE_ACTOR = "5106051903";
 }

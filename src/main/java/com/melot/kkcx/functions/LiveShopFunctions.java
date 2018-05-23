@@ -5,16 +5,13 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.alibaba.fastjson.JSONObject;
 import com.melot.kk.liveshop.api.constant.LiveShopErrorMsg;
-import com.melot.kk.liveshop.api.dto.LiveShopBalanceInfoDTO;
-import com.melot.kk.liveshop.api.dto.LiveShopTransactionDetailsDTO;
+import com.melot.kk.liveshop.api.dto.*;
 import com.melot.kktv.util.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.melot.kk.liveshop.api.dto.LiveShopOrderDTO;
-import com.melot.kk.liveshop.api.dto.LiveShopProductDTO;
 import com.melot.kk.liveshop.api.service.LiveShopService;
 import com.melot.kk.logistics.api.domain.UserAddressDO;
 import com.melot.kk.logistics.api.service.UserAddressService;
@@ -1004,6 +1001,51 @@ public class LiveShopFunctions {
                 return result;
             }
             result.addProperty("isSaleActor", isSaleActorResult.getData());
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+        } catch (Exception e) {
+            logger.error(String.format("Module Error：liveShopService.isSaleActor(userId=%s)", userId), e);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+        }
+        return result;
+    }
+
+    /**
+     * 获取商家信息[51060519]
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getSaleActorInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        // 检验token
+        if (!checkTag) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_INCORRECT);
+            return result;
+        }
+        int userId;
+        int type;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, "5106051901", 0, Integer.MAX_VALUE);
+            type = CommonUtil.getJsonParamInt(jsonObject, "type", 1, "5106051902", 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        try {
+            Result<LiveShopInfoDTO> shopInfoResult = liveShopService.getShopInfoByAdmin(userId, type);
+            if (shopInfoResult == null) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            if (shopInfoResult.getData() == null) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.NOT_EXIST_SALE_ACTOR);
+                return result;
+            }
+            result.addProperty("mobileNo", shopInfoResult.getData().getMobileNo());
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
         } catch (Exception e) {
             logger.error(String.format("Module Error：liveShopService.isSaleActor(userId=%s)", userId), e);
