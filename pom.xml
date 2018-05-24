@@ -580,7 +580,7 @@
         <dependency>
             <groupId>com.melot.module</groupId>
             <artifactId>kk-hall-module-api</artifactId>
-            <version>1.0.2-SNAPSHOT</version>
+            <version>1.0.2</version>
         </dependency>
         
         <!-- 贵族模块 -->
