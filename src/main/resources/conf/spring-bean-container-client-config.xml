@@ -179,4 +179,9 @@
 
 	<!-- 贵族积分礼物服务 -->
 	<kkrpc:reference id="nobilityPointGiftService" interface="com.melot.kk.nobility.api.service.NobilityPointGiftService" version="1.0.0"/>
+
+	<!-- 大厅模块 -->
+	<kkrpc:reference id="hallRoomService" interface="com.melot.kk.hall.api.service.HallRoomService" version="1.0.0"/>
+	<kkrpc:reference id="hallPartService" interface="com.melot.kk.hall.api.service.SysMenuService" version="1.0.0"/>
+	<kkrpc:reference id="hallHomeService" interface="com.melot.kk.hall.api.service.HomeService" version="1.0.0"/>
 </beans>
