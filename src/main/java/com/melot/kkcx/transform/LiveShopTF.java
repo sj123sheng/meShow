@@ -71,16 +71,17 @@ public class LiveShopTF {
         JsonArray products = new JsonArray();
         for (LiveShopOrderItemDTO itemDTO : orderDTO.getOrderItems()) {
             JsonObject product = new JsonObject();
-            // 根据订单类型移除以下信息
-            if (!LiveShopOrderType.MANUAL_SEND_ORDER.equals(orderDTO.getOrderType())) {
+            if (itemDTO.getProductId() != null) {
                 product.addProperty("productId", itemDTO.getProductId());
-                if (!new Integer(LiveShopOrderType.AUCTION_ORDER).equals(orderDTO.getOrderType())) {
-                    product.addProperty("productSpec", itemDTO.getProductSpec());
-                }
+            }
+            if (itemDTO.getProductSpec() != null) {
+                product.addProperty("productSpec", itemDTO.getProductSpec());
+            }
+            if (itemDTO.getResourceUrl() != null) {
+                product.addProperty("productUrl", itemDTO.getResourceUrl() + "!256");
+                product.addProperty("productUrl_big", itemDTO.getResourceUrl());
             }
             product.addProperty("productName", itemDTO.getProductName());
-            product.addProperty("productUrl", itemDTO.getResourceUrl() + "!256");
-            product.addProperty("productUrl_big", itemDTO.getResourceUrl());
             product.addProperty("productPrice", itemDTO.getProductPrice());
             product.addProperty("productCount", itemDTO.getProductCount());
             products.add(product);
