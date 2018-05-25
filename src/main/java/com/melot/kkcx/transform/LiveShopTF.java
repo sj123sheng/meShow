@@ -3,7 +3,6 @@ package com.melot.kkcx.transform;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.melot.kk.liveshop.api.constant.LiveShopOrderState;
-import com.melot.kk.liveshop.api.constant.LiveShopOrderType;
 import com.melot.kk.liveshop.api.dto.*;
 import com.melot.kk.logistics.api.domain.UserAddressDO;
 import com.melot.kktv.util.StringUtil;
