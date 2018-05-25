@@ -3,6 +3,7 @@ package com.melot.kkcx.transform;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.melot.kk.liveshop.api.constant.LiveShopOrderState;
+import com.melot.kk.liveshop.api.constant.LiveShopOrderType;
 import com.melot.kk.liveshop.api.dto.*;
 import com.melot.kk.logistics.api.domain.UserAddressDO;
 import com.melot.kktv.util.StringUtil;
@@ -70,10 +71,12 @@ public class LiveShopTF {
         JsonArray products = new JsonArray();
         for (LiveShopOrderItemDTO itemDTO : orderDTO.getOrderItems()) {
             JsonObject product = new JsonObject();
-            // 手动发送订单移除以下信息
-            if (!new Integer(3).equals(orderDTO.getOrderType())) {
+            // 根据订单类型移除以下信息
+            if (!LiveShopOrderType.MANUAL_SEND_ORDER.equals(orderDTO.getOrderType())) {
                 product.addProperty("productId", itemDTO.getProductId());
-                product.addProperty("productSpec", itemDTO.getProductSpec());
+                if (!new Integer(LiveShopOrderType.AUCTION_ORDER).equals(orderDTO.getOrderType())) {
+                    product.addProperty("productSpec", itemDTO.getProductSpec());
+                }
             }
             product.addProperty("productName", itemDTO.getProductName());
             product.addProperty("productUrl", itemDTO.getResourceUrl() + "!256");
