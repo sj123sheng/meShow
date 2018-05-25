@@ -1,14 +1,41 @@
 package com.melot.kktv.action;
 
+import java.io.UnsupportedEncodingException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.io.Charsets;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.google.common.collect.Sets;
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.blacklist.service.BlacklistService;
 import com.melot.family.driver.constant.UserApplyActorStatusEnum;
-import com.melot.family.driver.domain.*;
-import com.melot.family.driver.domain.DO.UserApplyActorDO;
+import com.melot.family.driver.domain.ActorTransferHistV2;
+import com.melot.family.driver.domain.ApplyFamilyHist;
+import com.melot.family.driver.domain.FamilyApplicantMeshow;
+import com.melot.family.driver.domain.FamilyInfo;
 import com.melot.family.driver.domain.FamilyPoster;
+import com.melot.family.driver.domain.RespMsg;
+import com.melot.family.driver.domain.DO.UserApplyActorDO;
 import com.melot.family.driver.service.FamilyAdminNewService;
 import com.melot.family.driver.service.FamilyAdminService;
 import com.melot.family.driver.service.FamilyInfoService;
@@ -27,8 +54,10 @@ import com.melot.kkcx.transform.RoomTF;
 import com.melot.kktv.base.Page;
 import com.melot.kktv.domain.Honour;
 import com.melot.kktv.domain.PreviewAct;
-import com.melot.kktv.model.*;
-import com.melot.kktv.model.FamilyApplicant;
+import com.melot.kktv.model.Family;
+import com.melot.kktv.model.FamilyHonor;
+import com.melot.kktv.model.FamilyMatchChampion;
+import com.melot.kktv.model.FamilyMatchRank;
 import com.melot.kktv.model.FamilyMember;
 import com.melot.kktv.redis.FamilyApplySource;
 import com.melot.kktv.redis.HotDataSource;
@@ -36,23 +65,22 @@ import com.melot.kktv.redis.MatchSource;
 import com.melot.kktv.redis.MedalSource;
 import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.UserRelationService;
-import com.melot.kktv.util.*;
+import com.melot.kktv.util.AppIdEnum;
+import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
+import com.melot.kktv.util.ConfigHelper;
+import com.melot.kktv.util.Constant;
+import com.melot.kktv.util.FamilyMemberEnum;
+import com.melot.kktv.util.FamilyRankingEnum;
+import com.melot.kktv.util.PaginationUtil;
+import com.melot.kktv.util.PlatformEnum;
+import com.melot.kktv.util.StringUtil;
+import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.module.medal.driver.domain.ResultByFamilyMedal;
 import com.melot.module.medal.driver.service.FamilyMedalService;
 import com.melot.sdk.core.util.MelotBeanFactory;
-import org.apache.commons.io.Charsets;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import java.io.UnsupportedEncodingException;
-import java.sql.SQLException;
-import java.util.*;
 
 /**
  * 家族相关接口
@@ -80,10 +108,6 @@ public class FamilyAction {
 	@Resource
     ActorService actorService;
 
-    private static String encode = Charsets.ISO_8859_1.name();
-
-    private static String decode = Charsets.UTF_8.name();
-
     private static String REGEX = ",";
     
     /**
@@ -93,21 +117,11 @@ public class FamilyAction {
 	 */
 	public JsonObject getFamilyList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws UnsupportedEncodingException {
 
-        String[] challengerFamilyArr = configService.getChallengerFamily().trim().split(REGEX);
-        String[] trumpFamilyArr = configService.getTrumpFamily().trim().split(REGEX);
-        String[] trumpFamilyIdsArr = configService.getTrumpFamilyIds().trim().split(REGEX);
-        String[] goldMedalFamilyArr = configService.getGoldMedalFamily().trim().split(REGEX);
-        String[] goldMedalFamilyIdsArr = configService.getGoldMedalFamilyIds().trim().split(REGEX);
+        String[] annualFamilyArr = configService.getAnnualFamily().trim().split(REGEX);
+        String[] annualFamilyIdsArr = configService.getAnnualFamilyIds().trim().split(REGEX);
 
-        String challengerFamilyName = challengerFamilyArr[0];
-        String trumpFamilyName = trumpFamilyArr[0];
-        String goldMedalFamilyName = goldMedalFamilyArr[0];
-
-        String challengerFamilyBackground = challengerFamilyArr[1];
-        String trumpFamilyBackground = trumpFamilyArr[1];
-        String goldMedalFamilyBackground = goldMedalFamilyArr[1];
-        Set<String> trumpFamilyIds = Sets.newHashSet(trumpFamilyIdsArr);
-        Set<String> goldMedalFamilyIds = Sets.newHashSet(goldMedalFamilyIdsArr);
+        String annualFamilyName = annualFamilyArr[0];
+        String annualFamilyBackground = annualFamilyArr[1];
 
         // 定义使用的参数
 		int platform = 0;
@@ -153,9 +167,9 @@ public class FamilyAction {
 			if (familyIdList != null && familyIdList.size() > 0) {
 				FAMILYID_JSON_ARRAY_CACHE.clear();
 				EXPIRE_TIME_OF_FAMILY_LIST_CACHE = null;
-				if (lastChampionFamilyId != null) {
-					FAMILYID_JSON_ARRAY_CACHE.add(lastChampionFamilyId);
-				}
+//				if (lastChampionFamilyId != null) {
+//					FAMILYID_JSON_ARRAY_CACHE.add(lastChampionFamilyId);
+//				}
 				for (Integer familyId : familyIdList) {
 					if (lastChampionFamilyId == null
 							|| familyId.intValue() != lastChampionFamilyId.intValue()) {
@@ -212,14 +226,15 @@ public class FamilyAction {
                         boolean showCorner = false;
 						String cornerName = "";
 						String cornerBackground = "";
-                        if(trumpFamilyIds.contains(familyId + "")){ //王牌
-                            showCorner = true;
-                            cornerName = trumpFamilyName;
-                            cornerBackground = trumpFamilyBackground;
-                        }else if(goldMedalFamilyIds.contains(familyId + "")){ //金牌
-                            showCorner = true;
-                            cornerName = goldMedalFamilyName;
-                            cornerBackground = goldMedalFamilyBackground;
+                        int index = 0;
+                        for (String annualFamilyStr : annualFamilyIdsArr) { //年度盛典
+                            index++;
+                            if (annualFamilyStr.equals(String.valueOf(familyId))) {
+                                showCorner = true;
+                                cornerName = annualFamilyName + index;
+                                cornerBackground = annualFamilyBackground;
+                                break;
+                            }
                         }
                         familyObj.addProperty("showCorner", showCorner);
                         familyObj.addProperty("cornerName", cornerName);

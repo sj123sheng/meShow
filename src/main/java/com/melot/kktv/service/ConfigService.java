@@ -22,13 +22,9 @@ public class ConfigService {
 
     private String challengerFamily;
 
-    private String trumpFamily;
+    private String annualFamily;
 
-    private String trumpFamilyIds;
-
-    private String goldMedalFamily;
-
-    private String goldMedalFamilyIds;
+    private String annualFamilyIds;
     
     //限制渠道及版本号
     private String limitCvs;
@@ -157,40 +153,22 @@ public class ConfigService {
         this.challengerFamily = challengerFamily;
     }
 
-    @DisconfFileItem(name = "trump.family", associateField = "trumpFamily")
-    public String getTrumpFamily() {
-        return trumpFamily;
+    @DisconfFileItem(name = "annual.family", associateField = "annualFamily")
+    public String getAnnualFamily() {
+        return annualFamily;
     }
 
-    public void setTrumpFamily(String trumpFamily) {
-        this.trumpFamily = trumpFamily;
+    public void setAnnualFamily(String annualFamily) {
+        this.annualFamily = annualFamily;
     }
 
-    @DisconfFileItem(name = "trump.familyIds", associateField = "trumpFamilyIds")
-    public String getTrumpFamilyIds() {
-        return trumpFamilyIds;
+    @DisconfFileItem(name = "annual.familyIds", associateField = "annualFamilyIds")
+    public String getAnnualFamilyIds() {
+        return annualFamilyIds;
     }
 
-    public void setTrumpFamilyIds(String trumpFamilyIds) {
-        this.trumpFamilyIds = trumpFamilyIds;
-    }
-
-    @DisconfFileItem(name = "goldMedal.family", associateField = "goldMedalFamily")
-    public String getGoldMedalFamily() {
-        return goldMedalFamily;
-    }
-
-    public void setGoldMedalFamily(String goldMedalFamily) {
-        this.goldMedalFamily = goldMedalFamily;
-    }
-
-    @DisconfFileItem(name = "goldMedal.familyIds", associateField = "goldMedalFamilyIds")
-    public String getGoldMedalFamilyIds() {
-        return goldMedalFamilyIds;
-    }
-
-    public void setGoldMedalFamilyIds(String goldMedalFamilyIds) {
-        this.goldMedalFamilyIds = goldMedalFamilyIds;
+    public void setAnnualFamilyIds(String annualFamilyIds) {
+        this.annualFamilyIds = annualFamilyIds;
     }
     
     @DisconfFileItem(name = "global.limitCvs", associateField = "limitCvs")
