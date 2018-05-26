@@ -2607,6 +2607,10 @@
 		<constructor-arg name="t" ref="otherFunction" />
 		<constructor-arg name="methodName" value="checkPhrase" />
 	</bean>
+	<bean id="51090202" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="otherFunction" />
+		<constructor-arg name="methodName" value="getOpenPage" />
+	</bean>
 
 	<bean id="51100101" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="videoBgmFunction" />
@@ -3139,15 +3143,45 @@
 		<constructor-arg name="t" ref="liveShopFunctions" />
 		<constructor-arg name="methodName" value="addDistributorOrder" />
 	</bean>
+
+	<bean id="51060514" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="sendOrder" />
+	</bean>
+
+	<bean id="51060515" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getBalance" />
+	</bean>
+
+	<bean id="52060516" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="cashApply" />
+	</bean>
+
+	<bean id="51060517" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getTransactionDetail" />
+	</bean>
+
+	<bean id="51060518" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="isSaleActor" />
+	</bean>
+
+	<bean id="51060519" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getSaleActorInfo" />
+	</bean>
 	
 	<!-- 获取积分礼物列表 -->
-	<bean id="52010406" class="com.melot.sdk.core.function.GenericFunction">
+	<bean id="51010406" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="nobilityFunctions" />
 		<constructor-arg name="methodName" value="getNobilityGifts" />
 	</bean>
 	
 	<!-- 兑换积分礼物 -->
-	<bean id="52010407" class="com.melot.sdk.core.function.GenericFunction">
+	<bean id="51010407" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="nobilityFunctions" />
 		<constructor-arg name="methodName" value="exchangeNobilityGift" />
 	</bean>

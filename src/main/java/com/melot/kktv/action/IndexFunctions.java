@@ -972,7 +972,7 @@ public class IndexFunctions {
         if (isId) {
             actorId = UserAssetServices.luckyIdToUserId(StringUtil.parseFromStr(fuzzyString, 0));
             if (actorId == null || actorId <= 0) {
-                actorId = Integer.valueOf(fuzzyString);
+                actorId = StringUtil.parseFromStr(fuzzyString, 0);
             }
         } else {
             // 敏感字验证

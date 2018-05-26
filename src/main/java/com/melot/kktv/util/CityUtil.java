@@ -171,8 +171,10 @@ public class CityUtil {
 		        if (ipInfo.getNationalCode() != null && ipInfo.getNationalCode().equals("86")) {
 		        	if (ipInfo.getProvince() != null) {
 		        		provinceId = getCityIdByCityName(ipInfo.getProvince());
-		        		if (CENTRAL_CITY.contains(ipInfo.getProvince()) || ipInfo.getCity() == null) {
+		        		if (CENTRAL_CITY.contains(ipInfo.getProvince())) {
 		        			return provinceId == null ? DEFAULT_CITY_ID : provinceId;
+		        		} else if (ipInfo.getCity() == null) {
+		        		    return getProvincialCapital(provinceId); 		        		    
 		        		} else {
 		        			city = ipInfo.getCity();
 		        			if (provinceId != null) {
@@ -261,6 +263,23 @@ public class CityUtil {
             }
         } catch (SQLException e) {
             logger.error("fail to execute sql getCityDefaultChannel, cityId : " + cityId, e);
+        }
+        return DEFAULT_CHANNEL;
+    }
+    
+    /**
+     * 根据省份id获取省会城市
+     * @param provinceId
+     * @return
+     */
+    public static int getProvincialCapital(int provinceId) {
+        try {
+            Integer result = (Integer) SqlMapClientHelper.getInstance(DB.SLAVE_PG).queryForObject("Other.getProvincialCapital", provinceId);
+            if (result != null) {
+                return result;
+            }
+        } catch (SQLException e) {
+            logger.error("fail to execute sql getProvincialCapital, provinceId : " + provinceId, e);
         }
         return DEFAULT_CHANNEL;
     }

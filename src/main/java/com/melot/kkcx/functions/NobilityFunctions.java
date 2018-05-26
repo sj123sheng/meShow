@@ -391,7 +391,7 @@ public class NobilityFunctions {
     }
 
     /**
-     * 获取积分礼物列表[52010406]
+     * 获取积分礼物列表[51010406]
      * @param jsonObject
      * @param checkTag
      * @param request
@@ -427,6 +427,7 @@ public class NobilityFunctions {
                 List<NobilityPointGift> list = page.getList();
                 JsonArray giftList = new JsonArray();
                 if (list == null) {
+                    result.addProperty("count", 0);
                     result.add("giftList", giftList);
                     result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
                     return result;
@@ -440,6 +441,7 @@ public class NobilityFunctions {
                     
                     giftList.add(infoJson);
                 }
+                result.addProperty("count", page.getCount());
                 result.add("giftList", giftList);
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
             } else {
@@ -453,7 +455,7 @@ public class NobilityFunctions {
     }
 
     /**
-     * 兑换积分礼物[52010407]
+     * 兑换积分礼物[51010407]
      * @param jsonObject
      * @param checkTag
      * @param request

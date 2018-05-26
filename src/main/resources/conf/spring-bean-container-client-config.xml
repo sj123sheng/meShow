@@ -38,7 +38,7 @@
 	<kkrpc:reference id="kkActorRelationService" interface="com.melot.kkcore.relation.service.ActorRelationService" version="1.0.1"></kkrpc:reference>
 	<kkrpc:reference id="showMoneyService" interface="com.melot.showmoney.driver.service.ShowMoneyService" version="1.0.2"></kkrpc:reference>
 	<kkrpc:reference id="guardService" interface="com.melot.module.guard.driver.service.GuardService" version="1.0.0"></kkrpc:reference>
-	<kkrpc:reference id="noticeService" interface="com.melot.notice.driver.service.NoticeService" version="1.0.3"></kkrpc:reference>
+	<kkrpc:reference id="noticeService" interface="com.melot.notice.driver.service.NoticeService" version="1.0.4"></kkrpc:reference>
 	<kkrpc:reference id="securityService" interface="com.melot.security.driver.service.SecurityService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="feedbackService" interface="com.melot.feedback.driver.service.FeedbackService" version="1.0.5"></kkrpc:reference>
 	<kkrpc:reference id="blacklistService" interface="com.melot.blacklist.service.BlacklistService" version="1.0.0"></kkrpc:reference>
@@ -93,7 +93,7 @@
 	<kkrpc:reference id="friendEmoticonService" interface="com.melot.common.driver.service.FriendEmoticonService" version="1.0.0"></kkrpc:reference>
 
     <!-- 礼物配置信息 -->
-	<kkrpc:reference id="giftListService" interface="com.melot.room.gift.service.GiftListService" version="1.0.7"></kkrpc:reference>
+	<kkrpc:reference id="giftListService" interface="com.melot.room.gift.service.GiftListService" version="1.0.8"></kkrpc:reference>
 	
 	<!-- 动态模块 -->
 	<kkrpc:reference id="newsCenter" interface="com.melot.news.service.NewsService" version="1.2.2"></kkrpc:reference>
@@ -181,4 +181,11 @@
 	
 	<!-- 贵族积分礼物服务 -->
 	<kkrpc:reference id="nobilityPointGiftService" interface="com.melot.kk.nobility.api.service.NobilityPointGiftService" version="1.0.0"/>
+	
+	<!-- 区域化开屏页服务 -->
+	<kkrpc:reference id="openPageService" interface="com.melot.kk.config.api.service.OpenPageService" version="1.0.0"/>
+	<!-- 大厅模块 -->
+	<kkrpc:reference id="hallRoomService" interface="com.melot.kk.hall.api.service.HallRoomService" version="1.0.0"/>
+	<kkrpc:reference id="hallPartService" interface="com.melot.kk.hall.api.service.SysMenuService" version="1.0.0"/>
+	<kkrpc:reference id="hallHomeService" interface="com.melot.kk.hall.api.service.HomeService" version="1.0.0"/>
 </beans>

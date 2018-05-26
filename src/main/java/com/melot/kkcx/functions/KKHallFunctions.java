@@ -1,6 +1,7 @@
 package com.melot.kkcx.functions;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -15,26 +16,25 @@ import com.melot.family.driver.domain.DO.ResRoomInfoDO;
 import com.melot.family.driver.domain.FamilyTopConf;
 import com.melot.family.driver.service.FamilyTopConfService;
 import com.melot.kk.demo.api.service.NewRcmdService;
-import com.melot.kk.hall.api.domain.WebSkinConf;
-import com.melot.kk.hall.api.service.WebSkinConfService;
+import com.melot.kk.hall.api.domain.*;
+import com.melot.kk.hall.api.service.*;
 import com.melot.kkcore.relation.api.ActorRelation;
 import com.melot.kkcore.relation.api.RelationType;
 import com.melot.kkcore.relation.service.ActorRelationService;
 import com.melot.kkcx.service.RoomService;
+import com.melot.kkcx.transform.HallRoomTF;
 import com.melot.kkcx.transform.RoomTF;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.redis.RecommendAlgorithmSource;
-import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.UserRelationService;
 import com.melot.kktv.util.*;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.sdk.core.util.MelotBeanFactory;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
@@ -55,11 +55,11 @@ public class KKHallFunctions {
 
     private static final String KK_USER_ROOM_CACHE_KEY = "KKHallFunctions.getKKUserRelationRoomList.%s.%s";
 
-    @Autowired
-    private ConfigService configService;
-
     @Resource
     FamilyTopConfService familyTopConfService;
+
+    @Resource
+    private HallRoomService hallRoomService;
 
     /**
      * 获取用户有关的房间列表接口（55000001）：守护+管理+关注
@@ -217,7 +217,8 @@ public class KKHallFunctions {
 
         JsonArray roomArray = new JsonArray();
 
-        start = start <= 1 ? 0 : start; // 起始位置从 0 开始
+        // 起始位置从 0 开始
+        start = start <= 1 ? 0 : start;
 
         Set<String> roomSet = KKHallSource.rangeSortedSet(ROOM_CACHE_KEY, start, start + offset - 1);
         List<Integer> roomIdList = new ArrayList<Integer>();
@@ -455,22 +456,26 @@ public class KKHallFunctions {
             return result;
         }
 
-        start = start <= 1 ? 0 : start; // 起始位置从 0 开始
-
+        // 起始位置从 0 开始
+        start = start <= 1 ? 0 : start;
         JsonArray roomArray = new JsonArray();
         int roomCount = 0;
+        List<HallRoomInfoDTO> roomList = null;
+        Result<List<HallRoomInfoDTO>> roomListResult;
 
-        FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
-        List<RoomInfo> roomList = null;
         if (type == 5) {
             // 第一页前5个栏目优先放最近开播，其后栏目用主播等级内容补充
-            roomCount = firstPageHandler.getHotRoomCount(4, gender) + firstPageHandler.getHotRoomCount(3, gender);
+            roomCount = hallRoomService.getHotRoomCount(4, gender).getData() + hallRoomService.getHotRoomCount(3, gender).getData();
 
             // 最近开播
-            HashSet<Integer> filterIds = new HashSet<Integer>();
-            List<RoomInfo> recentList = firstPageHandler.getHotRooms(4, gender, start, offset <= 5 ? offset : 5);
-            if (recentList != null && recentList.size() > 0) {
-                for (RoomInfo room : recentList) {
+            Set<Integer> filterIds = Sets.newHashSet();
+            List<HallRoomInfoDTO> recentList = null;
+            roomListResult = hallRoomService.getHotRooms(4, gender, start, offset <= 5 ? offset : 5);
+            if (roomListResult != null) {
+                recentList = roomListResult.getData();
+            }
+            if (CollectionUtils.isNotEmpty(recentList)) {
+                for (HallRoomInfoDTO room : recentList) {
                     filterIds.add(room.getActorId());
                 }
             }
@@ -480,17 +485,20 @@ public class KKHallFunctions {
                     int filterSize = 0;
                     int fillCount = 0;
                     roomList = recentList;
-                    if (roomList != null && roomList.size() > 0) {
+                    if (CollectionUtils.isNotEmpty(roomList)) {
                         filterSize = roomList.size();
                     }
                     fillCount = offset - filterSize;
                     if (roomList != null && fillCount > 0) {
-                        roomList.addAll(firstPageHandler.getFilterHotRooms(3, gender, filterIds, start, fillCount));
+                        roomListResult = hallRoomService.getFilterHotRooms(3, gender, filterIds, start, fillCount);
+                        if (roomListResult != null && CollectionUtils.isNotEmpty(roomListResult.getData())) {
+                            roomList.addAll(roomListResult.getData());
+                        }
                     }
 
                     if (roomList != null && roomList.size() > 0) {
-                        for (RoomInfo roomInfo : roomList) {
-                            roomArray.add(RoomTF.roomInfoToJson(roomInfo, platform));
+                        for (HallRoomInfoDTO roomInfo : roomList) {
+                            roomArray.add(HallRoomTF.roomInfoToJson(roomInfo, platform));
                         }
                     }
                 } catch (Exception e) {
@@ -498,10 +506,13 @@ public class KKHallFunctions {
                 }
             } else {
                 try {
-                    roomList = firstPageHandler.getFilterHotRooms(3, gender, filterIds, start, offset);
-                    if (roomList != null && roomList.size() > 0) {
-                        for (RoomInfo roomInfo : roomList) {
-                            roomArray.add(RoomTF.roomInfoToJson(roomInfo, platform));
+                    roomListResult = hallRoomService.getFilterHotRooms(3, gender, filterIds, start, offset);
+                    if (roomListResult != null) {
+                        roomList = roomListResult.getData();
+                    }
+                    if (CollectionUtils.isNotEmpty(roomList)) {
+                        for (HallRoomInfoDTO roomInfo : roomList) {
+                            roomArray.add(HallRoomTF.roomInfoToJson(roomInfo, platform));
                         }
                     }
                 } catch (Exception e) {
@@ -510,11 +521,14 @@ public class KKHallFunctions {
             }
         } else {
             try {
-                roomCount = firstPageHandler.getHotRoomCount(type, gender);
-                roomList = firstPageHandler.getHotRooms(type, gender, start, offset);
-                if (roomList != null && roomList.size() > 0) {
-                    for (RoomInfo roomInfo : roomList) {
-                        roomArray.add(RoomTF.roomInfoToJson(roomInfo, platform));
+                roomCount = hallRoomService.getHotRoomCount(type, gender).getData();
+                roomListResult = hallRoomService.getHotRooms(type, gender, start, offset);
+                if (roomListResult != null) {
+                    roomList = roomListResult.getData();
+                }
+                if (CollectionUtils.isNotEmpty(roomList)) {
+                    for (HallRoomInfoDTO roomInfo : roomList) {
+                        roomArray.add(HallRoomTF.roomInfoToJson(roomInfo, platform));
                     }
                 }
             } catch (Exception e) {
@@ -889,8 +903,8 @@ public class KKHallFunctions {
                 resRoomInfoDOS = familyTopConfService.getAliveRoomInfoByFamilyId(familyId).getData();
                 if(resRoomInfoDOS != null) {
                     for(ResRoomInfoDO resRoomInfoDO : resRoomInfoDOS) {
-                        RoomInfo roomInfo = BeanMapper.map(resRoomInfoDO, RoomInfo.class);
-                        JsonObject roomInfoJsonObject = RoomTF.roomInfoToJson(roomInfo, platform);
+                        HallRoomInfoDTO roomInfo = BeanMapper.map(resRoomInfoDO, HallRoomInfoDTO.class);
+                        JsonObject roomInfoJsonObject = HallRoomTF.roomInfoToJson(roomInfo, platform);
                         roomInfoJsonObject.addProperty("sideLabelContent", familyTopConf.getFamilyLabel());
                         roomInfoJsonObject.addProperty("sideLabelColor", "1");
                         roomArray.add(roomInfoJsonObject);
@@ -903,14 +917,16 @@ public class KKHallFunctions {
 
         if(roomArray.size() < 3) {
             try {
-                FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
-                List<RoomInfo> trumpRoomList = firstPageHandler.getTrumpRooms(offset);
-                if (trumpRoomList != null && !trumpRoomList.isEmpty()) {
-                    for (RoomInfo roomInfo : trumpRoomList) {
-                        if(roomArray.size() >= 3) {
-                            break;
+                Result<List<HallRoomInfoDTO>> roomListResult = hallRoomService.getTrumpRooms(offset);
+                if (roomListResult != null) {
+                    List<HallRoomInfoDTO> trumpRoomList = roomListResult.getData();
+                    if (CollectionUtils.isNotEmpty(trumpRoomList)) {
+                        for (HallRoomInfoDTO roomInfo : trumpRoomList) {
+                            if(roomArray.size() >= 3) {
+                                break;
+                            }
+                            roomArray.add(HallRoomTF.roomInfoToJson(roomInfo, platform));
                         }
-                        roomArray.add(RoomTF.roomInfoToJson(roomInfo, platform));
                     }
                 }
             } catch (Exception e) {

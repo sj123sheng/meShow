@@ -70,13 +70,19 @@ public class LiveShopTF {
         JsonArray products = new JsonArray();
         for (LiveShopOrderItemDTO itemDTO : orderDTO.getOrderItems()) {
             JsonObject product = new JsonObject();
-            product.addProperty("productId", itemDTO.getProductId());
+            if (itemDTO.getProductId() != null) {
+                product.addProperty("productId", itemDTO.getProductId());
+            }
+            if (itemDTO.getProductSpec() != null) {
+                product.addProperty("productSpec", itemDTO.getProductSpec());
+            }
+            if (itemDTO.getResourceUrl() != null) {
+                product.addProperty("productUrl", itemDTO.getResourceUrl() + "!256");
+                product.addProperty("productUrl_big", itemDTO.getResourceUrl());
+            }
             product.addProperty("productName", itemDTO.getProductName());
-            product.addProperty("productUrl", itemDTO.getResourceUrl() + "!256");
-            product.addProperty("productUrl_big", itemDTO.getResourceUrl());
             product.addProperty("productPrice", itemDTO.getProductPrice());
             product.addProperty("productCount", itemDTO.getProductCount());
-            product.addProperty("productSpec", itemDTO.getProductSpec());
             products.add(product);
         }
         result.add("products", products);
