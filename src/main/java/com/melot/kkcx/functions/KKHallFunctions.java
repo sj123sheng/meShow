@@ -6,9 +6,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.api.menu.sdk.dao.domain.HDRoomPoster;
-import com.melot.api.menu.sdk.dao.domain.HomePage;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
-import com.melot.api.menu.sdk.handler.FirstPageHandler;
 import com.melot.api.menu.sdk.redis.KKHallSource;
 import com.melot.api.menu.sdk.service.RoomInfoService;
 import com.melot.family.driver.domain.DO.ResRoomInfoDO;
@@ -588,8 +586,6 @@ public class KKHallFunctions {
                 tempList = tempListResult.getData();
             }
             
-            FirstPageHandler handler = (FirstPageHandler) MelotBeanFactory.getBean("firstPageHandler");
-            List<HomePage> fistPagelist = handler.getFistPagelist(appId, channel, platform, 0, 0, true, 1, true);
         } catch (Exception e) {
             logger.error("Fail to call hallHomeService.getFistPagelist ", e);
         }
