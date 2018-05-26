@@ -8,9 +8,6 @@ import java.util.Random;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
-import com.melot.api.menu.sdk.dao.domain.HomePage;
-import com.melot.api.menu.sdk.dao.domain.SysMenu;
-import com.melot.api.menu.sdk.handler.FirstPageHandler;
 import com.melot.kk.hall.api.domain.*;
 import com.melot.kk.hall.api.service.HallRoomService;
 import com.melot.kk.hall.api.service.HomeService;
@@ -78,22 +75,29 @@ public class HallFunctions {
 			return result;
 		}
 		
-		List<HomePage> tempList = null;
+		List<FirstPageConfDTO> tempList = null;
 		
 		try {
-		    FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
 		    if (appId == 3) { // 金海岸首页不做房间过滤
-		        tempList = firstPageHandler.getFistPagelist(appId, channel, platform, false);
+		        Result<List<FirstPageConfDTO>> tempListResult = hallHomeService.getFistPagelist(appId, channel, platform, 0, 0, false, 0, false);
+		        if (tempListResult != null && CommonStateCode.SUCCESS.equals(tempListResult.getCode())) {
+		            tempList = tempListResult.getData();
+		                    
+                }
 		    } else {
-		        tempList = firstPageHandler.getFistPagelist(appId, channel, platform);
+		        Result<List<FirstPageConfDTO>> tempListResult = hallHomeService.getFistPagelist(appId, channel, platform, 0, 0, true, 0, false);
+		        if (tempListResult != null && CommonStateCode.SUCCESS.equals(tempListResult.getCode())) {
+                    tempList = tempListResult.getData();
+                            
+                }
 		    }
 		} catch(Exception e) {
-			logger.error("Fail to call firstPageHandler.getFistPagelist ", e);
+			logger.error("Fail to call hallHomeService.getFistPagelist ", e);
 		}
 		
         if (tempList != null) {
             JsonArray plateList = new JsonArray();
-            for (HomePage temp : tempList) {
+            for (FirstPageConfDTO temp : tempList) {
                 JsonObject json = new JsonObject();
                 json.addProperty("position", temp.getSeatId());
                 json.addProperty("type", temp.getSeatType());
@@ -118,11 +122,10 @@ public class HallFunctions {
                 if (temp.getCdnState() != null) {
                     if (temp.getCdnState() > 0 && temp.getSeatType() != 3) {
                         JsonArray roomArray = new JsonArray();
-                        List<RoomInfo> roomList = temp.getRooms();
+                        List<HallRoomInfoDTO> roomList = temp.getRooms();
                         if (roomList != null) {
-                            for (RoomInfo roomInfo : roomList) {
-                                roomArray.add(RoomTF.roomInfoToJson(roomInfo,
-                                        platform));
+                            for (HallRoomInfoDTO roomInfo : roomList) {
+                                roomArray.add(HallRoomTF.roomInfoToJson(roomInfo, platform));
                             }
                         }
                         json.add("result", roomArray);
@@ -180,18 +183,19 @@ public class HallFunctions {
 		int isdownload = 1;
 		if (cataId == 0 && appId > 0 && channel > 0) {
 			try {
-			    FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
-			    List<HomePage> tempList = firstPageHandler.getFistPagelist(appId, channel, platform, false);
-			    if (tempList != null && tempList.size() > 0) {
-			    	HomePage page = tempList.get(0);
-			    	cataId = page.getDetailId();
-			    	// 11: H5栏目大厅（无下载图标）
-			    	if (page.getSeatType() == 11) {
-			    		isdownload = 0;
-			    	}
-			    }
+			    Result<List<FirstPageConfDTO>> tempListResult = hallHomeService.getFistPagelist(appId, channel, platform, null, null, false, 0, false);
+			    if (tempListResult != null && CommonStateCode.SUCCESS.equals(tempListResult.getCode())
+			            && CollectionUtils.isNotEmpty(tempListResult.getData())) {
+			        List<FirstPageConfDTO> tempList = tempListResult.getData();
+			        FirstPageConfDTO page = tempList.get(0);
+                    cataId = page.getDetailId();
+                    // 11: H5栏目大厅（无下载图标）
+                    if (page.getSeatType().equals(11)) {
+                        isdownload = 0;
+                    }
+                }
 			} catch(Exception e) {
-				logger.error("Fail to call firstPageHandler.getFistPagelist ", e);
+				logger.error("Fail to call hallHomeService.getFistPagelist ", e);
 			}
 		}
 		result.addProperty("isdownload", isdownload);
@@ -199,8 +203,8 @@ public class HallFunctions {
         // 周边达人
         if (cataId == 42 && cityId == 0) {
         	String cityIp = com.melot.kktv.service.GeneralService.getIpAddr(request, appId, platform, null);
-    		if (cityIp != null && cityIp.indexOf(",") > 0) {
-    			cityIp = cityIp.substring(cityIp.indexOf(",") + 1, cityIp.length());
+    		if (cityIp != null && cityIp.indexOf(',') > 0) {
+    			cityIp = cityIp.substring(cityIp.indexOf(',') + 1, cityIp.length());
     		}
         	Map<String, Integer> citMap = GeneralService.getIpCity(cityIp);
         	if (citMap != null && citMap.get("area") != null && citMap.get("city") != null) {
@@ -208,17 +212,22 @@ public class HallFunctions {
         	}
         }
 		
-		SysMenu sysMenu = null;
+        HallPartConfDTO sysMenu = null;
         
 		try {
-		    FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
 		    if (cataId == 42) {
-		        sysMenu = firstPageHandler.getPartListForRim(appId, cataId, cityId, start, offset);
+		        Result<HallPartConfDTO> sysMenuResult = hallPartService.getPartListForRim(appId, cataId, cityId, start, offset);
+		        if (sysMenuResult != null && CommonStateCode.SUCCESS.equals(sysMenuResult.getCode())) {
+                    sysMenu = sysMenuResult.getData();
+                }
 		    } else {
-		        sysMenu = firstPageHandler.getPartList(cataId, userId, cityId, start, offset);
+		        Result<HallPartConfDTO> sysMenuResult = hallPartService.getPartList(cataId, userId, cityId, start, offset);
+                if (sysMenuResult != null && CommonStateCode.SUCCESS.equals(sysMenuResult.getCode())) {
+                    sysMenu = sysMenuResult.getData();
+                }
 		    }
 		} catch(Exception e) {
-			logger.error("Fail to call firstPageHandler.getPartList, "
+			logger.error("Fail to call hallPartService.getPartList, "
 					+ "cataId " + cataId + " userId " + ((userId == null)?" ":userId) + " cityId " + cityId, e);
 		}
 		
@@ -251,10 +260,10 @@ public class HallFunctions {
 			result.addProperty("roomTotal", roomTotal);
 			
 			JsonArray roomArray = new JsonArray();
-			List<RoomInfo> roomList = sysMenu.getRooms();
+			List<HallRoomInfoDTO> roomList = sysMenu.getRooms();
 			if (roomList != null) {
-				for (RoomInfo roomInfo : roomList) {
-					roomArray.add(RoomTF.roomInfoToJson(roomInfo, platform));
+				for (HallRoomInfoDTO roomInfo : roomList) {
+					roomArray.add(HallRoomTF.roomInfoToJson(roomInfo, platform));
 				}
 			}
 			
@@ -305,7 +314,7 @@ public class HallFunctions {
 			    }
 			}
 		} catch(Exception e) {
-			logger.error("Fail to call firstPageHandler.getCataList ", e);
+			logger.error("Fail to call hallPartService.getCataList ", e);
 		}
 		if (hallPartConfDTOResult != null) {
 			hallPartConfDTO = hallPartConfDTOResult.getData();
@@ -620,18 +629,22 @@ public class HallFunctions {
             return result;
         }
         
-        List<HomePage> tempList = null;
+        List<FirstPageConfDTO> tempList = null;
         
         try {
-            FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
-            tempList = firstPageHandler.getFistPagelist(appId, channel, platform, false);
+            
+            Result<List<FirstPageConfDTO>> tempListResult = hallHomeService.getFistPagelist(appId, channel, platform, 0, 0, false, 0, false);
+            if (tempListResult != null && CommonStateCode.SUCCESS.equals(tempListResult.getCode())) {
+                tempList = tempListResult.getData();
+            }
+            
         } catch(Exception e) {
-            logger.error("Fail to call firstPageHandler.getFistPagelist ", e);
+            logger.error("Fail to call hallHomeService.getFistPagelist ", e);
         }
         
         if (tempList != null) {
             JsonArray plateList = new JsonArray();
-            for (HomePage temp : tempList) {
+            for (FirstPageConfDTO temp : tempList) {
                 JsonObject json = new JsonObject();
                 json.addProperty("position", temp.getSeatId());
                 json.addProperty("type", temp.getSeatType());
@@ -658,14 +671,10 @@ public class HallFunctions {
                 if (temp.getCdnState() != null) {
                     if (temp.getCdnState() > 0 && temp.getSeatType() != 3) {
                         JsonArray roomArray = new JsonArray();
-                        List<RoomInfo> roomList = temp.getRooms();
-//                        // 3金海岸首页不做房间过滤
-//                        if (appId != 3) {
-//                            roomList = filterUnLiveRoom(roomList, temp.getLiveTotal(), temp.getHomeShowRooms());
-//                        }
+                        List<HallRoomInfoDTO> roomList = temp.getRooms();
                         if (roomList != null) {
-                            for (RoomInfo roomInfo : roomList) {
-                                roomArray.add(RoomTF.roomInfoToJson(roomInfo, platform));
+                            for (HallRoomInfoDTO roomInfo : roomList) {
+                                roomArray.add(HallRoomTF.roomInfoToJson(roomInfo, platform));
                             }
                         }
                         json.add("result", roomArray);

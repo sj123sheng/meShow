@@ -732,7 +732,7 @@ public class KKHallFunctions {
                 }
             }
             StringBuilder sb = new StringBuilder();
-            if (CollectionUtils.isNotEmpty(roomList)) {
+            if (roomList != null) {
                 for (HallRoomInfoDTO roomInfo : roomList) {
                     // 添加对于右边推荐数据的过滤
                     if (CollectionUtils.isNotEmpty(recommendedRoomIdList)
