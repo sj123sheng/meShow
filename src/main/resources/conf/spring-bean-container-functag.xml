@@ -131,7 +131,6 @@
 	<bean id="10002008" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="indexFunction" />
 		<constructor-arg name="methodName" value="findRoomList" />
-		<constructor-arg name="cacheType" value="120" />
 	</bean>
 	<!-- 获取公告详细 -->
 	<bean id="10002012" class="com.melot.sdk.core.function.GenericFunction">
