@@ -999,7 +999,7 @@ public class IndexFunctions {
                 //根据id可查询用户
                 if (isId) {
                     KkUserService userService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
-                    UserProfile userProfile = userService.getUserProfile(Integer.valueOf(fuzzyString));
+                    UserProfile userProfile = userService.getUserProfile(actorId);
                     if (userProfile != null) {
                         JsonObject jsonObj = new JsonObject();
                         jsonObj.addProperty("userId", userProfile.getUserId());
