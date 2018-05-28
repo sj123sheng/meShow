@@ -188,4 +188,10 @@
 	<kkrpc:reference id="hallRoomService" interface="com.melot.kk.hall.api.service.HallRoomService" version="1.0.0"/>
 	<kkrpc:reference id="hallPartService" interface="com.melot.kk.hall.api.service.SysMenuService" version="1.0.0"/>
 	<kkrpc:reference id="hallHomeService" interface="com.melot.kk.hall.api.service.HomeService" version="1.0.0"/>
+
+    <!-- 大厅模块 -->
+    <kkrpc:reference id="guessAccountService" interface="com.melot.kk.guess.api.service.GuessAccountService" version="1.0.0"/>
+    <kkrpc:reference id="guessConfService" interface="com.melot.kk.guess.api.service.GuessConfService" version="1.0.0"/>
+    <kkrpc:reference id="guessHistService" interface="com.melot.kk.guess.api.service.GuessHistService" version="1.0.0"/>
+
 </beans>

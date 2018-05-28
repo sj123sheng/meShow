@@ -3191,4 +3191,54 @@
 		<constructor-arg name="t" ref="happyPKFunction" />
 		<constructor-arg name="methodName" value="isCompere" />
 	</bean>
+
+    <!-- 竞猜接口 -->
+    <bean id="51050601" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="guessFunctions" />
+        <constructor-arg name="methodName" value="getUserGuessHistory" />
+    </bean>
+    <bean id="51050602" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="guessFunctions" />
+        <constructor-arg name="methodName" value="getUserGuessInfo" />
+    </bean>
+    <bean id="51050603" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="guessFunctions" />
+        <constructor-arg name="methodName" value="getGuessRank" />
+        <constructor-arg name="cacheType" value="60" />
+    </bean>
+    <bean id="51050604" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="guessFunctions" />
+        <constructor-arg name="methodName" value="getMatchStartTimeList" />
+        <constructor-arg name="cacheType" value="60" />
+    </bean>
+    <bean id="51050605" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="guessFunctions" />
+        <constructor-arg name="methodName" value="getGuessSeasonList" />
+        <constructor-arg name="cacheType" value="60" />
+    </bean>
+    <bean id="51050606" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="guessFunctions" />
+        <constructor-arg name="methodName" value="guessBet" />
+    </bean>
+    <bean id="51050607" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="guessFunctions" />
+        <constructor-arg name="methodName" value="applyDelivery" />
+    </bean>
+    <bean id="51050608" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="guessFunctions" />
+        <constructor-arg name="methodName" value="getDeliveryInfo" />
+    </bean>
+    <bean id="51050609" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="guessFunctions" />
+        <constructor-arg name="methodName" value="getWorldCupRooms" />
+    </bean>
+    <bean id="51050610" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="guessFunctions" />
+        <constructor-arg name="methodName" value="getAccessGuessCurrencyTaskList" />
+    </bean>
+    <bean id="51050611" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="guessFunctions" />
+        <constructor-arg name="methodName" value="guessWithdraw" />
+    </bean>
+
 </beans>
