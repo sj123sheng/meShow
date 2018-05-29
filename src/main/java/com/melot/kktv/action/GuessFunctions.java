@@ -21,6 +21,7 @@ import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.GeneralService;
 import com.melot.kktv.util.*;
 import org.apache.log4j.Logger;
+import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -28,6 +29,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import static com.melot.kktv.util.ParamCodeEnum.*;
 
@@ -593,9 +595,26 @@ public class GuessFunctions {
             result.addProperty("TagCode", e.getErrCode());
             return result;
         }
-
         try {
-
+            Result<List<UserGuessWaysStatusDTO>> res = guessAccountService.getUserGuessWaysStatus(userId);
+            if (!ObjectUtils.isEmpty(res) && TagCodeEnum.SUCCESS.equals(res.getCode())){
+                List<UserGuessWaysStatusDTO> userGuessWaysStatusDTOS = res.getData();
+                if (userGuessWaysStatusDTOS==null || userGuessWaysStatusDTOS.isEmpty()){
+                    result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                }
+                JsonArray array = new JsonArray();
+                for (UserGuessWaysStatusDTO userGuessWaysStatusDTO : userGuessWaysStatusDTOS) {
+                    JsonObject object = new JsonObject();
+                    object.addProperty("guessTaskId", userGuessWaysStatusDTO.getGuessTaskId());
+                    object.addProperty("guessTaskStatus", userGuessWaysStatusDTO.getGuessTaskStatus());
+                    array.add(object);
+                }
+                result.add("guessTaskList", array);
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                return result;
+            }else {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            }
             return result;
         } catch (Exception e) {
             logger.error("Error getAccessGuessCurrencyTaskList()", e);
