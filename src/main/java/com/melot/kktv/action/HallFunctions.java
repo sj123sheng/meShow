@@ -79,13 +79,13 @@ public class HallFunctions {
 		
 		try {
 		    if (appId == 3) { // 金海岸首页不做房间过滤
-		        Result<List<FirstPageConfDTO>> tempListResult = hallHomeService.getFistPagelist(appId, channel, platform, 0, 0, false, 0, false);
+		        Result<List<FirstPageConfDTO>> tempListResult = hallHomeService.getFistPagelist(appId, channel, platform, 0, 0, 0, false, 0, false);
 		        if (tempListResult != null && CommonStateCode.SUCCESS.equals(tempListResult.getCode())) {
 		            tempList = tempListResult.getData();
 		                    
                 }
 		    } else {
-		        Result<List<FirstPageConfDTO>> tempListResult = hallHomeService.getFistPagelist(appId, channel, platform, 0, 0, true, 0, false);
+		        Result<List<FirstPageConfDTO>> tempListResult = hallHomeService.getFistPagelist(appId, channel, platform, 0, 0, 0, true, 0, false);
 		        if (tempListResult != null && CommonStateCode.SUCCESS.equals(tempListResult.getCode())) {
                     tempList = tempListResult.getData();
                             
@@ -183,7 +183,7 @@ public class HallFunctions {
 		int isdownload = 1;
 		if (cataId == 0 && appId > 0 && channel > 0) {
 			try {
-			    Result<List<FirstPageConfDTO>> tempListResult = hallHomeService.getFistPagelist(appId, channel, platform, null, null, false, 0, false);
+			    Result<List<FirstPageConfDTO>> tempListResult = hallHomeService.getFistPagelist(appId, channel, platform, 0, 0, 0, false, 0, false);
 			    if (tempListResult != null && CommonStateCode.SUCCESS.equals(tempListResult.getCode())
 			            && CollectionUtils.isNotEmpty(tempListResult.getData())) {
 			        List<FirstPageConfDTO> tempList = tempListResult.getData();
@@ -633,7 +633,7 @@ public class HallFunctions {
         
         try {
             
-            Result<List<FirstPageConfDTO>> tempListResult = hallHomeService.getFistPagelist(appId, channel, platform, 0, 0, false, 0, false);
+            Result<List<FirstPageConfDTO>> tempListResult = hallHomeService.getFistPagelist(appId, channel, platform, 0, 0, 0, false, 0, false);
             if (tempListResult != null && CommonStateCode.SUCCESS.equals(tempListResult.getCode())) {
                 tempList = tempListResult.getData();
             }

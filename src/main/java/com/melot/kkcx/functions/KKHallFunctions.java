@@ -581,7 +581,7 @@ public class KKHallFunctions {
 
         List<FirstPageConfDTO> tempList = null;
         try {
-            Result<List<FirstPageConfDTO>> tempListResult = hallHomeService.getFistPagelist(appId, channel, platform, 0, 0, true, 1, true);
+            Result<List<FirstPageConfDTO>> tempListResult = hallHomeService.getFistPagelist(appId, channel, platform, 0, 0, 0, true, 1, true);
             if (tempListResult != null && CommonStateCode.SUCCESS.equals(tempListResult.getCode())) {
                 tempList = tempListResult.getData();
             }
