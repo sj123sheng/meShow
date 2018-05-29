@@ -3,6 +3,7 @@ package com.melot.kktv.action;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.melot.kk.guess.api.constant.GuessLotteryStatusEnum;
+import com.melot.kk.guess.api.constant.GuessResultCode;
 import com.melot.kk.guess.api.constant.GuessResultEnum;
 import com.melot.kk.guess.api.constant.SeasonTypeEnum;
 import com.melot.kk.guess.api.dto.*;
@@ -644,7 +645,7 @@ public class GuessFunctions {
         int userId, platform;
         String uuid;
         try {
-            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
+            userId = CommonUtil.getJsonParamInt(jsonObject, USER_ID.getId(), 0, USER_ID.getErrorCode(), 1, Integer.MAX_VALUE);
             uuid = CommonUtil.getJsonParamString(jsonObject, UUID.getId(), null, UUID.getErrorCode(), 1, Integer.MAX_VALUE);
             platform = CommonUtil.getJsonParamInt(jsonObject, PLATFORM.getId(), 0, PLATFORM.getErrorCode(), 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
@@ -657,11 +658,16 @@ public class GuessFunctions {
             // 调用奖励金模块提现发红包
             String clientIP = GeneralService.getIpAddr(request, 1, platform, null);
             Result<Boolean> withdrawResult = guessAccountService.guessWithdraw(userId, uuid, clientIP);
-            if(withdrawResult.getCode().equals(CommonStateCode.SUCCESS)) {
+            String code = withdrawResult.getCode();
+            if(!code.equals(CommonStateCode.SUCCESS)) {
 
-                result.addProperty("withdrawResult",  withdrawResult.getData());
-            }else {
-                result.addProperty("TagCode", withdrawResult.getCode());
+                String errorMessage = GuessResultCode.getMsg(code);
+                if(errorMessage.indexOf("未定义的错误码") > 0) {
+                    errorMessage = withdrawResult.getMsg();
+                }
+
+                result.addProperty("errorMessage", errorMessage);
+                result.addProperty("TagCode", code);
                 return result;
             }
 

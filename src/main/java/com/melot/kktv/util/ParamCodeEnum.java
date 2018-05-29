@@ -31,7 +31,7 @@ public enum ParamCodeEnum {
     SHARE_USER_ID("shareUserId", "53000006"),
     GUESS_HIST_ID("guessHistId", "53000007"),
     ADDRESS_ID("addressId", "53000008"),
-    UUID("UUID", "53000009"),
+    UUID("uuid", "53000009"),
     PLATFORM("platform", "53000010");
 
 
