@@ -162,6 +162,7 @@ public class HallFunctions {
 		Integer userId = null;
 		int cityId = 0;
 		int appId, channel;
+		int area = 1;
 		try {
 			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, TagCodeEnum.PLATFORM_MISSING, 1, Integer.MAX_VALUE);
 			cataId = CommonUtil.getJsonParamInt(jsonObject, "cataId", 0, null, 1, Integer.MAX_VALUE);
@@ -169,6 +170,7 @@ public class HallFunctions {
 			offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 0, TagCodeEnum.OFFSET_MISSING, 1, Integer.MAX_VALUE);
 			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
 			cityId = CommonUtil.getJsonParamInt(jsonObject, "cityId", 0, null, 1, Integer.MAX_VALUE);
+			area = CommonUtil.getJsonParamInt(jsonObject, "area", 0, null, 1, Integer.MAX_VALUE);
 			appId = CommonUtil.getJsonParamInt(jsonObject, "a", 0, TagCodeEnum.APPID_MISSING, 0, Integer.MAX_VALUE);
 			channel = CommonUtil.getJsonParamInt(jsonObject, "c", 0, TagCodeEnum.CHANNEL_MISSING, 0, Integer.MAX_VALUE);
 		} catch (CommonUtil.ErrorGetParameterException e) {
@@ -178,7 +180,10 @@ public class HallFunctions {
 			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
 			return result;
 		}
-		
+		if (area <= 0) {
+            cityId = CityUtil.getCityIdByIpAddr(com.melot.kktv.service.GeneralService.getIpAddr(request, AppIdEnum.AMUSEMENT, platform, null));
+            area = CityUtil.getParentCityId(cityId);
+        }
 		// 若cataId为0，默认取指定appId和channel下第一个栏目的内容
 		int isdownload = 1;
 		if (cataId == 0 && appId > 0 && channel > 0) {
@@ -221,7 +226,7 @@ public class HallFunctions {
                     sysMenu = sysMenuResult.getData();
                 }
 		    } else {
-		        Result<HallPartConfDTO> sysMenuResult = hallPartService.getPartList(cataId, userId, cityId, start, offset);
+		        Result<HallPartConfDTO> sysMenuResult = hallPartService.getPartList(cataId, userId, cityId, area, start, offset);
                 if (sysMenuResult != null && CommonStateCode.SUCCESS.equals(sysMenuResult.getCode())) {
                     sysMenu = sysMenuResult.getData();
                 }
@@ -270,6 +275,8 @@ public class HallFunctions {
 			result.add("roomList", roomArray);
 			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 			result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+			
+			result.addProperty("cityId", cityId);
 		} else {
 			result.addProperty("TagCode", TagCodeEnum.FAIL_TO_CALL_API_MENU_MODULE);
 		}
@@ -617,10 +624,12 @@ public class HallFunctions {
         int platform;
         int appId;
         int channel;
+        int area;
         try {
             platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, TagCodeEnum.PLATFORM_MISSING, 1, Integer.MAX_VALUE);
             appId = CommonUtil.getJsonParamInt(jsonObject, "a", 0, TagCodeEnum.APPID_MISSING, 0, Integer.MAX_VALUE);
             channel = CommonUtil.getJsonParamInt(jsonObject, "c", 0, TagCodeEnum.CHANNEL_MISSING, 0, Integer.MAX_VALUE);
+            area = CommonUtil.getJsonParamInt(jsonObject, "c", 1, null, 0, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -629,11 +638,15 @@ public class HallFunctions {
             return result;
         }
         
+        int cityId = 0;
         List<FirstPageConfDTO> tempList = null;
-        
+        if (area <= 0) {
+            cityId = CityUtil.getCityIdByIpAddr(com.melot.kktv.service.GeneralService.getIpAddr(request, AppIdEnum.AMUSEMENT, platform, null));
+            area = CityUtil.getParentCityId(cityId);
+        }
         try {
             
-            Result<List<FirstPageConfDTO>> tempListResult = hallHomeService.getFistPagelist(appId, channel, platform, 0, 0, 0, false, 0, false);
+            Result<List<FirstPageConfDTO>> tempListResult = hallHomeService.getFistPagelist(appId, channel, platform, 0, cityId, area, false, 0, false);
             if (tempListResult != null && CommonStateCode.SUCCESS.equals(tempListResult.getCode())) {
                 tempList = tempListResult.getData();
             }
