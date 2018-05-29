@@ -625,11 +625,13 @@ public class HallFunctions {
         int appId;
         int channel;
         int area;
+        int cityId = 0;
         try {
             platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, TagCodeEnum.PLATFORM_MISSING, 1, Integer.MAX_VALUE);
             appId = CommonUtil.getJsonParamInt(jsonObject, "a", 0, TagCodeEnum.APPID_MISSING, 0, Integer.MAX_VALUE);
             channel = CommonUtil.getJsonParamInt(jsonObject, "c", 0, TagCodeEnum.CHANNEL_MISSING, 0, Integer.MAX_VALUE);
-            area = CommonUtil.getJsonParamInt(jsonObject, "c", 1, null, 0, Integer.MAX_VALUE);
+            area = CommonUtil.getJsonParamInt(jsonObject, "area", 1, null, 0, Integer.MAX_VALUE);
+            cityId = CommonUtil.getJsonParamInt(jsonObject, "cityId", 0, null, 0, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -638,7 +640,6 @@ public class HallFunctions {
             return result;
         }
         
-        int cityId = 0;
         List<FirstPageConfDTO> tempList = null;
         if (area <= 0) {
             cityId = CityUtil.getCityIdByIpAddr(com.melot.kktv.service.GeneralService.getIpAddr(request, AppIdEnum.AMUSEMENT, platform, null));
