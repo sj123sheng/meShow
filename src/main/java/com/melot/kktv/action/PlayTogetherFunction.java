@@ -70,12 +70,15 @@ public class PlayTogetherFunction {
             
             boolean isLimit = false;
             //渠道版本号限制
-            String[] channels = configService.getSpecifyChannel().trim().split(REGEX);
-            if (channels != null && channels.length > 0) {
-                for (String speicalChannel : channels) {
-                    if (Integer.valueOf(speicalChannel) == channel) {
-                        isLimit = true;
-                        break;
+            String specifyChannel = configService.getSpecifyChannel().trim();
+            if (!StringUtil.strIsNull(specifyChannel)) {
+                String[] channels = specifyChannel.split(REGEX);
+                if (channels != null && channels.length > 0) {
+                    for (String speicalChannel : channels) {
+                        if (Integer.valueOf(speicalChannel) == channel) {
+                            isLimit = true;
+                            break;
+                        }
                     }
                 }
             }
