@@ -667,8 +667,13 @@ public class HallFunctions {
                 }
                 json.addProperty("cdnState", temp.getCdnState());
                 json.addProperty("icon", ConstantEnum.FUN_ICON_HOME + temp.getDetailId()+".png");
-                json.addProperty("cataIcon", temp.getIcon());
-                json.addProperty("webIcon", temp.getWebIcon());
+                if (!StringUtil.strIsNull(temp.getIcon())) {
+                    json.addProperty("cataIcon", temp.getIcon());
+                }
+                
+                if (!StringUtil.strIsNull(temp.getWebIcon())) {
+                    json.addProperty("webIcon", temp.getWebIcon());
+                }
                 if (temp.getSubTitle() != null) {
                     json.addProperty("subTitle", temp.getSubTitle());
                 }
