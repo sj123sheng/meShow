@@ -113,7 +113,37 @@ public class ConfigService {
      * 三人欢乐PK主持人ID
      */
     private String pkCompereIds;
-    
+
+    /**
+     * 球迷解说员直播间id
+     */
+    private Integer fanCommentatorRoomId;
+
+    /**
+     * 美女解说员直播间id
+     */
+    private Integer beautyCommentatorRoomId;
+
+    /**
+     * 世界杯纪念币购买直播间id
+     */
+    private Integer coinPurchaseRoomId;
+
+    @DisconfFileItem(name = "fan.commentator.roomId", associateField = "fanCommentatorRoomId")
+    public Integer getFanCommentatorRoomId() {
+        return fanCommentatorRoomId;
+    }
+
+    @DisconfFileItem(name = "beauty.commentator.roomId", associateField = "beautyCommentatorRoomId")
+    public Integer getBeautyCommentatorRoomId() {
+        return beautyCommentatorRoomId;
+    }
+
+    @DisconfFileItem(name = "coin.purchase.roomId", associateField = "coinPurchaseRoomId")
+    public Integer getCoinPurchaseRoomId() {
+        return coinPurchaseRoomId;
+    }
+
     @DisconfFileItem(name = "playTogether.specialChannel.config", associateField = "playTogetherSpecialChannelConfig")
     public String getPlayTogetherSpecialChannelConfig() {
         return playTogetherSpecialChannelConfig;
