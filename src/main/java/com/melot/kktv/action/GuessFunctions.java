@@ -308,7 +308,7 @@ public class GuessFunctions {
         int userId;
         long matchStartTime;
         try {
-            userId = CommonUtil.getJsonParamInt(jsonObject, USER_ID.getId(), 0, USER_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+            userId = CommonUtil.getJsonParamInt(jsonObject, USER_ID.getId(), 0, null, 1, Integer.MAX_VALUE);
             matchStartTime = CommonUtil.getJsonParamLong(jsonObject, MATCH_START_TIME.getId(), DateUtils.getCurrentDate().getTime(), MATCH_START_TIME.getErrorCode(), 1, Long.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
