@@ -194,4 +194,7 @@
     <kkrpc:reference id="guessConfService" interface="com.melot.kk.guess.api.service.GuessConfService" version="1.0.0"/>
     <kkrpc:reference id="guessHistService" interface="com.melot.kk.guess.api.service.GuessHistService" version="1.0.0"/>
 
+    <!-- 物流模块 -->
+    <kkrpc:reference id="histDeliveryService" interface="com.melot.kk.logistics.api.service.HistDeliveryService" version="1.0.0"/>
+
 </beans>
