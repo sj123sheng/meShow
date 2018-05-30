@@ -3204,16 +3204,17 @@
         <constructor-arg name="t" ref="guessFunctions" />
         <constructor-arg name="methodName" value="getGuessRank" />
         <constructor-arg name="cacheType" value="60" />
+        <constructor-arg name="cacheKeyExcluedUserId" value="1" />
     </bean>
     <bean id="51050604" class="com.melot.sdk.core.function.GenericFunction">
         <constructor-arg name="t" ref="guessFunctions" />
         <constructor-arg name="methodName" value="getMatchStartTimeList" />
-        <constructor-arg name="cacheType" value="60" />
+        <constructor-arg name="cacheType" value="180" />
+        <constructor-arg name="cacheKeyExcluedUserId" value="1" />
     </bean>
     <bean id="51050605" class="com.melot.sdk.core.function.GenericFunction">
         <constructor-arg name="t" ref="guessFunctions" />
         <constructor-arg name="methodName" value="getGuessSeasonList" />
-        <constructor-arg name="cacheType" value="60" />
     </bean>
     <bean id="51050606" class="com.melot.sdk.core.function.GenericFunction">
         <constructor-arg name="t" ref="guessFunctions" />
