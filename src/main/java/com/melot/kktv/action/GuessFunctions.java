@@ -586,7 +586,11 @@ public class GuessFunctions {
     public JsonObject getAccessGuessCurrencyTaskList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 
         JsonObject result = new JsonObject();
-
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
         int userId;
         long matchStartTime;
         try {
@@ -597,7 +601,7 @@ public class GuessFunctions {
         }
         try {
             Result<List<UserGuessWaysStatusDTO>> res = guessAccountService.getUserGuessWaysStatus(userId);
-            if (!ObjectUtils.isEmpty(res) && TagCodeEnum.SUCCESS.equals(res.getCode())){
+            if (!ObjectUtils.isEmpty(res) && CommonStateCode.SUCCESS.equals(res.getCode())){
                 List<UserGuessWaysStatusDTO> userGuessWaysStatusDTOS = res.getData();
                 if (userGuessWaysStatusDTOS==null || userGuessWaysStatusDTOS.isEmpty()){
                     result.addProperty("TagCode", TagCodeEnum.SUCCESS);
