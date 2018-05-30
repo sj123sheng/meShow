@@ -576,9 +576,9 @@ public class TagCodeEnum {
 
 
 	/** 提现金额不符合规则 */
-	public static final String ERROR_WITHDRAW_MONEY = "5106051604";
+	public static final String ERROR_WITHDRAW_MONEY = "5206051604";
 	/** 未绑定银行卡 */
-	public static final String NOT_BIND_BANK_ACCOUNT = "5106051605";
+	public static final String NOT_BIND_BANK_ACCOUNT = "5206051605";
 
 	/** 商家信息不存在 */
 	public static final String NOT_EXIST_SALE_ACTOR = "5106051903";
