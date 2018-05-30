@@ -373,7 +373,7 @@ public class GuessFunctions {
                         } else {
                             JsonArray winningUserList = new JsonArray();
                             List<WinningUserDTO> winningUserDTOList = guessWinningDTO.getWinningUserDTOList();
-                            if(!winningUserDTOList.isEmpty()) {
+                            if(winningUserDTOList != null) {
                                 for(WinningUserDTO winningUserDTO : winningUserDTOList) {
                                     JsonObject jsonObject2 = new JsonObject();
                                     jsonObject2.addProperty("userId", winningUserDTO.getUserId());
