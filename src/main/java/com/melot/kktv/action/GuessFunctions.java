@@ -30,7 +30,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
 import static com.melot.kktv.util.ParamCodeEnum.*;
 
@@ -662,11 +661,13 @@ public class GuessFunctions {
             if(!code.equals(CommonStateCode.SUCCESS)) {
 
                 String errorMessage = GuessResultCode.getMsg(code);
+                int errorTag = 1;
                 if(errorMessage.indexOf("未定义的错误码") > 0) {
-                    errorMessage = withdrawResult.getMsg();
+                    errorTag = 2;
                 }
 
-                result.addProperty("errorMessage", errorMessage);
+                result.addProperty("errorMessage", withdrawResult.getMsg());
+                result.addProperty("errorTag", errorTag);
                 result.addProperty("TagCode", code);
                 return result;
             }
