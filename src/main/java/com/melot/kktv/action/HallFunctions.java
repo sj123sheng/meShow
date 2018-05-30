@@ -631,7 +631,7 @@ public class HallFunctions {
             appId = CommonUtil.getJsonParamInt(jsonObject, "a", 0, TagCodeEnum.APPID_MISSING, 0, Integer.MAX_VALUE);
             channel = CommonUtil.getJsonParamInt(jsonObject, "c", 0, TagCodeEnum.CHANNEL_MISSING, 0, Integer.MAX_VALUE);
             area = CommonUtil.getJsonParamInt(jsonObject, "area", 1, null, 0, Integer.MAX_VALUE);
-            cityId = CommonUtil.getJsonParamInt(jsonObject, "cityId", 0, null, 0, Integer.MAX_VALUE);
+            cityId = CommonUtil.getJsonParamInt(jsonObject, "cityId", CityUtil.getCityIdByIpAddr(com.melot.kktv.service.GeneralService.getIpAddr(request, AppIdEnum.AMUSEMENT, platform, null)), null, 0, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -667,8 +667,13 @@ public class HallFunctions {
                 }
                 json.addProperty("cdnState", temp.getCdnState());
                 json.addProperty("icon", ConstantEnum.FUN_ICON_HOME + temp.getDetailId()+".png");
-                json.addProperty("cataIcon", temp.getIcon());
-                json.addProperty("webIcon", temp.getWebIcon());
+                if (!StringUtil.strIsNull(temp.getIcon())) {
+                    json.addProperty("cataIcon", temp.getIcon());
+                }
+                
+                if (!StringUtil.strIsNull(temp.getWebIcon())) {
+                    json.addProperty("webIcon", temp.getWebIcon());
+                }
                 if (temp.getSubTitle() != null) {
                     json.addProperty("subTitle", temp.getSubTitle());
                 }
@@ -683,7 +688,7 @@ public class HallFunctions {
                     json.addProperty("id", temp.getDetailId());
                 }
                 if (temp.getCdnState() != null) {
-                    if (temp.getCdnState() > 0 && temp.getSeatType() != 3) {
+                    if (temp.getSeatType() != 3) {
                         JsonArray roomArray = new JsonArray();
                         List<HallRoomInfoDTO> roomList = temp.getRooms();
                         if (roomList != null) {
