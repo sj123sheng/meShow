@@ -1014,9 +1014,7 @@ public class AlbumFunctions {
 			}
 		} else { // 1.直播海报(弃用) 2.照片 3.资源图片
 			try {
-			 // 10的时候是技能服务接口，不添加到个人秀中
-			    if (pictureType == 3 || pictureType == 10 || pictureType == 7) {
-					// 动态图片不保存在user_picture中
+			    if (pictureType == 3 || pictureType == 10 || pictureType == 7|| pictureType == 12|| pictureType == 13 || pictureType == 99) {
 					result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 					result.addProperty("pictureId", 1); // 必须返回一个值否则客户端会报错
 				} else if(pictureType == 8){
@@ -1119,13 +1117,11 @@ public class AlbumFunctions {
 			}
 			else { // 1.直播海报(弃用) 2.照片 3.资源图片
 				// 10的时候是技能服务接口，不添加到个人秀中
-				if (pictureType == 3 || pictureType == 10 || pictureType == 7) {
-					// 动态图片不保存在user_picture中
+				if (pictureType == 3 || pictureType == 10 || pictureType == 7 || pictureType == 12|| pictureType == 13|| pictureType == 99) {
 					result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 					result.addProperty("pictureId", 1); // 必须返回一个值否则客户端会报错
 				} else if(pictureType == 8){
 					result = AlbumServices.addPictureNew(userId, pictureType, fileUrl, pictureName);
-
 				} else {
 					result = AlbumServices.addPictureNewV2(resId, userId, pictureType, fileUrl, pictureName);
 				}
