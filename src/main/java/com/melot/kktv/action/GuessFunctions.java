@@ -2,10 +2,7 @@ package com.melot.kktv.action;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.melot.kk.guess.api.constant.GuessLotteryStatusEnum;
-import com.melot.kk.guess.api.constant.GuessResultCode;
-import com.melot.kk.guess.api.constant.GuessResultEnum;
-import com.melot.kk.guess.api.constant.SeasonTypeEnum;
+import com.melot.kk.guess.api.constant.*;
 import com.melot.kk.guess.api.dto.*;
 import com.melot.kk.guess.api.service.GuessAccountService;
 import com.melot.kk.guess.api.service.GuessConfService;
@@ -349,21 +346,15 @@ public class GuessFunctions {
                     jsonObject1.addProperty("rightGuessItemName", confGuessSeasonDTO.getRightGuessItemName());
                     jsonObject1.addProperty("rightGuessItemIcon", confGuessSeasonDTO.getRightGuessItemIcon());
 
-                    long guessStartTime = confGuessSeasonDTO.getGuessStartTime().getTime();
-                    long guessEndTime = confGuessSeasonDTO.getGuessEndTime().getTime();
-                    long nowTime = DateUtils.getCurrentDate().getTime();
+                    int seasonStatus = confGuessSeasonDTO.getSeasonStatus();
                     long giveRewardStatus = confGuessSeasonDTO.getGiveRewardStatus();
-                    int seasonStatus = 3;
-                    if(nowTime < guessStartTime) {
-                        seasonStatus = 1;
-                    } else if(nowTime < guessEndTime) {
-                        seasonStatus = 2;
-                    } else if(giveRewardStatus == GuessLotteryStatusEnum.ALREADY_LOTTERY) {
+                    if(seasonStatus == SeasonStatusEnum.GUESS_OVER && giveRewardStatus == GuessLotteryStatusEnum.ALREADY_LOTTERY) {
                         seasonStatus = 4;
+                        jsonObject1.addProperty("winGuessItemId", confGuessSeasonDTO.getWinGuessItemId());
                         jsonObject1.addProperty("winGuessItemName", confGuessSeasonDTO.getWinGuessItemName());
                     }
-                    jsonObject1.addProperty("guessStartTime", guessStartTime);
-                    jsonObject1.addProperty("guessEndTime", guessEndTime);
+                    jsonObject1.addProperty("guessStartTime", confGuessSeasonDTO.getGuessStartTime().getTime());
+                    jsonObject1.addProperty("guessEndTime", confGuessSeasonDTO.getGuessEndTime().getTime());
                     jsonObject1.addProperty("seasonStatus", seasonStatus);
 
                     GuessWinningDTO guessWinningDTO = guessHistService.getGuessWinningInfo(seasonId).getData();
