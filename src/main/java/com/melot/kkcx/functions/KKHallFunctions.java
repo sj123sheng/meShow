@@ -600,8 +600,15 @@ public class KKHallFunctions {
                     json.addProperty("title", temp.getTitleName());
                 }
                 json.addProperty("cdnState", temp.getCdnState());
-                json.addProperty("icon", temp.getIcon());
-                json.addProperty("webIcon", temp.getWebIcon());
+                
+                if (!StringUtil.strIsNull(temp.getIcon())) {
+                    json.addProperty("icon", temp.getIcon());
+                }
+                
+                if (!StringUtil.strIsNull(temp.getWebIcon())) {
+                    json.addProperty("webIcon", temp.getWebIcon());
+                }
+                
                 if (temp.getSubTitle() != null) {
                     json.addProperty("subTitle", temp.getSubTitle());
                 }
