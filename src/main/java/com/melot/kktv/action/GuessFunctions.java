@@ -411,7 +411,7 @@ public class GuessFunctions {
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, USER_ID.getId(), 0, USER_ID.getErrorCode(), 1, Integer.MAX_VALUE);
             seasonId = CommonUtil.getJsonParamInt(jsonObject, SEASON_ID.getId(), 0, SEASON_ID.getErrorCode(), 1, Integer.MAX_VALUE);
-            guessBetItemId = CommonUtil.getJsonParamInt(jsonObject, GUESS_BET_ITEM_ID.getId(), 0, GUESS_BET_ITEM_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+            guessBetItemId = CommonUtil.getJsonParamInt(jsonObject, GUESS_BET_ITEM_ID.getId(), 0, GUESS_BET_ITEM_ID.getErrorCode(), 0, Integer.MAX_VALUE);
             shareUserId = CommonUtil.getJsonParamInt(jsonObject, SHARE_USER_ID.getId(), 0, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
