@@ -869,8 +869,8 @@ public class LiveShopFunctions {
         int userId;
         long money;
         try {
-            userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, "5106051601", 0, Integer.MAX_VALUE);
-            money = CommonUtil.getJsonParamLong(jsonObject, "money", 0, "5106051602", 0, Long.MAX_VALUE);
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, "5206051601", 0, Integer.MAX_VALUE);
+            money = CommonUtil.getJsonParamLong(jsonObject, "money", 0, "5206051602", 0, Long.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
             return result;
@@ -886,7 +886,7 @@ public class LiveShopFunctions {
             }
             String code = applyCrashResult.getCode();
             if (LiveShopErrorMsg.NOT_HAS_BALANCE_ACTOR_CODE.equals(code)) {
-                result.addProperty(ParameterKeys.TAG_CODE, "5106051503");
+                result.addProperty(ParameterKeys.TAG_CODE, "5206051603");
                 return result;
             } else if (LiveShopErrorMsg.ERROR_WITHDRAW_MONEY_CODE.equals(code)) {
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.ERROR_WITHDRAW_MONEY);
