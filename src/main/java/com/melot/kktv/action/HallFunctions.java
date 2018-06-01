@@ -163,13 +163,13 @@ public class HallFunctions {
 		int cityId = 0;
 		int appId, channel;
 		int area = 1;
-		try {
+        try {
 			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, TagCodeEnum.PLATFORM_MISSING, 1, Integer.MAX_VALUE);
 			cataId = CommonUtil.getJsonParamInt(jsonObject, "cataId", 0, null, 1, Integer.MAX_VALUE);
 			start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, TagCodeEnum.START_MISSING, 0, Integer.MAX_VALUE);
 			offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 0, TagCodeEnum.OFFSET_MISSING, 1, Integer.MAX_VALUE);
 			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
-			cityId = CommonUtil.getJsonParamInt(jsonObject, "cityId", CityUtil.getCityIdByIpAddr(com.melot.kktv.service.GeneralService.getIpAddr(request, AppIdEnum.AMUSEMENT, platform, null)), null, 1, Integer.MAX_VALUE);
+			cityId = CommonUtil.getJsonParamInt(jsonObject, "cityId", 0, null, 1, Integer.MAX_VALUE);
 			area = CommonUtil.getJsonParamInt(jsonObject, "area", 0, null, 1, Integer.MAX_VALUE);
 			appId = CommonUtil.getJsonParamInt(jsonObject, "a", 0, TagCodeEnum.APPID_MISSING, 0, Integer.MAX_VALUE);
 			channel = CommonUtil.getJsonParamInt(jsonObject, "c", 0, TagCodeEnum.CHANNEL_MISSING, 0, Integer.MAX_VALUE);
@@ -180,9 +180,16 @@ public class HallFunctions {
 			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
 			return result;
 		}
-		if (area <= 0) {
-            cityId = CityUtil.getCityIdByIpAddr(com.melot.kktv.service.GeneralService.getIpAddr(request, AppIdEnum.AMUSEMENT, platform, null));
-            area = CityUtil.getParentCityId(cityId);
+        Integer cityIdByIpAddr;
+        if (cityId < 1 || area < 1) {
+            cityIdByIpAddr = CityUtil.getProvincialCapital(CityUtil.getCityIdByIpAddr(com.melot.kktv.service.GeneralService.getIpAddr(request, AppIdEnum.AMUSEMENT, platform, null)));
+            if (cityId < 1) {
+                cityId = cityIdByIpAddr;
+            }
+            if (area < 1) {
+                cityId = cityIdByIpAddr;
+                area = CityUtil.getParentCityId(cityId);
+            }
         }
 		// 若cataId为0，默认取指定appId和channel下第一个栏目的内容
 		int isdownload = 1;
@@ -631,7 +638,7 @@ public class HallFunctions {
             appId = CommonUtil.getJsonParamInt(jsonObject, "a", 0, TagCodeEnum.APPID_MISSING, 0, Integer.MAX_VALUE);
             channel = CommonUtil.getJsonParamInt(jsonObject, "c", 0, TagCodeEnum.CHANNEL_MISSING, 0, Integer.MAX_VALUE);
             area = CommonUtil.getJsonParamInt(jsonObject, "area", 1, null, 0, Integer.MAX_VALUE);
-            cityId = CommonUtil.getJsonParamInt(jsonObject, "cityId", CityUtil.getCityIdByIpAddr(com.melot.kktv.service.GeneralService.getIpAddr(request, AppIdEnum.AMUSEMENT, platform, null)), null, 0, Integer.MAX_VALUE);
+            cityId = CommonUtil.getJsonParamInt(jsonObject, "cityId", 0, null, 0, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -641,10 +648,19 @@ public class HallFunctions {
         }
         
         List<FirstPageConfDTO> tempList = null;
-        if (area <= 0) {
-            cityId = CityUtil.getCityIdByIpAddr(com.melot.kktv.service.GeneralService.getIpAddr(request, AppIdEnum.AMUSEMENT, platform, null));
-            area = CityUtil.getParentCityId(cityId);
+        
+        Integer cityIdByIpAddr;
+        if (cityId < 1 || area < 1) {
+            cityIdByIpAddr = CityUtil.getProvincialCapital(CityUtil.getCityIdByIpAddr(com.melot.kktv.service.GeneralService.getIpAddr(request, AppIdEnum.AMUSEMENT, platform, null)));
+            if (cityId < 1) {
+                cityId = cityIdByIpAddr;
+            }
+            if (area < 1) {
+                cityId = cityIdByIpAddr;
+                area = CityUtil.getParentCityId(cityId);
+            }
         }
+        
         try {
             
             Result<List<FirstPageConfDTO>> tempListResult = hallHomeService.getFistPagelist(appId, channel, platform, 0, cityId, area, false, 0, false);
