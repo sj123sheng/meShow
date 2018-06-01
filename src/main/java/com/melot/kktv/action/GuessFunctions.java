@@ -16,7 +16,6 @@ import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.service.ConfigService;
-import com.melot.kktv.service.GeneralService;
 import com.melot.kktv.util.*;
 import org.apache.log4j.Logger;
 import org.springframework.util.ObjectUtils;
@@ -617,7 +616,7 @@ public class GuessFunctions {
             return result;
         }
     }
-
+    
     /**
      * 微信公众号竞猜奖金提现接口【51050611】
      */
@@ -649,15 +648,18 @@ public class GuessFunctions {
 
         try {
 
-            // 调用奖励金模块提现发红包
-            String clientIP = GeneralService.getIpAddr(request, 1, platform, null);
+            // 调用竞猜模块微信提现
+            String clientIP = CommonUtil.getIpAddr(request);
+            if(clientIP.startsWith("10.0.")) {
+                clientIP = "12.0.2.0";
+            }
             Result<Boolean> withdrawResult = guessAccountService.guessWithdraw(userId, uuid, clientIP);
             String code = withdrawResult.getCode();
             if(!code.equals(CommonStateCode.SUCCESS)) {
 
                 String errorMessage = GuessResultCode.getMsg(code);
                 int errorTag = 1;
-                if(errorMessage.indexOf("未定义的错误码") > 0) {
+                if(errorMessage.startsWith("未定义的错误码")) {
                     errorTag = 2;
                 }
 
