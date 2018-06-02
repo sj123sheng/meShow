@@ -108,7 +108,7 @@ public class GuessFunctions {
                         if(seasonType == SeasonTypeEnum.CASH_FIELD && rewardBonusAmount != null) {
                             BigDecimal bd = BigDecimal.valueOf(rewardBonusAmount.doubleValue()/100);
                             bd = bd.setScale(2, RoundingMode.HALF_UP);
-                            histUserGuessDTO.setRewardGoodsName(bd + "元");
+                            guessResultDesc = bd + "元";
                         }else {
                             guessResultDesc = histUserGuessDTO.getRewardGoodsName();
                         }
