@@ -636,10 +636,11 @@ public class GuessFunctions {
         }
 
         int userId, platform;
-        String uuid;
+        String uuid, unionid;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, USER_ID.getId(), 0, USER_ID.getErrorCode(), 1, Integer.MAX_VALUE);
             uuid = CommonUtil.getJsonParamString(jsonObject, UUID.getId(), null, UUID.getErrorCode(), 1, Integer.MAX_VALUE);
+            unionid = CommonUtil.getJsonParamString(jsonObject, UNIONID.getId(), null, UNIONID.getErrorCode(), 1, Integer.MAX_VALUE);
             platform = CommonUtil.getJsonParamInt(jsonObject, PLATFORM.getId(), 0, PLATFORM.getErrorCode(), 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
@@ -653,7 +654,7 @@ public class GuessFunctions {
             if(clientIP.startsWith("10.0.")) {
                 clientIP = "12.0.2.0";
             }
-            Result<Boolean> withdrawResult = guessAccountService.guessWithdraw(userId, uuid, clientIP);
+            Result<Boolean> withdrawResult = guessAccountService.guessWithdraw(userId, uuid, unionid, clientIP);
             String code = withdrawResult.getCode();
             if(!code.equals(CommonStateCode.SUCCESS)) {
 
