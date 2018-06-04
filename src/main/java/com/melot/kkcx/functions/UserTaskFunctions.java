@@ -64,11 +64,11 @@ public class UserTaskFunctions {
         JsonObject result = new JsonObject();
         
         // 获取参数
-        int userId, platform, appId, versionCode;
+        int userId, platform, appId = AppIdEnum.AMUSEMENT, versionCode;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
             platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.WEB, null, 1, Integer.MAX_VALUE);
-            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 1, Integer.MAX_VALUE);
+//            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 1, Integer.MAX_VALUE);
             versionCode = CommonUtil.getJsonParamInt(jsonObject, "v", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
         } catch(CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
@@ -100,12 +100,12 @@ public class UserTaskFunctions {
         }
         
         // 获取参数
-        int userId, taskId, platform, appId, versionCode;
+        int userId, taskId, platform, appId = AppIdEnum.AMUSEMENT, versionCode;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
             taskId = CommonUtil.getJsonParamInt(jsonObject, "taskId", 0, "5101030201", 1, Integer.MAX_VALUE);
             platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.WEB, null, 1, Integer.MAX_VALUE);
-            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 1, Integer.MAX_VALUE);
+//            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 1, Integer.MAX_VALUE);
             versionCode = CommonUtil.getJsonParamInt(jsonObject, "v", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
         } catch(CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
@@ -175,12 +175,12 @@ public class UserTaskFunctions {
         }
         
         // 获取参数
-        int userId, taskId, platform, appId, versionCode;
+        int userId, taskId, platform, appId = AppIdEnum.AMUSEMENT, versionCode;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "05220002", 1, Integer.MAX_VALUE);
             taskId = CommonUtil.getJsonParamInt(jsonObject, "taskId", 0, "05220004", 1, Integer.MAX_VALUE);
             platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.WEB, null, 1, Integer.MAX_VALUE);
-            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 1, Integer.MAX_VALUE);
+//            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 1, Integer.MAX_VALUE);
             versionCode = CommonUtil.getJsonParamInt(jsonObject, "v", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
         } catch(CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
