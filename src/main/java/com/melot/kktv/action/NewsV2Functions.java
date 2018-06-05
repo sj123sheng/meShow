@@ -1153,7 +1153,7 @@ public class NewsV2Functions {
         JsonObject result = new JsonObject();
 
         // 定义所需参数
-        int userId, start, offset, type;
+        int userId, start, offset, type, appId;
         // 解析参数
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
@@ -1161,13 +1161,13 @@ public class NewsV2Functions {
             offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 10, null, 1, Integer.MAX_VALUE);
             // 1-video 0-default news
             type = CommonUtil.getJsonParamInt(jsonObject, "type", 0, null, 1, Integer.MAX_VALUE);
+            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, TagCodeEnum.APPID_MISSING, 1, Integer.MAX_VALUE);
         } catch (ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
         }
 
         int topicSize = 0, containSize = 0;
-        long timestamp = System.currentTimeMillis();
 
         if (type > 0) {
             Set<Tuple> hotTopic = NewsV2Source.getVideoTopic(start, offset);
@@ -1198,28 +1198,22 @@ public class NewsV2Functions {
             }
 
         }
-        // 获取热门动态
-        Set<String> hotNews = NewsV2Source.getHotNews(start - topicSize, offset - containSize, type);
-        if (hotNews != null && hotNews.size() > 0) {
-            JsonArray hotNewsList = new JsonArray();
-            getJson(checkTag, userId, offset - containSize, hotNews, hotNewsList);
-            if (type == 1 && hotNewsList.size() < (offset - containSize)) {
-                int size = hotNewsList.size();
-                if (size > 0) {
-                    // 去最后一条热门视频的时间去sort set补充视频。
-                    timestamp = hotNewsList.get(size - 1).getAsJsonObject().get("publishedTime").getAsLong();
-                    Set<String> otherNews = NewsV2Source.getVideoByTime(timestamp, 0, offset - containSize);
-                    getJson(checkTag, userId, offset - containSize, otherNews, hotNewsList);
-                }
-            }
-            result.add("hotNewsList", hotNewsList);
-        } else {
-            if (type == 1) {
+
+        if(type == 0){
+            Set<String> hotNews = NewsV2Source.getHotNews(start - topicSize, offset - containSize, type);
+            if (hotNews != null && hotNews.size() > 0) {
                 JsonArray hotNewsList = new JsonArray();
-                Set<String> otherNews = NewsV2Source.getVideoByTime(timestamp, start - topicSize, offset - containSize);
-                getJson(checkTag, userId, offset - containSize, otherNews, hotNewsList);
+                getJson(checkTag, userId, offset - containSize, hotNews, hotNewsList);
                 result.add("hotNewsList", hotNewsList);
             }
+        }else if(type == 1) {
+            List<NewsInfo> videoNewsList = NewsService.getVideoHall(appId,start,offset);
+            JsonArray hotNewsList = new JsonArray();
+            for(NewsInfo news:videoNewsList){
+                JsonObject json = NewsService.getNewResourceJson(news, 1, true);
+                hotNewsList.add(json);
+            }
+            result.add("hotNewsList", hotNewsList);
         }
 
         result.addProperty("pathPrefix", ConfigHelper.getHttpdir()); // 图片前缀
@@ -1227,6 +1221,9 @@ public class NewsV2Functions {
         result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());// 七牛前缀
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
+    }
+
+    private void getVideoJson(List<NewsInfo> videoNewsList, JsonArray hotNewsList) {
     }
 
     /**
@@ -2293,6 +2290,7 @@ public class NewsV2Functions {
             }
         }
     }
+    
 
     private static VideoInfo getVideoInfoByHttp(String videoUrl) {
         videoUrl = new StringBuilder().append(ConfigHelper.getVideoURL()).append(videoUrl).append("?avinfo").toString();
