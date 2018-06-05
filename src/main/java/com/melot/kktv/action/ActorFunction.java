@@ -556,7 +556,7 @@ public class ActorFunction {
             if (familyId == 0) { // 自由主播
                 try {
                     //自动变为终审通过
-                    if (FamilyService.checkBecomeFamilyMember(userId, UserApplyActorStatusEnum.BECOME_ACTOR_SUCCESS, appId)) {
+                    if (FamilyService.checkBecomeFamilyMember(userId, UserApplyActorStatusEnum.BECOME_ACTOR_SUCCESS, AppIdEnum.AMUSEMENT)) {
                         result.addProperty("status", UserApplyActorStatusEnum.BECOME_ACTOR_SUCCESS);
                         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
                     } else {
