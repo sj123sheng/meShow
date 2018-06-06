@@ -1009,6 +1009,7 @@ public class IndexFunctions {
                         }
                         jsonObj.addProperty("gender", userProfile.getGender());
                         if (userProfile.getPortrait() != null) {
+                            jsonObj.addProperty("portrait_path_128", ConfigHelper.getHttpdir() + userProfile.getPortrait() + "!128");
                             jsonObj.addProperty("portrait_path_256", ConfigHelper.getHttpdir() + userProfile.getPortrait() + "!256");
                         }
                         jsonObj.addProperty("actorLevel", userProfile.getActorLevel());
