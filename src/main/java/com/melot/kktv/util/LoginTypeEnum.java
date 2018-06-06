@@ -130,5 +130,7 @@ public class LoginTypeEnum {
     
     /**facebook*/
     public static final int FACEBOOK = 45;
-	
+    
+    /**麻辣*/
+    public static final int MALA = 40;
 }

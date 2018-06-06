@@ -1822,11 +1822,11 @@ public class OtherFunctions {
     			result.addProperty("pageImgIos2", openPageDO.getPageImgIos2());
     			result.addProperty("pageImgIos3", openPageDO.getPageImgIos3());
     		} else{
-    			result.addProperty("TagCode", TagCodeEnum.GET_RELATED_INFO_FAIL);
+    			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
                 return result;
     		}
     	} else{
-    		result.addProperty("TagCode", TagCodeEnum.GET_RELATED_INFO_FAIL);
+    		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
     	}
     	result.addProperty("TagCode", TagCodeEnum.SUCCESS);
