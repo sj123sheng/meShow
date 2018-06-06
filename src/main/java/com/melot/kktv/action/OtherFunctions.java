@@ -24,6 +24,8 @@ import com.melot.family.driver.domain.DO.BrokerageFirmDO;
 import com.melot.family.driver.domain.DO.UserApplyActorDO;
 import com.melot.family.driver.domain.FamilyInfo;
 import com.melot.family.driver.service.UserApplyActorService;
+import com.melot.kk.config.api.domain.OpenPageDO;
+import com.melot.kk.config.api.service.OpenPageService;
 import com.melot.kk.module.report.dbo.ReportFlowRecord;
 import com.melot.kk.module.report.service.ReportFlowService;
 import com.melot.kk.module.report.util.CommonStateCode;
@@ -88,6 +90,9 @@ public class OtherFunctions {
     
     @Autowired
     private ConfigService configService;
+    
+    @Resource
+    OpenPageService openPageService;
 
     @Resource
     UserApplyActorService userApplyActorService;
@@ -1771,6 +1776,61 @@ public class OtherFunctions {
         }
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
+    }
+    
+    /**
+     * 获取开屏页【51090202】
+     * 
+     * @param jsonObject 请求对象
+     * @return 开屏页相关信息
+     */
+    public JsonObject getOpenPage(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+    	JsonObject result = new JsonObject();
+    	int platform;
+    	try {
+			
+    	platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, "5109020201", 1, Integer.MAX_VALUE);
+		} catch (CommonUtil.ErrorGetParameterException e) {
+			result.addProperty("TagCode", e.getErrCode());
+            return result;
+		} catch(Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+    	OpenPageDO openPageDO = openPageService.getOpenPage();
+    	if(openPageDO != null){
+    		result.addProperty("pageId", openPageDO.getPageId());
+    		result.addProperty("startTime", openPageDO.getStartTime().getTime());
+    		result.addProperty("endTime", openPageDO.getEndTime().getTime());
+    		if(!StringUtil.strIsNull(openPageDO.getPageTitle())){
+    			result.addProperty("pageTitle", openPageDO.getPageTitle());
+    		}
+    		if(!StringUtil.strIsNull(openPageDO.getButtonWord())){
+    			result.addProperty("buttonWord", openPageDO.getButtonWord());
+    		}
+    		if(!StringUtil.strIsNull(openPageDO.getLinkH5Addr())){
+    			result.addProperty("linkH5Addr", openPageDO.getLinkH5Addr());
+    		} else if(openPageDO.getRoomId() != 0){
+    			result.addProperty("linkH5Addr", "http://www.kktv5.com/m/?roomid="+openPageDO.getRoomId());
+    		}
+    		if(!StringUtil.strIsNull(openPageDO.getPageVideo())){
+    			result.addProperty("pageVideo", openPageDO.getPageVideo());
+    		} else if(platform == 2 && !StringUtil.strIsNull(openPageDO.getPageImgAndr())){
+    			result.addProperty("pageImgAndr", openPageDO.getPageImgAndr());
+    		} else if(platform == 3 && !StringUtil.strIsNull(openPageDO.getPageImgIos1()) && !StringUtil.strIsNull(openPageDO.getPageImgIos2()) && !StringUtil.strIsNull(openPageDO.getPageImgIos3())){
+    			result.addProperty("pageImgIos1", openPageDO.getPageImgIos1());
+    			result.addProperty("pageImgIos2", openPageDO.getPageImgIos2());
+    			result.addProperty("pageImgIos3", openPageDO.getPageImgIos3());
+    		} else{
+    			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                return result;
+    		}
+    	} else{
+    		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+    	}
+    	result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+    	return result;
     }
     
     /**

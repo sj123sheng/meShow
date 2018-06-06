@@ -14,17 +14,23 @@ import org.apache.log4j.Logger;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
+import com.melot.blacklist.service.BlacklistService;
+import com.melot.kkcore.user.api.UserProfile;
+import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.model.CommonDevice;
 import com.melot.kktv.domain.UserInfo;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.QQVipSource;
+import com.melot.kktv.service.AccountService;
 import com.melot.kktv.service.TagService;
+import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.DateUtil;
 import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
+import com.melot.sdk.core.util.MelotBeanFactory;
 
 public class ProfileServices {
     
@@ -471,6 +477,43 @@ public class ProfileServices {
             result = (Integer) SqlMapClientHelper.getInstance(DB.MASTER).insert("Profile.insertChangeUserName", map);
         } catch(Exception e) {
             logger.error("ProfileServices.insertChangeUserName(userId:" + userId + "nickName:" + nickName + ") return exception.", e);
+        }
+        return result;
+    }
+    
+    /**
+     * 认证手机号
+     * @param userId 用户id
+     * @param phoneNum 手机号
+     * @return -1：认证失败  0：认证手机号成功 1：绑定手机号成功
+     */
+    public static int identifyPhone(int userId, String phoneNum) {
+        int result = -1;
+        try {
+            BlacklistService blacklistService = (BlacklistService) MelotBeanFactory.getBean("blacklistService");
+            if (blacklistService.isPhoneNumBlacklist(phoneNum)) {
+                return result;
+            }
+            
+            UserProfile userProfile = com.melot.kktv.service.UserService.getUserInfoV2(userId);
+            if (userProfile != null && userProfile.getPhoneNum() != null) {
+                return result;
+            }
+            com.melot.kkcore.account.service.AccountService accountService = (com.melot.kkcore.account.service.AccountService) MelotBeanFactory.getBean("kkAccountService");
+            String tagCode = accountService.verifyIdentifyPhone(userId, phoneNum);
+            if (tagCode.equals(TagCodeEnum.SUCCESS)) {
+                result = 0;
+                KkUserService userService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
+                int bindUserId = userService.getUserIdByPhoneNumber(phoneNum);
+                if (bindUserId == 0) {
+                    String bindCode = AccountService.bindPhoneNumAccount(userId, phoneNum, 1, null, AppIdEnum.AMUSEMENT);
+                    if (bindCode != null && bindCode.equals(TagCodeEnum.SUCCESS)) {
+                        result = 1;
+                    }
+                }
+            }
+        } catch(Exception e) {
+            logger.error("ProfileServices.identifyPhone(userId: " + userId + "phoneNum: " + phoneNum + ") return exception.", e);
         }
         return result;
     }
