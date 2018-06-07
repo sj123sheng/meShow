@@ -666,7 +666,7 @@
         <dependency>
             <groupId>com.melot.kk</groupId>
             <artifactId>kk-guess-api</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.0</version>
         </dependency>
 
 	</dependencies>
