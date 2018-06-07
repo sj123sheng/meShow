@@ -864,6 +864,10 @@ public class UserFunctions {
 						SqlMapClientHelper.getInstance(DB.MASTER).update("User.updateKuaiyaUserPhoneNum", upMap);
 					}
 					
+					if (openPlatform == LoginTypeEnum.MALA && phoneNum != null) {
+					    ProfileServices.identifyPhone(RuserId, phoneNum);
+					}
+					
 					registerUserAssets(RuserId, showMoney);
 					
 					// 赠送道具
@@ -1325,6 +1329,14 @@ public class UserFunctions {
                     // 返回是否已修改初始密码
                     if (resLogin.getDefPwd() != null) {
                         defPwd = resLogin.getDefPwd();
+                    }
+                    
+                    //麻辣用户认证手机号
+                    if (loginType == LoginTypeEnum.MALA) {
+                        phoneNum = CommonUtil.getJsonParamString(jsonObject, "phoneNum", null, null, 0, 256);
+                        if (!StringUtil.strIsNull(phoneNum)) {
+                            ProfileServices.identifyPhone(userId, phoneNum);
+                        }
                     }
                     
                     // 注册日志
