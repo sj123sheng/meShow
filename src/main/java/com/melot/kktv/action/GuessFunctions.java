@@ -9,7 +9,6 @@ import com.melot.kk.guess.api.service.GuessConfService;
 import com.melot.kk.guess.api.service.GuessHistService;
 import com.melot.kk.logistics.api.domain.HistDeliveryDO;
 import com.melot.kk.logistics.api.service.HistDeliveryService;
-import com.melot.kkcore.actor.api.ActorInfo;
 import com.melot.kkcore.actor.service.ActorService;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.service.KkUserService;
@@ -535,32 +534,12 @@ public class GuessFunctions {
 
         try {
 
-            Integer fanCommentatorRoomId = configService.getFanCommentatorRoomId();
-            if(fanCommentatorRoomId != null) {
-                result.addProperty("fanCommentatorRoomId", fanCommentatorRoomId);
-                ActorInfo actorInfo = actorService.getActorInfoById(fanCommentatorRoomId);
-                if(actorInfo != null) {
-                    result.addProperty("fanCommentatorRoomNickname", actorInfo.getNickName());
-                    result.addProperty("fanCommentatorRoomPoster", actorInfo.getPoster());
-                }
-            }
-
-            Integer beautyCommentatorRoomId = configService.getBeautyCommentatorRoomId();
-            if(beautyCommentatorRoomId != null) {
-                result.addProperty("beautyCommentatorRoomId", beautyCommentatorRoomId);
-                ActorInfo actorInfo = actorService.getActorInfoById(beautyCommentatorRoomId);
-                if(actorInfo != null) {
-                    result.addProperty("beautyCommentatorRoomNickname", actorInfo.getNickName());
-                    result.addProperty("beautyCommentatorRoomPoster", actorInfo.getPoster());
-                }
-            }
+            Integer worldCupPartId = configService.getWorldCupPartId();
 
             Integer coinPurchaseRoomId = configService.getCoinPurchaseRoomId();
-            if(coinPurchaseRoomId != null) {
-                result.addProperty("coinPurchaseRoomId", coinPurchaseRoomId);
-            }
 
-            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+            result.addProperty("worldCupPartId", worldCupPartId);
+            result.addProperty("coinPurchaseRoomId", coinPurchaseRoomId);
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
         } catch (Exception e) {
