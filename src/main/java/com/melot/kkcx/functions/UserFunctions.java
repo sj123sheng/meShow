@@ -782,7 +782,7 @@ public class UserFunctions {
 			    	return result;
 			    }
 			}
-			phoneNum = CommonUtil.getJsonParamString(jsonObject, "phoneNum", null, null, 1, Integer.MAX_VALUE);
+			phoneNum = CommonUtil.getJsonParamString(jsonObject, "phoneNum", null, null, 11, Integer.MAX_VALUE);
 		} catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -1333,7 +1333,7 @@ public class UserFunctions {
                     
                     //麻辣用户认证手机号
                     if (loginType == LoginTypeEnum.MALA) {
-                        phoneNum = CommonUtil.getJsonParamString(jsonObject, "phoneNum", null, null, 0, 256);
+                        phoneNum = CommonUtil.getJsonParamString(jsonObject, "phoneNum", null, null, 11, 256);
                         if (!StringUtil.strIsNull(phoneNum)) {
                             ProfileServices.identifyPhone(userId, phoneNum);
                         }
