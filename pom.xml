@@ -662,7 +662,13 @@
             <artifactId>kk-guess-api</artifactId>
             <version>1.0</version>
         </dependency>
-
+		
+		<!-- 用户财富等级升级模块 -->
+		<dependency>
+		  <groupId>com.melot.kk</groupId>
+		  <artifactId>kk-userLevelUp-api</artifactId>
+		  <version>1.0.0-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
  	
 </project>

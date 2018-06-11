@@ -194,5 +194,7 @@
 
     <!-- 物流模块 -->
     <kkrpc:reference id="histDeliveryService" interface="com.melot.kk.logistics.api.service.HistDeliveryService" version="1.0.0"/>
-
+	
+	<!-- 用户等级升级模块 -->
+    <kkrpc:reference id="userLevelRedEvelopeService" interface="com.melot.kk.userLevelUp.api.service.UserLevelRedEvelopeService" version="1.0.0"/>
 </beans>

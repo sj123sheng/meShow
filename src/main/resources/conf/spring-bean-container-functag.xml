@@ -3240,5 +3240,20 @@
         <constructor-arg name="t" ref="guessFunctions" />
         <constructor-arg name="methodName" value="guessWithdraw" />
     </bean>
+    
+    <bean id="51010901" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="userLevelFunctions" />
+        <constructor-arg name="methodName" value="sendRedEvelope" />
+    </bean>
+    
+    <bean id="52010902" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="userLevelFunctions" />
+        <constructor-arg name="methodName" value="addRedEvelopeAmount" />
+    </bean>
+    
+    <bean id="51010903" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="userLevelFunctions" />
+        <constructor-arg name="methodName" value="getRedEvelopeRecords" />
+    </bean>
 
 </beans>
