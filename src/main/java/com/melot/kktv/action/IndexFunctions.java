@@ -41,7 +41,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.api.menu.sdk.redis.KKHallSource;
-import com.melot.api.menu.sdk.service.RoomInfoService;
 import com.melot.common.driver.domain.AreaNewActors;
 import com.melot.common.driver.service.AreaNewActorsService;
 import com.melot.content.config.domain.LiveAlbum;
