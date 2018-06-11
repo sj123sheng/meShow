@@ -1148,7 +1148,9 @@ public class NewsService {
 		if (newsInfo.getNewsTitle() != null) {
 			json.addProperty("newsTitle", newsInfo.getNewsTitle());
 		}
-		json.addProperty("publishedTime", newsInfo.getPublishedTime().getTime());
+		if(newsInfo.getPublishedTime() != null){
+			json.addProperty("publishedTime", newsInfo.getPublishedTime().getTime());
+		}
 		json.addProperty("newsType", newsInfo.getNewsType());
 		if (newsInfo.getTopic() != null) {
 			json.addProperty("topic", newsInfo.getTopic());
