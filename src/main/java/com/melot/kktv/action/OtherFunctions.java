@@ -1,5 +1,19 @@
 package com.melot.kktv.action;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.chinacreator.videoalliance.util.ChinaUnicomEnum;
 import com.chinacreator.videoalliance.util.DesUtil;
 import com.dianping.cat.Cat;
@@ -20,9 +34,9 @@ import com.melot.content.config.facepack.service.GalleryOrderRecordService;
 import com.melot.content.config.live.upload.impl.YouPaiService;
 import com.melot.content.config.report.service.RecordProcessedRecordService;
 import com.melot.family.driver.constant.UserApplyActorStatusEnum;
+import com.melot.family.driver.domain.FamilyInfo;
 import com.melot.family.driver.domain.DO.BrokerageFirmDO;
 import com.melot.family.driver.domain.DO.UserApplyActorDO;
-import com.melot.family.driver.domain.FamilyInfo;
 import com.melot.family.driver.service.UserApplyActorService;
 import com.melot.kk.config.api.domain.OpenPageDO;
 import com.melot.kk.config.api.service.OpenPageService;
@@ -52,8 +66,19 @@ import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.ConsumeService;
 import com.melot.kktv.service.GeneralService;
 import com.melot.kktv.service.UserService;
-import com.melot.kktv.util.*;
+import com.melot.kktv.util.AppChannelEnum;
+import com.melot.kktv.util.AppIdEnum;
+import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
+import com.melot.kktv.util.ConfigHelper;
+import com.melot.kktv.util.Constant;
+import com.melot.kktv.util.DBEnum;
+import com.melot.kktv.util.DateUtil;
+import com.melot.kktv.util.PlatformEnum;
+import com.melot.kktv.util.SecretKeyUtil;
+import com.melot.kktv.util.SecurityFunctions;
+import com.melot.kktv.util.StringUtil;
+import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.confdynamic.SystemConfig;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
@@ -62,13 +87,6 @@ import com.melot.module.packagegift.driver.service.VipService;
 import com.melot.module.packagegift.util.GiftPackageEnum;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import com.melot.stream.driver.service.LiveStreamConfigService;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import java.sql.SQLException;
-import java.util.*;
 
 /**
  * 其他相关的接口类
@@ -1907,9 +1925,10 @@ public class OtherFunctions {
 
         JsonObject result = new JsonObject();
 
-        int platform;
+        int platform, version;
         try {
             platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 1, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            version = CommonUtil.getJsonParamInt(jsonObject, "v", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -1925,6 +1944,9 @@ public class OtherFunctions {
         } else {
             lotteryConfig= configService.getLotteryAppConfig();
             result = new JsonParser().parse(lotteryConfig).getAsJsonObject();
+            if ((platform == PlatformEnum.ANDROID && version >= 128) || (platform == PlatformEnum.IPHONE && version >= 183)) {
+                result.addProperty("lotteryBannerUrl", configService.getLotteryAppHalfBanner());
+            }
         }
         result.addProperty("lotteryContent", configService.getLotteryContent());
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);

@@ -94,6 +94,8 @@ public class ConfigService {
      */
     private String lotteryAppConfig;
     
+    private String lotteryAppHalfBanner;
+    
     /**
      * 地域昵称
      */
@@ -115,28 +117,19 @@ public class ConfigService {
     private String pkCompereIds;
 
     /**
-     * 球迷解说员直播间id
+     * 世界杯竞猜栏目编号
      */
-    private Integer fanCommentatorRoomId;
-
-    /**
-     * 美女解说员直播间id
-     */
-    private Integer beautyCommentatorRoomId;
+    private Integer worldCupPartId;
 
     /**
      * 世界杯纪念币购买直播间id
      */
     private Integer coinPurchaseRoomId;
 
-    @DisconfFileItem(name = "fan.commentator.roomId", associateField = "fanCommentatorRoomId")
-    public Integer getFanCommentatorRoomId() {
-        return fanCommentatorRoomId;
-    }
 
-    @DisconfFileItem(name = "beauty.commentator.roomId", associateField = "beautyCommentatorRoomId")
-    public Integer getBeautyCommentatorRoomId() {
-        return beautyCommentatorRoomId;
+    @DisconfFileItem(name = "world.cup.partId", associateField = "worldCupPartId")
+    public Integer getWorldCupPartId() {
+        return worldCupPartId;
     }
 
     @DisconfFileItem(name = "coin.purchase.roomId", associateField = "coinPurchaseRoomId")
@@ -289,6 +282,11 @@ public class ConfigService {
 
     public void setLotteryAppConfig(String lotteryAppConfig) {
         this.lotteryAppConfig = lotteryAppConfig;
+    }
+    
+    @DisconfFileItem(name = "lottery.lotteryAppHalfBanner", associateField = "lotteryAppHalfBanner")
+    public String getLotteryAppHalfBanner() {
+        return lotteryAppHalfBanner;
     }
 
     @DisconfFileItem(name = "lottery.lotteryContent", associateField = "lotteryContent")
