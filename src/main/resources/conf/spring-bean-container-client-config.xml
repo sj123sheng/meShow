@@ -190,7 +190,7 @@
 	<kkrpc:reference id="hallHomeService" interface="com.melot.kk.hall.api.service.HomeService" version="1.0.0"/>
 
     <!-- 竞猜模块 -->
-    <kkrpc:reference id="guessAccountService" interface="com.melot.kk.guess.api.service.GuessAccountService" version="1.0.0"/>
+    <kkrpc:reference id="guessAccountService" interface="com.melot.kk.guess.api.service.GuessAccountService" version="1.0.0" timeout="24000"/>
     <kkrpc:reference id="guessConfService" interface="com.melot.kk.guess.api.service.GuessConfService" version="1.0.0"/>
     <kkrpc:reference id="guessHistService" interface="com.melot.kk.guess.api.service.GuessHistService" version="1.0.0"/>
 
