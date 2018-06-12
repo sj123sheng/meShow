@@ -26,7 +26,7 @@
 	<kkrpc:reference id="redEnvelopersService" interface="com.melot.redenvelopers.driver.service.RedEnvelopersService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="virtualIdService" interface="com.melot.asset.driver.service.VirtualIdService" version="1.0.2"></kkrpc:reference>
 	<kkrpc:reference id="assetService" interface="com.melot.asset.driver.service.AssetService" version="1.0.2"></kkrpc:reference>
-	<kkrpc:reference id="kkActivityService" interface="com.melot.kkactivity.driver.service.KkActivityService" version="1.0.3"></kkrpc:reference>
+	<kkrpc:reference id="kkActivityService" interface="com.melot.kkactivity.driver.service.KkActivityService" version="1.0.4"></kkrpc:reference>
 	<kkrpc:reference id="taskInterfaceService" interface="com.melot.module.task.driver.service.TaskInterfaceService" version="1.0.2"></kkrpc:reference>
 	<kkrpc:reference id="activityMedalService" interface="com.melot.module.medal.driver.service.ActivityMedalService" version="1.0.1"></kkrpc:reference>
 	<kkrpc:reference id="userMedalService" interface="com.melot.module.medal.driver.service.UserMedalService" version="1.0.1"></kkrpc:reference>
@@ -119,7 +119,7 @@
     <kkrpc:reference id="smsService" interface="com.melot.sms.api.service.SmsService" version="1.0.1"/>
 
 	<kkrpc:reference id="videoBgmService" interface="com.melot.common.driver.service.VideoBgmService" version="1.0.0" />
-	<kkrpc:reference id="gameConfigService" interface="com.melot.kkactivity.driver.service.GameConfigService" version="1.0.0" />
+	<kkrpc:reference id="gameConfigService" interface="com.melot.kkactivity.driver.service.GameConfigService" version="1.0.1" />
 	
 	<kkrpc:reference id="bountyService" interface="com.melot.kk.bounty.api.service.BountyService" version="1.0.0" />
 
@@ -137,7 +137,7 @@
 	<kkrpc:reference id="goldcoinService" interface="com.melot.goldcoin.service.GoldcoinService" version="1.0.1"/>
 
 	<!-- 新手引导模块 -->
-	<kkrpc:reference id="newUserTaskService" interface="com.melot.kkactivity.driver.service.NewUserTaskService" version="1.0.0"/>
+	<kkrpc:reference id="newUserTaskService" interface="com.melot.kkactivity.driver.service.NewUserTaskService" version="1.0.1"/>
 
     <!-- 大数据推荐算法模块 -->
     <kkrpc:reference id="newRcmdService" interface="com.melot.kk.demo.api.service.NewRcmdService" version="1.0.0"></kkrpc:reference>
@@ -165,7 +165,7 @@
 	<kkrpc:reference id="userApplyActorService" interface="com.melot.family.driver.service.UserApplyActorService" version="1.0.0"/>
 
 	<!-- 消消乐 -->
-	<kkrpc:reference id="gembinderService" interface="com.melot.kkactivity.driver.service.GembinderService" version="1.0.0"/>
+	<kkrpc:reference id="gembinderService" interface="com.melot.kkactivity.driver.service.GembinderService" version="1.0.1"/>
 	
 	<!-- 众筹【心愿礼物】模块 -->
 	<kkrpc:reference id="crowdFundingService" interface="com.melot.kk.crowdfunding.api.service.CrowdFundingService" version="1.0.0"/>
@@ -188,7 +188,7 @@
 	<kkrpc:reference id="hallHomeService" interface="com.melot.kk.hall.api.service.HomeService" version="1.0.0"/>
 
     <!-- 竞猜模块 -->
-    <kkrpc:reference id="guessAccountService" interface="com.melot.kk.guess.api.service.GuessAccountService" version="1.0.0"/>
+    <kkrpc:reference id="guessAccountService" interface="com.melot.kk.guess.api.service.GuessAccountService" version="1.0.0" timeout="24000"/>
     <kkrpc:reference id="guessConfService" interface="com.melot.kk.guess.api.service.GuessConfService" version="1.0.0"/>
     <kkrpc:reference id="guessHistService" interface="com.melot.kk.guess.api.service.GuessHistService" version="1.0.0"/>
 

@@ -15,8 +15,21 @@ import java.util.Random;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import com.melot.kk.hall.api.domain.FirstPageConfDTO;
+import com.melot.kk.hall.api.domain.HallPartConfDTO;
+import com.melot.kk.hall.api.domain.HallRoomInfoDTO;
+import com.melot.kk.hall.api.service.HallRoomService;
+import com.melot.kk.hall.api.service.HomeService;
+import com.melot.kk.hall.api.service.SysMenuService;
+import com.melot.kkcx.transform.HallRoomTF;
+import com.melot.kktv.base.Page;
+import com.melot.kktv.base.Result;
+import com.melot.kktv.constant.RoomPosterConstant;
+import com.melot.kktv.util.*;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 
 import com.google.common.collect.Lists;
@@ -26,12 +39,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.melot.api.menu.sdk.dao.domain.HomePage;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
-import com.melot.api.menu.sdk.dao.domain.SysMenu;
-import com.melot.api.menu.sdk.handler.FirstPageHandler;
 import com.melot.api.menu.sdk.redis.KKHallSource;
-import com.melot.api.menu.sdk.service.RoomInfoService;
 import com.melot.common.driver.domain.AreaNewActors;
 import com.melot.common.driver.service.AreaNewActorsService;
 import com.melot.content.config.domain.LiveAlbum;
@@ -67,19 +76,7 @@ import com.melot.kktv.redis.SearchWordsSource;
 import com.melot.kktv.redis.WeekGiftSource;
 import com.melot.kktv.service.NewsService;
 import com.melot.kktv.service.RoomService;
-import com.melot.kktv.util.AppChannelEnum;
-import com.melot.kktv.util.AppIdEnum;
-import com.melot.kktv.util.CityUtil;
-import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.Constant;
-import com.melot.kktv.util.ConstantEnum;
-import com.melot.kktv.util.DateUtil;
-import com.melot.kktv.util.PlatformEnum;
-import com.melot.kktv.util.RankingEnum;
-import com.melot.kktv.util.StringUtil;
-import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.confdynamic.GiftInfoConfig;
 import com.melot.kktv.util.confdynamic.MedalConfig;
 import com.melot.kktv.util.db.DB;
@@ -108,6 +105,16 @@ public class IndexFunctions {
     private static final String KK_LIVE_ACTOR_ID = "KKLiveActorId";
 
     private static AreaNewActorsService areaNewActorsService = MelotBeanFactory.getBean("areaNewActorsService", AreaNewActorsService.class);
+
+	@Resource
+	private HallRoomService hallRoomService;
+
+	@Resource
+	private SysMenuService hallPartService;
+
+	@Resource
+	private HomeService hallHomeService;
+
 
     /**
 	 * 获取大厅目录人数
@@ -227,7 +234,6 @@ public class IndexFunctions {
 		}
 		
 		// 定义结果
-		
 		int roomCount = 0;
 		JsonArray jRoomList = new JsonArray();
 		
@@ -236,27 +242,22 @@ public class IndexFunctions {
 			String ROOM_CACHE_KEY = "renqi_cache";
 			roomCount = HotDataSource.countSortedSet(ROOM_CACHE_KEY);
 			if (roomCount == 0) {
-				List<RoomInfo> roomInfoList = new ArrayList<RoomInfo>();
-//				Map<Integer, RoomInfo> roomMap = new HashMap<Integer, RoomInfo>();
+				List<HallRoomInfoDTO> roomInfoList = null;
 				// 从pg读取正在直播房间列表 最多500
 				try {
-					RoomInfoService roomInfoServie = MelotBeanFactory.getBean("roomInfoService", RoomInfoService.class);
-					List<RoomInfo> roomList = roomInfoServie.getLiveRoomList(AppIdEnum.AMUSEMENT, 0, 500);
-					if (roomList != null && roomList.size() > 0) {
-						for (RoomInfo roomInfo : roomList) {
-							roomInfoList.add(roomInfo);
-//							roomMap.put(roomId, roomInfo);
-						}
+					Result<Page<HallRoomInfoDTO>> hallRoomResult = hallRoomService.getLiveRoomList(AppIdEnum.AMUSEMENT, 0, 500);
+					if (checkResultData(hallRoomResult)) {
+						roomInfoList = hallRoomResult.getData().getList();
 					}
 				} catch (Exception e) {
-					logger.error("Fail to call roomInfoServie.getLiveRoomList", e);
+					logger.error("Module Error: hallRoomService.getLiveRoomList(AppIdEnum.AMUSEMENT, 0, 500)", e);
 				}
-				
-				if (roomInfoList.size() > 0) {
-					// 重新对房间列表排序
-					List<RoomInfo> resortedList = resortList(roomInfoList);
-					List<String> strList = new ArrayList<String>();
-					for (RoomInfo roomInfo : resortedList) {
+
+				if (CollectionUtils.isNotEmpty(roomInfoList)) {
+					// 根据人气对房间列表降序
+					List<HallRoomInfoDTO> resortedList = resortList(roomInfoList);
+					List<String> strList = Lists.newArrayListWithCapacity(resortedList.size());
+					for (HallRoomInfoDTO roomInfo : resortedList) {
 						strList.add(new Gson().toJson(roomInfo));
 					}
 					HotDataSource.addSortedSet(ROOM_CACHE_KEY, strList, 120);
@@ -265,68 +266,38 @@ public class IndexFunctions {
 			}
 			if (start >= 0 && start < roomCount) {
 				Set<String> set = HotDataSource.rangeSortedSet(ROOM_CACHE_KEY, start, start + offset - 1);
-				if (set != null) {
+				if (CollectionUtils.isNotEmpty(set)) {
 					for (String json : set) {
 						try {
-							RoomInfo roomInfo = new Gson().fromJson(json, RoomInfo.class);
-							JsonObject roomJson = RoomTF.roomInfoToJsonTemp(roomInfo, platform);
-							if (roomJson.has("poster_path_1280") && roomJson.get("poster_path_1280") != null) {
-								roomJson.addProperty("poster_path_1280", ConfigHelper.getHttpdir()
-										+ roomJson.get("poster_path_1280").getAsString());
-							}
-							if (roomJson.has("poster_path_272") && roomJson.get("poster_path_272") != null) {
-								roomJson.addProperty("poster_path_272", ConfigHelper.getHttpdir()
-										+ roomJson.get("poster_path_272").getAsString());
-							}
-							if (roomJson.has("poster_path_128") && roomJson.get("poster_path_128") != null) {
-								roomJson.addProperty("poster_path_128", ConfigHelper.getHttpdir()
-										+ roomJson.get("poster_path_128").getAsString());
-							}
-							if (roomJson.has("poster_path_300") && roomJson.get("poster_path_300") != null) {
-							    roomJson.addProperty("poster_path_300", ConfigHelper.getHttpdir()
-							            + roomJson.get("poster_path_300").getAsString());
-							}
-							jRoomList.add(roomJson);
+							HallRoomInfoDTO roomInfo = new Gson().fromJson(json, HallRoomInfoDTO.class);
+							JsonObject roomJson = HallRoomTF.roomInfoToJsonTemp(roomInfo, platform);
+							addRoomPosterForJson(roomJson, jRoomList);
 						} catch (Exception e) {
-							logger.error("Fail to parse Json String to JavaBean RoomInfo ", e);
+							logger.error("Fail to parse Json String to JavaBean HallRoomInfoDTO", e);
 						}
 					}
 				}
 			}
 		} else if (catalogId == Constant.default_catalog_tag) {
 			int cataId = 16;
-			SysMenu sysMenu = null;
+			HallPartConfDTO sysMenu = null;
 			try {
-				FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
-				sysMenu = firstPageHandler.getPartList(cataId, null, null, start, offset) ;		
+				// 根据栏目id查询房间列表
+				Result<HallPartConfDTO> partListResult = hallPartService.getPartList(cataId, 0, 0, 0, start, offset);
+				if (checkResultData(partListResult)) {
+					sysMenu = partListResult.getData();
+				}
 			} catch(Exception e) {
-				logger.error("Fail to call firstPageHandler.getPartList, " + "cataId " + cataId, e);
+                logger.error(String.format("Module Error:firstPageHandler.getPartList(cataId=%s, userId=0, cityId=0, area=0, start=%s, offset=%s)",
+                        cataId, start, offset), e);
 			}
 			if (sysMenu != null) {
-				
 				roomCount = sysMenu.getRoomCount().intValue();
-				
-				List<RoomInfo> roomList = sysMenu.getRooms();
-				if (roomList != null) {
-					for (RoomInfo roomInfo : roomList) {
-						JsonObject roomJson = RoomTF.roomInfoToJsonTemp(roomInfo, platform);
-						if (roomJson.has("poster_path_1280") && roomJson.get("poster_path_1280") != null) {
-							roomJson.addProperty("poster_path_1280", ConfigHelper.getHttpdir()
-									+ roomJson.get("poster_path_1280").getAsString());
-						}
-						if (roomJson.has("poster_path_272") && roomJson.get("poster_path_272") != null) {
-							roomJson.addProperty("poster_path_272", ConfigHelper.getHttpdir()
-									+ roomJson.get("poster_path_272").getAsString());
-						}
-						if (roomJson.has("poster_path_128") && roomJson.get("poster_path_128") != null) {
-							roomJson.addProperty("poster_path_128", ConfigHelper.getHttpdir()
-									+ roomJson.get("poster_path_128").getAsString());
-						}
-						if (roomJson.has("poster_path_300") && roomJson.get("poster_path_300") != null) {
-						    roomJson.addProperty("poster_path_300", ConfigHelper.getHttpdir()
-						            + roomJson.get("poster_path_300").getAsString());
-						}
-						jRoomList.add(roomJson);
+				List<HallRoomInfoDTO> roomList = sysMenu.getRooms();
+				if (CollectionUtils.isNotEmpty(roomList)) {
+					for (HallRoomInfoDTO roomInfo : roomList) {
+						JsonObject roomJson = HallRoomTF.roomInfoToJsonTemp(roomInfo, platform);
+						addRoomPosterForJson(roomJson, jRoomList);
 					}
 				}
 			}
@@ -335,51 +306,36 @@ public class IndexFunctions {
 			Long minLevelPoint = null;
 			Long maxLevelPoint = null;
 			if (catalogId == 24) {
-				minLevelPoint = 21l;
-				maxLevelPoint = 100l;
+				minLevelPoint = 21L;
+				maxLevelPoint = 100L;
 			}
 			if (catalogId == 25) {
-				minLevelPoint = 7l;
-				maxLevelPoint = 12l;
+				minLevelPoint = 7L;
+				maxLevelPoint = 12L;
 			}
 			if (catalogId == 26) {
-				minLevelPoint = 1l;
-				maxLevelPoint = 7l;
+				minLevelPoint = 1L;
+				maxLevelPoint = 7L;
 			}
 			if (catalogId == 28) {
-				minLevelPoint = 12l;
-				maxLevelPoint = 21l;
+				minLevelPoint = 12L;
+				maxLevelPoint = 21L;
 			}
 			if (minLevelPoint != null && maxLevelPoint != null) {
 				try {
 					// 根据星级获取房间列表
-		            RoomInfoService roomInfoServie = MelotBeanFactory.getBean("roomInfoService", RoomInfoService.class);
-		            roomCount = roomInfoServie.getRoomCountByActorLevelPoint(AppIdEnum.AMUSEMENT, minLevelPoint, maxLevelPoint);
-		            if (roomCount > 0) {
-		            	List<RoomInfo> roomList = roomInfoServie.getRoomListByActorLevelPoint(AppIdEnum.AMUSEMENT, minLevelPoint, maxLevelPoint, start, offset);
-			            if (roomList != null) {
-							for (RoomInfo roomInfo : roomList) {
-								JsonObject roomJson = RoomTF.roomInfoToJsonTemp(roomInfo, platform);
-								if (roomJson.has("poster_path_1280") && roomJson.get("poster_path_1280") != null) {
-									roomJson.addProperty("poster_path_1280", ConfigHelper.getHttpdir()
-											+ roomJson.get("poster_path_1280").getAsString());
-								}
-								if (roomJson.has("poster_path_272") && roomJson.get("poster_path_272") != null) {
-									roomJson.addProperty("poster_path_272", ConfigHelper.getHttpdir()
-											+ roomJson.get("poster_path_272").getAsString());
-								}
-								if (roomJson.has("poster_path_128") && roomJson.get("poster_path_128") != null) {
-									roomJson.addProperty("poster_path_128", ConfigHelper.getHttpdir()
-											+ roomJson.get("poster_path_128").getAsString());
-								}
-								if (roomJson.has("poster_path_300") && roomJson.get("poster_path_300") != null) {
-								    roomJson.addProperty("poster_path_300", ConfigHelper.getHttpdir()
-								            + roomJson.get("poster_path_300").getAsString());
-								}
-								jRoomList.add(roomJson);
+					Result<Page<HallRoomInfoDTO>> roomListResult = hallRoomService.getRoomListByActorLevelPoint(
+							AppIdEnum.AMUSEMENT, minLevelPoint, maxLevelPoint, start, offset);
+					if (checkResultData(roomListResult) && roomListResult.getData().getCount() > 0) {
+						roomCount = roomListResult.getData().getCount();
+						List<HallRoomInfoDTO> hallRoomInfoDTOList = roomListResult.getData().getList();
+						if (CollectionUtils.isNotEmpty(hallRoomInfoDTOList)) {
+							for (HallRoomInfoDTO roomInfo : hallRoomInfoDTOList) {
+								JsonObject roomJson = HallRoomTF.roomInfoToJsonTemp(roomInfo, platform);
+								addRoomPosterForJson(roomJson, jRoomList);
 							}
 						}
-		            }
+					}
 				} catch (Exception e) {
 		           logger.error("roomInfoServie.getRoomListByActorLevelPoint, "
 		           		+ "minLevelPoint : " + minLevelPoint + ", maxLevelPoint : " + maxLevelPoint, e);
@@ -393,68 +349,58 @@ public class IndexFunctions {
 
 		return result;
 	}
-	
+
+    /**
+     * 检验result及data不为null
+     * @param result            模块返回结果
+     * @return                  true表示不为null
+     */
+	private boolean checkResultData(Result result) {
+	    return result != null && result.getData() != null;
+    }
+
 	/**
-	 * 随机重排List
-	 * @param list
-	 * @return
+	 * 添加海报地址
+	 * @param src				原json
+	 * @param desc				目标json
 	 */
-//	private static List<Integer> resortList(List<Integer> list) {
-//		List<Integer> sortedList = new ArrayList<Integer>();
-//		if(list!=null && list.size()>0) {
-//			for (int i = 0; i < list.size(); i++) {
-//				sortedList.add(null);
-//			}
-//			int[] randomSort = getRandomSort(list.size());
-//			for (int i = 0; i < randomSort.length; i++) {
-//				sortedList.set(i, list.get(randomSort[i]));
-//			}
-//		}
-//		return sortedList;
-//	}
-	
+	private void addRoomPosterForJson(JsonObject src, JsonArray desc) {
+		if (src.get(RoomPosterConstant.POSTER_1280) != null) {
+			src.addProperty(RoomPosterConstant.POSTER_1280, ConfigHelper.getHttpdir()
+					+ src.get(RoomPosterConstant.POSTER_1280).getAsString());
+		}
+		if (src.get(RoomPosterConstant.POSTER_272) != null) {
+			src.addProperty(RoomPosterConstant.POSTER_272, ConfigHelper.getHttpdir()
+					+ src.get(RoomPosterConstant.POSTER_272).getAsString());
+		}
+		if (src.get(RoomPosterConstant.POSTER_128) != null) {
+			src.addProperty(RoomPosterConstant.POSTER_128, ConfigHelper.getHttpdir()
+					+ src.get(RoomPosterConstant.POSTER_128).getAsString());
+		}
+		if (src.get(RoomPosterConstant.POSTER_300) != null) {
+			src.addProperty(RoomPosterConstant.POSTER_300, ConfigHelper.getHttpdir()
+					+ src.get(RoomPosterConstant.POSTER_300).getAsString());
+		}
+		desc.add(src);
+	}
+
 	/**
 	 * 根据关注人数排序
 	 * @param list
 	 * @return
 	 */
-	private static List<RoomInfo> resortList(List<RoomInfo> list) {
-		if (list != null && list.size() > 0) {
-			Comparator<RoomInfo> comparator = new Comparator<RoomInfo>() {
-				public int compare(RoomInfo room1, RoomInfo room2) {
-					if (room1.getPeopleInRoom().intValue() > room2.getPeopleInRoom().intValue())
-			            return -1;
-			        else if (room1.getPeopleInRoom().intValue() < room2.getPeopleInRoom().intValue())
-			            return 1;
-			        else
-			            return 0;
-				};
+	private List<HallRoomInfoDTO> resortList(List<HallRoomInfoDTO> list) {
+		if (CollectionUtils.isNotEmpty(list)) {
+			Comparator<HallRoomInfoDTO> comparator = new Comparator<HallRoomInfoDTO>() {
+				@Override
+				public int compare(HallRoomInfoDTO room1, HallRoomInfoDTO room2) {
+					return room1.getPeopleInRoom().compareTo(room2.getPeopleInRoom());
+				}
 			};
 			Collections.sort(list, comparator);
 		}
 		return list;
 	}
-	
-	/**
-	 * 对0~count个数随机重新排序
-	 * @param count
-	 * @return
-	 */
-//	private static int[] getRandomSort(int count) {
-//		int[] sequence = new int[count];
-//		for (int i = 0; i < count; i++) {
-//			sequence[i] = i;
-//		}
-//		Random random = new Random();
-//		for (int i = 0; i < count; i++) {
-//			int p = random.nextInt(count);
-//			int tmp = sequence[i];
-//			sequence[i] = sequence[p];
-//			sequence[p] = tmp;
-//		}
-//		random = null;
-//		return sequence;
-//	}
 	
 	/**
 	 * 获取推荐的房间列表(10002003)
@@ -463,18 +409,16 @@ public class IndexFunctions {
 	 */
 	public JsonObject getFollowRecommendedList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
 		JsonObject result = new JsonObject();
-		int platform = 0;
-		int appId = 0;
+		int platform;
+		int appId;
 		Integer roomId;
 		Integer userId;
-		int count = 0;
+		int count;
 		try {
 			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.WEB, null, 1, Integer.MAX_VALUE);
-			//默认为1
 			appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 0, Integer.MAX_VALUE);
 			roomId = CommonUtil.getJsonParamInt(jsonObject, "roomId", 0, null, 1, Integer.MAX_VALUE);
 			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
-			//默认为1
 			count = CommonUtil.getJsonParamInt(jsonObject, "count", 4, null, 1, Integer.MAX_VALUE);
 		} catch (CommonUtil.ErrorGetParameterException e) {
 			result.addProperty("TagCode", e.getErrCode());
@@ -490,17 +434,21 @@ public class IndexFunctions {
 		if (userId == 0) {
 			userId = null;
 		}
-		List<RoomInfo> roomList = null;
+		List<HallRoomInfoDTO> roomList = null;
 		try {
-			FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
-			roomList = firstPageHandler.getRecommendRooms(roomId, userId, appId, count);
+			// 根据roomId和userId获取推荐的房间列表
+			Result<List<HallRoomInfoDTO>> recommendRoomsResult = hallRoomService.getRecommendRooms(roomId, userId, appId, count);
+			if (checkResultData(recommendRoomsResult)) {
+				roomList = recommendRoomsResult.getData();
+			}
 		} catch(Exception e) {
-			logger.error("Fail to call firstPageHandler.getRecommendRooms ", e);
+			logger.error(String.format("Module Error: firstPageHandler.getRecommendRooms(roomId=%s, userId=%s, appId=%s, count=%s)",
+					roomId, userId, appId, count), e);
 		}
 		if (roomList != null) {
 			JsonArray roomArray = new JsonArray();
-			for (RoomInfo roomInfo : roomList) {
-				roomArray.add(RoomTF.roomInfoToJson(roomInfo, platform, true));
+			for (HallRoomInfoDTO roomInfo : roomList) {
+				roomArray.add(HallRoomTF.roomInfoToJson(roomInfo, platform, true));
 			}
 			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 			result.add("roomList", roomArray);
@@ -659,51 +607,57 @@ public class IndexFunctions {
 	                    roomList.add(obj);
 					}
 				}
-				
-				RoomInfoService roomInfoService = (RoomInfoService) MelotBeanFactory.getBean("roomInfoService");
-	            if (roomInfoService != null) {
-	                List<RoomInfo> roomInfoList = roomInfoService.getRoomListByRoomIds(ids);
-	                if (roomInfoList != null && !roomInfoList.isEmpty()) {
-	                    Map<Integer, RoomInfo> roomMap = new HashMap<>();
-	                    for (RoomInfo roomInfo : roomInfoList) {
-	                        roomMap.put(roomInfo.getActorId(), roomInfo);
-	                    }
-	                    if (roomMap.size() > 0) {
-	                        for (JsonElement json : roomList) {
-	                            JsonObject temp = json.getAsJsonObject();
-	                            if (roomMap.containsKey(temp.get("userId").getAsInt())) {
-	                                RoomInfo roomInfo = roomMap.get(temp.get("userId").getAsInt());
-	                                if (roomInfo.getLiveStarttime() != null && roomInfo.getLiveEndtime() == null) {
-	                                    temp.addProperty("liveType", 1);
-	                                    temp.addProperty("livestarttime", roomInfo.getLiveStarttime().getTime());
-	                                    temp.addProperty("onlineCount", roomInfo.getPeopleInRoom());
-	                                } else {
-	                                    temp.addProperty("liveType", 0);
-	                                }
-	                                if (roomInfo.getScreenType() != null) {
-	                                    temp.addProperty("screenType", roomInfo.getScreenType());
-	                                } else {
-	                                    temp.addProperty("screenType", 1);
-	                                }
-	                                // 轮播房信息替换
-	                                temp.addProperty("roomId", roomInfo.getRoomId() != null ? roomInfo.getRoomId() : roomInfo.getActorId());
-	                                
-	                                if (roomInfo.getType() != null) {
-	                                	if (roomInfo.getRoomSource() != null) {
-	                                		temp.addProperty("roomSource", roomInfo.getRoomSource());
-										}else{
+				List<HallRoomInfoDTO> hallRoomInfoDTOList = null;
+				try {
+					// 根据房间ids查询房间列表
+					Result<List<HallRoomInfoDTO>> roomListByRoomIdsResult = hallRoomService.getRoomListByRoomIds(ids);
+					if (checkResultData(roomListByRoomIdsResult)) {
+						hallRoomInfoDTOList = roomListByRoomIdsResult.getData();
+					}
+					if (CollectionUtils.isNotEmpty(hallRoomInfoDTOList)) {
+						// map做查询
+						Map<Integer, HallRoomInfoDTO> roomMap = new HashMap<>(hallRoomInfoDTOList.size());
+						for (HallRoomInfoDTO roomInfo : hallRoomInfoDTOList) {
+							roomMap.put(roomInfo.getActorId(), roomInfo);
+						}
+						if (roomMap.size() > 0) {
+							for (JsonElement json : roomList) {
+								JsonObject temp = json.getAsJsonObject();
+								if (roomMap.containsKey(temp.get("userId").getAsInt())) {
+									HallRoomInfoDTO roomInfo = roomMap.get(temp.get("userId").getAsInt());
+									if (roomInfo.getLiveStarttime() != null && roomInfo.getLiveEndtime() == null) {
+										temp.addProperty("liveType", 1);
+										temp.addProperty("livestarttime", roomInfo.getLiveStarttime().getTime());
+										temp.addProperty("onlineCount", roomInfo.getPeopleInRoom());
+									} else {
+										temp.addProperty("liveType", 0);
+									}
+									if (roomInfo.getScreenType() != null) {
+										temp.addProperty("screenType", roomInfo.getScreenType());
+									} else {
+										temp.addProperty("screenType", 1);
+									}
+									// 轮播房信息替换
+									temp.addProperty("roomId", roomInfo.getRoomId() != null ? roomInfo.getRoomId() : roomInfo.getActorId());
+
+									if (roomInfo.getType() != null) {
+										if (roomInfo.getRoomSource() != null) {
+											temp.addProperty("roomSource", roomInfo.getRoomSource());
+										} else {
 											temp.addProperty("roomSource", roomInfo.getType());
 										}
-	                                }
-	                            }
-	                        }
-	                    }
-	                }
-	            }
-	            result.add("roomList", roomList);
+									}
+								}
+							}
+						}
+					}
+					result.add("roomList", roomList);
+				} catch (Exception e) {
+					logger.error(String.format("Module Error: hallRoomService.getRoomListByRoomIds(ids=%s)", ids), e);
+					result.addProperty("TagCode", TagCodeEnum.FAIL_TO_CALL_API_MENU_MODULE);
+				}
 			}
 		}
-		
 		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 		return result;
 	}
@@ -939,8 +893,8 @@ public class IndexFunctions {
 	public JsonObject findRoomList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
 		JsonObject result = new JsonObject();
 		JsonArray jRoomList = new JsonArray();
-		int platform = 0, recordCount = 0;
-		String fuzzyString = null;
+		int platform, recordCount;
+		String fuzzyString;
 		int pageNum, pageCount;
 		try {
 			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
@@ -982,16 +936,20 @@ public class IndexFunctions {
             }
             nickname = fuzzyString;
         }
-        
+
+        // 判断缓存中是否已存在
         if (!SearchWordsSource.isExistSearchResultKey(fuzzyString)) {
-            RoomInfoService roomInfoServie = (RoomInfoService) MelotBeanFactory.getBean("roomInfoService");
-            recordCount = roomInfoServie.getFuzzyRoomCount(actorId, nickname);
-            List<String> newList = new ArrayList<String>();
-            if (recordCount > 0) {
-                List<RoomInfo> roomInfoList = roomInfoServie.getFuzzyRoomList(actorId, nickname, 0, 1000);
-                if (!roomInfoList.isEmpty()) {
-                    for (RoomInfo rinfo : roomInfoList) {
-                        JsonObject roomJson = RoomTF.roomInfoToJson(rinfo, platform, true);
+        	// 缓存不存在，则默认从数据库查找1000条记录
+			Result<Page<HallRoomInfoDTO>> fuzzyResult = hallRoomService.getFuzzyRoomList(actorId, nickname, 0, 1000);
+			if (!checkResultData(fuzzyResult)) {
+				result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+				return result;
+			}
+			List<String> newList = new ArrayList<>();
+            if (fuzzyResult.getData().getCount() > 0) {
+                if (CollectionUtils.isNotEmpty(fuzzyResult.getData().getList())) {
+                    for (HallRoomInfoDTO rinfo : fuzzyResult.getData().getList()) {
+                        JsonObject roomJson = HallRoomTF.roomInfoToJson(rinfo, platform, true);
                         newList.add(roomJson.toString());
                     }
                 }
@@ -1009,7 +967,6 @@ public class IndexFunctions {
                         }
                         jsonObj.addProperty("gender", userProfile.getGender());
                         if (userProfile.getPortrait() != null) {
-                            jsonObj.addProperty("portrait_path_128", ConfigHelper.getHttpdir() + userProfile.getPortrait() + "!128");
                             jsonObj.addProperty("portrait_path_256", ConfigHelper.getHttpdir() + userProfile.getPortrait() + "!256");
                         }
                         jsonObj.addProperty("actorLevel", userProfile.getActorLevel());
@@ -1024,7 +981,7 @@ public class IndexFunctions {
                 logger.error("SearchWordsSource.setSearchResult Fail to add" + fuzzyString + "searchResult to redis");
             }
         } 
-
+		// 查询结果放入缓存中，然后从缓存中分页
         long start, end;
         recordCount = (int) SearchWordsSource.getSearchResultPageCount(fuzzyString);
         if (recordCount > 0) {
@@ -1057,8 +1014,6 @@ public class IndexFunctions {
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         result.addProperty("recordCount", recordCount);
         result.add("roomList", jRoomList);
-		
-        // 返回结果
         return result;
 	}
 	
@@ -1121,8 +1076,9 @@ public class IndexFunctions {
 
 	/**
 	 * 获取活动详细(10002013)
-	 * 
-	 * @param paramJsonObject
+	 * @param jsonObject
+	 * @param checkTag
+	 * @param request
 	 * @return
 	 */
 	public JsonObject getActivityDetail(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
@@ -1215,17 +1171,20 @@ public class IndexFunctions {
 			userId = null;
 		}
 		
-		List<RoomInfo> roomList = null;
+		List<HallRoomInfoDTO> roomList = null;
 		try {
-			FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
-			roomList = firstPageHandler.getRecommendRooms(roomId, userId, appId, count);
+			// 根据roomId和userId获取推荐的房间列表
+			Result<List<HallRoomInfoDTO>> recommendRoomsResult = hallRoomService.getRecommendRooms(roomId, userId, appId, count);
+			if (recommendRoomsResult != null) {
+				roomList = recommendRoomsResult.getData();
+			}
 		} catch(Exception e) {
 			logger.error("Fail to call firstPageHandler.getRecommendRooms ", e);
 		}
 		if (roomList != null) {
 			JsonArray roomArray = new JsonArray();
-			for(RoomInfo roomInfo : roomList) {
-				roomArray.add(RoomTF.roomInfoToJson(roomInfo, platform, false));
+			for(HallRoomInfoDTO roomInfo : roomList) {
+				roomArray.add(HallRoomTF.roomInfoToJson(roomInfo, platform, false));
 			}
 			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 			result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
@@ -1346,7 +1305,9 @@ public class IndexFunctions {
 						finalJson.addProperty("giftPic", entry.getValue().get("giftPic").getAsString());
 						arr.add(finalJson);
 					}
-					if (arr.size() >= 3) break;
+					if (arr.size() >= 3) {
+						break;
+					}
 				}
 			}
 			
@@ -1374,7 +1335,9 @@ public class IndexFunctions {
 							arr.add(finalJson);
 						}
 					}
-					if (arr.size() >= 3) break;
+					if (arr.size() >= 3) {
+						break;
+					}
 				}
 			}
 		}
@@ -1441,14 +1404,18 @@ public class IndexFunctions {
 						jsonObj.addProperty("upUid", upUidInt);
 						// 从redis热点数据中读取昵称
 						String nickname = HotDataSource.getHotFieldValue(upUidInt.toString(), "nickname");
-						if (nickname != null) jsonObj.addProperty("upNick", GeneralService.replaceSensitiveWords(upUidInt, nickname));
+						if (nickname != null) {
+							jsonObj.addProperty("upNick", GeneralService.replaceSensitiveWords(upUidInt, nickname));
+						}
 					}
 					if (rankInfo.containsKey("downUid") && rankInfo.get("downUid")!=null) {
 						Integer downUidInt = Integer.valueOf(rankInfo.get("downUid").toString());
 						jsonObj.addProperty("downUid", downUidInt);
 						// 从redis热点数据中读取昵称
 						String nickname = HotDataSource.getHotFieldValue(downUidInt.toString(), "nickname");
-						if (nickname != null) jsonObj.addProperty("downNick", GeneralService.replaceSensitiveWords(downUidInt, nickname));
+						if (nickname != null) {
+							jsonObj.addProperty("downNick", GeneralService.replaceSensitiveWords(downUidInt, nickname));
+						}
 					}
 					for (int i = 1; i < 4; i++) {
 						JsonObject json;
@@ -1938,17 +1905,21 @@ public class IndexFunctions {
 			return result;
 		}
 
-        List<HomePage> tempList = null;
+        List<FirstPageConfDTO> tempList = null;
         try {
-            FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
-            tempList = firstPageHandler.getFistPagelist(appId, channel, platform, false);
-        } catch(Exception e) {
+        	// 获取大厅配置
+			Result<List<FirstPageConfDTO>> fistPagelistResult = hallHomeService.getFistPagelist(
+					appId, channel, platform, 0, 0, 0, false, 0, false);
+			if (fistPagelistResult != null) {
+				tempList = fistPagelistResult.getData();
+			}
+		} catch(Exception e) {
             logger.error("Fail to call firstPageHandler.getFistPagelist ", e);
         }
         
         JsonArray plateList = new JsonArray();
         if (tempList != null) {
-            for (HomePage temp : tempList) {
+            for (FirstPageConfDTO temp : tempList) {
                 JsonObject json = new JsonObject();
                 if (temp.getTitleName() != null) {
                     json.addProperty("partName", temp.getTitleName());
@@ -1965,10 +1936,10 @@ public class IndexFunctions {
                 if (temp.getCdnState() != null) {
                     if (temp.getCdnState() > 0 && temp.getSeatType() != 3) {
                         JsonArray roomArray = new JsonArray();
-                        List<RoomInfo> roomList = temp.getRooms();
+                        List<HallRoomInfoDTO> roomList = temp.getRooms();
                         if (roomList != null) {
-                            for (RoomInfo roomInfo : roomList) {
-                                roomArray.add(RoomTF.roomInfoToJsonTemp(roomInfo, platform));
+                            for (HallRoomInfoDTO roomInfo : roomList) {
+                                roomArray.add(HallRoomTF.roomInfoToJsonTemp(roomInfo, platform));
                             }
                         }
                         json.add("rcdRooms", roomArray);
@@ -2017,14 +1988,14 @@ public class IndexFunctions {
 		
 		if (cataId > 0) {
 			try {
-				FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
-				SysMenu sysMenu = firstPageHandler.getPartList(cataId, null, null, start, offset);
-				if (sysMenu != null) {
-					roomCount = sysMenu.getRoomCount();
-					List<RoomInfo> roomList = sysMenu.getRooms();
+				// 根据栏目id获取该栏目信息
+				Result<HallPartConfDTO> partListResult = hallPartService.getPartList(cataId, 0, 0, 0, start, offset);
+				if (partListResult != null && partListResult.getData() != null) {
+					roomCount = partListResult.getData().getRoomCount();
+					List<HallRoomInfoDTO> roomList = partListResult.getData().getRooms();
 					if (roomList != null) {
-						for (RoomInfo roomInfo : roomList) {
-							jRoomList.add(RoomTF.roomInfoToJsonTemp(roomInfo, platform));
+						for (HallRoomInfoDTO roomInfo : roomList) {
+							jRoomList.add(HallRoomTF.roomInfoToJsonTemp(roomInfo, platform));
 						}
 					}
 				}
@@ -2127,13 +2098,13 @@ public class IndexFunctions {
 		JsonArray jRoomList = new JsonArray();
 		try {
 			// 获取地区下房间列表
-            RoomInfoService roomInfoServie = MelotBeanFactory.getBean("roomInfoService", RoomInfoService.class);
-            roomCount = roomInfoServie.getRoomCountByDistrict(AppIdEnum.AMUSEMENT, area);
-            if (roomCount > 0) {
-            	List<RoomInfo> roomList = roomInfoServie.getRoomListByDistrict(AppIdEnum.AMUSEMENT, area, cityId, start, offset);
-	            if (roomList != null) {
-					for (RoomInfo roomInfo : roomList) {
-						JsonObject roomJson = RoomTF.roomInfoToJsonTemp(roomInfo, platform);
+			Result<Page<HallRoomInfoDTO>> roomListByDistrictResult = hallRoomService.getRoomListByDistrict(area, cityId, start, offset);
+			if (roomListByDistrictResult != null && roomListByDistrictResult.getData() != null) {
+            	List<HallRoomInfoDTO> roomList = roomListByDistrictResult.getData().getList();
+	            if (CollectionUtils.isNotEmpty(roomList)) {
+	            	roomCount = roomListByDistrictResult.getData().getCount();
+					for (HallRoomInfoDTO roomInfo : roomList) {
+						JsonObject roomJson = HallRoomTF.roomInfoToJsonTemp(roomInfo, platform);
 						jRoomList.add(roomJson);
 					}
 				}
@@ -2547,7 +2518,7 @@ public class IndexFunctions {
 	
 	/**
 	 * 获取一定时间内礼物送出总数、打折总数和用户总数(10002042)
-	 * @param jsonObject
+	 * @param paramJsonObject
 	 * @return
 	 */
 	public JsonObject getPeriodGiftTotal(JsonObject paramJsonObject, boolean checkTag, HttpServletRequest request) {
