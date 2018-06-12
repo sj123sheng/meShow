@@ -784,7 +784,7 @@ public class UserFunctions {
 			}
 			phoneNum = CommonUtil.getJsonParamString(jsonObject, "phoneNum", null, null, 11, Integer.MAX_VALUE);
 			phoneNum = CommonUtil.validatePhoneNum(phoneNum, "86");
-			if (!Pattern.compile(Constant.regx_user_id).matcher(phoneNum).find()) {
+			if (!StringUtil.strIsNull(phoneNum) && !Pattern.compile(Constant.regx_user_id).matcher(phoneNum).find()) {
 			    phoneNum = null;
 			}
 		} catch (CommonUtil.ErrorGetParameterException e) {
