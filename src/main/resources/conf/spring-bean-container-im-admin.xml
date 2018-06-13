@@ -66,6 +66,6 @@
 	<bean id="admin8" class="com.melot.kkcx.model.ImAdmin">
 		<property name="userId"   value="8" />
 		<property name="nickName" value="K宝小助手" />
-		<property name="portrait" value="/kk/imadmin/8.png" />
+		<property name="portrait" value="/imadmin/8.png" />
 	</bean>
 </beans>
