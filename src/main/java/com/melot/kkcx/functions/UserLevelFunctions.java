@@ -26,6 +26,8 @@ import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.ParameterKeys;
 import com.melot.kktv.util.SecurityFunctions;
 import com.melot.kktv.util.TagCodeEnum;
+import com.melot.module.packagegift.driver.service.XmanService;
+import com.melot.sdk.core.util.MelotBeanFactory;
 
 /**
  * Title: UserLevelFunctions
@@ -73,6 +75,15 @@ public class UserLevelFunctions {
         } catch (Exception e) {
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
+        }
+        
+        // 神秘人直接返回成功
+        if (userId <= 1127828 && userId >= 1000578 ) {
+            XmanService xmanService = (XmanService) MelotBeanFactory.getBean("xmanService");
+            if (xmanService.getXmanConf(userId) != null) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+                return result;
+            }
         }
         
         try {
