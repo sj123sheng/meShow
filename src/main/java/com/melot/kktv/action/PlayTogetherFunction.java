@@ -1,22 +1,23 @@
 package com.melot.kktv.action;
 
 import com.google.gson.*;
-import com.melot.api.menu.sdk.dao.domain.RoomInfo;
-import com.melot.api.menu.sdk.dao.domain.SysMenu;
-import com.melot.api.menu.sdk.handler.FirstPageHandler;
 import com.melot.kk.doll.api.constant.DollMachineStatusEnum;
 import com.melot.kk.doll.api.domain.DO.RedisDollMachineDO;
 import com.melot.kk.doll.api.service.DollMachineService;
-import com.melot.kkcx.transform.RoomTF;
+import com.melot.kk.hall.api.domain.HallPartConfDTO;
+import com.melot.kk.hall.api.domain.HallRoomInfoDTO;
+import com.melot.kk.hall.api.service.SysMenuService;
+import com.melot.kkcx.transform.HallRoomTF;
+import com.melot.kkcx.util.ResultUtils;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.util.*;
 import com.melot.sdk.core.util.MelotBeanFactory;
-import org.apache.commons.io.Charsets;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
@@ -36,6 +37,9 @@ public class PlayTogetherFunction {
 
     @Autowired
     private ConfigService configService;
+
+    @Resource
+    private SysMenuService hallPartService;
 
     private static String REGEX = ",";
 
@@ -124,14 +128,17 @@ public class PlayTogetherFunction {
             DollMachineService dollMachineService = (DollMachineService) MelotBeanFactory.getBean("dollMachineService");
 
             int start = (pageIndex <= 1 ? 0 : pageIndex - 1) * countPerPage;
-            FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
-            SysMenu sysMenu = firstPageHandler.getPartList(cataId, null, null, start, countPerPage);
+            Result<HallPartConfDTO> partListResult = hallPartService.getPartList(cataId, 0, 0, 0, start, countPerPage);
+            if (!ResultUtils.checkResultNotNull(partListResult)) {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
             JsonArray roomArray = new JsonArray();
-            List<RoomInfo> roomList = sysMenu.getRooms();
+            HallPartConfDTO hallPartConfDTO = partListResult.getData();
+            List<HallRoomInfoDTO> roomList = hallPartConfDTO.getRooms();
             if (roomList != null) {
-                for (RoomInfo roomInfo : roomList) {
-
-                    JsonObject roomObject = RoomTF.roomInfoToJson(roomInfo, platform);
+                for (HallRoomInfoDTO roomInfo : roomList) {
+                    JsonObject roomObject = HallRoomTF.roomInfoToJson(roomInfo, platform);
 
                     // 获取直播间娃娃机的状态和直播间抓中娃娃的总数
                     int roomId = roomInfo.getActorId();
@@ -155,9 +162,7 @@ public class PlayTogetherFunction {
                     roomArray.add(roomObject);
                 }
             }
-
-            int roomTotal = sysMenu.getRoomCount().intValue();
-
+            int roomTotal = hallPartConfDTO.getRoomCount().intValue();
             result.addProperty("roomTotal", roomTotal);
             result.add("roomList", roomArray);
             result.addProperty("pathPrefix", ConfigHelper.getHttpdir());

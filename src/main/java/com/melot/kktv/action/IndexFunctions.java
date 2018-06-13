@@ -40,7 +40,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
-import com.melot.api.menu.sdk.redis.KKHallSource;
 import com.melot.common.driver.domain.AreaNewActors;
 import com.melot.common.driver.service.AreaNewActorsService;
 import com.melot.content.config.domain.LiveAlbum;
@@ -1236,15 +1235,9 @@ public class IndexFunctions {
 			int userId;
 			JsonObject weeklyGiftJson = null;
 			
-			//获取正在直播的actorId
-			String liveActorStr = KKHallSource.getTempDataString(KK_LIVE_ACTOR_ID);
-			List<Integer> liveActorList = new ArrayList<>();
-			if (liveActorStr != null) {
-				String[] liveActor = liveActorStr.split(",");
-				for (String actorId : liveActor) {
-					liveActorList.add(Integer.valueOf(actorId));
-				}
-			}
+			//获取缓存里正在直播的actorId
+			Result<List<Integer>> moduleResult = hallRoomService.getLiveActorIdsByCache(KK_LIVE_ACTOR_ID);
+			List<Integer> liveActorList = moduleResult.getData();
 			
 			Integer giftId, relationGiftId, singlePrice;
 			String giftName;
@@ -1473,16 +1466,10 @@ public class IndexFunctions {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-		
-		//获取正在直播的actorId
-		String liveActorStr = KKHallSource.getTempDataString(KK_LIVE_ACTOR_ID);
-		List<Integer> liveActorList = new ArrayList<>();
-		if (liveActorStr != null) {
-			String[] liveActor = liveActorStr.split(",");
-			for (String actorId : liveActor) {
-				liveActorList.add(Integer.valueOf(actorId));
-			}
-		}
+
+		//获取缓存里正在直播的actorId
+		Result<List<Integer>> moduleResult = hallRoomService.getLiveActorIdsByCache(KK_LIVE_ACTOR_ID);
+		List<Integer> liveActorList = moduleResult.getData();
 		
 		JsonArray rankList = new JsonArray();
 		Map<Integer, JsonObject> giftMap = new HashMap<>();

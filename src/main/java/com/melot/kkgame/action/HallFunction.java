@@ -9,31 +9,34 @@
 package com.melot.kkgame.action;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.melot.api.menu.sdk.dao.domain.SysMenu;
+import com.melot.api.menu.sdk.handler.FirstPageHandler;
+import com.melot.kk.hall.api.domain.HallPartConfDTO;
+import com.melot.kk.hall.api.domain.HallRoomInfoDTO;
+import com.melot.kk.hall.api.service.HallRoomService;
+import com.melot.kk.hall.api.service.SysMenuService;
+import com.melot.kkcx.transform.HallRoomTF;
+import com.melot.kkcx.util.ResultUtils;
+import com.melot.kktv.base.Page;
+import com.melot.kktv.base.Result;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.api.menu.sdk.dao.RoomSubCatalogDao;
-import com.melot.api.menu.sdk.dao.SysMenuDao;
 import com.melot.api.menu.sdk.dao.domain.HomePage;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
-import com.melot.api.menu.sdk.dao.domain.SysMenu;
-import com.melot.api.menu.sdk.handler.FirstPageHandler;
 import com.melot.api.menu.sdk.service.RoomInfoService;
 import com.melot.api.menu.sdk.service.RoomSubCatalogService;
-import com.melot.api.menu.sdk.utils.RandomUtils;
 import com.melot.blacklist.service.BlacklistService;
 import com.melot.content.config.game.service.GameTagService;
 import com.melot.kkcx.service.GeneralService;
@@ -78,6 +81,12 @@ public class HallFunction extends BaseAction{
     private HallPageService hallPageService;
     private HallPartSource hallPartSource;
     private RoomSubCatalogService roomSubCatalogService;
+
+    @Resource
+    private SysMenuService hallPartService;
+
+    @Resource
+    private HallRoomService hallRoomService;
     
     public void setHallPageService(HallPageService hallPageService) {
         this.hallPageService = hallPageService;
@@ -262,8 +271,8 @@ public class HallFunction extends BaseAction{
     public JsonObject getLiveRoomListByCataId(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         
         JsonObject result = new JsonObject();
-        int cataId = 0;
-        int count = 0;
+        int cataId;
+        int count;
         try {
             cataId = CommonUtil.getJsonParamInt(jsonObject, "cataId", 0, TagCodeEnum.CATAID_MISSING, 1, Integer.MAX_VALUE);
             count = CommonUtil.getJsonParamInt(jsonObject, "count", 1, null, 1, Integer.MAX_VALUE);
@@ -275,13 +284,18 @@ public class HallFunction extends BaseAction{
             return result;
         }
         
-        List<RoomInfo> roomList = null;
+        List<HallRoomInfoDTO> roomList = null;
         try {
-            RoomSubCatalogDao roomSubCatalogDao = MelotBeanFactory.getBean("roomSubCatalogDao", RoomSubCatalogDao.class);
-            roomList = roomSubCatalogDao.getPartLiveRoomList(cataId, Integer.valueOf(0), MAX_COUNT_OF_LIVING_ROOM);  
+            Result<List<HallRoomInfoDTO>> moduleResult = hallRoomService.getPartLiveRoomList(cataId, Integer.valueOf(0), MAX_COUNT_OF_LIVING_ROOM);
+            if (ResultUtils.checkResultNotNull(moduleResult)) {
+                roomList = moduleResult.getData();
+            }
             if (roomList == null || roomList.size() < 2) { 
                 //当前栏目下个数达不到响应个数, 从全站获取
-                roomList = roomSubCatalogDao.getPartLiveRoomList(ConstantEnum.KKGAME_ALL_ACTORS_CATAID, 0, MAX_COUNT_OF_LIVING_ROOM);  
+                moduleResult = hallRoomService.getPartLiveRoomList(ConstantEnum.KKGAME_ALL_ACTORS_CATAID, 0, MAX_COUNT_OF_LIVING_ROOM);
+                if (ResultUtils.checkResultNotNull(moduleResult)) {
+                    roomList = moduleResult.getData();
+                }
             }
         } catch(Exception e) {
             logger.error("Fail to call getLiveRoomListByCataId, "+ "cataId " + cataId, e);
@@ -289,9 +303,9 @@ public class HallFunction extends BaseAction{
         JsonArray roomArray = new JsonArray(); 
         try{
             if (roomList != null) {
-                List<RoomInfo>list = getRoomListByRandom(roomList, count);
-                for (RoomInfo room : list) {
-                    JsonObject json =  RoomTF.roomInfoToJson(room, PlatformEnum.WEB);
+                List<HallRoomInfoDTO>list = getRoomListByRandom(roomList, count);
+                for (HallRoomInfoDTO room : list) {
+                    JsonObject json =  HallRoomTF.roomInfoToJson(room, PlatformEnum.WEB);
                     roomArray.add(json);
                 }
             }
@@ -313,24 +327,37 @@ public class HallFunction extends BaseAction{
      *  @return list的一个子集
      * 
      */
-    private static List<RoomInfo> getRoomListByRandom(List<RoomInfo>list, int count){
-        if(list == null || list.size() == 0){  //全集为空集, 则返回空列表, 不返回null;
-            return new ArrayList<RoomInfo>();
+    private List<HallRoomInfoDTO> getRoomListByRandom(List<HallRoomInfoDTO> list, int count){
+        //全集为空集, 则返回空列表, 不返回null;
+        if (list == null || list.size() == 0) {
+            return Lists.newArrayList();
         }
         int size = list.size();
-        if(size <= count){ //当全集需要全部返回, 则随机后返回新列表
-            List<RoomInfo>result = new ArrayList<RoomInfo>(list);
+        //当全集需要全部返回, 则随机后返回新列表
+        if (size <= count) {
+            List<HallRoomInfoDTO> result = Lists.newArrayList(list);
             Collections.shuffle(result);
             return result;
         }
-        List<RoomInfo>result = new ArrayList<RoomInfo>();
-        while(result.size() < count){
-            RoomInfo room = list.get(RandomUtils.getRandomValue(-1, size));
-            if(!result.contains(room)){
+        List<HallRoomInfoDTO> result = Lists.newArrayListWithCapacity(count);
+        Set<Integer> set = Sets.newHashSet(count);
+        while (result.size() < count) {
+            HallRoomInfoDTO room = list.get(getRandomValue(-1, size));
+            if (!set.contains(room.getActorId())) {
+                set.add(room.getActorId());
                 result.add(room);
             }
         }
         return result;
+    }
+
+    private int getRandomValue(int min, int max) {
+        Random random = new Random();
+        int value;
+        do {
+            value = random.nextInt(max) % (max - min) + min + 1;
+        } while(value == max);
+        return value;
     }
     
     /**
@@ -547,26 +574,29 @@ public class HallFunction extends BaseAction{
         if (cacheObject != null) {
             result = (JsonObject) cacheObject;
         } else {
-            int total = roomSubCatalogService.getActorNearbyCount(cityId, gender, -1);
-    		if (total > start) {
-    			BlacklistService blacklistService = (BlacklistService) MelotBeanFactory.getBean("blacklistService");
-            	List<RoomInfo> roomList = roomSubCatalogService.getActorNearby(cityId, gender, -1, start, offset);
-            	List<Integer> actorList = new ArrayList<Integer>();
-            	if (roomList != null && roomList.size() > 0) {
-            	    for (RoomInfo roomInfo : roomList) {
-                        actorList.add(roomInfo.getActorId());
+            int total = 0;
+            Result<Page<HallRoomInfoDTO>> moduleResult = hallRoomService.getActorNear(cityId, gender, -1, start, offset);
+            List<HallRoomInfoDTO> hallRoomInfoDTOList = null;
+            if (ResultUtils.checkResultNotNull(moduleResult)) {
+                total = moduleResult.getData().getCount();
+                hallRoomInfoDTOList = moduleResult.getData().getList();
+            }
+            List<Integer> actorList = new ArrayList<>();
+            if (CollectionUtils.isNotEmpty(hallRoomInfoDTOList)) {
+                for (HallRoomInfoDTO roomInfo : hallRoomInfoDTOList) {
+                    actorList.add(roomInfo.getActorId());
+                }
+            }
+            BlacklistService blacklistService = (BlacklistService) MelotBeanFactory.getBean("blacklistService");
+            Map<Integer, Boolean> isBlack = blacklistService.isSameCityBlacklist(actorList);
+            JsonArray jsonArray = new JsonArray();
+            if (CollectionUtils.isNotEmpty(hallRoomInfoDTOList)) {
+                for (HallRoomInfoDTO roomInfo : hallRoomInfoDTOList) {
+                    if (isBlack.containsKey(roomInfo.getActorId()) && isBlack.get(roomInfo.getActorId()) == false) {
+                        jsonArray.add(HallRoomTF.roomInfoToJson(roomInfo, platform));
                     }
-            	}
-            	Map<Integer, Boolean> isBlack = blacklistService.isSameCityBlacklist(actorList);
-    	        JsonArray jsonArray = new JsonArray();
-    	        if (roomList != null && roomList.size() > 0) {
-    	        	for(RoomInfo room : roomList){
-    	        		if (isBlack.containsKey(room.getActorId()) && isBlack.get(room.getActorId()) == false) {
-    	        			jsonArray.add(RoomTF.roomInfoToJson(room, platform));
-    	        		}
-    	        	}
-    	        	result.add("actorNearby", jsonArray);
-    	        }
+                }
+                result.add("actorNearby", jsonArray);
             }
     
             result.addProperty("cityId", cityId);
@@ -617,7 +647,7 @@ public class HallFunction extends BaseAction{
     
     /**
      * 获取游客推荐精选
-     * @param offset
+     * @param size
      * @param hotActors
      */
     private List<RoomInfo> getSuggestActorsForVisitor(List<RoomInfo> hotActors, int size) {
@@ -632,25 +662,4 @@ public class HallFunction extends BaseAction{
         }
         return goalRoomlist;
     }
-    
-    /**
-     *  ipad获取栏目及子栏目,需要返回栏目下的房间数 
-     * 
-     */
-    @SuppressWarnings("unused")
-    private List<SysMenu> fetchSysMenuList(Integer appId){
-        SysMenuDao sysMenuDao = MelotBeanFactory.getBean("sysMenuDao", SysMenuDao.class);
-        List<SysMenu> sysMenus = sysMenuDao.getSysMenusByParentId(0, appId);
-        for (SysMenu sysMenu : sysMenus) {
-            List<SysMenu> subSysMenuList = sysMenuDao.getSubSysMenusByParentId(sysMenu.getTitleId(),1,null);
-            Collections.sort(subSysMenuList, new Comparator<SysMenu>(){
-                public int compare(SysMenu arg0, SysMenu arg1) {
-                    return arg0.getSortIndex().compareTo(arg1.getSortIndex());
-                }
-            });
-            sysMenu.setSysMenus(subSysMenuList);
-        }
-        return sysMenus;
-    }
-    
 }

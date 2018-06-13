@@ -4,7 +4,6 @@ import java.util.Calendar;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
-import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.api.menu.sdk.dao.domain.RoomSideLabel;
 import com.melot.kk.hall.api.domain.HallRoomInfoDTO;
 import com.melot.kkcx.service.GeneralService;
