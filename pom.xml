@@ -383,7 +383,7 @@
 		<dependency>
   			<groupId>com.melot.kk</groupId>
   			<artifactId>kk-Activity-api</artifactId>
-  			<version>1.0.1</version>
+  			<version>1.0.2-snapshot</version>
 		</dependency>
 		<dependency>
 		    <groupId>com.melot.module</groupId>
