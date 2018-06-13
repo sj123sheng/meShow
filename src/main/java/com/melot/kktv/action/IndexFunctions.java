@@ -1236,9 +1236,14 @@ public class IndexFunctions {
 			JsonObject weeklyGiftJson = null;
 			
 			//获取缓存里正在直播的actorId
-			Result<List<Integer>> moduleResult = hallRoomService.getLiveActorIdsByCache(KK_LIVE_ACTOR_ID);
-			List<Integer> liveActorList = moduleResult.getData();
-			
+			List<Integer> liveActorList = Lists.newArrayList();
+			try {
+				Result<List<Integer>> moduleResult = hallRoomService.getLiveActorIdsByCache(KK_LIVE_ACTOR_ID);
+				liveActorList = moduleResult.getData();
+			} catch (Exception e) {
+				logger.error("Module Error: hallRoomService.getLiveActorIdsByCache(KK_LIVE_ACTOR_ID), KK_LIVE_ACTOR_ID=" + KK_LIVE_ACTOR_ID);
+			}
+
 			Integer giftId, relationGiftId, singlePrice;
 			String giftName;
 			Long weekTime;
@@ -1468,9 +1473,13 @@ public class IndexFunctions {
         }
 
 		//获取缓存里正在直播的actorId
-		Result<List<Integer>> moduleResult = hallRoomService.getLiveActorIdsByCache(KK_LIVE_ACTOR_ID);
-		List<Integer> liveActorList = moduleResult.getData();
-		
+		List<Integer> liveActorList = Lists.newArrayList();
+		try {
+			Result<List<Integer>> moduleResult = hallRoomService.getLiveActorIdsByCache(KK_LIVE_ACTOR_ID);
+			liveActorList = moduleResult.getData();
+		} catch (Exception e) {
+			logger.error("Module Error: hallRoomService.getLiveActorIdsByCache(KK_LIVE_ACTOR_ID), KK_LIVE_ACTOR_ID=" + KK_LIVE_ACTOR_ID);
+		}
 		JsonArray rankList = new JsonArray();
 		Map<Integer, JsonObject> giftMap = new HashMap<>();
 		Map<Integer, JsonObject> allGiftMap = new HashMap<>();
