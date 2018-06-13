@@ -1,9 +1,11 @@
 package com.melot.kkcx.functions;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -26,6 +28,8 @@ import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.ParameterKeys;
 import com.melot.kktv.util.SecurityFunctions;
 import com.melot.kktv.util.TagCodeEnum;
+import com.melot.module.packagegift.driver.domain.ResUserXman;
+import com.melot.module.packagegift.driver.domain.ResXman;
 import com.melot.module.packagegift.driver.service.XmanService;
 import com.melot.sdk.core.util.MelotBeanFactory;
 
@@ -243,6 +247,7 @@ public class UserLevelFunctions {
                     userIds.add(dto.getUserId());
                 }
                 List<UserProfile> userInfos = kkUserService.getUserProfileBatch(userIds);
+                XmanService xmanService = (XmanService) MelotBeanFactory.getBean("xmanService");
                 for (UserProfile userProfile : userInfos) {
                     JsonObject userJson = new JsonObject();
                     userJson.addProperty("userId", userProfile.getUserId());
@@ -250,6 +255,14 @@ public class UserLevelFunctions {
                     userJson.addProperty("portrait", userProfile.getPortrait());
                     if (map.containsKey(userProfile.getUserId())) {
                         userJson.addProperty("amount", map.get(userProfile.getUserId()).getShowMoney());
+                    }
+                    // 校验是否是神秘人，是神秘人需要将昵称设置为神秘人昵称
+                    ResUserXman resUserXman = xmanService.getResUserXmanByUserId(userProfile.getUserId());
+                    if (resUserXman != null && (resUserXman.getExpireTime().getTime() >= new Date().getTime())) {
+                        ResXman resXman = xmanService.getResXmanByUserId(userProfile.getUserId());
+                        if (resXman != null && resXman.getMysType() == 2) {
+                            userJson.addProperty("nickname", "神秘人");
+                        }
                     }
                 }
             }
