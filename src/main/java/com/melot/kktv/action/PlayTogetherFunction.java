@@ -129,40 +129,39 @@ public class PlayTogetherFunction {
 
             int start = (pageIndex <= 1 ? 0 : pageIndex - 1) * countPerPage;
             Result<HallPartConfDTO> partListResult = hallPartService.getPartList(cataId, 0, 0, 0, start, countPerPage);
-            if (!ResultUtils.checkResultNotNull(partListResult)) {
-                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
-                return result;
-            }
             JsonArray roomArray = new JsonArray();
-            HallPartConfDTO hallPartConfDTO = partListResult.getData();
-            List<HallRoomInfoDTO> roomList = hallPartConfDTO.getRooms();
-            if (roomList != null) {
-                for (HallRoomInfoDTO roomInfo : roomList) {
-                    JsonObject roomObject = HallRoomTF.roomInfoToJson(roomInfo, platform);
+            int roomTotal = 0;
+            if (ResultUtils.checkResultNotNull(partListResult)) {
+                HallPartConfDTO hallPartConfDTO = partListResult.getData();
+                List<HallRoomInfoDTO> roomList = hallPartConfDTO.getRooms();
+                if (roomList != null) {
+                    for (HallRoomInfoDTO roomInfo : roomList) {
+                        JsonObject roomObject = HallRoomTF.roomInfoToJson(roomInfo, platform);
 
-                    // 获取直播间娃娃机的状态和直播间抓中娃娃的总数
-                    int roomId = roomInfo.getActorId();
-                    Result<RedisDollMachineDO> redisDollMachineDOResult = dollMachineService.getRedisDollMachineDO(roomId);
-                    RedisDollMachineDO redisDollMachineDO;
-                    if(redisDollMachineDOResult.getCode().equals(CommonStateCode.SUCCESS)) {
-                        redisDollMachineDO = redisDollMachineDOResult.getData();
-                    }else {
-                        result.addProperty("TagCode", "5110903");
-                        return result;
-                    }
-                    Integer dollMachineStatus = redisDollMachineDO.getStatus();
-                    if(dollMachineStatus == null) {
-                        dollMachineStatus = DollMachineStatusEnum.READY;
-                    }else if(dollMachineStatus == DollMachineStatusEnum.WAIT_COIN) {
-                        dollMachineStatus = DollMachineStatusEnum.PLAY;
-                    }
-                    roomObject.addProperty("dollMachineStatus", dollMachineStatus);
-                    roomObject.addProperty("graspCount", redisDollMachineDO.getGraspDollCount());
+                        // 获取直播间娃娃机的状态和直播间抓中娃娃的总数
+                        int roomId = roomInfo.getActorId();
+                        Result<RedisDollMachineDO> redisDollMachineDOResult = dollMachineService.getRedisDollMachineDO(roomId);
+                        RedisDollMachineDO redisDollMachineDO;
+                        if(redisDollMachineDOResult.getCode().equals(CommonStateCode.SUCCESS)) {
+                            redisDollMachineDO = redisDollMachineDOResult.getData();
+                        }else {
+                            result.addProperty("TagCode", "5110903");
+                            return result;
+                        }
+                        Integer dollMachineStatus = redisDollMachineDO.getStatus();
+                        if(dollMachineStatus == null) {
+                            dollMachineStatus = DollMachineStatusEnum.READY;
+                        }else if(dollMachineStatus == DollMachineStatusEnum.WAIT_COIN) {
+                            dollMachineStatus = DollMachineStatusEnum.PLAY;
+                        }
+                        roomObject.addProperty("dollMachineStatus", dollMachineStatus);
+                        roomObject.addProperty("graspCount", redisDollMachineDO.getGraspDollCount());
 
-                    roomArray.add(roomObject);
+                        roomArray.add(roomObject);
+                    }
                 }
+                roomTotal = hallPartConfDTO.getRoomCount().intValue();
             }
-            int roomTotal = hallPartConfDTO.getRoomCount().intValue();
             result.addProperty("roomTotal", roomTotal);
             result.add("roomList", roomArray);
             result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
