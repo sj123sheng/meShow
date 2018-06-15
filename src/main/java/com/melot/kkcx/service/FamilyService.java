@@ -465,8 +465,16 @@ public class FamilyService {
 		String familyId = FamilySource.getMemberFamily(String.valueOf(userId));
 		if (familyId != null) {
 			return Integer.parseInt(familyId);
+		}else{
+			FamilyInfoService familyInfoService = (FamilyInfoService) MelotBeanFactory.getBean("newFamilyInfoService");
+			FamilyInfo familyInfo = familyInfoService.getFamilyInfoByUserId(userId,1);
+			if(familyInfo!=null){
+				FamilySource.setFamilyMember(familyInfo.getFamilyId().toString(),String.valueOf(userId));
+				return familyInfo.getFamilyId();
+			}else{
+				return 0;
+			}
 		}
-		return 0;
 	}
 	
 	/**
