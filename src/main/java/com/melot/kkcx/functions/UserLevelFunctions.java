@@ -26,6 +26,7 @@ import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.ParameterKeys;
 import com.melot.kktv.util.SecurityFunctions;
+import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.module.packagegift.driver.domain.ResUserXman;
 import com.melot.module.packagegift.driver.domain.ResXman;
@@ -251,7 +252,9 @@ public class UserLevelFunctions {
                     JsonObject userJson = new JsonObject();
                     userJson.addProperty("userId", userProfile.getUserId());
                     userJson.addProperty("nickname", userProfile.getNickName());
-                    userJson.addProperty("portrait", userProfile.getPortrait());
+                    if (!StringUtil.strIsNull(userProfile.getPortrait())) {
+                        userJson.addProperty("portrait", userProfile.getPortrait());
+                    }
                     if (map.containsKey(userProfile.getUserId())) {
                         userJson.addProperty("amount", map.get(userProfile.getUserId()).getShowMoney());
                     }
