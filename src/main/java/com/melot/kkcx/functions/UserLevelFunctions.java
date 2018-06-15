@@ -263,6 +263,7 @@ public class UserLevelFunctions {
                             userJson.addProperty("nickname", "神秘人");
                         }
                     }
+                    getList.add(userJson);
                 }
             }
             
