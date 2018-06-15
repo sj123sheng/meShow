@@ -26,7 +26,7 @@
 	<kkrpc:reference id="redEnvelopersService" interface="com.melot.redenvelopers.driver.service.RedEnvelopersService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="virtualIdService" interface="com.melot.asset.driver.service.VirtualIdService" version="1.0.2"></kkrpc:reference>
 	<kkrpc:reference id="assetService" interface="com.melot.asset.driver.service.AssetService" version="1.0.2"></kkrpc:reference>
-	<kkrpc:reference id="kkActivityService" interface="com.melot.kkactivity.driver.service.KkActivityService" version="1.0.4"></kkrpc:reference>
+	<kkrpc:reference id="kkActivityService" interface="com.melot.kkactivity.driver.service.KkActivityService" version="1.0.5"></kkrpc:reference>
 	<kkrpc:reference id="taskInterfaceService" interface="com.melot.module.task.driver.service.TaskInterfaceService" version="1.0.2"></kkrpc:reference>
 	<kkrpc:reference id="activityMedalService" interface="com.melot.module.medal.driver.service.ActivityMedalService" version="1.0.1"></kkrpc:reference>
 	<kkrpc:reference id="userMedalService" interface="com.melot.module.medal.driver.service.UserMedalService" version="1.0.1"></kkrpc:reference>
@@ -96,7 +96,7 @@
 	<kkrpc:reference id="giftListService" interface="com.melot.room.gift.service.GiftListService" version="1.0.8"></kkrpc:reference>
 	
 	<!-- 动态模块 -->
-	<kkrpc:reference id="newsCenter" interface="com.melot.news.service.NewsService" version="1.2.2"></kkrpc:reference>
+	<kkrpc:reference id="newsCenter" interface="com.melot.news.service.NewsService" version="1.2.3"></kkrpc:reference>
 	<!-- 资源模块 -->
 	<kkrpc:reference id="resourceCenter" interface="com.melot.resource.service.ResourceService" version="1.0.0"/>
 	<!-- 1v1视频聊天服务 -->

@@ -1148,7 +1148,9 @@ public class NewsService {
 		if (newsInfo.getNewsTitle() != null) {
 			json.addProperty("newsTitle", newsInfo.getNewsTitle());
 		}
-		json.addProperty("publishedTime", newsInfo.getPublishedTime().getTime());
+		if(newsInfo.getPublishedTime() != null){
+			json.addProperty("publishedTime", newsInfo.getPublishedTime().getTime());
+		}
 		json.addProperty("newsType", newsInfo.getNewsType());
 		if (newsInfo.getTopic() != null) {
 			json.addProperty("topic", newsInfo.getTopic());
@@ -1607,5 +1609,19 @@ public class NewsService {
 			}
 		}
 		return false;
+	}
+
+	public static List<NewsInfo> getVideoHall(int appId, int start, int offset) {
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
+		if (newsService != null) {
+			Result<List<NewsInfo>> result = newsService.getVideoHall(appId,start,offset);
+			if(result != null && result.getCode() != null && result.getCode().equals(CommonStateCode.SUCCESS)){
+				return result.getData();
+			}
+			else {
+				logger.error("【分页获取热门音频动态失败】appId="+appId+",start="+start+"，offset="+offset);
+			}
+		}
+		return null;
 	}
 }
