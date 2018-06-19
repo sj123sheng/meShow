@@ -240,23 +240,31 @@ public class UserLevelFunctions {
             JsonArray getList = new JsonArray();
             List<UserLevelGetRedEvelopeHistDTO> list = page.getList();
             List<Integer> userIds = new ArrayList<>(list.size());
-            Map<Integer, UserLevelGetRedEvelopeHistDTO> map = new HashMap<>(list.size());
+            Map<Integer, UserProfile> map = new HashMap<>(list.size());
             if (!CollectionUtils.isEmpty(list)) {
                 for (UserLevelGetRedEvelopeHistDTO dto : list) {
-                    map.put(dto.getUserId(), dto);
                     userIds.add(dto.getUserId());
                 }
                 List<UserProfile> userInfos = kkUserService.getUserProfileBatch(userIds);
                 XmanService xmanService = (XmanService) MelotBeanFactory.getBean("xmanService");
+                
                 for (UserProfile userProfile : userInfos) {
+                    map.put(userProfile.getUserId(), userProfile);
+                }
+                
+                for (UserLevelGetRedEvelopeHistDTO dto : list) {
                     JsonObject userJson = new JsonObject();
+                    UserProfile userProfile = map.get(dto.getUserId());
+                    if (userProfile == null) {
+                        continue;
+                    }
                     userJson.addProperty("userId", userProfile.getUserId());
                     userJson.addProperty("nickname", userProfile.getNickName());
                     if (!StringUtil.strIsNull(userProfile.getPortrait())) {
                         userJson.addProperty("portrait", userProfile.getPortrait());
                     }
                     if (map.containsKey(userProfile.getUserId())) {
-                        userJson.addProperty("amount", map.get(userProfile.getUserId()).getShowMoney());
+                        userJson.addProperty("amount", dto.getShowMoney());
                     }
                     // 校验是否是神秘人，是神秘人需要将昵称设置为神秘人昵称
                     ResUserXman resUserXman = xmanService.getResUserXmanByUserId(userProfile.getUserId());
