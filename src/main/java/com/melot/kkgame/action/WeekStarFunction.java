@@ -17,20 +17,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
+
+import com.melot.kktv.util.*;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.melot.api.menu.sdk.utils.Collectionutils;
 import com.melot.game.config.sdk.domain.GiftStarRecord;
 import com.melot.game.config.sdk.gift.service.GiftStarRecordService;
 import com.melot.kkgame.domain.GiftInfo;
 import com.melot.kkgame.redis.GiftStarSource;
 import com.melot.kkgame.redis.support.RedisException;
 import com.melot.kkgame.service.KgGiftService;
-import com.melot.kktv.util.TagCodeEnum;
-import com.melot.kktv.util.CommonUtil;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.DateUtil;
 
 /**
  * Title: WeekStarFunction
@@ -182,7 +180,7 @@ public class WeekStarFunction extends BaseAction{
         ca.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
         String dateStr = DateUtil.formatDate(ca.getTime(), "yyyyMMdd");
         List<GiftInfo>gifts = getGiftConfigCache(dateStr);
-        if (Collectionutils.isEmpty(gifts)) {
+        if (CollectionUtils.isEmpty(gifts)) {
             return jsonArray;
         }
         JsonObject json = null;
@@ -197,7 +195,7 @@ public class WeekStarFunction extends BaseAction{
                 int point = score.intValue();
                 List<GiftStarRecord> list= giftStarSource.getRecordFromRedis(dateStr, 1, giftInfo.getGiftId(), point + 1);
                 json.addProperty("ranking", 1);
-                if(Collectionutils.isEmpty(list)){  //当前为第一名
+                if(CollectionUtils.isEmpty(list)){  //当前为第一名
                     json.addProperty("ranking", 1);
                     json.addProperty("upDiff", 0);
                     json.addProperty("needMore", 0);
@@ -219,6 +217,7 @@ public class WeekStarFunction extends BaseAction{
                 jsons.add(json);
             }
             Collections.sort(jsons, new Comparator<JsonObject>() {
+            	@Override
                 public int compare(JsonObject o1, JsonObject o2) {
                     if(o1.get("ranking").getAsInt() >= o2.get("ranking").getAsInt() ){
                         return 1;
@@ -244,7 +243,7 @@ public class WeekStarFunction extends BaseAction{
      * 
      */
     private List<GiftInfo> getGiftConfigCache(String dateString){
-        if( !dateString.equals(curentDay) || Collectionutils.isEmpty(giftConfigCache)){
+        if( !dateString.equals(curentDay) || CollectionUtils.isEmpty(giftConfigCache)){
             giftConfigCache = KgGiftService.getWeekStarGiftInfoByTime(new Date());
             curentDay = dateString;
         }
@@ -263,7 +262,7 @@ public class WeekStarFunction extends BaseAction{
         int point = score.intValue();
         Map<String, Integer> map = new HashMap<String, Integer>();
         List<GiftStarRecord> list= giftStarSource.getRecordFromRedis(dateStr, userType, giftId, point + 1);
-        if(Collectionutils.isEmpty(list)){
+        if(CollectionUtils.isEmpty(list)){
             //当前为第一名
             map.put("rank", 1);
             map.put("distance", 0);

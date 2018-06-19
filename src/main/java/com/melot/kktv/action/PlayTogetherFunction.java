@@ -1,22 +1,23 @@
 package com.melot.kktv.action;
 
 import com.google.gson.*;
-import com.melot.api.menu.sdk.dao.domain.RoomInfo;
-import com.melot.api.menu.sdk.dao.domain.SysMenu;
-import com.melot.api.menu.sdk.handler.FirstPageHandler;
 import com.melot.kk.doll.api.constant.DollMachineStatusEnum;
 import com.melot.kk.doll.api.domain.DO.RedisDollMachineDO;
 import com.melot.kk.doll.api.service.DollMachineService;
-import com.melot.kkcx.transform.RoomTF;
+import com.melot.kk.hall.api.domain.HallPartConfDTO;
+import com.melot.kk.hall.api.domain.HallRoomInfoDTO;
+import com.melot.kk.hall.api.service.SysMenuService;
+import com.melot.kkcx.transform.HallRoomTF;
+import com.melot.kkcx.util.ResultUtils;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.util.*;
 import com.melot.sdk.core.util.MelotBeanFactory;
-import org.apache.commons.io.Charsets;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
@@ -36,6 +37,9 @@ public class PlayTogetherFunction {
 
     @Autowired
     private ConfigService configService;
+
+    @Resource
+    private SysMenuService hallPartService;
 
     private static String REGEX = ",";
 
@@ -124,40 +128,40 @@ public class PlayTogetherFunction {
             DollMachineService dollMachineService = (DollMachineService) MelotBeanFactory.getBean("dollMachineService");
 
             int start = (pageIndex <= 1 ? 0 : pageIndex - 1) * countPerPage;
-            FirstPageHandler firstPageHandler = MelotBeanFactory.getBean("firstPageHandler", FirstPageHandler.class);
-            SysMenu sysMenu = firstPageHandler.getPartList(cataId, null, null, start, countPerPage);
+            Result<HallPartConfDTO> partListResult = hallPartService.getPartList(cataId, 0, 0, 0, start, countPerPage);
             JsonArray roomArray = new JsonArray();
-            List<RoomInfo> roomList = sysMenu.getRooms();
-            if (roomList != null) {
-                for (RoomInfo roomInfo : roomList) {
+            int roomTotal = 0;
+            if (ResultUtils.checkResultNotNull(partListResult)) {
+                HallPartConfDTO hallPartConfDTO = partListResult.getData();
+                List<HallRoomInfoDTO> roomList = hallPartConfDTO.getRooms();
+                if (roomList != null) {
+                    for (HallRoomInfoDTO roomInfo : roomList) {
+                        JsonObject roomObject = HallRoomTF.roomInfoToJson(roomInfo, platform);
 
-                    JsonObject roomObject = RoomTF.roomInfoToJson(roomInfo, platform);
+                        // 获取直播间娃娃机的状态和直播间抓中娃娃的总数
+                        int roomId = roomInfo.getActorId();
+                        Result<RedisDollMachineDO> redisDollMachineDOResult = dollMachineService.getRedisDollMachineDO(roomId);
+                        RedisDollMachineDO redisDollMachineDO;
+                        if(redisDollMachineDOResult.getCode().equals(CommonStateCode.SUCCESS)) {
+                            redisDollMachineDO = redisDollMachineDOResult.getData();
+                        }else {
+                            result.addProperty("TagCode", "5110903");
+                            return result;
+                        }
+                        Integer dollMachineStatus = redisDollMachineDO.getStatus();
+                        if(dollMachineStatus == null) {
+                            dollMachineStatus = DollMachineStatusEnum.READY;
+                        }else if(dollMachineStatus == DollMachineStatusEnum.WAIT_COIN) {
+                            dollMachineStatus = DollMachineStatusEnum.PLAY;
+                        }
+                        roomObject.addProperty("dollMachineStatus", dollMachineStatus);
+                        roomObject.addProperty("graspCount", redisDollMachineDO.getGraspDollCount());
 
-                    // 获取直播间娃娃机的状态和直播间抓中娃娃的总数
-                    int roomId = roomInfo.getActorId();
-                    Result<RedisDollMachineDO> redisDollMachineDOResult = dollMachineService.getRedisDollMachineDO(roomId);
-                    RedisDollMachineDO redisDollMachineDO;
-                    if(redisDollMachineDOResult.getCode().equals(CommonStateCode.SUCCESS)) {
-                        redisDollMachineDO = redisDollMachineDOResult.getData();
-                    }else {
-                        result.addProperty("TagCode", "5110903");
-                        return result;
+                        roomArray.add(roomObject);
                     }
-                    Integer dollMachineStatus = redisDollMachineDO.getStatus();
-                    if(dollMachineStatus == null) {
-                        dollMachineStatus = DollMachineStatusEnum.READY;
-                    }else if(dollMachineStatus == DollMachineStatusEnum.WAIT_COIN) {
-                        dollMachineStatus = DollMachineStatusEnum.PLAY;
-                    }
-                    roomObject.addProperty("dollMachineStatus", dollMachineStatus);
-                    roomObject.addProperty("graspCount", redisDollMachineDO.getGraspDollCount());
-
-                    roomArray.add(roomObject);
                 }
+                roomTotal = hallPartConfDTO.getRoomCount().intValue();
             }
-
-            int roomTotal = sysMenu.getRoomCount().intValue();
-
             result.addProperty("roomTotal", roomTotal);
             result.add("roomList", roomArray);
             result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
