@@ -239,9 +239,9 @@ public class UserLevelFunctions {
             }
             JsonArray getList = new JsonArray();
             List<UserLevelGetRedEvelopeHistDTO> list = page.getList();
-            List<Integer> userIds = new ArrayList<>(list.size());
-            Map<Integer, UserProfile> map = new HashMap<>(list.size());
             if (!CollectionUtils.isEmpty(list)) {
+                List<Integer> userIds = new ArrayList<>(list.size());
+                Map<Integer, UserProfile> map = new HashMap<>(list.size());
                 for (UserLevelGetRedEvelopeHistDTO dto : list) {
                     userIds.add(dto.getUserId());
                 }
