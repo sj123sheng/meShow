@@ -67,11 +67,11 @@ public class UserLevelFunctions {
             return result;
         }
         int userId;
-        int userLevelHistId;
+        long userLevelHistId;
         int roomId;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, "5101090101", 1, Integer.MAX_VALUE);
-            userLevelHistId = CommonUtil.getJsonParamInt(jsonObject, "userLevelHistId", 0, "5101090102", 1, Integer.MAX_VALUE);
+            userLevelHistId = CommonUtil.getJsonParamLong(jsonObject, "userLevelHistId", 0, "5101090102", 1, Long.MAX_VALUE);
             roomId = CommonUtil.getJsonParamInt(jsonObject, "roomId", 0, "5101090103", 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
@@ -151,10 +151,10 @@ public class UserLevelFunctions {
         // 获取参数
         int userId;
         long addShowMoney;
-        int userLevelHistId;
+        long userLevelHistId;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, "5201090201", 1, Integer.MAX_VALUE);
-            userLevelHistId = CommonUtil.getJsonParamInt(jsonObject, "userLevelHistId", 0, "5201090202", 1, Integer.MAX_VALUE);
+            userLevelHistId = CommonUtil.getJsonParamLong(jsonObject, "userLevelHistId", 0, "5201090202", 1, Long.MAX_VALUE);
             addShowMoney = CommonUtil.getJsonParamLong(jsonObject, "addShowMoney", 0, "5201090203", 1, Long.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
@@ -206,11 +206,11 @@ public class UserLevelFunctions {
     public JsonObject getRedEvelopeRecords(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
         
-        int userLevelHistId;
+        long userLevelHistId;
         int start;
         int num;
         try {
-            userLevelHistId = CommonUtil.getJsonParamInt(jsonObject, "userLevelHistId", 0, "5101090301", 1, Integer.MAX_VALUE);
+            userLevelHistId = CommonUtil.getJsonParamLong(jsonObject, "userLevelHistId", 0, "5101090301", 1, Long.MAX_VALUE);
             start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, null, 0, Integer.MAX_VALUE);
             num = CommonUtil.getJsonParamInt(jsonObject, "num", 10, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
