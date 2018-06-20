@@ -90,6 +90,17 @@ public class UserLevelFunctions {
             }
         }
         
+        // 校验是否开启神秘人，是神秘人需要将昵称设置为神秘人昵称
+        XmanService xmanService = (XmanService) MelotBeanFactory.getBean("xmanService");
+        ResUserXman resUserXman = xmanService.getResUserXmanByUserId(userId);
+        if (resUserXman != null && (resUserXman.getExpireTime().getTime() >= new Date().getTime())) {
+            ResXman resXman = xmanService.getResXmanByUserId(userId);
+            if (resXman != null && resXman.getMysType() == 2) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+                return result;
+            }
+        }
+        
         try {
             Result<Boolean> moduleResult = userLevelRedEvelopeService.sendUserLevelUpRedEvelope(userId, userLevelHistId, roomId);
             if (moduleResult == null) {
