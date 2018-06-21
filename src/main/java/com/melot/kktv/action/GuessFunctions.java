@@ -335,6 +335,7 @@ public class GuessFunctions {
                         HistUserGuessDTO histUserGuessDTO = guessHistService.getUserGuessHistInfo(userId, seasonId).getData();
                         if (histUserGuessDTO != null) {
                             jsonObject1.addProperty("guessBetItemId", histUserGuessDTO.getSupportGuessItemId());
+                            jsonObject1.addProperty("guessResult", histUserGuessDTO.getGuessResult());
                         }
                     }
                     jsonObject1.addProperty("leftGuessItemId", confGuessSeasonDTO.getLeftGuessItemId());
@@ -372,6 +373,12 @@ public class GuessFunctions {
                             }
                             jsonObject1.add("winningUserList", winningUserList);
                         }
+                    }
+                    GuessItemBetDTO guessItemBetDTO = guessHistService.getGuessItemBetInfo(seasonId).getData();
+                    if(guessItemBetDTO != null) {
+                        jsonObject1.addProperty("leftGuessItemNum", guessItemBetDTO.getLeftGuessItemNum());
+                        jsonObject1.addProperty("rightGuessItemNum", guessItemBetDTO.getRightGuessItemNum());
+                        jsonObject1.addProperty("drawNum", guessItemBetDTO.getDrawNum());
                     }
 
                     seasonList.add(jsonObject1);
