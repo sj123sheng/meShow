@@ -13,6 +13,7 @@ import com.melot.family.driver.domain.DO.ResRoomInfoDO;
 import com.melot.family.driver.domain.FamilyTopConf;
 import com.melot.family.driver.service.FamilyTopConfService;
 import com.melot.kk.demo.api.service.NewRcmdService;
+import com.melot.kk.hall.api.constant.HallRedisKeyConstant;
 import com.melot.kk.hall.api.domain.*;
 import com.melot.kk.hall.api.service.*;
 import com.melot.kkcore.relation.api.ActorRelation;
@@ -245,7 +246,7 @@ public class KKHallFunctions {
             JsonArray recommendRoomList = new JsonArray();
             try {
                 // 将兴趣推荐作为优质主播库，从中随机推荐1~4个在播主播，推荐的主播不能与兴趣推荐前14个相同
-                String recommendRoomKey = String.format(KKHallSource.KK_FIRST_RECOMMENDED_ROOMLIST_CACHE_KEY, new Random().nextInt(10));
+                String recommendRoomKey = String.format(HallRedisKeyConstant.KK_FIRST_RECOMMENDED_ROOMLIST_CACHE_KEY, new Random().nextInt(10));
                 Result<Page<HallRoomInfoDTO>> roomListResult = hallRoomService.getKKRecommendRooms(userId, appId, start + filter, 2 * offset, recommendRoomKey);
                 if (roomListResult != null && CommonStateCode.SUCCESS.equals(roomListResult.getCode())
                         && roomListResult.getData() != null 
@@ -378,9 +379,9 @@ public class KKHallFunctions {
         List<HallRoomInfoDTO> roomList = Lists.newArrayList();
         try {
 
-            String recommendRoomKey = KKHallSource.KK_FIRST_RECOMMENDED_ROOMLIST_CACHE_KEY;
+            String recommendRoomKey = HallRedisKeyConstant.KK_FIRST_RECOMMENDED_ROOMLIST_CACHE_KEY;
             if(firstView == 0) {
-                recommendRoomKey = KKHallSource.KK_RELOAD_RECOMMENDED_ROOMLIST_CACHE_KEY;
+                recommendRoomKey = HallRedisKeyConstant.KK_RELOAD_RECOMMENDED_ROOMLIST_CACHE_KEY;
             }
             if(roomListIndex == -1) {
                 roomListIndex = new Random().nextInt(10);
@@ -675,7 +676,7 @@ public class KKHallFunctions {
         List<HallRoomInfoDTO> recommendedRoomList = null;
         List<Integer> recommendedRoomIdList = new ArrayList<>();
         try {
-            String recommendRoomKey = String.format(KKHallSource.KK_FIRST_RECOMMENDED_ROOMLIST_CACHE_KEY, new Random().nextInt(10));
+            String recommendRoomKey = String.format(HallRedisKeyConstant.KK_FIRST_RECOMMENDED_ROOMLIST_CACHE_KEY, new Random().nextInt(10));
             Result<Page<HallRoomInfoDTO>> recommendedRoomListResult = hallRoomService.getKKRecommendRooms(1, 0, 0, 9, recommendRoomKey);
             if (recommendedRoomListResult != null 
                     && CommonStateCode.SUCCESS.equals(recommendedRoomListResult.getCode())

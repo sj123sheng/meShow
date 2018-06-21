@@ -94,6 +94,8 @@ public class ConfigService {
      */
     private String lotteryAppConfig;
     
+    private String lotteryAppHalfBanner;
+    
     /**
      * 地域昵称
      */
@@ -280,6 +282,11 @@ public class ConfigService {
 
     public void setLotteryAppConfig(String lotteryAppConfig) {
         this.lotteryAppConfig = lotteryAppConfig;
+    }
+    
+    @DisconfFileItem(name = "lottery.lotteryAppHalfBanner", associateField = "lotteryAppHalfBanner")
+    public String getLotteryAppHalfBanner() {
+        return lotteryAppHalfBanner;
     }
 
     @DisconfFileItem(name = "lottery.lotteryContent", associateField = "lotteryContent")

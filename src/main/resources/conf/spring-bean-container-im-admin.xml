@@ -16,6 +16,7 @@
 				<entry key="5" value-ref="admin5" />
 				<entry key="6" value-ref="admin6" />
 				<entry key="7" value-ref="admin7" />
+				<entry key="8" value-ref="admin8" />
 			</map>
 		</property>
 	</bean>
@@ -61,5 +62,11 @@
 		<property name="nickName" value="赞" />
 		<property name="portrait" value="/imadmin/7.png" />
 	</bean>
-
+	
+	<!-- 需要注意的是，地址ID跟头像不匹配 -->
+	<bean id="admin8" class="com.melot.kkcx.model.ImAdmin">
+		<property name="userId"   value="8" />
+		<property name="nickName" value="K宝小助手" />
+		<property name="portrait" value="/imadmin/9.png" />
+	</bean>
 </beans>
