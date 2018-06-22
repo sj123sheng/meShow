@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.melot.kk.nationalPK.api.domain.DO.ConfLadderMatchDO;
 import com.melot.kk.nationalPK.api.domain.DO.HistActorLadderMatchDO;
+import com.melot.kk.nationalPK.api.domain.DO.MaxContributionUserDO;
 import com.melot.kk.nationalPK.api.domain.DO.ResActorLadderMatchDO;
 import com.melot.kk.nationalPK.api.service.ConfLadderMatchService;
 import com.melot.kk.nationalPK.api.service.HistActorLadderMatchService;
@@ -23,6 +24,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+
+import static com.melot.kktv.util.ParamCodeEnum.ACTOR_ID;
 
 /**
  * Title: DanceMachineFunction
@@ -343,6 +346,62 @@ public class HappyPKFunction {
             }
         } catch (Exception e) {
             logger.error("Error getLadderChart()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 获取主播的胜场贡献榜【51060407】
+     */
+    public JsonObject getWinningContributionList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        int actorId;
+        try {
+            actorId = CommonUtil.getJsonParamInt(jsonObject, ACTOR_ID.getId(), 0, ACTOR_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+
+            Result<List<MaxContributionUserDO>> listResult =  histActorLadderMatchService.getMaxContributionUserList(actorId);
+            if(listResult.getCode().equals(CommonStateCode.SUCCESS) && listResult.getData() != null){
+
+                List<MaxContributionUserDO> maxContributionUserDOS = listResult.getData();
+
+                JsonArray winningContributionList = new JsonArray();
+                for(MaxContributionUserDO maxContributionUserDO : maxContributionUserDOS) {
+
+                    int userId = maxContributionUserDO.getUserId();
+                    UserProfile userProfile = kkUserService.getUserProfile(userId);
+
+                    JsonObject jsonObject1 = new JsonObject();
+
+                    jsonObject1.addProperty("userId", userId);
+                    if(userProfile != null) {
+                        jsonObject1.addProperty("gender", userProfile.getGender());
+                        jsonObject1.addProperty("portrait", getPortrait(userProfile));
+                        jsonObject1.addProperty("nickname", userProfile.getNickName());
+                    }
+                    jsonObject1.addProperty("contributionWinNum", maxContributionUserDO.getContributionWinNum());
+
+                    winningContributionList.add(jsonObject1);
+                }
+                result.add("winningContributionList", winningContributionList);
+
+                result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                return result;
+            } else {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+        } catch (Exception e) {
+            logger.error("Error getWinningContributionList()", e);
             result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             return result;
         }

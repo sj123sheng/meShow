@@ -33,7 +33,8 @@ public enum ParamCodeEnum {
     ADDRESS_ID("addressId", "53000008"),
     UUID("uuid", "53000009"),
     PLATFORM("platform", "53000010"),
-    UNIONID("unionid", "53000011");
+    UNIONID("unionid", "53000011"),
+    ACTOR_ID("actorId", "53000012");
 
 
     private String id;
