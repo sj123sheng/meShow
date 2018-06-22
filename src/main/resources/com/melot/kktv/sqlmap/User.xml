@@ -124,15 +124,6 @@
        		values (#histId#, #type#, #userId#, #amount#, sysdate, #desc#, #product#, #count#)
 	</insert>
 	
-	<!-- 插入举报消费历史(oracle) -->
-	<insert id="insertReportHistory" parameterClass="java.util.Map">
-	 	<selectKey keyProperty="histId" resultClass="java.lang.Integer">
-			select seq_hist_report_consume.nextval as histId from dual   
-		</selectKey>
-		insert into hist_report_consume (histid, reportid, userid, amount, dtime, status) 
-       		values (#histId#, #reportId#, #userId#, #amount#, sysdate, #status#)
-	</insert>
-	
 	<resultMap id="fansInfoResult" class="com.melot.kktv.model.FansRankingItem">
         <result column="userId" property="userId" />
         <result column="roomSource" property="roomSource" />

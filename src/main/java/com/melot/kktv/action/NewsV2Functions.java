@@ -1518,7 +1518,7 @@ public class NewsV2Functions {
         }
 
         int ret = NewsService.cancelNewsPraise(userId, newsId);
-        if (ret > 0) {
+        if (ret >= 0) {
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         } else {
             // 取消点赞失败

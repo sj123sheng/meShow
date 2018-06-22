@@ -679,11 +679,6 @@
 		<constructor-arg name="t" ref="userRelationFunction" />
 		<constructor-arg name="methodName" value="getFansRankingList" />
 	</bean>
-	<!-- 举报用户  -->
-	<bean id="10003016" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="userRelationFunction" />
-		<constructor-arg name="methodName" value="reportUser" />
-	</bean>
 	<!-- 订阅房间开播推送消息 -->
 	<bean id="10003017" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="userRelationFunction" />
@@ -1291,20 +1286,10 @@
 		<constructor-arg name="t" ref="otherFunction" />
 		<constructor-arg name="methodName" value="getAllEmoList" />
 	</bean>
-	<!-- 用户举报接口 -->
-	<bean id="20000008" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="otherFunction" />
-		<constructor-arg name="methodName" value="commitReport" />
-	</bean>
 	<!-- 用户举报接口V2 -->
 	<bean id="51090101" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="otherFunction" />
 		<constructor-arg name="methodName" value="commitReportV2" />
-	</bean>
-	<!-- 获得举报处理结果列表接口 -->
-	<bean id="20000009" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="otherFunction" />
-		<constructor-arg name="methodName" value="getCommitRecordList" />
 	</bean>
 	<!-- 获取申请主播状态信息 -->
 	<bean id="20010501" class="com.melot.sdk.core.function.GenericFunction">
