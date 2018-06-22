@@ -273,7 +273,7 @@
 		<dependency>
 			<groupId>com.melot</groupId>
 			<artifactId>news-module-api</artifactId>
-			<version>1.2.9-SNAPSHOT</version>
+			<version>1.2.9</version>
 		</dependency>
 		<dependency>
 			<groupId>com.melot.module</groupId>
