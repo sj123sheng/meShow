@@ -2,10 +2,7 @@ package com.melot.kktv.action;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.melot.kk.nationalPK.api.domain.DO.ConfLadderMatchDO;
-import com.melot.kk.nationalPK.api.domain.DO.HistActorLadderMatchDO;
-import com.melot.kk.nationalPK.api.domain.DO.MaxContributionUserDO;
-import com.melot.kk.nationalPK.api.domain.DO.ResActorLadderMatchDO;
+import com.melot.kk.nationalPK.api.domain.DO.*;
 import com.melot.kk.nationalPK.api.service.ConfLadderMatchService;
 import com.melot.kk.nationalPK.api.service.HistActorLadderMatchService;
 import com.melot.kk.nationalPK.api.service.ResActorLadderMatchService;
@@ -368,15 +365,15 @@ public class HappyPKFunction {
 
         try {
 
-            Result<List<MaxContributionUserDO>> listResult =  histActorLadderMatchService.getMaxContributionUserList(actorId);
+            Result<List<ContributionUserDO>> listResult =  histActorLadderMatchService.getMaxContributionUserList(actorId);
             if(listResult.getCode().equals(CommonStateCode.SUCCESS) && listResult.getData() != null){
 
-                List<MaxContributionUserDO> maxContributionUserDOS = listResult.getData();
+                List<ContributionUserDO> contributionUserDOS = listResult.getData();
 
                 JsonArray winningContributionList = new JsonArray();
-                for(MaxContributionUserDO maxContributionUserDO : maxContributionUserDOS) {
+                for(ContributionUserDO contributionUserDO : contributionUserDOS) {
 
-                    int userId = maxContributionUserDO.getUserId();
+                    int userId = contributionUserDO.getUserId();
                     UserProfile userProfile = kkUserService.getUserProfile(userId);
 
                     JsonObject jsonObject1 = new JsonObject();
@@ -387,7 +384,7 @@ public class HappyPKFunction {
                         jsonObject1.addProperty("portrait", getPortrait(userProfile));
                         jsonObject1.addProperty("nickname", userProfile.getNickName());
                     }
-                    jsonObject1.addProperty("contributionWinNum", maxContributionUserDO.getContributionWinNum());
+                    jsonObject1.addProperty("contributionWinNum", contributionUserDO.getContributionWinNum());
 
                     winningContributionList.add(jsonObject1);
                 }
@@ -402,6 +399,56 @@ public class HappyPKFunction {
             }
         } catch (Exception e) {
             logger.error("Error getWinningContributionList()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 获取天梯赛富豪榜【51060408】
+     */
+    public JsonObject getRichList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        try {
+
+            Result<List<ConsumeUserDO>> listResult =  histActorLadderMatchService.getRichList();
+            if(listResult.getCode().equals(CommonStateCode.SUCCESS) && listResult.getData() != null){
+
+                JsonArray richList = new JsonArray();
+                List<ConsumeUserDO> consumeUserDOS = listResult.getData();
+
+                for(int i = 0 ; i < consumeUserDOS.size() ; i++) {
+
+                    ConsumeUserDO consumeUserDO = consumeUserDOS.get(i);
+                    int userId = consumeUserDO.getUserId();
+                    UserProfile userProfile = kkUserService.getUserProfile(userId);
+
+                    JsonObject jsonObject1 = new JsonObject();
+
+                    jsonObject1.addProperty("userId", userId);
+                    if(userProfile != null) {
+                        jsonObject1.addProperty("gender", userProfile.getGender());
+                        jsonObject1.addProperty("portrait", getPortrait(userProfile));
+                        jsonObject1.addProperty("nickname", userProfile.getNickName());
+                    }
+                    jsonObject1.addProperty("ranking", ++i);
+                    jsonObject1.addProperty("consumeShowMoneyNum", consumeUserDO.getConsumeShowMoneyNum());
+
+                    richList.add(jsonObject1);
+                }
+                result.add("richList", richList);
+
+                result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                return result;
+            } else {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+        } catch (Exception e) {
+            logger.error("Error getRichList()", e);
             result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             return result;
         }
