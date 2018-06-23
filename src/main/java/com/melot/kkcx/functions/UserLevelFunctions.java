@@ -30,6 +30,7 @@ import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.module.packagegift.driver.domain.ResUserXman;
 import com.melot.module.packagegift.driver.domain.ResXman;
+import com.melot.module.packagegift.driver.domain.XmanUserInfo;
 import com.melot.module.packagegift.driver.service.XmanService;
 import com.melot.sdk.core.util.MelotBeanFactory;
 
@@ -282,7 +283,9 @@ public class UserLevelFunctions {
                     if (resUserXman != null && (resUserXman.getExpireTime().getTime() >= new Date().getTime())) {
                         ResXman resXman = xmanService.getResXmanByUserId(userProfile.getUserId());
                         if (resXman != null && resXman.getMysType() == 2) {
-                            userJson.addProperty("nickname", "神秘人");
+                            XmanUserInfo xmanUserInfo = xmanService.updateGetMysteryInfo(userProfile.getUserId());
+                            userJson.addProperty("nickname", xmanUserInfo.getNickname());
+                            userJson.addProperty("portrait", xmanUserInfo.getPortrait_path());
                         }
                     }
                     getList.add(userJson);
