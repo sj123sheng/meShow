@@ -419,9 +419,9 @@ public class HappyPKFunction {
                 JsonArray richList = new JsonArray();
                 List<ConsumeUserDO> consumeUserDOS = listResult.getData();
 
-                for(int i = 0 ; i < consumeUserDOS.size() ; i++) {
+                int ranking = 1;
+                for(ConsumeUserDO consumeUserDO : consumeUserDOS) {
 
-                    ConsumeUserDO consumeUserDO = consumeUserDOS.get(i);
                     int userId = consumeUserDO.getUserId();
                     UserProfile userProfile = kkUserService.getUserProfile(userId);
 
@@ -433,7 +433,7 @@ public class HappyPKFunction {
                         jsonObject1.addProperty("portrait", getPortrait(userProfile));
                         jsonObject1.addProperty("nickname", userProfile.getNickName());
                     }
-                    jsonObject1.addProperty("ranking", ++i);
+                    jsonObject1.addProperty("ranking", ++ranking);
                     jsonObject1.addProperty("consumeShowMoneyNum", consumeUserDO.getConsumeShowMoneyNum());
 
                     richList.add(jsonObject1);
