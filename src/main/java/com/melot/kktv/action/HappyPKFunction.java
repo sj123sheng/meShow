@@ -419,7 +419,7 @@ public class HappyPKFunction {
                 JsonArray richList = new JsonArray();
                 List<ConsumeUserDO> consumeUserDOS = listResult.getData();
 
-                int ranking = 1;
+                int ranking = 0;
                 for(ConsumeUserDO consumeUserDO : consumeUserDOS) {
 
                     int userId = consumeUserDO.getUserId();
