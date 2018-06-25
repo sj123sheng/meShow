@@ -276,6 +276,7 @@ public class UserLevelFunctions {
                     }
                     userJson.addProperty("userId", userProfile.getUserId());
                     userJson.addProperty("nickname", userProfile.getNickName());
+                    userJson.addProperty("gender", userProfile.getGender());
                     if (!StringUtil.strIsNull(userProfile.getPortrait())) {
                         userJson.addProperty("portrait", userProfile.getPortrait());
                     }
