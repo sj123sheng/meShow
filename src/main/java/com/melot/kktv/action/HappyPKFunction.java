@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 import static com.melot.kktv.util.ParamCodeEnum.ACTOR_ID;
+import static com.melot.kktv.util.ParamCodeEnum.SEASON_TYPE;
 
 /**
  * Title: DanceMachineFunction
@@ -355,9 +356,10 @@ public class HappyPKFunction {
 
         JsonObject result = new JsonObject();
 
-        int actorId;
+        int actorId, seasonType;
         try {
             actorId = CommonUtil.getJsonParamInt(jsonObject, ACTOR_ID.getId(), 0, ACTOR_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+            seasonType = CommonUtil.getJsonParamInt(jsonObject, SEASON_TYPE.getId(), 1, SEASON_TYPE.getErrorCode(), 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -365,7 +367,16 @@ public class HappyPKFunction {
 
         try {
 
-            Result<List<ContributionUserDO>> listResult =  histActorLadderMatchService.getMaxContributionUserList(actorId);
+            ConfLadderMatchDO confLadderMatchDO = confLadderMatchService.getCurrentSeasonConf().getData();
+            if(confLadderMatchDO == null) {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            int seasonId = confLadderMatchDO.getSeasonId();
+            if(seasonType == 2) {
+                seasonId = seasonId - 1;
+            }
+            Result<List<ContributionUserDO>> listResult =  histActorLadderMatchService.getMaxContributionUserList(seasonId, actorId);
             if(listResult.getCode().equals(CommonStateCode.SUCCESS) && listResult.getData() != null){
 
                 List<ContributionUserDO> contributionUserDOS = listResult.getData();
