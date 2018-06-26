@@ -211,4 +211,7 @@
 
     <!-- 竞猜相关接口 -->
     <bean id="guessFunctions" class="com.melot.kktv.action.GuessFunctions" />
+    
+    <!-- 财富等级升级接口 -->
+    <bean id="userLevelFunctions" class="com.melot.kkcx.functions.UserLevelFunctions" />
 </beans>

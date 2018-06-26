@@ -126,6 +126,10 @@ public class ConfigService {
      */
     private Integer coinPurchaseRoomId;
 
+    /**
+     * 神秘人默认头像[没有域名部分]
+     */
+    private String xmanPortrait;
 
     @DisconfFileItem(name = "world.cup.partId", associateField = "worldCupPartId")
     public Integer getWorldCupPartId() {
@@ -323,6 +327,15 @@ public class ConfigService {
     
     public void setPkCompereIds(String pkCompereIds) {
         this.pkCompereIds = pkCompereIds;
+    }
+    
+    @DisconfFileItem(name = "xman.xmanPortrait", associateField = "xmanPortrait")
+    public String getXmanPortrait() {
+        return xmanPortrait;
+    }
+    
+    public void setXmanPortrait(String xmanPortrait) {
+        this.xmanPortrait = xmanPortrait;
     }
 
 }

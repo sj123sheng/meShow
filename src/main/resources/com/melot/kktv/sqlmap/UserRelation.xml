@@ -86,28 +86,5 @@
 	<procedure id="revoke" parameterMap="revokeMap">
 		{call p_revoke(?,?,?)}
 	</procedure>
-
-	<!-- 举报用户 -->
-	<parameterMap id="reportUserMap" class="java.util.Map">
-		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="reportId" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="roomId" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="platform" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="newsId" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="reason" mode="IN" javaType="java.lang.String"
-			jdbcType="VARCHAR" />
-		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
-			jdbcType="VARCHAR" />
-	</parameterMap>
-
-	<procedure id="reportUser" parameterMap="reportUserMap">
-		{call
-		p_reportUser(?,?,?,?,?,?,?)}
-	</procedure>
 	
 </sqlMap>

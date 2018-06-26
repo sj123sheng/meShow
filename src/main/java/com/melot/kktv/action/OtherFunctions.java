@@ -670,84 +670,6 @@ public class OtherFunctions {
 	}
 
 	/**
-	 * 用户举报接口(20000008)
-	 * @return
-	 */
-	public JsonObject commitReport(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-		JsonObject result = new JsonObject();
-		if (!checkTag) {
-			result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-			return result;
-		}
-		int userId = 0; //举报人
-		String nickname = null; //举报人当前昵称
-		int toUserId = 0; //被举报人id
-		String toNickname = null; //被举报人昵称
-		int reportType = 0; //违规类型: 1-淫秽色情; 2-涉黄涉毒; 3-宗教言论; 4-其他
-	    int userType = 0;//举报对象类型: 1-主播(房间); 2-用户  
-	    String reason = null;//举报原因
-	    String evidenceUrls = null; //图片凭证, 多张图片"," 隔开
-	    try {
-	    	userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-	    	nickname = CommonUtil.getJsonParamString(jsonObject, "nickname", null, TagCodeEnum.NICKNAME_MISSING, 1, 20);
-	    	toUserId = CommonUtil.getJsonParamInt(jsonObject, "toUserId", 0, TagCodeEnum.TOUSERID_MISSING, 1, Integer.MAX_VALUE);
-	    	toNickname = CommonUtil.getJsonParamString(jsonObject, "toNickname", null, TagCodeEnum.TONICKNAME_MISSING, 1, 20);
-	    	reportType = CommonUtil.getJsonParamInt(jsonObject, "reportType", 0, TagCodeEnum.REPORTTYPE_MISSING, 1, Integer.MAX_VALUE);
-	    	userType = CommonUtil.getJsonParamInt(jsonObject, "userType", 0, TagCodeEnum.USERTYPE_MISSING, 1, Integer.MAX_VALUE);
-	    	reason = CommonUtil.getJsonParamString(jsonObject, "reason", null, null, 1, 50);
-	    	evidenceUrls = CommonUtil.getJsonParamString(jsonObject, "evidenceUrls", null, TagCodeEnum.EVIDENCEURLS_MISSING, 1, 500);
-	    	//举报类型为其他时reason必填
-		    if (reportType == 4 && reason == null) {
-		    	result.addProperty("TagCode", TagCodeEnum.REASON_MISSING);
-		    	return result;
-		    }
-	    } catch (CommonUtil.ErrorGetParameterException e) {
-			result.addProperty("TagCode", e.getErrCode());
-			return result;
-		} catch (Exception e) {
-			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-			return result;
-		}
-	    
-//	    long showMoney = com.melot.kktv.service.UserService.getUserShowMoney(userId);
-//	    if (showMoney < Constant.report_money) {
-//	    	result.addProperty("TagCode", TagCodeEnum.USER_MONEY_SHORTNESS);
-//	    	return result;
-//	    }
-	    
-	    Integer reportId = GeneralService.roomReport(userId, nickname, toUserId, toNickname, reportType, userType, reason, evidenceUrls);
-	    if (reportId != null && reportId > 0) {
-			// 插流水
-			ConsumeService.insertReportHistory(reportId, userId, 0, 0);
-			//插入秀币流水
-//			ShowMoneyHistory showMoneyHistory = new ShowMoneyHistory();
-//            try {
-//		        showMoneyHistory.setUserId(userId);
-//		        showMoneyHistory.setCount(1);
-//		        showMoneyHistory.setDtime(new Date());
-//		        showMoneyHistory.setConsumeAmount(Constant.report_money);
-//		        showMoneyHistory.setType(26);
-//		        showMoneyHistory.setProductDesc("" + reportId);
-//		        
-//                KkUserService userService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
-//                if (userService.addAndGetUserAssets(userId, - Constant.report_money, false, showMoneyHistory) == null) {
-//                    showMoneyLogger.info("Failed: 举报扣秀币失败" + new Gson().toJson(showMoneyHistory));
-//                }
-//            } catch (Exception e) {
-//                showMoneyLogger.error("Error: 举报扣秀币失败" + new Gson().toJson(showMoneyHistory));
-//                Cat.logError("addAndGetUserAssets failed, userId: " + userId + ", price: -" + Constant.report_money + ", showMoneyHistory: " + new Gson().toJson(showMoneyHistory), e);
-//                logger.error("增加ShowMoneyHistory 执行异常", e);
-//            }
-			logger.info("CommitReport api : userId" + userId + "pay" + Constant.report_money + "to report toUerId" + toUserId);
-	    	result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-	    } else {
-	    	result.addProperty("TagCode", TagCodeEnum.REPORT_ERROR);
-	    }
-	    
-	    return result;
-	}
-
-	/**
 	 * 提交举报V2 （51090101）
 	 * @param jsonObject
 	 * @param checkTag
@@ -794,10 +716,7 @@ public class OtherFunctions {
 			reportFlowRecord.setRoomId(roomId);
 			reportFlowRecord.setNewsId(newsId);
 			Result<Boolean> flag = reportFlowService.saveReportFlowRecord(reportFlowRecord);
-//			Integer reportId = GeneralService.roomReport(userId, nickname, toUserId, toNickname, reportType,1, reason, evidenceUrls);
 			if (flag.getCode().equals(CommonStateCode.SUCCESS) && flag.getData()) {
-				// 插流水，现在已不用
-//				ConsumeService.insertReportHistory(reportId, userId, 0, 0);
 				logger.info("CommitReportV2 api : userId" + userId + "to report toUserId" + toUserId);
 				result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 			} else {
@@ -812,78 +731,6 @@ public class OtherFunctions {
 			return result;
 		}
 	}
-
-	/**
-	 * 获得举报处理结果列表接口(20000009)
-	 */
-	public JsonObject getCommitRecordList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-		JsonObject result = new JsonObject();
-		int start, offset;
-		try {
-			start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, null, 0, Integer.MAX_VALUE);
-			offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 10, null, 1, Integer.MAX_VALUE);
-		} catch (CommonUtil.ErrorGetParameterException e) {
-			result.addProperty("TagCode", e.getErrCode());
-			return result;
-		} catch (Exception e) {
-			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-			return result;
-		}
-		
-		List<RecordProcessedRecord> recordList = null; 
-		try {
-			RecordProcessedRecordService recordProcessedRecordService = MelotBeanFactory.getBean("recordProcessedRecordService", RecordProcessedRecordService.class);
-			recordList = recordProcessedRecordService.getHistRecordWeiGuiList(start, offset);
-		} catch (Exception e) {
-			logger.error("Fail to call recordProcessedRecordService.getProcessedRecordList", e);
-		}
-		
-		JsonArray recordArray = new JsonArray();
-		
-		if (recordList != null) {
-			for (RecordProcessedRecord record : recordList) {
-				JsonObject json = new JsonObject();
-				json.addProperty("userId", record.getBeUserId());
-				json.addProperty("nickname", record.getBeUserName());
-				json.addProperty("processDesc", record.getReportMemo());
-				if(record.getIllegalType() != null) {
-					switch(record.getIllegalType()) {
-					case 1:
-						json.addProperty("recordstr", String.format(Constant.remind_demo, DateUtil.formatDate(record.getEndTime(), null)));
-						break;
-					case 2:
-						json.addProperty("recordstr", String.format(Constant.warn_demo, DateUtil.formatDate(record.getEndTime(), null)));
-						break;
-					case 3:
-						json.addProperty("recordstr", String.format(Constant.limit_demo, DateUtil.formatDate(record.getEndTime(), null)));
-						break;
-					case 4:
-						json.addProperty("recordstr", String.format(Constant.seal_demo, DateUtil.formatDate(record.getEndTime(), null)));
-						break;
-					case 5:
-						json.addProperty("recordstr", String.format(Constant.reduce_money, DateUtil.formatDate(record.getEndTime(), null)));
-						break;
-					}
-				}
-				
-				//add违规处理结果返回
-				if(record.getIllegalType() == 3){ //限播处理才返回
-    				if (record.getReliveTime() == null) {
-    					json.addProperty("reOpenstr", Constant.REPORT_FOREVER);
-    				} else {
-    					json.addProperty("reOpenstr", String.format(Constant.REPORT_CANCEL, DateUtil.formatDate(record.getReliveTime(), null)));
-    				}
-				}
-				recordArray.add(json);
-			}
-		}
-		
-		result.add("recordList", recordArray);
-		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-		
-		return result;
-	}
-    
  
     /* ----------------------- 申请家族主播流程相关接口 ----------------------- */
     
