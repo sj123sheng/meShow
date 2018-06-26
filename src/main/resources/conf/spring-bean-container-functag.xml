@@ -2923,8 +2923,6 @@
     <bean id="51060408" class="com.melot.sdk.core.function.GenericFunction">
         <constructor-arg name="t" ref="happyPKFunction" />
         <constructor-arg name="methodName" value="getRichList" />
-        <constructor-arg name="cacheType" value="60" />
-        <constructor-arg name="cacheKeyExcluedUserId" value="1" />
     </bean>
 
 	<!-- 答题比赛 -->
