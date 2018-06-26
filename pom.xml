@@ -669,6 +669,14 @@
 		  <artifactId>kk-userLevelUp-api</artifactId>
 		  <version>1.0.0-SNAPSHOT</version>
 		</dependency>
+
+		<!-- 登录相关模块 -->
+		<dependency>
+			<groupId>com.melot.kk</groupId>
+			<artifactId>kk-otherlogin-api</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>
+
 	</dependencies>
  	
 </project>

@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.melot.kk.otherlogin.api.service.OtherLoginService;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.log4j.Logger;
 
@@ -961,13 +962,13 @@ public class UserService {
 	}
 	
 	public static int getUserSmsSwitch(int userId) {
-		Integer state = null;
 		try {
-			state = (Integer) SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("User.getUserSmsSwitch", userId);
-		} catch (SQLException e) {
+			OtherLoginService otherLoginService = (OtherLoginService) MelotBeanFactory.getBean("otherLoginService");
+			return otherLoginService.getUserSmsSwitch(userId);
+		} catch (Exception e) {
 			logger.error("UserService.getUserSmsSwitch( " + userId + " ) execute exception", e);
+			return 0;
 		}
-		return state != null ? state : 0;
 	}
 	
 	public static boolean getUserSmsSwitchState(int userId) {
@@ -975,22 +976,13 @@ public class UserService {
 	}
 	
 	public static boolean changeUserSmsSwitch(int userId, int state) {
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("userId", userId);
-		map.put("state", state);
-		map.put("dtime", new Date());
 		try {
-			if (state == 0) {
-				SqlMapClientHelper.getInstance(DB.MASTER).delete("User.delUserSmsSwitch", userId);
-			} else {
-				SqlMapClientHelper.getInstance(DB.MASTER).insert("User.insertUserSmsSwitch", map);
-			}
-			SqlMapClientHelper.getInstance(DB.MASTER).insert("User.insertUserSmsSwitchRecord", map);
-		} catch (SQLException e) {
+			OtherLoginService otherLoginService = (OtherLoginService) MelotBeanFactory.getBean("otherLoginService");
+			return otherLoginService.changeUserSmsSwitch(userId, state);
+		} catch (Exception e) {
 			logger.error("UserService.changeUserSmsSwitch (userId : " + userId + ", state : " + state + " ) execute exception", e);
 			return false;
 		}
-		return true;
 	}
 	
 	public static boolean insertTempUserPassword(int userId, String password) {
@@ -1009,29 +1001,23 @@ public class UserService {
 	
 	public static boolean getGuestFirstRecord(int userId) {
 		try {
-			return (int) SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("User.getGuestFirstRecord", userId) > 0;
-		} catch (SQLException e) {
+			OtherLoginService otherLoginService = (OtherLoginService) MelotBeanFactory.getBean("otherLoginService");
+			return otherLoginService.getGuestFirstRecord(userId) > 0;
+		} catch (Exception e) {
 			logger.error("UserService.getGuestFirstRecord(userId : " + userId + " ) execute exception", e);
+			return false;
 		}
-		return false;
 	}
 	
 	public static boolean insertGuestFirstRecord(int userId, int platform, int appId, int channelId, String deviceUId, Date dtime) {
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("userId", userId);
-		map.put("platform", platform);
-		map.put("appId", appId);
-		map.put("channelId", channelId);
-		map.put("deviceUId", deviceUId);
-		map.put("dtime", dtime);
 		try {
-			SqlMapClientHelper.getInstance(DB.MASTER).insert("User.insertGuestFirstRecord", map);
-		} catch (SQLException e) {
-			logger.error("UserService.insertGuestFirstRecord (userId : " + userId + ", platform : " + platform + 
+			OtherLoginService otherLoginService = (OtherLoginService) MelotBeanFactory.getBean("otherLoginService");
+			return otherLoginService.insertGuestFirstRecord(userId, platform, appId, channelId, deviceUId, dtime);
+		} catch (Exception e) {
+			logger.error("UserService.insertGuestFirstRecord (userId : " + userId + ", platform : " + platform +
 					", appId : " + appId + ", channelId : " + channelId + ", deviceUId : " + deviceUId + ", dtime : " + dtime + " ) execute exception", e);
 			return false;
 		}
-		return true;
 	}
 
 	/**
