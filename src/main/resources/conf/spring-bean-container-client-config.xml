@@ -122,6 +122,8 @@
 	<kkrpc:reference id="gameConfigService" interface="com.melot.kkactivity.driver.service.GameConfigService" version="1.0.1" />
 	
 	<kkrpc:reference id="bountyService" interface="com.melot.kk.bounty.api.service.BountyService" version="1.0.0" />
+	<!-- 登录相关模块 -->
+	<kkrpc:reference id="otherLoginService" interface="com.melot.kk.otherlogin.api.service.OtherLoginService" />
 
     <!-- 抓娃娃模块 -->
     <kkrpc:reference id="dollMachineService" interface="com.melot.kk.doll.api.service.DollMachineService" version="1.0.0" />
