@@ -123,7 +123,7 @@
 	
 	<kkrpc:reference id="bountyService" interface="com.melot.kk.bounty.api.service.BountyService" version="1.0.0" />
 	<!-- 登录相关模块 -->
-	<kkrpc:reference id="otherLoginService" interface="com.melot.kk.otherlogin.api.service.OtherLoginService" />
+	<kkrpc:reference id="otherLoginService" interface="com.melot.kk.otherlogin.api.service.OtherLoginService" version="1.0.0" />
 
     <!-- 抓娃娃模块 -->
     <kkrpc:reference id="dollMachineService" interface="com.melot.kk.doll.api.service.DollMachineService" version="1.0.0" />
