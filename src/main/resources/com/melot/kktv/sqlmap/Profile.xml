@@ -215,37 +215,6 @@
 		p_getcarinfo(?,?,?,?,?,?,?,?,?,?)}
 	</procedure>
 
-	<!-- 获取用户直播记录列表 -->
-	<resultMap id="liveRecord" class="com.melot.kktv.model.LiveRecord">
-		<result property="startTime" column="startTime" javaType="java.util.Date"
-			jdbcType="TIMESTAMP" />
-		<result property="endTime" column="endTime" javaType="java.util.Date"
-			jdbcType="TIMESTAMP" />
-	</resultMap>
-
-	<parameterMap id="getUserLiveListMap" class="java.util.Map">
-		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="startTime" mode="IN" javaType="java.util.Date"
-			jdbcType="TIMESTAMP" />
-		<parameter property="endTime" mode="IN" javaType="java.util.Date"
-			jdbcType="TIMESTAMP" />
-		<parameter property="pageIndex" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-
-		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
-			jdbcType="VARCHAR" />
-		<parameter property="pageTotal" mode="OUT" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="recordList" mode="OUT" jdbcType="ORACLECURSOR"
-			javaType="java.sql.ResultSet" resultMap="liveRecord" />
-	</parameterMap>
-
-	<procedure id="getUserLiveList" parameterMap="getUserLiveListMap">
-		{call
-		p_getUserLiveList(?,?,?,?,?,?,?)}
-	</procedure>
-
 	<!-- 获取用户中奖记录列表 -->
 	<resultMap id="winLotteryRecord" class="com.melot.kktv.model.WinLotteryRecord">
 		<result property="time" column="time" javaType="java.util.Date"

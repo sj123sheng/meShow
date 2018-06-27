@@ -27,7 +27,7 @@
 	<kkrpc:reference id="virtualIdService" interface="com.melot.asset.driver.service.VirtualIdService" version="1.0.2"></kkrpc:reference>
 	<kkrpc:reference id="assetService" interface="com.melot.asset.driver.service.AssetService" version="1.0.2"></kkrpc:reference>
 	<kkrpc:reference id="kkActivityService" interface="com.melot.kkactivity.driver.service.KkActivityService" version="1.0.5"></kkrpc:reference>
-	<kkrpc:reference id="taskInterfaceService" interface="com.melot.module.task.driver.service.TaskInterfaceService" version="1.0.2"></kkrpc:reference>
+	<kkrpc:reference id="taskInterfaceService" interface="com.melot.module.task.driver.service.TaskInterfaceService" version="1.0.3"></kkrpc:reference>
 	<kkrpc:reference id="activityMedalService" interface="com.melot.module.medal.driver.service.ActivityMedalService" version="1.0.1"></kkrpc:reference>
 	<kkrpc:reference id="userMedalService" interface="com.melot.module.medal.driver.service.UserMedalService" version="1.0.1"></kkrpc:reference>
 	<kkrpc:reference id="familyMedalService" interface="com.melot.module.medal.driver.service.FamilyMedalService" version="1.0.1"></kkrpc:reference>
@@ -122,6 +122,8 @@
 	<kkrpc:reference id="gameConfigService" interface="com.melot.kkactivity.driver.service.GameConfigService" version="1.0.1" />
 	
 	<kkrpc:reference id="bountyService" interface="com.melot.kk.bounty.api.service.BountyService" version="1.0.0" />
+	<!-- 登录相关模块 -->
+	<kkrpc:reference id="otherLoginService" interface="com.melot.kk.otherlogin.api.service.OtherLoginService" />
 
     <!-- 抓娃娃模块 -->
     <kkrpc:reference id="dollMachineService" interface="com.melot.kk.doll.api.service.DollMachineService" version="1.0.0" />
@@ -197,4 +199,7 @@
 	
 	<!-- 用户等级升级模块 -->
     <kkrpc:reference id="userLevelRedEvelopeService" interface="com.melot.kk.userLevelUp.api.service.UserLevelRedEvelopeService" version="1.0.0"/>
+    
+    <!-- 用户开播记录-->
+    <kkrpc:reference id="liveRecordService" interface="com.melot.room.live.record.service.LiveRecordService" version="1.0.2"/>
 </beans>

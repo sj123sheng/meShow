@@ -23,6 +23,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 import static com.melot.kktv.util.ParamCodeEnum.ACTOR_ID;
+import static com.melot.kktv.util.ParamCodeEnum.SEASON_TYPE;
+import static com.melot.kktv.util.ParamCodeEnum.USER_ID;
 
 /**
  * Title: DanceMachineFunction
@@ -355,9 +357,10 @@ public class HappyPKFunction {
 
         JsonObject result = new JsonObject();
 
-        int actorId;
+        int actorId, seasonType;
         try {
             actorId = CommonUtil.getJsonParamInt(jsonObject, ACTOR_ID.getId(), 0, ACTOR_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+            seasonType = CommonUtil.getJsonParamInt(jsonObject, SEASON_TYPE.getId(), 1, SEASON_TYPE.getErrorCode(), 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -365,7 +368,16 @@ public class HappyPKFunction {
 
         try {
 
-            Result<List<ContributionUserDO>> listResult =  histActorLadderMatchService.getMaxContributionUserList(actorId);
+            ConfLadderMatchDO confLadderMatchDO = confLadderMatchService.getCurrentSeasonConf().getData();
+            if(confLadderMatchDO == null) {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            int seasonId = confLadderMatchDO.getSeasonId();
+            if(seasonType == 2) {
+                seasonId = seasonId - 1;
+            }
+            Result<List<ContributionUserDO>> listResult =  histActorLadderMatchService.getMaxContributionUserList(seasonId, actorId);
             if(listResult.getCode().equals(CommonStateCode.SUCCESS) && listResult.getData() != null){
 
                 List<ContributionUserDO> contributionUserDOS = listResult.getData();
@@ -384,6 +396,7 @@ public class HappyPKFunction {
                         jsonObject1.addProperty("portrait", getPortrait(userProfile));
                         jsonObject1.addProperty("nickname", userProfile.getNickName());
                     }
+                    jsonObject1.addProperty("ranking", contributionUserDO.getRanking());
                     jsonObject1.addProperty("contributionWinNum", contributionUserDO.getContributionWinNum());
 
                     winningContributionList.add(jsonObject1);
@@ -411,6 +424,14 @@ public class HappyPKFunction {
 
         JsonObject result = new JsonObject();
 
+        int userId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, USER_ID.getId(), 0, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
         try {
 
             Result<List<ConsumeUserDO>> listResult =  histActorLadderMatchService.getRichList();
@@ -419,27 +440,39 @@ public class HappyPKFunction {
                 JsonArray richList = new JsonArray();
                 List<ConsumeUserDO> consumeUserDOS = listResult.getData();
 
-                int ranking = 0;
                 for(ConsumeUserDO consumeUserDO : consumeUserDOS) {
 
-                    int userId = consumeUserDO.getUserId();
-                    UserProfile userProfile = kkUserService.getUserProfile(userId);
+                    int consumeUserId = consumeUserDO.getUserId();
+                    UserProfile userProfile = kkUserService.getUserProfile(consumeUserId);
 
                     JsonObject jsonObject1 = new JsonObject();
 
-                    jsonObject1.addProperty("userId", userId);
+                    jsonObject1.addProperty("userId", consumeUserId);
                     if(userProfile != null) {
                         jsonObject1.addProperty("gender", userProfile.getGender());
                         jsonObject1.addProperty("portrait", getPortrait(userProfile));
                         jsonObject1.addProperty("nickname", userProfile.getNickName());
                     }
-                    jsonObject1.addProperty("ranking", ++ranking);
+                    jsonObject1.addProperty("ranking", consumeUserDO.getRanking());
                     jsonObject1.addProperty("consumeShowMoneyNum", consumeUserDO.getConsumeShowMoneyNum());
 
                     richList.add(jsonObject1);
                 }
                 result.add("richList", richList);
 
+                if(userId > 0) {
+                    ConsumeUserDO consumeUserDO = histActorLadderMatchService.getUserConsumeInfo(userId).getData();
+                    if(consumeUserDO != null) {
+                        UserProfile userProfile = kkUserService.getUserProfile(userId);
+                        if(userProfile != null) {
+                            result.addProperty("gender", userProfile.getGender());
+                            result.addProperty("portrait", getPortrait(userProfile));
+                            result.addProperty("nickname", userProfile.getNickName());
+                        }
+                        result.addProperty("ranking", consumeUserDO.getRanking());
+                        result.addProperty("consumeShowMoneyNum", consumeUserDO.getConsumeShowMoneyNum());
+                    }
+                }
                 result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
                 result.addProperty("TagCode", TagCodeEnum.SUCCESS);
                 return result;
