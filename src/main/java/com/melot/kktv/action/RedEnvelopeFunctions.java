@@ -5,13 +5,12 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-
-import com.melot.kk.redenvelopers.api.dto.*;
-import com.melot.kk.redenvelopers.api.service.NewRedEnvelopersService;
 import com.melot.kkcore.actor.api.RoomInfo;
 import com.melot.kkcore.actor.service.ActorService;
 import com.melot.kktv.service.UserService;
 import com.melot.kktv.util.*;
+import com.melot.redenvelopers.driver.domain.*;
+import com.melot.redenvelopers.driver.service.NewRedEnvelopersService;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 import com.google.gson.JsonArray;
@@ -191,30 +190,37 @@ public class RedEnvelopeFunctions {
         } catch(MelotModuleException e) {
             int errCode = e.getErrCode();
             switch (errCode) {
-            case 105:
-                // 用户财富等级未达到发送红包最低限制
-                result.addProperty(ParameterKeys.TAG_CODE , "31060004");
-                break;
-            case 108:
-                // 秀币不足
-                result.addProperty(ParameterKeys.TAG_CODE , "31060005");
-                break;
-            case 107:
-                // 主播红包金库不足
-                result.addProperty(ParameterKeys.TAG_CODE , "31060006");
-                break;
-            case 104:
-                // 红包总金额不能超过 999999 秀币,且大于等于1000
-                result.addProperty(ParameterKeys.TAG_CODE , "31060007");
-                break;
-            case 103:
-                // 红包总金额不能小于红包个数
-                result.addProperty(ParameterKeys.TAG_CODE , "31060009");
-                break;
-            default:
-                logger.error(String.format("模块返回其他异常：errCode=%s, message=%s", errCode, e.getMessage()));
-                result.addProperty(ParameterKeys.TAG_CODE , TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
-                break;
+                case 101:
+                    // 参数非法
+                    result.addProperty(ParameterKeys.TAG_CODE , "2003100602");
+                    break;
+                case 105:
+                    // 用户财富等级未达到发送红包最低限制
+                    result.addProperty(ParameterKeys.TAG_CODE , "31060004");
+                    break;
+                case 108:
+                    // 秀币不足
+                    result.addProperty(ParameterKeys.TAG_CODE , "31060005");
+                    break;
+                case 107:
+                    // 主播红包金库不足
+                    result.addProperty(ParameterKeys.TAG_CODE , "31060006");
+                    break;
+                case 104:
+                    // 红包总金额不能超过 999999 秀币,且大于等于1000
+                    result.addProperty(ParameterKeys.TAG_CODE , "31060007");
+                    break;
+                case 103:
+                    // 红包总金额不能小于红包个数
+                    result.addProperty(ParameterKeys.TAG_CODE , "31060009");
+                    break;
+                case 106:
+                    result.addProperty(ParameterKeys.TAG_CODE , "2003100601");
+                    break;
+                default:
+                    logger.error(String.format("模块返回其他异常：errCode=%s, message=%s", errCode, e.getMessage()));
+                    result.addProperty(ParameterKeys.TAG_CODE , TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+                    break;
             }
         } catch (Exception e) {
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
@@ -257,13 +263,14 @@ public class RedEnvelopeFunctions {
             return result;
         }
         
-        String userIp = GeneralService.getIpAddr(request, appId, platform, null);
-        Map<String, Object> extraParams = new HashMap<>(2);
-        extraParams.put("userIp", userIp);
-        
-        //调用模块
+
         JsonArray redEvelopArray = new JsonArray();
         try {
+            String userIp = GeneralService.getIpAddr(request, appId, platform, null);
+            Map<String, Object> extraParams = new HashMap<>(2);
+            extraParams.put("userIp", userIp);
+
+            //调用模块
             CurrentGetRedEnvelopersModel evelopModel = newRedEnvelopersService.insertGetRedEnvelopers(userId, roomId, sendId, extraParams);
             
             // 设置抢到的红包金额和用户当前秀币额
@@ -411,7 +418,7 @@ public class RedEnvelopeFunctions {
         //调用模块
         try {
             List<RedEnvelopersInfoModel> redInfoModels = newRedEnvelopersService.getRoomRedEnvelopersList(roomId);
-            JsonObject evelopJson = null;
+            JsonObject evelopJson;
             JsonArray redEvelops;
             List<GetRedEnvelopersModel> list;
             JsonObject redEvelopJson;
@@ -507,8 +514,9 @@ public class RedEnvelopeFunctions {
         try {
             List<RedEnvelopersInfoModelExtend> redInfoModels = newRedEnvelopersService.getDelayRedEnveloperListByRoomId(roomId);
             if (CollectionUtils.isNotEmpty(redInfoModels)) {
-                JsonObject jsonObject = new JsonObject();
+                JsonObject jsonObject;
                 for (RedEnvelopersInfoModelExtend redInfoModel : redInfoModels) {
+                    jsonObject = new JsonObject();
                     jsonObject.addProperty("sendId", redInfoModel.getSendId());
                     jsonObject.addProperty("userId", redInfoModel.getUserId());
                     UserProfile user = UserService.getUserInfoV2(redInfoModel.getUserId());
