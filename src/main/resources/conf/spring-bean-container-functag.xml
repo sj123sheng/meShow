@@ -1291,6 +1291,13 @@
 		<constructor-arg name="t" ref="otherFunction" />
 		<constructor-arg name="methodName" value="commitReportV2" />
 	</bean>
+
+	<!-- 获得举报处理结果列表接口 -->
+	<bean id="20000009" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="otherFunction" />
+		<constructor-arg name="methodName" value="getCommitRecordList" />
+	</bean>
+
 	<!-- 获取申请主播状态信息 -->
 	<bean id="20010501" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="otherFunction" />

@@ -731,6 +731,77 @@ public class OtherFunctions {
 			return result;
 		}
 	}
+
+	/**
+	 * 获得举报处理结果列表接口(20000009)
+	 */
+	public JsonObject getCommitRecordList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+		JsonObject result = new JsonObject();
+		int start, offset;
+		try {
+			start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, null, 0, Integer.MAX_VALUE);
+			offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 10, null, 1, Integer.MAX_VALUE);
+		} catch (CommonUtil.ErrorGetParameterException e) {
+			result.addProperty("TagCode", e.getErrCode());
+			return result;
+		} catch (Exception e) {
+			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+			return result;
+		}
+
+		List<RecordProcessedRecord> recordList = null;
+		try {
+			RecordProcessedRecordService recordProcessedRecordService = MelotBeanFactory.getBean("recordProcessedRecordService", RecordProcessedRecordService.class);
+			recordList = recordProcessedRecordService.getHistRecordWeiGuiList(start, offset);
+		} catch (Exception e) {
+			logger.error("Fail to call recordProcessedRecordService.getProcessedRecordList", e);
+		}
+
+		JsonArray recordArray = new JsonArray();
+
+		if (recordList != null) {
+			for (RecordProcessedRecord record : recordList) {
+				JsonObject json = new JsonObject();
+				json.addProperty("userId", record.getBeUserId());
+				json.addProperty("nickname", record.getBeUserName());
+				json.addProperty("processDesc", record.getReportMemo());
+				if(record.getIllegalType() != null) {
+					switch(record.getIllegalType()) {
+						case 1:
+							json.addProperty("recordstr", String.format(Constant.remind_demo, DateUtil.formatDate(record.getEndTime(), null)));
+							break;
+						case 2:
+							json.addProperty("recordstr", String.format(Constant.warn_demo, DateUtil.formatDate(record.getEndTime(), null)));
+							break;
+						case 3:
+							json.addProperty("recordstr", String.format(Constant.limit_demo, DateUtil.formatDate(record.getEndTime(), null)));
+							break;
+						case 4:
+							json.addProperty("recordstr", String.format(Constant.seal_demo, DateUtil.formatDate(record.getEndTime(), null)));
+							break;
+						case 5:
+							json.addProperty("recordstr", String.format(Constant.reduce_money, DateUtil.formatDate(record.getEndTime(), null)));
+							break;
+					}
+				}
+
+				//add违规处理结果返回
+				if(record.getIllegalType() == 3){ //限播处理才返回
+					if (record.getReliveTime() == null) {
+						json.addProperty("reOpenstr", Constant.REPORT_FOREVER);
+					} else {
+						json.addProperty("reOpenstr", String.format(Constant.REPORT_CANCEL, DateUtil.formatDate(record.getReliveTime(), null)));
+					}
+				}
+				recordArray.add(json);
+			}
+		}
+
+		result.add("recordList", recordArray);
+		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+
+		return result;
+	}
  
     /* ----------------------- 申请家族主播流程相关接口 ----------------------- */
     
