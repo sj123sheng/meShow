@@ -202,6 +202,6 @@
     <!-- 用户开播记录-->
     <kkrpc:reference id="liveRecordService" interface="com.melot.room.live.record.service.LiveRecordService" version="1.0.2"/>
 
-	<!-- 新版红包模块，替换RedEnvelopersService 1.0.0 -->
+	<!-- 新版红包模块 -->
 	<kkrpc:reference id="newRedEnvelopersService" interface="com.melot.kk.redenvelopers.api.service.NewRedEnvelopersService" version="1.0.1"></kkrpc:reference>
 </beans>
