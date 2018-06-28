@@ -295,11 +295,6 @@
   			<version>1.0.9</version><!--$NO-MVN-MAN-VER$-->
 	    </dependency>
 		<dependency>
-			<groupId>com.melot.module.driver.msgbuilder</groupId>
-			<artifactId>red-envelopers-module-msgbuilder</artifactId>
-			<version>1.0.22</version><!--$NO-MVN-MAN-VER$-->
-		</dependency>
-		<dependency>
 			<groupId>com.melot.module.driver</groupId>
 			<artifactId>common-driver</artifactId>
 		</dependency>

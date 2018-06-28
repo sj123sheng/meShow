@@ -10,7 +10,7 @@ import com.melot.kkcore.actor.service.ActorService;
 import com.melot.kktv.service.UserService;
 import com.melot.kktv.util.*;
 import com.melot.redenvelopers.driver.domain.*;
-import com.melot.redenvelopers.driver.service.NewRedEnvelopersService;
+import com.melot.redenvelopers.driver.service.RedEnvelopersService;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 import com.google.gson.JsonArray;
@@ -42,7 +42,7 @@ public class RedEnvelopeFunctions {
     private static Logger logger = Logger.getLogger(RedEnvelopeFunctions.class);
 
     @Resource
-    private NewRedEnvelopersService newRedEnvelopersService;
+    private RedEnvelopersService redEnvelopersService;
 
     @Resource
     private ActorService actorService;
@@ -72,9 +72,9 @@ public class RedEnvelopeFunctions {
         try {
             long amount = 0;
             if (roomId > 0) {
-                 amount = newRedEnvelopersService.getActorCoffersAmount(roomId);
+                 amount = redEnvelopersService.getActorCoffersAmount(roomId);
             }
-            RedEnvelopersConfigModelExtend redEvelopModel = newRedEnvelopersService.getRedEnvelopersConfigModel();
+            RedEnvelopersConfigModelExtend redEvelopModel = redEnvelopersService.getRedEnvelopersConfigModelV2();
             result.addProperty("amount", amount);
             result.addProperty("minCount", redEvelopModel.getMinCount());
             result.addProperty("maxCount", redEvelopModel.getMaxCount());
@@ -87,7 +87,7 @@ public class RedEnvelopeFunctions {
             
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
         } catch(Exception e) {
-            logger.error(String.format("Module Error: newRedEnvelopersService, roomId=%s", roomId), e);
+            logger.error(String.format("Module Error: redEnvelopersService, roomId=%s", roomId), e);
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
         }
         
@@ -184,7 +184,7 @@ public class RedEnvelopeFunctions {
                 result.addProperty(ParameterKeys.TAG_CODE, "31060003");
                 return result;
             }
-            long money = newRedEnvelopersService.insertSendRedEnvelopers(redEnvelopersParam, appId);
+            long money = redEnvelopersService.insertSendRedEnvelopersV2(redEnvelopersParam, appId);
             result.addProperty("money", money);
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
         } catch(MelotModuleException e) {
@@ -224,7 +224,7 @@ public class RedEnvelopeFunctions {
             }
         } catch (Exception e) {
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
-            logger.error(String.format("Module Error: newRedEnvelopersService.insertSendRedEnvelopers(redEnvelopersParam=%s, appId=%s)",
+            logger.error(String.format("Module Error: redEnvelopersService.insertSendRedEnvelopers(redEnvelopersParam=%s, appId=%s)",
                     redEnvelopersParam, appId), e);
         }
         return result;
@@ -271,7 +271,7 @@ public class RedEnvelopeFunctions {
             extraParams.put("userIp", userIp);
 
             //调用模块
-            CurrentGetRedEnvelopersModel evelopModel = newRedEnvelopersService.insertGetRedEnvelopers(userId, roomId, sendId, extraParams);
+            CurrentGetRedEnvelopersModel evelopModel = redEnvelopersService.insertGetRedEnvelopers(userId, roomId, sendId, extraParams);
             
             // 设置抢到的红包金额和用户当前秀币额
             if (evelopModel.getAmount() < 0) {
@@ -417,7 +417,7 @@ public class RedEnvelopeFunctions {
         
         //调用模块
         try {
-            List<RedEnvelopersInfoModel> redInfoModels = newRedEnvelopersService.getRoomRedEnvelopersList(roomId);
+            List<RedEnvelopersInfoModel> redInfoModels = redEnvelopersService.getRoomRedEnvelopersList(roomId);
             JsonObject evelopJson;
             JsonArray redEvelops;
             List<GetRedEnvelopersModel> list;
@@ -512,7 +512,7 @@ public class RedEnvelopeFunctions {
         JsonArray listArray = new JsonArray();
         //调用模块
         try {
-            List<RedEnvelopersInfoModelExtend> redInfoModels = newRedEnvelopersService.getDelayRedEnveloperListByRoomId(roomId);
+            List<RedEnvelopersInfoModelExtend> redInfoModels = redEnvelopersService.getDelayRedEnveloperListByRoomId(roomId);
             if (CollectionUtils.isNotEmpty(redInfoModels)) {
                 JsonObject jsonObject;
                 for (RedEnvelopersInfoModelExtend redInfoModel : redInfoModels) {
@@ -530,7 +530,7 @@ public class RedEnvelopeFunctions {
                 }
             }
         } catch (Exception e) {
-            logger.error(String.format("Error:newRedEnvelopersService.getDelayRedEnveloperListByRoomId(roomId=%s)", roomId), e);
+            logger.error(String.format("Error:redEnvelopersService.getDelayRedEnveloperListByRoomId(roomId=%s)", roomId), e);
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             return result;
         }
