@@ -2,6 +2,7 @@ package com.melot.kktv.action;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.melot.common.melot_utils.StringUtils;
 import com.melot.kk.nationalPK.api.domain.DO.*;
 import com.melot.kk.nationalPK.api.service.ConfLadderMatchService;
 import com.melot.kk.nationalPK.api.service.HistActorLadderMatchService;
@@ -13,7 +14,6 @@ import com.melot.kktv.base.Result;
 import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +22,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
-import static com.melot.kktv.util.ParamCodeEnum.ACTOR_ID;
-import static com.melot.kktv.util.ParamCodeEnum.SEASON_TYPE;
-import static com.melot.kktv.util.ParamCodeEnum.USER_ID;
+import static com.melot.kktv.util.ParamCodeEnum.*;
 
 /**
  * Title: DanceMachineFunction
@@ -466,7 +464,9 @@ public class HappyPKFunction {
                         UserProfile userProfile = kkUserService.getUserProfile(userId);
                         if(userProfile != null) {
                             result.addProperty("gender", userProfile.getGender());
-                            result.addProperty("portrait", getPortrait(userProfile));
+                            if(StringUtils.isNotEmpty(userProfile.getPortrait())) {
+                                result.addProperty("portrait", getPortrait(userProfile));
+                            }
                             result.addProperty("nickname", userProfile.getNickName());
                         }
                         result.addProperty("ranking", consumeUserDO.getRanking());
@@ -490,46 +490,5 @@ public class HappyPKFunction {
     private String getPortrait(UserProfile userProfile) {
         return userProfile.getPortrait() == null ? null : userProfile.getPortrait() + "!128";
     }
-    
-    public JsonObject isCompere(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 
-        JsonObject result = new JsonObject();
-
-        int userId;
-        try {
-            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
-        } catch (CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
-            return result;
-        } catch (Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-            return result;
-        }
-
-        String pkCompereIds = configService.getPkCompereIds().trim();
-        
-        // 默认是不通过
-        result.addProperty("isCompere", 0);
-        
-        // 配置文件设置为0 或者不设置 所有用户都通过
-        if (StringUtil.strIsNull(pkCompereIds) || "0".equals(pkCompereIds)) {
-            result.addProperty("isCompere", 1);
-            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-            return result;
-        }
-        
-        // 设置了白名单并且在白名单列表中，允许为主持人
-        String[] pkCompereIdList = pkCompereIds.split(REGEX);
-        if (pkCompereIdList != null && pkCompereIdList.length > 0) {
-            for (String string : pkCompereIdList) {
-                if (Integer.valueOf(string).equals(userId)) {
-                    result.addProperty("isCompere", 1);
-                    break;
-                }
-            }
-        }
-        
-        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        return result;
-    }
 }
