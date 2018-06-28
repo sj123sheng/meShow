@@ -1977,6 +1977,11 @@
 	    <constructor-arg name="t" ref="redEnvelopeFunction"/>
 	    <constructor-arg name="methodName" value="getRoomRedEvelopeRecords"/>
 	</bean>
+	<!-- 查询房间红包记录接口 -->
+	<bean id="51011102" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="redEnvelopeFunction"/>
+		<constructor-arg name="methodName" value="getDelayRedEnvelopeRecord"/>
+	</bean>
     
 	<!-- 移动端精选频道 -->
     <bean id="20010309" class="com.melot.sdk.core.function.GenericFunction">

@@ -23,7 +23,6 @@
 		connecttimeout="3000"></kkrpc:consumer>
 
 	<!-- 配置要发布的服务实现 -->
-	<kkrpc:reference id="redEnvelopersService" interface="com.melot.redenvelopers.driver.service.RedEnvelopersService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="virtualIdService" interface="com.melot.asset.driver.service.VirtualIdService" version="1.0.2"></kkrpc:reference>
 	<kkrpc:reference id="assetService" interface="com.melot.asset.driver.service.AssetService" version="1.0.2"></kkrpc:reference>
 	<kkrpc:reference id="kkActivityService" interface="com.melot.kkactivity.driver.service.KkActivityService" version="1.0.5"></kkrpc:reference>
@@ -202,4 +201,7 @@
     
     <!-- 用户开播记录-->
     <kkrpc:reference id="liveRecordService" interface="com.melot.room.live.record.service.LiveRecordService" version="1.0.2"/>
+
+	<!-- 新版红包模块，替换RedEnvelopersService 1.0.0 -->
+	<kkrpc:reference id="newRedEnvelopersService" interface="com.melot.kk.redenvelopers.api.service.NewRedEnvelopersService" version="1.0.1"></kkrpc:reference>
 </beans>
