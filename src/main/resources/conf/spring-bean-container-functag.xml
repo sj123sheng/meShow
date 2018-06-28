@@ -1932,11 +1932,6 @@
 		<constructor-arg name="t" ref="albumFunction" />
 		<constructor-arg name="methodName" value="setUserPoster" />
 	</bean>
-	<!-- 新版获取又拍云上传路径 -->
-	<bean id="10004018" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="albumFunction" />
-		<constructor-arg name="methodName" value="getUpyunUploadParamsNew" />
-	</bean>
 	<!-- 新版海报入库 -->
 	<bean id="10004019" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="albumFunction" />

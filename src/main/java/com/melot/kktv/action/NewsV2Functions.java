@@ -239,7 +239,6 @@ public class NewsV2Functions {
             List<Resource> resourceList = new ArrayList<Resource>();
             for (int i = 0;i<imageList.length;i++) {
                 String tempUrl = imageList[i];
-                String tempMd5 = md5List[i];
                 if(!StringUtil.strIsNull(tempUrl)){
                     Resource resource = new Resource();
                     resource.setState(ResourceStateConstant.uncheck);
@@ -247,8 +246,8 @@ public class NewsV2Functions {
                     resource.setResType(ResTypeConstant.resource);
                     resource.seteCloudType(ECloudTypeConstant.aliyun);
                     resource.setUserId(userId);
-                    if(!StringUtil.strIsNull(tempMd5)){
-                        resource.setMd5(tempMd5);
+                    if(md5List.length >= i+1){
+                        resource.setMd5(md5List[i]);
                     }
                     if (!StringUtil.strIsNull(tempUrl)) {
                         tempUrl = tempUrl.replaceFirst(ConfigHelper.getHttpdir(), "");

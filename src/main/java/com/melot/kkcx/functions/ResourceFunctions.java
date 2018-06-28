@@ -1,7 +1,6 @@
 package com.melot.kkcx.functions;
 
 import java.io.IOException;
-import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -24,14 +23,10 @@ import com.melot.kk.module.resource.domain.Resource;
 import com.melot.kk.module.resource.domain.ResourceUpLoadConf;
 import com.melot.kk.module.resource.domain.ResourceUploadConfParam;
 import com.melot.kk.module.resource.service.ResourceNewService;
-import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcx.service.ProfileServices;
-import com.melot.kkcx.service.UserService;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.service.ConfigService;
-import com.melot.module.poster.driver.domain.PosterInfo;
-import com.melot.module.poster.driver.service.PosterService;
 import com.melot.qiniu.common.QiniuService;
 import com.melot.sdk.core.util.MelotBeanFactory;
 
