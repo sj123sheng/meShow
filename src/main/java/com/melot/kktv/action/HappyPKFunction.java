@@ -391,7 +391,9 @@ public class HappyPKFunction {
                     jsonObject1.addProperty("userId", userId);
                     if(userProfile != null) {
                         jsonObject1.addProperty("gender", userProfile.getGender());
-                        jsonObject1.addProperty("portrait", getPortrait(userProfile));
+                        if(StringUtils.isNotEmpty(userProfile.getPortrait())) {
+                            jsonObject1.addProperty("portrait", getPortrait(userProfile));
+                        }
                         jsonObject1.addProperty("nickname", userProfile.getNickName());
                     }
                     jsonObject1.addProperty("ranking", contributionUserDO.getRanking());
@@ -448,7 +450,9 @@ public class HappyPKFunction {
                     jsonObject1.addProperty("userId", consumeUserId);
                     if(userProfile != null) {
                         jsonObject1.addProperty("gender", userProfile.getGender());
-                        jsonObject1.addProperty("portrait", getPortrait(userProfile));
+                        if(StringUtils.isNotEmpty(userProfile.getPortrait())) {
+                            jsonObject1.addProperty("portrait", getPortrait(userProfile));
+                        }
                         jsonObject1.addProperty("nickname", userProfile.getNickName());
                     }
                     jsonObject1.addProperty("ranking", consumeUserDO.getRanking());
