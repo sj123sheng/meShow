@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import com.melot.kk.otherlogin.api.service.OtherLoginService;
 import org.apache.log4j.Logger;
 
 import com.google.gson.Gson;
@@ -468,17 +469,13 @@ public class ProfileServices {
     }
     
     public static int insertChangeUserName(int userId, String nickName, int state) {
-        int result = 0;
         try {
-            Map<String, Object> map = new HashMap<String, Object>();
-            map.put("userId", userId);
-            map.put("newName", nickName);
-            map.put("state", state);
-            result = (Integer) SqlMapClientHelper.getInstance(DB.MASTER).insert("Profile.insertChangeUserName", map);
-        } catch(Exception e) {
-            logger.error("ProfileServices.insertChangeUserName(userId:" + userId + "nickName:" + nickName + ") return exception.", e);
+            OtherLoginService otherLoginService = (OtherLoginService) MelotBeanFactory.getBean("otherLoginService");
+            return otherLoginService.insertChangeUserName(userId, nickName, state);
+        } catch (Exception e) {
+            logger.error("ProfileServices.insertChangeUserName(" + "userId:" + userId + "nickName:" + nickName + "state:" + state + ") execute exception.", e);
         }
-        return result;
+        return 0;
     }
     
     /**
