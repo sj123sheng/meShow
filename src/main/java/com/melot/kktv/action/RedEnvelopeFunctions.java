@@ -79,7 +79,6 @@ public class RedEnvelopeFunctions {
             result.addProperty("minCount", redEvelopModel.getMinCount());
             result.addProperty("maxCount", redEvelopModel.getMaxCount());
             result.addProperty("maxMoney", redEvelopModel.getMaxMoney());
-            result.addProperty("minMoney", redEvelopModel.getMinMoney());
             result.addProperty("validTime", redEvelopModel.getValidTime());
             result.addProperty("timelag", redEvelopModel.getTimelag());
             result.addProperty("minRichLevel", redEvelopModel.getMinRichLevel());
@@ -133,9 +132,8 @@ public class RedEnvelopeFunctions {
         // 判断房间是否开播，未开播的房间不能发红包
         try {
             RoomInfo roomInfo = actorService.getRoomInfoById(roomId);
-            boolean isLive = roomInfo != null && ((roomInfo.getLiveType() != null && roomInfo.getLiveType() >= 1) ||
-                    roomInfo.getLiveEndTime() == null);
-            if (!isLive) {
+            boolean isNotLive = !(roomInfo != null && ((roomInfo.getLiveType() != null && roomInfo.getLiveType() >= 1) || roomInfo.getLiveEndTime() == null));
+            if (isNotLive) {
                 // 未开播的房间不能发红包
                 result.addProperty(ParameterKeys.TAG_CODE, "31060008");
                 return result;
