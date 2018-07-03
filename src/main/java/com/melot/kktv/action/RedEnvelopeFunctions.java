@@ -167,7 +167,10 @@ public class RedEnvelopeFunctions {
             return result;
         }
         
-        //调用模块方法
+        //调用模块方法，兼容老版本，如果是喇叭红包，默认延时
+        if (sendSpeak == 1) {
+            isDelay = 1;
+        }
         RedEnvelopersInfoModelExtend redEnvelopersParam = new RedEnvelopersInfoModelExtend();
         redEnvelopersParam.setUserId(userId);
         redEnvelopersParam.setRoomId(roomId);
