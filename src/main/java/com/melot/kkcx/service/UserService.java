@@ -967,7 +967,7 @@ public class UserService {
 			return otherLoginService.getUserSmsSwitch(userId);
 		} catch (Exception e) {
 			logger.error("UserService.getUserSmsSwitch( " + userId + " ) execute exception", e);
-			return 0;
+			return 1;
 		}
 	}
 	
