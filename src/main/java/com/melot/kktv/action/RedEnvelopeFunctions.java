@@ -487,10 +487,10 @@ public class RedEnvelopeFunctions {
     /**
      * 查询房间延时红包记录接口(51011102)
      *
-     * @param paramJsonObject 参数对象
-     * @param checkTag 是否需要校验
-     * @param request 请求
-     * @return 返回结果
+     * @param paramJsonObject   参数对象
+     * @param checkTag          是否需要校验
+     * @param request           请求
+     * @return                  返回结果
      */
     public JsonObject getDelayRedEnvelopeRecord(JsonObject paramJsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
