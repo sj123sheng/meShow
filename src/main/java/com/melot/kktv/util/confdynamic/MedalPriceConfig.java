@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import com.beust.jcommander.internal.Lists;
+import com.google.common.collect.Lists;
 import com.melot.api.menu.sdk.utils.Collectionutils;
 import com.melot.kktv.model.MedalPrice;
 import com.melot.module.medal.driver.domain.MedalPriceConf;

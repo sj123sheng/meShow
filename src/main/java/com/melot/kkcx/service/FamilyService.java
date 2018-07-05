@@ -919,7 +919,7 @@ public class FamilyService {
             }
             return familyInfoService.getNewFamilyInfoByFamilyId(familyId, appId);
         } catch (Exception e) {
-            logger.error("FamilyService.getFamilyInfoByFamilyId exception, familyId : " + familyId);
+            logger.error("FamilyService.getFamilyInfoByFamilyId exception, familyId : " + familyId, e);
             return null;
         }
     }
