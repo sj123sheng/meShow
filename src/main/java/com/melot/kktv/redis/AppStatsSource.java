@@ -22,34 +22,6 @@ public class AppStatsSource {
 		RedisConfigHelper.returnJedis(SOURCE_NAME, jedis, false);
 	}
 	
-	public static void addInstallPack(String string) {
-		Jedis jedis = null;
-		try {
-			jedis = getInstance();
-			jedis.rpush(QUEUE_INSTALL_PACK, string);
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			if(jedis!=null) {
-				freeInstance(jedis);
-			}
-		}
-	}
-	
-	public static void addMobileDevice(String string) {
-		Jedis jedis = null;
-		try {
-			jedis = getInstance();
-			jedis.rpush(QUEUE_MOBILE_DEVICE, string);
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			if(jedis!=null) {
-				freeInstance(jedis);
-			}
-		}
-	}
-	
 	/**
 	 * 存储App渠道推广信息
 	 * @param name Md5(appId+ipAddr+userAgent)
