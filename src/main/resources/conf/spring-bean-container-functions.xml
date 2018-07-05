@@ -38,7 +38,6 @@
 	<bean id="resourceFunction" class="com.melot.kktv.action.ResourceFunctions" />
 	<bean id="tagFunction" class="com.melot.kktv.action.TagFunctions" />
 	<bean id="tempFunction" class="com.melot.kktv.action.TempFunctions" />
-	<bean id="ticketFunction" class="com.melot.kktv.action.TicketAction" />
 	<bean id="userLotteryPrizeFunction" class="com.melot.kktv.action.UserLotteryPrizeFunctions" />
 	<bean id="guardFunction" class="com.melot.kktv.action.GuardFunctions" />
 	<bean id="redEnvelopeFunction" class="com.melot.kktv.action.RedEnvelopeFunctions" />

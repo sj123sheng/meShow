@@ -881,11 +881,6 @@
 		<constructor-arg name="t" ref="userAssetFunction" />
 		<constructor-arg name="methodName" value="getUserCarList" />
 	</bean>
-	<!-- 获取用户所拥有的门票列表 -->
-	<bean id="10005050" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="userAssetFunction" />
-		<constructor-arg name="methodName" value="getUserTicketList" />
-	</bean>
 	<!-- 设置用户进入房间显示的座驾 -->
 	<bean id="10005033" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="userAssetFunction" />
@@ -1551,24 +1546,6 @@
 	<bean id="11003007" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="gameActivityAction" />
 		<constructor-arg name="methodName" value="getExchangePointResult" />
-	</bean>
-	
-	
-	<!-- 门票接口类 -->
-	<!-- 查询门票信息 -->
-	<bean id="10005049" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="ticketFunction" />
-		<constructor-arg name="methodName" value="getTicketInfo" />
-	</bean>
-	<!-- 获取房间门票信息 -->
-	<bean id="10005058" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="ticketFunction" />
-		<constructor-arg name="methodName" value="getTicketInfoByRoomId" />
-	</bean>
-	<!-- 购买门票 -->
-	<bean id="10005048" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="ticketFunction" />
-		<constructor-arg name="methodName" value="buyTicket" />
 	</bean>
 	
 	<!-- 用户抽奖接口类 -->

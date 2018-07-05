@@ -49,8 +49,6 @@
 	<kkrpc:reference id="videoService" interface="com.melot.kk.opus.api.service.VideoService" version="1.0.1"></kkrpc:reference>
 	<!-- 商城模块 -->
 	<kkrpc:reference id="carService" interface="com.melot.module.packagegift.driver.service.CarService" version="1.0.0"></kkrpc:reference>
-	<kkrpc:reference id="entranceTicketService" interface="com.melot.module.packagegift.driver.service.EntranceTicketService" version="1.0.0"></kkrpc:reference>
-	<kkrpc:reference id="giftPkgService" interface="com.melot.module.packagegift.driver.service.GiftPkgService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="histPackageDealService" interface="com.melot.module.packagegift.driver.service.HistPackageDealService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="packageDetailService" interface="com.melot.module.packagegift.driver.service.PackageDetailService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="packageInfoService" interface="com.melot.module.packagegift.driver.service.PackageInfoService" version="1.0.0"></kkrpc:reference>
