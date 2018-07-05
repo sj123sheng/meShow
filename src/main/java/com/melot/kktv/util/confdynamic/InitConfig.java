@@ -19,13 +19,6 @@ public class InitConfig {
 		xmanConf.setResult("XMAN_ID,TAG");
 		list.add(xmanConf);
 		
-		MelotConfig systemConfig = new MelotConfig();
-		systemConfig.setTableName("CONF_SYSTEM");
-		systemConfig.setKeyName("KEY");
-		systemConfig.setResult("VALUE,APPID");
-		systemConfig.setQueryName("APPID");
-		list.add(systemConfig);
-		
 		MelotConfig carConfig = new MelotConfig();
 		carConfig.setTableName("CAR_INFO");
 		carConfig.setKeyName("CARID");
