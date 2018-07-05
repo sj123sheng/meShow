@@ -1,68 +1,42 @@
 package com.melot.kktv.util.confdynamic;
 
-import java.math.BigDecimal;
-import java.util.Map;
+import org.apache.log4j.Logger;
 
 import com.melot.kktv.model.MedalInfo;
-import com.melot.module.config.Config;
+import com.melot.module.medal.driver.domain.ConfMedal;
+import com.melot.module.medal.driver.service.ConfMedalService;
+import com.melot.sdk.core.util.MelotBeanFactory;
 
 public class MedalConfig {
-	public static final String TABLENAME = "CONF_MEDAL";
+    
+    private MedalConfig() {}
+	private static Logger logger = Logger.getLogger(MedalConfig.class);
 
-	public static String getIcon(int medalId){
-		BigDecimal keyValue = new BigDecimal(medalId + "");
-		Object result = Config.find(TABLENAME, keyValue, "MEDAL_ICON");
-		if(result == null || "".equals(result))	return null;
-		return (String) result;
-	}
-	
-	public static BigDecimal getType(int medalId){
-		BigDecimal keyValue = new BigDecimal(medalId + "");
-		Object result = Config.find(TABLENAME, keyValue, "MEDAL_TYPE");
-		if(result == null || "".equals(result))	return null;
-		return new BigDecimal(result + "");
-	}
-	
-	public static BigDecimal getRefId(int medalId){
-		BigDecimal keyValue = new BigDecimal(medalId + "");
-		Object result = Config.find(TABLENAME, keyValue, "MEDAL_REFID");
-		if(result == null || "".equals(result))	return null;
-		return new BigDecimal(result + "");
-	}
-
-	public static String getTitle(int medalId){
-		BigDecimal keyValue = new BigDecimal(medalId + "");
-		Object result = Config.find(TABLENAME, keyValue, "MEDAL_TITLE");
-		if(result == null || "".equals(result))	return null;
-		return (String) result;
-	}
-	
-	public static BigDecimal getLevel(int medalLevel) {
-		BigDecimal keyValue = new BigDecimal(medalLevel + "");
-		Object result = Config.find(TABLENAME, keyValue, "NEXT_LEVELMEDAL_ID");
-		if(result == null || "".equals(result))	return null;
-		return new BigDecimal(result + "");
-	}
-
-	@SuppressWarnings("unchecked")
 	public static MedalInfo getMedal(int medalId){
-		BigDecimal keyValue = new BigDecimal(medalId + "");
-		Map<String, Object> resultMap = Config.find(TABLENAME, keyValue);
-		if (resultMap == null || resultMap.size() == 0)	return null;
-		MedalInfo medal = new MedalInfo();
-		medal.setMedalId(medalId);
-		medal.setMedalIcon((String)resultMap.get("MEDAL_ICON"));
-		medal.setMedalType(new Integer(resultMap.get("MEDAL_TYPE") + ""));
-		if (resultMap.get("MEDAL_REFID") != null) {
-		    medal.setMedalRefId(new Integer(resultMap.get("MEDAL_REFID") + ""));
+	    try {
+            MedalInfo medal = new MedalInfo();
+            ConfMedalService confMedalService = (ConfMedalService) MelotBeanFactory.getBean("confMedalService");
+            ConfMedal confMedalInfo = confMedalService.getConfMedalInfo(medalId);
+            if (confMedalInfo == null) {
+                return null;
+            }
+            medal.setMedalId(medalId);
+            medal.setMedalIcon(confMedalInfo.getMedalMedalUrl());
+            medal.setMedalType(confMedalInfo.getMedalType());
+            if (confMedalInfo.getMedalRefid() != null) {
+                medal.setMedalRefId(confMedalInfo.getMedalRefid());
+            }
+            medal.setMedalTitle(confMedalInfo.getMedalTitle());
+            if(confMedalInfo.getMedalLevel() != null) {
+                medal.setMedalLevel(confMedalInfo.getMedalLevel());
+            }
+            if(confMedalInfo.getMedalDes() != null) {
+                medal.setMedalDesc(confMedalInfo.getMedalDes());
+            }
+            return medal;
+        } catch (Exception e) {
+            logger.error("getMedal(medalId=" + medalId + ")", e);
+            return null;
         }
-		medal.setMedalTitle((String)resultMap.get("MEDAL_TITLE"));
-		if(resultMap.get("NEXT_LEVELMEDAL_ID") != null) {
-			medal.setMedalLevel(Integer.valueOf(resultMap.get("NEXT_LEVELMEDAL_ID")+""));
-		}
-		if(resultMap.get("MEDAL_DESC") != null) {
-			medal.setMedalDesc((String)resultMap.get("MEDAL_DESC"));
-		}
-		return medal;
 	}
 }

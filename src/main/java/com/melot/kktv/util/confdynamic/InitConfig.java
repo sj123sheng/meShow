@@ -13,19 +13,6 @@ public class InitConfig {
 	public static void init(String path){
 		List<MelotConfig> list = new ArrayList<MelotConfig>();
 		
-		MelotConfig medalConfig = new MelotConfig();
-		medalConfig.setTableName("CONF_MEDAL");
-		medalConfig.setKeyName("MEDAL_ID");
-		medalConfig.setResult("MEDAL_ICON,MEDAL_TYPE,MEDAL_TITLE,MEDAL_REFID,MEDAL_DESC,NEXT_LEVELMEDAL_ID");
-		list.add(medalConfig);
-		
-		MelotConfig medalPriceConfig = new MelotConfig();
-		medalPriceConfig.setTableName("CONF_MEDALPRICE");
-		medalPriceConfig.setKeyName("TYPE");
-		medalPriceConfig.setResult("PERIOD,PRICE");
-		medalPriceConfig.setQueryName("PERIOD");
-		list.add(medalPriceConfig);
-		
 		MelotConfig xmanConf = new MelotConfig();
 		xmanConf.setTableName("CONF_XMAN");
 		xmanConf.setKeyName("XMAN_ID");
