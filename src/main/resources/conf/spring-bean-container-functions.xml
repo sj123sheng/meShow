@@ -40,9 +40,6 @@
 	<bean id="tempFunction" class="com.melot.kktv.action.TempFunctions" />
 	<bean id="ticketFunction" class="com.melot.kktv.action.TicketAction" />
 	<bean id="userLotteryPrizeFunction" class="com.melot.kktv.action.UserLotteryPrizeFunctions" />
-	<bean id="videoFunction" class="com.melot.kktv.action.VideoFunctions">
-		<property name="bangVideoSource" ref="bangVideoSource" />
-	</bean>
 	<bean id="guardFunction" class="com.melot.kktv.action.GuardFunctions" />
 	<bean id="redEnvelopeFunction" class="com.melot.kktv.action.RedEnvelopeFunctions" />
 	<bean id="noticeFunction" class="com.melot.kktv.action.NoticeFunctions" />
