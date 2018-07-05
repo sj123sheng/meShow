@@ -208,4 +208,7 @@
 	<kkrpc:reference id="redEnvelopersService" interface="com.melot.redenvelopers.driver.service.RedEnvelopersService" version="1.0.0"></kkrpc:reference>
 	
 	<kkrpc:reference id="confMedalService" interface="com.melot.module.medal.driver.service.ConfMedalService" version="1.0.0"></kkrpc:reference>
+
+
+	<kkrpc:reference id="feedbackInfoService" interface="com.melot.kk.module.report.service.FeedbackInfoService" version="1.0.0"></kkrpc:reference>
 </beans>

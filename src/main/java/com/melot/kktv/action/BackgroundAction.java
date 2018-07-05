@@ -8,12 +8,14 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.melot.kk.module.report.service.FeedbackInfoService;
 import com.melot.kktv.redis.AppStatsSource;
 import com.melot.kktv.util.AppChannelEnum;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.HadoopLogger;
 import com.melot.kktv.util.TagCodeEnum;
+import com.melot.sdk.core.util.MelotBeanFactory;
 
 /**
  * 运营后台需要的接口
@@ -105,8 +107,11 @@ public class BackgroundAction {
 			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
 			return result;
 		}
-		
-		boolean flag = com.melot.kktv.service.GeneralService.feedback(userId, content, platform, appId, channel, note);
+
+
+//		boolean flag = com.melot.kktv.service.GeneralService.feedback(userId, content, platform, appId, channel, note);
+		FeedbackInfoService feedbackInfoService = (FeedbackInfoService)MelotBeanFactory.getBean("feedbackInfoService");
+		boolean flag = feedbackInfoService.feedbackNew(userId, content, platform, appId, channel, note);
 		if (flag) {
 			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 		} else {
