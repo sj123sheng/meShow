@@ -75,8 +75,7 @@
   	<bean id="lotteryTaskSource" class="com.melot.kkgame.redis.LotteryTaskSource" parent="redisTemplate" />
   	<bean id="msgSource" class="com.melot.kkgame.redis.external.MessageSource" parent="redisTemplate" />
   	<bean id="rankingListSource" class="com.melot.kkgame.redis.RankingListSource" parent="redisTemplate" />
-   	<bean id="bangVideoSource" class="com.melot.kkgame.redis.BangVideoSource" parent="redisTemplate"/>
-   	
+
    	<!-- notification in room talk area -->
    	<bean id="roomMsgSource" class="com.melot.kkgame.redis.RoomMessageSource" parent="redisTemplate" />
   	
