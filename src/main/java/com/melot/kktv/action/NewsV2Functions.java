@@ -12,8 +12,6 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 
 import com.melot.kkcore.user.api.UserRegistry;
-import com.melot.kkcore.user.service.KkUserService;
-import com.melot.sdk.core.util.MelotBeanFactory;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
@@ -1335,10 +1333,16 @@ public class NewsV2Functions {
                 result.addProperty("TagCode", TagCodeEnum.SUCCESS);
                 return result;
             } else {
+                result.addProperty("pathPrefix", ConfigHelper.getHttpdir()); // 图片前缀
+                result.addProperty("mediaPathPrefix", ConfigHelper.getMediahttpdir()); // 多媒体前缀
+                result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());// 七牛前缀
                 result.addProperty("TagCode", TagCodeEnum.SUCCESS);
                 return result;
             }
         } else {
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir()); // 图片前缀
+            result.addProperty("mediaPathPrefix", ConfigHelper.getMediahttpdir()); // 多媒体前缀
+            result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());// 七牛前缀
             result.addProperty("countTotal", count);
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
