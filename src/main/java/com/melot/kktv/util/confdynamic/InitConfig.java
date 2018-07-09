@@ -13,12 +13,6 @@ public class InitConfig {
 	public static void init(String path){
 		List<MelotConfig> list = new ArrayList<MelotConfig>();
 		
-		MelotConfig xmanConf = new MelotConfig();
-		xmanConf.setTableName("CONF_XMAN");
-		xmanConf.setKeyName("XMAN_ID");
-		xmanConf.setResult("XMAN_ID,TAG");
-		list.add(xmanConf);
-		
 		MelotConfig carConfig = new MelotConfig();
 		carConfig.setTableName("CAR_INFO");
 		carConfig.setKeyName("CARID");

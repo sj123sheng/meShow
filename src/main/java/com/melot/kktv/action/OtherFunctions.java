@@ -63,8 +63,6 @@ import com.melot.kkgame.redis.ActorInfoSource;
 import com.melot.kktv.model.ResCuSpOrder;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.service.ConfigService;
-import com.melot.kktv.service.ConsumeService;
-import com.melot.kktv.service.GeneralService;
 import com.melot.kktv.service.UserService;
 import com.melot.kktv.util.AppChannelEnum;
 import com.melot.kktv.util.AppIdEnum;
@@ -82,6 +80,8 @@ import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.confdynamic.SystemConfig;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
+import com.melot.module.packagegift.driver.domain.LoudSpeakerHistory;
+import com.melot.module.packagegift.driver.service.MallService;
 import com.melot.module.packagegift.driver.service.TicketService;
 import com.melot.module.packagegift.driver.service.VipService;
 import com.melot.module.packagegift.util.GiftPackageEnum;
@@ -101,9 +101,6 @@ public class OtherFunctions {
     
 	private static Logger showMoneyLogger = Logger.getLogger("showMoneyLogger");
 	
-    /** 小喇叭自动通过审核 */
-    private static final int SPEAK_STATE_AUTO_COMMIT = 1;
-    
     private static final int SEND_LOUDER_SPEAKER_COST = 10 * 1000;
     
     @Autowired
@@ -117,6 +114,9 @@ public class OtherFunctions {
 
     @Resource
     UserVerifyService userVerifyService;
+    
+    @Resource
+    MallService mallService;
     
     @SuppressWarnings("unused")
     private ActorInfoSource actorInfoSource;
@@ -147,7 +147,6 @@ public class OtherFunctions {
 	 * @return 发送结果
 	 */
 	public JsonObject speakToTotalStation(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
-		
 	    JsonObject result = new JsonObject();
 		
 	    // 该接口需要验证token,未验证的返回错误码
@@ -188,23 +187,7 @@ public class OtherFunctions {
 		    content = content.substring(0, 40);
         }
 		
-		Map<Object, Object> map = new HashMap<Object, Object>();
-		map.put("userId", userId);
-		map.put("roomId", roomId);
-		map.put("content", content);
-		map.put("nickName", nickName);
-		map.put("href", href);
-        map.put("appId", appId);
-		
-		int state = 0;
-		//state改为0，表示需要后台审核喇叭内容，1表示不需要审核
-		map.put("state", state);
-		
-		// type: 1-普通喇叭，2-红包喇叭
-        map.put("type", 1);
-		
 		boolean flag = false, vipFlag = false;
-		
 		Integer count = null;
 		//喇叭券秀币价值
 		long costMoney = SEND_LOUDER_SPEAKER_COST;
@@ -254,8 +237,6 @@ public class OtherFunctions {
             }
             
             logger.info("用户[" + userId + "]在房间[" + roomId + "]发送了一个小喇叭,花费[" + costMoney + "]");
-//            }
-			map.put("costMoney", ((Number) costMoney).intValue());
 		} else if (sendType == 1) {
 			//使用喇叭券发送喇叭，先扣除券
 		    try {
@@ -268,94 +249,80 @@ public class OtherFunctions {
 				result.addProperty("TagCode", "20020004");
 				return result;
 			}
-			map.put("costMoney", 0);
-			map.put("ticketId", ticketId);
+			costMoney = 0;
 		}
 		
-		//调用发送喇叭存储过程 P_LOUDSPEAKER
-		boolean ret = false;
 		try {
-			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Other.loudSpeaker", map);
-			
-			String TagCode = (String) map.get("TagCode");
-			if (!TagCodeEnum.SUCCESS.equals(TagCode)) {
-				if (sendType == 1) {
-					//发送喇叭存储过程失败，将扣除的券加1
-					ret = ticketService.insertSendTicket(userId, ticketId, GiftPackageEnum.TICKET_SEND, 1, "用户" + userId + "发送喇叭操作失败退回已扣除喇叭券", 0);
-					if (!ret) {
-						logger.error("用户:" + userId + "，发送喇叭失败，券" + ticketId + "，已扣除1张，退回失败");
-					}
-				} else if (sendType == 0 && costMoney > 0) {
-					if (vipFlag == true && count != null && count < 3) {
-					    vipService.setSvipDailyLoudspeakerCount(userId, -1);
-					}
-					// 发送喇叭存储过程失败，将扣除的秀币返还
-					showMoneyLogger.info("Failed: 发送喇叭失败，需返还秀币{userId: " + userId + ", showMoney: " + costMoney);
-	                logger.error("执行过程中发生异常,返还已扣除的秀币, userId " + userId + " showMoney : " + costMoney);
-				}
-				logger.error("调用存储过程(Other.loudSpeaker)未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
-				result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);				
-			} else {
-			    if (map.get("state").equals(SPEAK_STATE_AUTO_COMMIT)) {
-			        //喇叭信息存入 Redis 通道，以便房间可以取到喇叭信息显示在房间上
-			        //喇叭内容必须先通过后台审核，取消直接推消息渠道
-			        Map<String, Object> messageMap = new HashMap<String, Object>();
-			        messageMap.put("nickname", nickName);
-			        messageMap.put("portrait", UserService.getUserInfoV2(userId).getPortrait());
-			        messageMap.put("richLevel", com.melot.kkcx.service.UserService.getRichLevel(userId));
-			        messageMap.put("propList", com.melot.kkcx.service.UserService.getUserProps(userId));
-			        messageMap.put("content", content);
-			        messageMap.put("userId", userId);
-			        messageMap.put("roomId", roomId);
-			        messageMap.put("href", href);
-			        messageMap.put("time", System.currentTimeMillis());
-			        messageMap.put("appId", appId);
-			        
-			        RoomInfo roomInfo = com.melot.kktv.service.RoomService.getRoomInfo(roomId);
-			        if (roomInfo != null) {
-			            if (roomInfo.getScreenType() != null) {
-			                messageMap.put("screenType", roomInfo.getScreenType());
-			            }
-			            if (roomInfo.getRoomSource() != null) {
-			                messageMap.put("roomSource", roomInfo.getRoomSource());
-			            } else {
-			                messageMap.put("roomSource", AppIdEnum.AMUSEMENT);
-			            }
-			            if (roomInfo.getType() != null) {
-			                messageMap.put("roomType", roomInfo.getType());
-			            } else {
-			                messageMap.put("roomType", AppIdEnum.AMUSEMENT);
-			            }
-			        }
-			        
-			        JsonArray array = new JsonArray();
-			        array.add(new Gson().toJsonTree(messageMap));
-			        String message = "{\"MsgTag\":50010101,\"MsgList\":" + array.toString() +"}";
-			        com.melot.kkcx.service.GeneralService.sendMsgToRoom(1, 0, 0, 0, appId, message);
-	            }
-			    
-			    result.addProperty("state", state);
-				result.addProperty("money", com.melot.kktv.service.UserService.getUserShowMoney(userId));
-				result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-			}
+		    LoudSpeakerHistory loudSpeakerHistory = new LoudSpeakerHistory();
+		    loudSpeakerHistory.setRoomId(roomId);
+		    loudSpeakerHistory.setUserId(userId);
+		    loudSpeakerHistory.setContent(content);
+		    loudSpeakerHistory.setAmount((int) costMoney);
+		    loudSpeakerHistory.setHref(href);
+		    loudSpeakerHistory.setNickname(nickName);
+		    loudSpeakerHistory.setState(0);
+		    loudSpeakerHistory.setTicketId(ticketId);
+		    loudSpeakerHistory.setAppId(AppIdEnum.AMUSEMENT);
+		    loudSpeakerHistory.setType(1);
+		    
+		    Map<String, Object> messageMap = new HashMap<String, Object>();
+            messageMap.put("nickname", nickName);
+            messageMap.put("portrait", UserService.getUserInfoV2(userId).getPortrait());
+            messageMap.put("richLevel", com.melot.kkcx.service.UserService.getRichLevel(userId));
+            messageMap.put("propList", com.melot.kkcx.service.UserService.getUserProps(userId));
+            messageMap.put("content", content);
+            messageMap.put("userId", userId);
+            messageMap.put("roomId", roomId);
+            messageMap.put("href", href);
+            messageMap.put("time", System.currentTimeMillis());
+            messageMap.put("appId", appId);
+            
+            RoomInfo roomInfo = com.melot.kktv.service.RoomService.getRoomInfo(roomId);
+            if (roomInfo != null) {
+                if (roomInfo.getScreenType() != null) {
+                    messageMap.put("screenType", roomInfo.getScreenType());
+                }
+                if (roomInfo.getRoomSource() != null) {
+                    messageMap.put("roomSource", roomInfo.getRoomSource());
+                } else {
+                    messageMap.put("roomSource", AppIdEnum.AMUSEMENT);
+                }
+                if (roomInfo.getType() != null) {
+                    messageMap.put("roomType", roomInfo.getType());
+                } else {
+                    messageMap.put("roomType", AppIdEnum.AMUSEMENT);
+                }
+            }
+            
+            JsonArray array = new JsonArray();
+            array.add(new Gson().toJsonTree(messageMap));
+            String message = "{\"MsgTag\":50010101,\"MsgList\":" + array.toString() +"}";
+            
+		    int sendCode = mallService.sendMsgToRoom(1, 0, 0, 0, appId, message, 0, loudSpeakerHistory);
+		    boolean ret = false;
+		    if (sendCode == 0) {
+		        result.addProperty("state", 0);
+                result.addProperty("money", com.melot.kktv.service.UserService.getUserShowMoney(userId));
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+		    } else {
+		        logger.error("用户发送喇叭失败，userId：" + userId);
+                if (sendType == 1) {
+                    //发送喇叭存储过程执行异常，将扣除的券加1
+                    ret = ticketService.insertSendTicket(userId, ticketId, GiftPackageEnum.TICKET_SEND, 1, "用户" + userId + "发送喇叭操作异常退回已扣除喇叭券", 0);
+                    if (!ret) {
+                        logger.error("用户:" + userId + "，发送喇叭异常，券" + ticketId + "，已扣除1张，退回失败");
+                    }
+                } else if (sendType == 0 && costMoney > 0) {
+                    if (vipFlag == true && count != null && count < 3) {
+                        vipService.setSvipDailyLoudspeakerCount(userId, -1);
+                    }
+                    // 发送喇叭失败，将扣除的秀币返还
+                    showMoneyLogger.info("Failed: 发送喇叭失败，需返还秀币{userId: " + userId + ", showMoney: " + costMoney);
+                }
+                result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+		    }
 		} catch (Exception e) {
-			if (sendType == 1) {
-				//发送喇叭存储过程执行异常，将扣除的券加1
-				ret = ticketService.insertSendTicket(userId, ticketId, GiftPackageEnum.TICKET_SEND, 1, "用户" + userId + "发送喇叭操作异常退回已扣除喇叭券", 0);
-				if (!ret) {
-					logger.error("用户:" + userId + "，发送喇叭异常，券" + ticketId + "，已扣除1张，退回失败");
-				}
-			} else if (sendType == 0 && costMoney > 0) {
-				if (vipFlag == true && count != null && count < 3) {
-				    vipService.setSvipDailyLoudspeakerCount(userId, -1);
-				}
-				// 发送喇叭存储过程失败，将扣除的秀币返还
-				showMoneyLogger.info("Failed: 发送喇叭失败，续返还秀币{userId: " + userId + ", showMoney: " + costMoney);
-                logger.error("执行过程中发生异常,返还已扣除的秀币, userId " + userId + " showMoney : " + costMoney);
-			}
-			
-			logger.error("未能正常调用存储过程", e);
-			result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
+		    logger.error("发送喇叭异常：", e);
 		}
 
 		return result;
