@@ -686,6 +686,14 @@
 		  <artifactId>kk-medal-api</artifactId>
 		  <version>1.0.0-SNAPSHOT</version>
 		</dependency>
-	</dependencies>
+
+        <!-- 用户官方信息模块 -->
+        <dependency>
+            <groupId>com.melot.cms</groupId>
+            <artifactId>cms-admin-api</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+
+    </dependencies>
  	
 </project>
