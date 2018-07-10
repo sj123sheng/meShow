@@ -1182,16 +1182,6 @@
 		<constructor-arg name="t" ref="otherFunction" />
 		<constructor-arg name="methodName" value="speakToTotalStation" />
 	</bean>
-	<!-- 获取联通免流量访问地址 -->
-	<bean id="20000004" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="otherFunction" />
-		<constructor-arg name="methodName" value="getChinaUnicomFreeFlowAccessUrl" />
-	</bean>
-	<!-- 查询是否联通3G及手机伪码订购关系 -->
-	<bean id="20000005" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="otherFunction" />
-		<constructor-arg name="methodName" value="getChinaUnicomSpOrderState" />
-	</bean>
 	<!-- 获取所有可用表情列表及用户购买状态 -->
 	<bean id="20000006" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="otherFunction" />

@@ -37,28 +37,6 @@
 		{call P_LOUDSPEAKER_V2(?,?,?,?,?,?,?,?,?,?,?) }
 	</procedure>
 	
-	<!-- 获取联通SP订购关系 -->
-	<typeAlias alias="ResCuSpOrder" type="com.melot.kktv.model.ResCuSpOrder" />
-	<select id="selectResCuSpOrder" parameterClass="java.util.Map" resultClass="ResCuSporder">
-		select * from res_cusp_order where usermob = #usermob#
-	</select>
-	
-	<!-- 判断是否联通3G用户 -->
-	<select id="isCu3gUser" parameterClass="java.util.Map" resultClass="java.lang.Integer">
-		SELECT count(*) FROM conf_cu3g_ip WHERE isopen = 1
-		<isEqual property="platform" compareValue="2">
-			<isEqual property="openLimit" compareValue="1">
-			AND closed = 0
-			</isEqual>
-		</isEqual>
-		<isEqual property="platform" compareValue="3">
-			<isEqual property="openLimit" compareValue="1">
-			AND i_closed = 0
-			</isEqual>
-		</isEqual>
-	    AND <![CDATA[ipbegin < #reqIp#]]> AND <![CDATA[ipend > #reqIp#]]>
-	</select>
-	
 	<!-- 男人装临时接口 -->
 	<parameterMap id="getUserEncodeMap" class="java.util.Map">
 		<parameter property="userId" mode="IN" javaType="java.lang.Integer"

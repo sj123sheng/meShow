@@ -1,7 +1,6 @@
 package com.melot.kktv.action;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -14,15 +13,12 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.chinacreator.videoalliance.util.ChinaUnicomEnum;
-import com.chinacreator.videoalliance.util.DesUtil;
 import com.dianping.cat.Cat;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.gson.reflect.TypeToken;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.blacklist.service.BlacklistService;
 import com.melot.common.melot_utils.StringUtils;
@@ -60,25 +56,21 @@ import com.melot.kkcx.service.FamilyService;
 import com.melot.kkcx.service.ProfileServices;
 import com.melot.kkcx.service.RoomService;
 import com.melot.kkgame.redis.ActorInfoSource;
-import com.melot.kktv.model.ResCuSpOrder;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.UserService;
 import com.melot.kktv.util.AppChannelEnum;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
-import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
 import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.Constant;
 import com.melot.kktv.util.DBEnum;
 import com.melot.kktv.util.DateUtil;
 import com.melot.kktv.util.PlatformEnum;
 import com.melot.kktv.util.SecretKeyUtil;
-import com.melot.kktv.util.SecurityFunctions;
 import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.confdynamic.SystemConfig;
-import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.module.packagegift.driver.domain.LoudSpeakerHistory;
 import com.melot.module.packagegift.driver.service.MallService;
@@ -86,7 +78,6 @@ import com.melot.module.packagegift.driver.service.TicketService;
 import com.melot.module.packagegift.driver.service.VipService;
 import com.melot.module.packagegift.util.GiftPackageEnum;
 import com.melot.sdk.core.util.MelotBeanFactory;
-import com.melot.stream.driver.service.LiveStreamConfigService;
 
 /**
  * 其他相关的接口类
@@ -328,222 +319,6 @@ public class OtherFunctions {
 		return result;
 	}
 	
-	/**
-	 * 获取联通免流量访问地址(20000004)
-	 * @param jsonObject
-	 * @return
-	 * @throws Exception
-	 */
-	public JsonObject getChinaUnicomFreeFlowAccessUrl(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
-		
-		// 安全sv验证
-		JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
-		if(rtJO != null) return rtJO;
-		
-		// 定义使用的参数
-		String usermob = null;
-		String reqIp = null;
-		List<String> flowurls = null;
-		// 定义返回结果
-		JsonObject result = new JsonObject();
-		// 解析参数
-		try {
-			// 获取IP	
-			reqIp = convert3GIP(CommonUtil.getIpAddr(request));
-			if (reqIp == null) {
-				// 无效ip地址
-				result.addProperty("TagCode", "20040007");
-				return result;
-			}
-			String encryptUsermob = CommonUtil.getJsonParamString(jsonObject, "usermob", null, "20040001", 1, 64);
-			try {
-				usermob = DesUtil.decode(
-						encryptUsermob,
-						ConfigHelper.getChinaUnicomPassword());
-			} catch (Exception e) {}
-			if (usermob == null) {
-				// usermob解密失败
-				result.addProperty("TagCode", "20040004");
-				return result;
-			}
-			
-			String flowurl = CommonUtil.getJsonParamString(jsonObject, "flowurl", null, "20040002", 1, 500);
-			try {
-				TypeToken<List<String>> typeToken = new TypeToken<List<String>>(){};
-				flowurls = new Gson().fromJson(flowurl, typeToken.getType());
-			} catch (Exception e) {
-				// flow解析错误
-				result.addProperty("TagCode", "20040006");
-				return result;
-			}
-		} catch (ErrorGetParameterException e) {
-			result.addProperty("TagCode", e.getErrCode());
-			return result;
-		}
-		// 判断usermob是否已经订购
-		try {
-			Map<String, Object> map = new HashMap<String, Object>();
-			map.put("usermob", usermob);
-			map.put("spid", ConfigHelper.getChinaUnicomSpid());
-			map.put("ordertype", ChinaUnicomEnum.ORDER_TYPE_MONTH);
-			ResCuSpOrder resCuSporder = (ResCuSpOrder) SqlMapClientHelper.getInstance(DB.MASTER)
-					.queryForObject("Other.selectResCuSpOrder", map);
-			if (resCuSporder != null) {
-				if (resCuSporder.getType() == 0 || (resCuSporder.getType() == 1
-						&& resCuSporder.getEndtime().getTime() > System.currentTimeMillis())) {
-					// 主播编号为偶数取第一个地址 奇数取第二个地址
-					List<String> freeurls = new ArrayList<String>();
-					LiveStreamConfigService liveStreamConfigService = (LiveStreamConfigService) MelotBeanFactory.getBean("liveStreamConfigService");
-					List<String> urls = liveStreamConfigService.getFreeUnicomServer(flowurls);
-					for (String url : urls) {
-						if (url != null) {
-							freeurls.add(url);
-						}
-					}
-					// 用户使用流量信息
-					if (resCuSporder.getStatstime() != null && resCuSporder.getFlowbyte() != null) {
-						result.addProperty("statstime", resCuSporder.getStatstime());
-						result.addProperty("flowbyte", resCuSporder.getFlowbyte());
-					}
-					
-					result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-					result.add("freeurl", new JsonParser().parse(new Gson().toJson(freeurls)).getAsJsonArray());
-				} else {
-					result.addProperty("TagCode", "20040005");
-				}
-			} else {
-				result.addProperty("TagCode", "20040005");
-			}
-		} catch (Exception e) {
-			logger.error("fail to excute sql, usermob " + usermob, e);
-			result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
-		}
-		
-		return result;
-	}
-	
-	/**
-	 * 查询是否联通3G及手机伪码订购关系(20000005)
-	 * @param jsonObject
-	 * @param request
-	 * @return
-	 * @throws Exception
-	 */
-	public JsonObject getChinaUnicomSpOrderState(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
-		
-		// 定义返回结果
-		JsonObject result = new JsonObject();
-		
-		// 选填
-		String usermob = null;
-		String reqIp = null;
-		int openLimit = 1;
-		int platform = PlatformEnum.ANDROID;
-		// 解析参数
-		try {
-			// 获取IP	
-			reqIp = convert3GIP(CommonUtil.getIpAddr(request));
-			if (reqIp == null) {
-				// 无效ip地址
-				result.addProperty("TagCode", "20050002");
-				return result;
-			}
-			String encryptUsermob = CommonUtil.getJsonParamString(jsonObject, "usermob", null, null, 1, 64);
-			if (encryptUsermob != null) {
-				try {
-					usermob = DesUtil.decode(
-							encryptUsermob,
-							ConfigHelper.getChinaUnicomPassword());
-				} catch (Exception e) {}
-				if (usermob == null) {
-					// usermob解密失败
-					result.addProperty("TagCode", "20050001");
-					return result;
-				}
-			}
-			// openLimit 是否省份限制
-			openLimit = CommonUtil.getJsonParamInt(jsonObject, "openLimit", 1, null, 0, 1);
-			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.ANDROID, null, 1, Integer.MAX_VALUE);
-		} catch (ErrorGetParameterException e) {
-			result.addProperty("TagCode", e.getErrCode());
-			return result;
-		}
-		
-		try {
-			// 验证是否联通3G
-			Map<String, Object> map1 = new HashMap<String, Object>();
-			map1.put("reqIp", reqIp);
-			map1.put("openLimit", openLimit);
-			map1.put("platform", platform);
-			Integer ret = (Integer) SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Other.isCu3gUser", map1);
-			if (ret != null && ret.intValue() > 0) {
-				result.addProperty("is3g", 1);// 是3G
-			} else {
-				result.addProperty("is3g", 0);// 非3G
-			}
-			
-			// 若手机伪码不为空,查询该手机伪码订购关系
-			if (usermob != null) {
-				Map<String, Object> map = new HashMap<String, Object>();
-				map.put("usermob", usermob);
-				map.put("spid", ConfigHelper.getChinaUnicomSpid());
-				map.put("ordertype", ChinaUnicomEnum.ORDER_TYPE_MONTH);
-				ResCuSpOrder resCuSporder = (ResCuSpOrder) SqlMapClientHelper.getInstance(DB.MASTER)
-						.queryForObject("Other.selectResCuSpOrder", map);
-				if (resCuSporder != null) {
-					int type = resCuSporder.getType();
-					// 失效时间
-					// 当type=1时不为空
-					// 当type=0，ordertype=0、2、3时，不为空，ordertype=1时，为空
-					if (!(resCuSporder.getType() == 0 && resCuSporder.getOrdertype() == 1)) {
-						// 退订关系下返回sp业务到期时间
-						result.addProperty("spDeadline", resCuSporder.getEndtime().getTime());
-					}
-					// TODO
-					result.addProperty("spType", 1);
-					result.addProperty("spState", type);
-					
-					// 用户使用流量信息
-					if (resCuSporder.getStatstime() != null && resCuSporder.getFlowbyte() != null) {
-						result.addProperty("statstime", resCuSporder.getStatstime());
-						result.addProperty("flowbyte", resCuSporder.getFlowbyte());
-					}
-				}
-			}
-			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-		} catch (Exception e) {
-			logger.error("fail to excute sql, request ip " + reqIp + " usermob " + usermob, e);
-			result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
-		}
-		
-		return result;
-	}
-	
-	/**
-	 * IP转化:去除分隔符.,第2,3,4段不足3位用0补全
-	 * @param inIp
-	 * @return outIp
-	 */
-	private static String convert3GIP(String inIp) {
-		String outIp = null;
-		if (inIp != null && inIp.indexOf(".") > 0) {
-			String[] ipArr = inIp.split("\\.");
-			if (ipArr.length == 4) {
-				outIp = ipArr[0].trim();
-				for (int i = 1; i < 4; i++) {
-					if (ipArr[i].trim().length() == 1) {
-						outIp = outIp + "00" + ipArr[i].trim();
-					} else if (ipArr[i].trim().length() == 2) {
-						outIp = outIp + "0" + ipArr[i].trim();
-					} else {
-						outIp = outIp + ipArr[i].trim();
-					}
-				}
-			}
-		}
-		return outIp;
-	}
-
 	/**
 	 *	获取所有可用表情列表及用户购买状态(20000006)
 	 */
