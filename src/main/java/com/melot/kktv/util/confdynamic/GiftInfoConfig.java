@@ -1,7 +1,5 @@
 package com.melot.kktv.util.confdynamic;
 
-import java.util.List;
-
 import org.apache.log4j.Logger;
 
 import com.google.gson.Gson;
