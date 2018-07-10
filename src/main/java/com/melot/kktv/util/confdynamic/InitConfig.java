@@ -26,12 +26,6 @@ public class InitConfig {
 		medalPriceConfig.setQueryName("PERIOD");
 		list.add(medalPriceConfig);
 		
-		MelotConfig xmanConf = new MelotConfig();
-		xmanConf.setTableName("CONF_XMAN");
-		xmanConf.setKeyName("XMAN_ID");
-		xmanConf.setResult("XMAN_ID,TAG");
-		list.add(xmanConf);
-		
 		MelotConfig systemConfig = new MelotConfig();
 		systemConfig.setTableName("CONF_SYSTEM");
 		systemConfig.setKeyName("KEY");

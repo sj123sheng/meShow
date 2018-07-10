@@ -183,11 +183,11 @@ public class RoomTF {
             roomObject.addProperty("nextstarttime", roomInfo.getNextStarttime().getTime());
         }
         
-        // 主播被封号后不显示海报
-        if(roomInfo.getLevels() != null && roomInfo.getLevels() < 0){ //封号主播,海报显示
-            roomInfo.setPoster(ConstantEnum.ILLEGAL_ROOM_POSTER);
-            roomInfo.setLivePoster(ConstantEnum.ILLEGAL_ROOM_POSTER);
-        }
+//        // 主播被封号后不显示海报
+//        if(roomInfo.getLevels() != null && roomInfo.getLevels() < 0){ //封号主播,海报显示
+//            roomInfo.setPoster(ConstantEnum.ILLEGAL_ROOM_POSTER);
+//            roomInfo.setLivePoster(ConstantEnum.ILLEGAL_ROOM_POSTER);
+//        }
         
         if (roomInfo.getIcon() != null) {
             roomObject.addProperty("icon", roomInfo.getIcon());

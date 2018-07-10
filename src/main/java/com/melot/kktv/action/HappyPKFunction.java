@@ -2,9 +2,8 @@ package com.melot.kktv.action;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.melot.kk.nationalPK.api.domain.DO.ConfLadderMatchDO;
-import com.melot.kk.nationalPK.api.domain.DO.HistActorLadderMatchDO;
-import com.melot.kk.nationalPK.api.domain.DO.ResActorLadderMatchDO;
+import com.melot.common.melot_utils.StringUtils;
+import com.melot.kk.nationalPK.api.domain.DO.*;
 import com.melot.kk.nationalPK.api.service.ConfLadderMatchService;
 import com.melot.kk.nationalPK.api.service.HistActorLadderMatchService;
 import com.melot.kk.nationalPK.api.service.ResActorLadderMatchService;
@@ -23,6 +22,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+
+import static com.melot.kktv.util.ParamCodeEnum.*;
 
 /**
  * Title: DanceMachineFunction
@@ -348,10 +349,153 @@ public class HappyPKFunction {
         }
     }
 
+    /**
+     * 获取主播的胜场贡献榜【51060407】
+     */
+    public JsonObject getWinningContributionList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        int actorId, seasonType;
+        try {
+            actorId = CommonUtil.getJsonParamInt(jsonObject, ACTOR_ID.getId(), 0, ACTOR_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+            seasonType = CommonUtil.getJsonParamInt(jsonObject, SEASON_TYPE.getId(), 1, SEASON_TYPE.getErrorCode(), 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+
+            ConfLadderMatchDO confLadderMatchDO = confLadderMatchService.getCurrentSeasonConf().getData();
+            if(confLadderMatchDO == null) {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            int seasonId = confLadderMatchDO.getSeasonId();
+            if(seasonType == 2) {
+                seasonId = seasonId - 1;
+            }
+            Result<List<ContributionUserDO>> listResult =  histActorLadderMatchService.getMaxContributionUserList(seasonId, actorId);
+            if(listResult.getCode().equals(CommonStateCode.SUCCESS) && listResult.getData() != null){
+
+                List<ContributionUserDO> contributionUserDOS = listResult.getData();
+
+                JsonArray winningContributionList = new JsonArray();
+                for(ContributionUserDO contributionUserDO : contributionUserDOS) {
+
+                    int userId = contributionUserDO.getUserId();
+                    UserProfile userProfile = kkUserService.getUserProfile(userId);
+
+                    JsonObject jsonObject1 = new JsonObject();
+
+                    jsonObject1.addProperty("userId", userId);
+                    if(userProfile != null) {
+                        jsonObject1.addProperty("gender", userProfile.getGender());
+                        if(StringUtils.isNotEmpty(userProfile.getPortrait())) {
+                            jsonObject1.addProperty("portrait", getPortrait(userProfile));
+                        }
+                        jsonObject1.addProperty("nickname", userProfile.getNickName());
+                    }
+                    jsonObject1.addProperty("ranking", contributionUserDO.getRanking());
+                    jsonObject1.addProperty("contributionWinNum", contributionUserDO.getContributionWinNum());
+
+                    winningContributionList.add(jsonObject1);
+                }
+                result.add("winningContributionList", winningContributionList);
+
+                result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                return result;
+            } else {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+        } catch (Exception e) {
+            logger.error("Error getWinningContributionList()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 获取天梯赛富豪榜【51060408】
+     */
+    public JsonObject getRichList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        int userId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, USER_ID.getId(), 0, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+
+            Result<List<ConsumeUserDO>> listResult =  histActorLadderMatchService.getRichList();
+            if(listResult.getCode().equals(CommonStateCode.SUCCESS) && listResult.getData() != null){
+
+                JsonArray richList = new JsonArray();
+                List<ConsumeUserDO> consumeUserDOS = listResult.getData();
+
+                for(ConsumeUserDO consumeUserDO : consumeUserDOS) {
+
+                    int consumeUserId = consumeUserDO.getUserId();
+                    UserProfile userProfile = kkUserService.getUserProfile(consumeUserId);
+
+                    JsonObject jsonObject1 = new JsonObject();
+
+                    jsonObject1.addProperty("userId", consumeUserId);
+                    if(userProfile != null) {
+                        jsonObject1.addProperty("gender", userProfile.getGender());
+                        if(StringUtils.isNotEmpty(userProfile.getPortrait())) {
+                            jsonObject1.addProperty("portrait", getPortrait(userProfile));
+                        }
+                        jsonObject1.addProperty("nickname", userProfile.getNickName());
+                    }
+                    jsonObject1.addProperty("ranking", consumeUserDO.getRanking());
+                    jsonObject1.addProperty("consumeShowMoneyNum", consumeUserDO.getConsumeShowMoneyNum());
+
+                    richList.add(jsonObject1);
+                }
+                result.add("richList", richList);
+
+                if(userId > 0) {
+                    ConsumeUserDO consumeUserDO = histActorLadderMatchService.getUserConsumeInfo(userId).getData();
+                    if(consumeUserDO != null) {
+                        UserProfile userProfile = kkUserService.getUserProfile(userId);
+                        if(userProfile != null) {
+                            result.addProperty("gender", userProfile.getGender());
+                            if(StringUtils.isNotEmpty(userProfile.getPortrait())) {
+                                result.addProperty("portrait", getPortrait(userProfile));
+                            }
+                            result.addProperty("nickname", userProfile.getNickName());
+                        }
+                        result.addProperty("ranking", consumeUserDO.getRanking());
+                        result.addProperty("consumeShowMoneyNum", consumeUserDO.getConsumeShowMoneyNum());
+                    }
+                }
+                result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                return result;
+            } else {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+        } catch (Exception e) {
+            logger.error("Error getRichList()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
     private String getPortrait(UserProfile userProfile) {
         return userProfile.getPortrait() == null ? null : userProfile.getPortrait() + "!128";
     }
-    
+
     public JsonObject isCompere(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 
         JsonObject result = new JsonObject();
@@ -368,17 +512,17 @@ public class HappyPKFunction {
         }
 
         String pkCompereIds = configService.getPkCompereIds().trim();
-        
+
         // 默认是不通过
         result.addProperty("isCompere", 0);
-        
+
         // 配置文件设置为0 或者不设置 所有用户都通过
         if (StringUtil.strIsNull(pkCompereIds) || "0".equals(pkCompereIds)) {
             result.addProperty("isCompere", 1);
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
         }
-        
+
         // 设置了白名单并且在白名单列表中，允许为主持人
         String[] pkCompereIdList = pkCompereIds.split(REGEX);
         if (pkCompereIdList != null && pkCompereIdList.length > 0) {
@@ -389,7 +533,7 @@ public class HappyPKFunction {
                 }
             }
         }
-        
+
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }

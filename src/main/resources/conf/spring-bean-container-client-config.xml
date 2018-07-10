@@ -23,7 +23,6 @@
 		connecttimeout="3000"></kkrpc:consumer>
 
 	<!-- 配置要发布的服务实现 -->
-	<kkrpc:reference id="redEnvelopersService" interface="com.melot.redenvelopers.driver.service.RedEnvelopersService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="virtualIdService" interface="com.melot.asset.driver.service.VirtualIdService" version="1.0.2"></kkrpc:reference>
 	<kkrpc:reference id="assetService" interface="com.melot.asset.driver.service.AssetService" version="1.0.2"></kkrpc:reference>
 	<kkrpc:reference id="kkActivityService" interface="com.melot.kkactivity.driver.service.KkActivityService" version="1.0.5"></kkrpc:reference>
@@ -50,8 +49,6 @@
 	<kkrpc:reference id="videoService" interface="com.melot.kk.opus.api.service.VideoService" version="1.0.1"></kkrpc:reference>
 	<!-- 商城模块 -->
 	<kkrpc:reference id="carService" interface="com.melot.module.packagegift.driver.service.CarService" version="1.0.0"></kkrpc:reference>
-	<kkrpc:reference id="entranceTicketService" interface="com.melot.module.packagegift.driver.service.EntranceTicketService" version="1.0.0"></kkrpc:reference>
-	<kkrpc:reference id="giftPkgService" interface="com.melot.module.packagegift.driver.service.GiftPkgService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="histPackageDealService" interface="com.melot.module.packagegift.driver.service.HistPackageDealService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="packageDetailService" interface="com.melot.module.packagegift.driver.service.PackageDetailService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="packageInfoService" interface="com.melot.module.packagegift.driver.service.PackageInfoService" version="1.0.0"></kkrpc:reference>
@@ -197,4 +194,9 @@
 
 	<!-- 用户等级升级模块 -->
     <kkrpc:reference id="userLevelRedEvelopeService" interface="com.melot.kk.userLevelUp.api.service.UserLevelRedEvelopeService" version="1.0.0"/>
+
+	<!-- 新版红包模块 -->
+	<kkrpc:reference id="redEnvelopersService" interface="com.melot.redenvelopers.driver.service.RedEnvelopersService" version="1.0.0"></kkrpc:reference>
+
+	<kkrpc:reference id="feedbackInfoService" interface="com.melot.kk.module.report.service.FeedbackInfoService" version="1.0.0"></kkrpc:reference>
 </beans>
