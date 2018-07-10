@@ -1700,30 +1700,10 @@
 		<constructor-arg name="t" ref="albumFunction" />
 		<constructor-arg name="methodName" value="deletePhoto" />
 	</bean>
-	<!-- 删除照片V2 删除S3资源上的照片-->
-	<bean id="10004023" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="albumFunction" />
-		<constructor-arg name="methodName" value="deletePhotoV2" />
-	</bean>
 	<!-- 获取用户照片列表 -->
 	<bean id="10004003" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="albumFunction" />
 		<constructor-arg name="methodName" value="getUserPhotoList" />
-	</bean>
-	<!-- 评论照片 -->
-	<bean id="10004004" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="albumFunction" />
-		<constructor-arg name="methodName" value="commentPhoto" />
-	</bean>
-	<!-- 删除照片评论 -->
-	<bean id="10004005" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="albumFunction" />
-		<constructor-arg name="methodName" value="deletePhotoComment" />
-	</bean>
-	<!-- 获取获取照片详情(包含所有评论) -->
-	<bean id="10004006" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="albumFunction" />
-		<constructor-arg name="methodName" value="getPhotoCommentList" />
 	</bean>
 	<bean id="10004013" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="albumFunction" />
@@ -1744,20 +1724,10 @@
 		<constructor-arg name="t" ref="albumFunction" />
 		<constructor-arg name="methodName" value="deleteUserPoster" />
 	</bean>
-	<!-- 用户删除海报V2 -->
-	<bean id="10004020" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="albumFunction" />
-		<constructor-arg name="methodName" value="deleteUserPosterV2" />
-	</bean>
 	<!-- 设置用户海报为当前海报 -->
 	<bean id="10004017" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="albumFunction" />
 		<constructor-arg name="methodName" value="setUserPoster" />
-	</bean>
-	<!-- 新版海报入库 -->
-	<bean id="10004019" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="albumFunction" />
-		<constructor-arg name="methodName" value="insertToDBNew" />
 	</bean>
 	<!-- 新版海报入库V2 -->
 	<bean id="10004021" class="com.melot.sdk.core.function.GenericFunction">

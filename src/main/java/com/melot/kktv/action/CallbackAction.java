@@ -3,7 +3,6 @@ package com.melot.kktv.action;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.kkcx.service.AlbumServices;
-import com.melot.kktv.model.FamilyPoster;
 import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.PictureTypeEnum;
 import com.melot.kktv.util.TagCodeEnum;

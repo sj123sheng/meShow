@@ -144,72 +144,6 @@
 		p_getUserPhotoList(?,?,?,?,?)}
 	</procedure>
 
-	<!-- 评论照片 -->
-	<parameterMap id="commentPhotoMap" class="java.util.Map">
-		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
-				   jdbcType="INTEGER" />
-		<parameter property="photoId" mode="IN" javaType="java.lang.Integer"
-				   jdbcType="INTEGER" />
-		<parameter property="content" mode="IN" javaType="java.lang.String"
-				   jdbcType="VARCHAR" />
-
-		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
-				   jdbcType="VARCHAR" />
-	</parameterMap>
-
-	<procedure id="commentPhoto" parameterMap="commentPhotoMap">
-		{call
-		p_commentPhoto(?,?,?,?)}
-	</procedure>
-
-	<!-- 删除照片评论 -->
-	<parameterMap id="deletePhotoCommentMap" class="java.util.Map">
-		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
-				   jdbcType="INTEGER" />
-		<parameter property="photoCommentId" mode="IN" javaType="java.lang.Integer"
-				   jdbcType="INTEGER" />
-		<parameter property="photoId" mode="OUT" javaType="java.lang.Integer"
-				   jdbcType="INTEGER" />
-		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
-				   jdbcType="VARCHAR" />
-	</parameterMap>
-
-	<procedure id="deletePhotoComment" parameterMap="deletePhotoCommentMap">
-		{call
-		p_deletePhotoComment(?,?,?,?)}
-	</procedure>
-
-	<!-- 获取获取照片所有评论 -->
-	<resultMap id="comment" class="com.melot.kktv.model.PhotoComment">
-		<result property="commentId" column="commentId" />
-		<result property="content" column="content" />
-		<result property="commentTime" column="dtime" javaType="java.util.Date"
-				jdbcType="TIMESTAMP" />
-		<result property="userId" column="userId" />
-		<result property="nickname" column="nickname" />
-		<result property="portrait_path_original" column="portrait_path_original" />
-		<result property="portrait_path_1280" column="portrait_path_1280" />
-		<result property="portrait_path_256" column="portrait_path_256" />
-		<result property="portrait_path_128" column="portrait_path_128" />
-		<result property="portrait_path_48" column="portrait_path_48" />
-	</resultMap>
-
-	<parameterMap id="getPhotoCommentListMap" class="java.util.Map">
-		<parameter property="photoId" mode="IN" javaType="java.lang.Integer"
-				   jdbcType="INTEGER" />
-
-		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
-				   jdbcType="VARCHAR" />
-		<parameter property="commentList" mode="OUT" jdbcType="ORACLECURSOR"
-				   javaType="java.sql.ResultSet" resultMap="comment" />
-	</parameterMap>
-
-	<procedure id="getPhotoCommentList" parameterMap="getPhotoCommentListMap">
-		{call
-		p_getPhotoCommentList(?,?,?)}
-	</procedure>
-
-
 	<!-- 添加背景图片 -->
 	<parameterMap id="addVideoTapeMap" class="java.util.Map">
 		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
@@ -230,31 +164,5 @@
 	<procedure id="addVideoTape" parameterMap="addVideoTapeMap">
 		{call
 		p_addVideoTape(?,?,?,?,?,?)}
-	</procedure>
-
-
-	<!-- 获取用户录屏资源 -->
-	<resultMap id="videoTape" class="com.melot.kktv.model.VideoTape">
-		<result property="videoTapeId" column="video_tape_id" javaType="java.lang.Integer" jdbcType="INTEGER" />
-		<result property="userId" column="userid" javaType="java.lang.Integer" jdbcType="INTEGER" />
-		<result property="filename" column="filename" javaType="java.lang.String" jdbcType="VARCHAR" />
-		<result property="path_original" column="path_original" javaType="java.lang.String" jdbcType="VARCHAR" />
-		<result property="useable" column="useable" javaType="java.lang.Integer" jdbcType="INTEGER" />
-		<result property="uploadTime" column="uploadTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
-		<result property="checkid" column="checkid"/>
-	</resultMap>
-
-	<parameterMap id="getVideoTapeListMap" class="java.util.Map">
-		<parameter property="videoTapeId" mode="IN" javaType="java.lang.Integer"
-				   jdbcType="INTEGER" />
-
-		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
-				   jdbcType="VARCHAR" />
-		<parameter property="videoTapeList" mode="OUT" jdbcType="ORACLECURSOR"
-				   javaType="java.sql.ResultSet"  resultMap="videoTape" />
-	</parameterMap>
-
-	<procedure id="getVideoTapeList" parameterMap="getVideoTapeListMap">
-		{call p_getVideoTapeList(?,?,?)}
 	</procedure>
 </sqlMap>

@@ -11,7 +11,6 @@ import com.melot.kktv.util.ConfigHelper;
  * @author liyue
  * 
  */
-@SuppressWarnings("unused")
 public class Photo {
 	private Integer photoId;
 	private String photoName;
