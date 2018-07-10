@@ -784,10 +784,12 @@ public class UserService {
         try {
 			AdminDataService adminDataService = (AdminDataService) MelotBeanFactory.getBean("adminDataService");
 			Result<OfficialIdInfo> result =  adminDataService.officialIdInfoGetInfo(userId);
-			if (result.getCode() == AdminApiTagCodes.SUCCESS){
-				adminType = result.getData().getType();
+			if (result.getCode().equals(AdminApiTagCodes.SUCCESS)){
+				if (result.getData() != null) {
+					adminType = result.getData().getType();
+				}
 			}else {
-				logger.error("AdminDataService:"+result.getMsg());
+				logger.error("AdminDataService:"+result.getMsg() + " Code:" + result.getCode());
 			}
         } catch (Exception e) {
             logger.error("UserService.getUserAdminType(" + "userId:" + userId + ") execute exception.", e);
