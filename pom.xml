@@ -28,10 +28,10 @@
 			<resource>
 				<directory>${basedir}/src/main/resources</directory>
 				<targetPath>.</targetPath>
-                <!--<excludes>-->
-                    <!--<exclude>disconf.properties</exclude>-->
-                    <!--<exclude>META-INF/cat/*</exclude>-->
-                <!--</excludes>-->
+                <excludes>
+                    <exclude>disconf.properties</exclude>
+                    <exclude>META-INF/cat/*</exclude>
+                </excludes>
 			</resource>
 		</resources>
 		
@@ -677,7 +677,7 @@
 		<dependency>
 			<groupId>com.melot.kk</groupId>
 			<artifactId>kk-redEnvelopers-api</artifactId>
-			<version>1.0.0-SNAPSHOT</version>
+			<version>1.0.0</version>
 		</dependency>
 		
 		<!-- 新版勋章模块 -->
