@@ -103,7 +103,7 @@ public class SingleChatFunction {
                 actors.add(String.valueOf(userId));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("SingleChatFunction.getActorList(" + "jsonObject:" + jsonObject + "checkTag:" + checkTag + "request:" + request + ") execute exception.", e);
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }

@@ -703,7 +703,7 @@ public class UserService {
 	        		BeanUtils.copyProperties(starInfo, redisStarInfo);
 				}
 	        } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("UserService.getStarInfo(" + "userId:" + userId + ") execute exception.", e);
             }
         }catch (Exception e) {
    		 	logger.error("fail to get StarService.getStarInfo, userId: " + userId, e);

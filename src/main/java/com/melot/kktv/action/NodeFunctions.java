@@ -56,7 +56,7 @@ import java.util.*;
 
 public class NodeFunctions {
     
-    public static Logger logger = Logger.getLogger(NodeFunctions.class);
+    private static Logger logger = Logger.getLogger(NodeFunctions.class);
 
     @Resource
     UserApplyActorService userApplyActorService;

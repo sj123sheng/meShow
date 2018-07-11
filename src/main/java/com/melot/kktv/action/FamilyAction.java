@@ -2631,7 +2631,7 @@ public class FamilyAction {
                 try {
                     frozenFamilyId = (Integer) SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Family.getFrozenFamilyUserById", userId);
                 } catch (SQLException e) {
-                    e.printStackTrace();
+                    logger.error("FamilyAction.getApplyForFamilyInfo(" + "jsonObject:" + jsonObject + "checkTag:" + checkTag + "request:" + request + ") execute exception.", e);
                 }
                 
                 if (frozenFamilyId != null) {

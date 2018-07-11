@@ -20,10 +20,13 @@ import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.redis.RedisConfigHelper;
 import com.melot.sdk.core.util.MelotBeanFactory;
 
+import org.apache.log4j.Logger;
 import redis.clients.jedis.Jedis;
 
 public class FamilyHonorSource {
-	
+
+	private static Logger logger = Logger.getLogger(FamilyHonorSource.class);
+
 	private static final String SOURCE_NAME = RedisServiceKey.SERVICE_SOURCE_FAMILYHONORCACHE;
 	
 	/** familyRank_rankType_slotType_familyId **/
@@ -100,7 +103,7 @@ public class FamilyHonorSource {
 			
 			jedisErrorFlag = false;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("FamilyHonorSource.getFamilyHonor(" + "familyId:" + familyId + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis, jedisErrorFlag);
@@ -128,7 +131,7 @@ public class FamilyHonorSource {
 			}
 			jedisErrorFlag = false ;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("FamilyHonorSource.getConsumeTotal(" + "count:" + count + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis, jedisErrorFlag);
@@ -156,7 +159,7 @@ public class FamilyHonorSource {
 			}
 			jedisErrorFlag = false ;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("FamilyHonorSource.getMedalTotal(" + "count:" + count + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis, jedisErrorFlag);
@@ -184,7 +187,7 @@ public class FamilyHonorSource {
 			}
 			jedisErrorFlag = false ;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("FamilyHonorSource.getCrownCountTotal(" + "count:" + count + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis, jedisErrorFlag);
@@ -210,7 +213,7 @@ public class FamilyHonorSource {
 			
 			jedisErrorFlag = false;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("FamilyHonorSource.getFamilyHonor(" + "familyId:" + familyId + "honorType:" + honorType + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis, jedisErrorFlag);
@@ -236,7 +239,7 @@ public class FamilyHonorSource {
 			
 			jedisErrorFlag = false;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("FamilyHonorSource.getFamilyHonorList(" + "honorType:" + honorType + "start:" + start + "end:" + end + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis, jedisErrorFlag);
@@ -263,7 +266,7 @@ public class FamilyHonorSource {
 			
 			jedisErrorFlag = false;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("FamilyHonorSource.getFamilyHonorCount(" + "honorType:" + honorType + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis, jedisErrorFlag);
@@ -289,7 +292,7 @@ public class FamilyHonorSource {
             jedis = getInstance();
             return jedis.get(String.format(FAMILYRANKING_KEY, rankType, slotType, familyId));
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("FamilyHonorSource.getFamilyUserRanking(" + "rankType:" + rankType + "slotType:" + slotType + "familyId:" + familyId + ") execute exception.", e);
         } finally {
             if (jedis != null) {
                 freeInstance(jedis, false);
@@ -401,7 +404,7 @@ public class FamilyHonorSource {
         	}
         	return str;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("FamilyHonorSource.getFamilyUserRankingNew(" + "rankType:" + rankType + "slotType:" + slotType + "familyId:" + familyId + ") execute exception.", e);
         } finally {
             if (jedis != null) {
                 freeInstance(jedis, false);
@@ -429,7 +432,7 @@ public class FamilyHonorSource {
         	    }
         	}
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("FamilyHonorSource.getFamilyUserRankingTotal(" + "rankType:" + rankType + "slotType:" + slotType + "familyId:" + familyId + "member:" + member + ") execute exception.", e);
         } finally {
             if (jedis != null) {
                 freeInstance(jedis, false);

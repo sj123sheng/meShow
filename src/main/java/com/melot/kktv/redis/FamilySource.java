@@ -39,7 +39,7 @@ public class FamilySource {
 			jedis = getInstance();
 			jedis.set(FAMILY_MEMBER_KEY+userId, familyId);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("FamilySource.setFamilyMember(" + "familyId:" + familyId + "userId:" + userId + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis);
@@ -59,7 +59,7 @@ public class FamilySource {
 			jedis = getInstance();
 			familyId = jedis.get(FAMILY_MEMBER_KEY+userId);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("FamilySource.getMemberFamily(" + "userId:" + userId + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis);
@@ -79,7 +79,7 @@ public class FamilySource {
 			jedis = getInstance();
 			jedis.del(FAMILY_MEMBER_KEY+userId);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("FamilySource.delFamilyMember(" + "userId:" + userId + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis);

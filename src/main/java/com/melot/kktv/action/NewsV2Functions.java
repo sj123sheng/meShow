@@ -672,7 +672,7 @@ public class NewsV2Functions {
         try {
             rtJO = SecurityFunctions.checkSignedValue(jsonObject);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("NewsV2Functions.addPlayTimes(" + "jsonObject:" + jsonObject + "checkTag:" + checkTag + ") execute exception.", e);
         }
         if(rtJO != null) {
             return rtJO;
@@ -1311,7 +1311,7 @@ public class NewsV2Functions {
                         break;
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.error("NewsV2Functions.getTopicPage(" + "jsonObject:" + jsonObject + "checkTag:" + checkTag + "request:" + request + ") execute exception.", e);
                 }
             }
         }
@@ -2025,7 +2025,7 @@ public class NewsV2Functions {
                         break;
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.error("NewsV2Functions.getHotMediaNewsList(" + "jsonObject:" + jsonObject + "checkTag:" + checkTag + "request:" + request + ") execute exception.", e);
                 }
             }
             result.add("hotNewsList", hotNewsList);
@@ -2323,7 +2323,7 @@ public class NewsV2Functions {
                     break;
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("NewsV2Functions.getJson(" + "checkTag:" + checkTag + "userId:" + userId + "offset:" + offset + "hotNews:" + hotNews + "hotNewsList:" + hotNewsList + ") execute exception.", e);
             }
         }
     }
@@ -2368,15 +2368,15 @@ public class NewsV2Functions {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("NewsV2Functions.getVideoInfoByHttp(" + "videoUrl:" + videoUrl + ") execute exception.", e);
         } catch (IllegalStateException e) {
-            e.printStackTrace();
+            logger.error("NewsV2Functions.getVideoInfoByHttp(" + "videoUrl:" + videoUrl + ") execute exception.", e);
         } finally {
             if (httpClient != null) {
                 try {
                     httpClient.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    logger.error("NewsV2Functions.getVideoInfoByHttp(" + "videoUrl:" + videoUrl + ") execute exception.", e);
                 }
             }
         }

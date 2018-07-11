@@ -2,9 +2,12 @@ package com.melot.kktv.redis;
 
 import com.melot.kktv.util.redis.RedisConfigHelper;
 
+import org.apache.log4j.Logger;
 import redis.clients.jedis.Jedis;
 
 public class AppStatsSource {
+
+	private static Logger logger = Logger.getLogger(AppStatsSource.class);
 	
 	private static final String SOURCE_NAME = "AppStats";
 	
@@ -35,7 +38,7 @@ public class AppStatsSource {
 			jedis.lpush(key, channel);
 			jedis.expire(key, seconds);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("AppStatsSource.setAppPromoteInfo(" + "name:" + name + "channel:" + channel + "seconds:" + seconds + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis);
@@ -55,7 +58,7 @@ public class AppStatsSource {
 			String key = String.format(PROMOTE_CHANNEL_KEY, name);
 			return jedis.rpop(key);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("AppStatsSource.getAppPromoteInfo(" + "name:" + name + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis);    

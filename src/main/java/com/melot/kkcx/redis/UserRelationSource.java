@@ -6,11 +6,14 @@ import java.util.Set;
 
 import com.melot.kktv.util.redis.RedisConfigHelper;
 
+import org.apache.log4j.Logger;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Transaction;
 
 public class UserRelationSource {
 	
+	private static Logger logger = Logger.getLogger(UserRelationSource.class);
+
 	private static final String SOURCE_NAME = "UserRelation";
 	
 	private static final String UPDATEFOLLOWRECORD_LIST = "updateFollowRecord_list";
@@ -34,7 +37,7 @@ public class UserRelationSource {
 			followSet = jedis.zrevrange(userId+FOLLOWS_SUFFIX, start, end);
 			return followSet;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("UserRelationSource.getFollowList(" + "userId:" + userId + "start:" + start + "end:" + end + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis);
@@ -50,7 +53,7 @@ public class UserRelationSource {
 			jedis = getInstance();
 			count = jedis.zcard(userId+FOLLOWS_SUFFIX);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("UserRelationSource.countFollows(" + "userId:" + userId + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis);
@@ -66,7 +69,7 @@ public class UserRelationSource {
 			jedis = getInstance();
 			fanSet = jedis.zrevrange(userId+FANS_SUFFIX, start, end);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("UserRelationSource.getFanList(" + "userId:" + userId + "start:" + start + "end:" + end + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis);
@@ -83,7 +86,7 @@ public class UserRelationSource {
 			count = jedis.zcard(userId+FANS_SUFFIX);
 			return count;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("UserRelationSource.countFans(" + "userId:" + userId + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis);
@@ -102,7 +105,7 @@ public class UserRelationSource {
 			trans.zadd(followId+FANS_SUFFIX, score, userId);
 			trans.exec();
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("UserRelationSource.addFollow(" + "userId:" + userId + "followId:" + followId + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis);
@@ -119,7 +122,7 @@ public class UserRelationSource {
 			trans.zrem(followId+FANS_SUFFIX, userId);
 			trans.exec();
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("UserRelationSource.remFollow(" + "userId:" + userId + "followId:" + followId + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis);
@@ -133,7 +136,7 @@ public class UserRelationSource {
 			jedis = getInstance();
 			if(jedis.zrevrank(userId+FOLLOWS_SUFFIX, followId)!=null) return true;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("UserRelationSource.isFollowed(" + "userId:" + userId + "followId:" + followId + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis);
@@ -148,7 +151,7 @@ public class UserRelationSource {
 			jedis = getInstance();
 			jedis.rpush(UPDATEFOLLOWRECORD_LIST, value);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("UserRelationSource.pushToRelationOracle(" + "value:" + value + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis);
@@ -165,7 +168,7 @@ public class UserRelationSource {
 			jedis.hmset(key, hotData);
 			jedis.expire(key, expireTime);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("UserRelationSource.setHotData(" + "key:" + key + "hotData:" + hotData + "expireTime:" + expireTime + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis);
@@ -179,7 +182,7 @@ public class UserRelationSource {
             jedis = getInstance();
             return jedis.get(key);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("UserRelationSource.getValue(" + "key:" + key + ") execute exception.", e);
         } finally {
             if(jedis!=null) {
                 freeInstance(jedis);
@@ -194,7 +197,7 @@ public class UserRelationSource {
 			jedis = getInstance();
 			return jedis.hget(key, field);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("UserRelationSource.getHotFieldValue(" + "key:" + key + "field:" + field + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis);
@@ -209,7 +212,7 @@ public class UserRelationSource {
     		jedis = getInstance();
     		return jedis.hmget(ACTOR_SCORE_KEY, ids);
     	} catch (Exception e) {
-    		e.printStackTrace();
+    		logger.error("UserRelationSource.getScoreByIds(" + "ids:" + ids + ") execute exception.", e);
     	} finally {
     		if (jedis != null) {
     			freeInstance(jedis);
@@ -224,7 +227,7 @@ public class UserRelationSource {
     		jedis = getInstance();
     		return jedis.exists(key);
     	} catch (Exception e) {
-    		e.printStackTrace();
+    		logger.error("UserRelationSource.isKeyExist(" + "key:" + key + ") execute exception.", e);
     	} finally {
     		if (jedis != null) {
     			freeInstance(jedis);
@@ -239,7 +242,7 @@ public class UserRelationSource {
     		jedis = getInstance();
     		return jedis.del(key) > 0;
     	} catch (Exception e) {
-    		e.printStackTrace();
+    		logger.error("UserRelationSource.removeKey(" + "key:" + key + ") execute exception.", e);
     	} finally {
     		if (jedis != null) {
     			freeInstance(jedis);

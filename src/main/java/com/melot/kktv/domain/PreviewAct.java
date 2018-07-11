@@ -22,7 +22,7 @@ public class PreviewAct implements Serializable, Comparable<PreviewAct> {
 	private String familyName;   //家族名称
 	private Integer familyId ;  //家族Id
 	private String actBanner ;  //海报
-	public  JsonObject familyPoster ;
+	private JsonObject familyPoster ;
 	private Integer totalNumber ;  //房间人家总数
 	private String status ; //直播状态
 	private String roomTheme ;//房间主题
