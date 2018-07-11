@@ -42,9 +42,9 @@ public class TvHongbaoService extends BaseService{
     
     private String serverUrl;
     
-    private static final String key = "topdabd1f237df5628aa11bf7bf9a683";
+    private static final String KEY = "topdabd1f237df5628aa11bf7bf9a683";
     
-    private static final String secret = "a3dab829bbbe7d7159acfcff59961508e48f327700af3c1b071212b1a99d3c99";
+    private static final String SECRET = "a3dab829bbbe7d7159acfcff59961508e48f327700af3c1b071212b1a99d3c99";
     
     private static final String NONCE_KEY = "tvHb_%s";
 
@@ -61,9 +61,9 @@ public class TvHongbaoService extends BaseService{
         try {
             long time = new Date().getTime()/1000L;
             String nonce = String.format(NONCE_KEY, time);
-            String sign = CommonUtil.md5(key + sessionId + uuid + nonce + time + secret).toLowerCase();
+            String sign = CommonUtil.md5(KEY + sessionId + uuid + nonce + time + SECRET).toLowerCase();
             JsonObject jObj = new JsonObject();
-            jObj.addProperty("key", key);
+            jObj.addProperty("key", KEY);
             jObj.addProperty("tvmid", uuid);
             jObj.addProperty("token", sessionId);
             jObj.addProperty("nonce", nonce);

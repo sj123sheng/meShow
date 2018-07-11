@@ -11,6 +11,8 @@ public class DesUtil {
 	private static final String SECRET_KEY_TYPE = "DES";
 	private static final String ECB_MOB = "DES/ECB/PKCS5Padding";
 	private static final String CHAESET_NAME = "UTF-8";
+
+	private DesUtil(){}
 	
 	private static Key getKey(String password) throws Exception{
 		byte[] DESkey = password.getBytes(CHAESET_NAME);
@@ -35,6 +37,4 @@ public class DesUtil {
 		return new String(pasByte, CHAESET_NAME);
 	}
 	
-	public static void main(String[] args) throws Exception{
-	}
 }

@@ -12,23 +12,25 @@ import com.melot.kktv.util.CollectionUtils;
 
 public class PushMsgSource {
 	
-	public static final String pushMsgSourceBean = "pushMsgSource";
+	public static final String PUSH_MSG_SOURCE_BEAN = "pushMsgSource";
 	
-	public static final String sourceName = "push_source_list";
+	public static final String SOURCENAME = "push_source_list";
+
+	private PushMsgSource(){}
 
 	/**
 	 * 获取redis资源
 	 * @return
 	 */
 	private static JedisWrapper getInstance() {
-    	return new JedisWrapper(RedisDataSourceFactory.getGlobalInstance().getJedisPool(sourceName), sourceName);
+    	return new JedisWrapper(RedisDataSourceFactory.getGlobalInstance().getJedisPool(SOURCENAME), SOURCENAME);
 	}
 
 	public static void lpush(Map<String, Object> map) {
 		if (CollectionUtils.isEmpty(map)) {
 			return;
 		}
-		String key = "push_source_list";
+		String key = SOURCENAME;
 		boolean errHappend = false;
 		Throwable t = null;
 		Jedis jedis = null;

@@ -524,6 +524,8 @@ public class OtherFunctions {
 						case 5:
 							json.addProperty("recordstr", String.format(Constant.reduce_money, DateUtil.formatDate(record.getEndTime(), null)));
 							break;
+						default:
+							break;
 					}
 				}
 

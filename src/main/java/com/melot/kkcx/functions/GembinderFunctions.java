@@ -50,9 +50,9 @@ public class GembinderFunctions {
     /** 日志记录对象 */
     private Logger logger = Logger.getLogger(GembinderFunctions.class);
 
-    private static final String key = "kkxiaoxiaole";
+    private static final String KEY = "kkxiaoxiaole";
 
-    private static final String openkey = "kktv5";
+    private static final String OPENKEY = "kktv5";
 
     @Resource
     private KkUserService kkUserService;
@@ -92,7 +92,7 @@ public class GembinderFunctions {
         }
 
         try {
-            String userIdString = SecretKeyUtil.encodeDES(Integer.toString(userId),key);
+            String userIdString = SecretKeyUtil.encodeDES(Integer.toString(userId),KEY);
             String tokenString = encryptToken(token);
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             result.addProperty("userId", userIdString);
@@ -414,7 +414,7 @@ public class GembinderFunctions {
 
 
     private Integer getRealUserId(String userIdString) throws Exception {
-        return Integer.parseInt(SecretKeyUtil.decodeDES(userIdString,key));
+        return Integer.parseInt(SecretKeyUtil.decodeDES(userIdString,KEY));
     }
 
     private String encryptToken(String token){
@@ -422,7 +422,7 @@ public class GembinderFunctions {
             return null;
         }
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(token.substring(0,2)).append(CommonUtil.md5(token.substring(2)+key));
+        stringBuilder.append(token.substring(0,2)).append(CommonUtil.md5(token.substring(2)+KEY));
         return stringBuilder.toString();
     }
 
@@ -452,7 +452,7 @@ public class GembinderFunctions {
                 }
             }
         }
-        stringBuilder.append(userId).append(token).append(time).append(openkey);
+        stringBuilder.append(userId).append(token).append(time).append(OPENKEY);
         return ckeckSignString.equals(CommonUtil.md5(stringBuilder.toString()).toUpperCase());
     }
 
@@ -469,7 +469,7 @@ public class GembinderFunctions {
                 s = df.format(rowData.getCell(5).getNumericCellValue());
             }
             XSSFCell xssfCell = rowData.createCell(12);
-            xssfCell.setCellValue(SecretKeyUtil.encodeDES(s,key));
+            xssfCell.setCellValue(SecretKeyUtil.encodeDES(s,KEY));
         }
         FileOutputStream fileOut = new FileOutputStream(
                 "D:\\xxxx.xlsx");
