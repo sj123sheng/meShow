@@ -173,7 +173,7 @@ public class CityUtil {
 		        		provinceId = getCityIdByCityName(ipInfo.getProvince());
 		        		if (CENTRAL_CITY.contains(ipInfo.getProvince())) {
 		        			return provinceId == null ? DEFAULT_CITY_ID : provinceId;
-		        		} else if (ipInfo.getCity() == null) {
+		        		} else if (ipInfo.getCity() == null && provinceId != null) {
 		        		    return getProvincialCapital(provinceId); 		        		    
 		        		} else {
 		        			city = ipInfo.getCity();
