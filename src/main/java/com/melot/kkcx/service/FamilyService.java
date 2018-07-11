@@ -54,7 +54,7 @@ import com.melot.sdk.core.util.MelotBeanFactory;
 public class FamilyService {
 	
 	private static Logger logger = Logger.getLogger(FamilyService.class);
-	
+
 	/**
 	 * 获取分类下家族总数
 	 * @param basicDBObject
@@ -221,12 +221,14 @@ public class FamilyService {
 						familyPosterJson = new JsonObject();
 						familyPosterJson.addProperty("path_174", familyPoster.getPath_174());
 					}
+					break;
 				case PlatformEnum.IPHONE:
 					// 返回 222*148px
 					if (familyPoster.getPath_original() != null) {
 						familyPosterJson = new JsonObject();
 						familyPosterJson.addProperty("path_222", familyPoster.getPath_222());
 					}
+					break;
 				case PlatformEnum.IPAD:
 					// 返回 222*148px
 					if (familyPoster.getPath_original() != null) {
@@ -268,12 +270,14 @@ public class FamilyService {
 						familyPosterJson = new JsonObject();
 						familyPosterJson.addProperty("path_174", familyPoster.getPath_174());
 					}
+					break;
 				case PlatformEnum.IPHONE:
 					// 返回 222*148px
 					if (familyPoster.getPath_original() != null) {
 						familyPosterJson = new JsonObject();
 						familyPosterJson.addProperty("path_222", familyPoster.getPath_222());
 					}
+					break;
 				case PlatformEnum.IPAD:
 					// 返回 222*148px
 					if (familyPoster.getPath_original() != null) {
