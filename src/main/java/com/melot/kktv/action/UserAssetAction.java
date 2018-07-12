@@ -1472,6 +1472,7 @@ public class UserAssetAction {
             switch (errCode) {
             case 101:
                 result.addProperty("TagCode", "05650003");
+                break;
             case 102:
                 result.addProperty("TagCode" , "05650002");
                 break;

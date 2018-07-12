@@ -97,7 +97,7 @@ import com.melot.sms.api.service.SmsService;
 public class UserFunctions {
 	
 	//2017/04/06
-	private static final long deadTime = 1491408000000l; 
+	private static final long DEADTIME = 1491408000000l;
 	
 	/** 日志记录对象 */
 	private static Logger logger = Logger.getLogger(UserFunctions.class);
@@ -537,7 +537,7 @@ public class UserFunctions {
 				// APP渠道推广激活日志
 				String ua = CommonUtil.getUserAgent(request);
 				if (clientIp != null && ua != null) {
-					if (ua.indexOf("Android") > 0) {
+					if (ua.indexOf("Android") >= 0) {
 						ua = ua.replaceFirst("U; ", "");
 						ua = ua.toLowerCase();
 						ua = ua.replaceFirst("build", "");
@@ -547,7 +547,7 @@ public class UserFunctions {
 						}
 						ua = replaceBlank(ua);
 					}
-					if (ua.indexOf("iPhone") > 0) {
+					if (ua.indexOf("iPhone") >= 0) {
 						ua = ua.replaceFirst("CPU ", "");
 						ua = ua.replaceFirst(" like Mac OS X", "");
 						ua = ua.toLowerCase();
@@ -1403,7 +1403,7 @@ public class UserFunctions {
         if (cityMap == null) {
 			if (ipAddr != null) {
                 String cityIp = ipAddr;
-                if (cityIp.indexOf(",") > 0) {
+                if (cityIp.indexOf(",") >= 0) {
                     cityIp = cityIp.substring(cityIp.indexOf(",") + 1, cityIp.length());
                 }
                 cityMap = GeneralService.getIpCity(cityIp);
@@ -2216,7 +2216,7 @@ public class UserFunctions {
 		ResLogin resLogin = null;
 		String ipAddr = com.melot.kktv.service.GeneralService.getIpAddr(request, appId, platform, clientIp);
     	int port = com.melot.kktv.service.GeneralService.getPort(request, appId, platform, 0);
-    	if (ipAddr.indexOf(",") > 0) {
+    	if (ipAddr.indexOf(",") >= 0) {
     		ipAddr = ipAddr.substring(ipAddr.indexOf(",") + 1, ipAddr.length());
         }
     	
@@ -2256,7 +2256,7 @@ public class UserFunctions {
 				
 				boolean checkFlag = false;
 				if (lastLoginInfo == null|| lastLoginInfo.getLastLoginIp() == null || lastLoginInfo.getLastLoginPlatform() < 1) {
-					if (System.currentTimeMillis() > deadTime) {
+					if (System.currentTimeMillis() > DEADTIME) {
 						checkFlag = true;
 					}
 				} else {
@@ -2898,7 +2898,7 @@ public class UserFunctions {
 		String locales = "zh-tw,zh-cn,fr-ca,fr-fr,de-de,it-it,ja-jp,ko-kr,en-ca,en-gb,en-us,zh_tw,zh_cn,zh,fr_ca,fr_fr,fr,de_de,de,it_it,it,ja_jp,ja,ko_kr,ko,en_ca,en_gb,en_us,en";
 		String[] array = locales.split(",");
 		for (String locale : array) {
-			if (str.toLowerCase().indexOf(locale) > 0) {
+			if (str.toLowerCase().indexOf(locale) >= 0) {
 				return locale;
 			}
 		}

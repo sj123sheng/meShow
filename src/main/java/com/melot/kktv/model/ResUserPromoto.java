@@ -26,7 +26,7 @@ public class ResUserPromoto {
 		if(null != this.userId && this.userId.intValue() > 0)
 			jObject.addProperty("userId", this.getUserId());
 		if(null != this.beUserId && this.beUserId.intValue() > 0)
-			jObject.addProperty("beUserId", this.beUserId.intValue());
+			jObject.addProperty("beUserId", this.beUserId);
 		if(null != this.dTime)
 			jObject.addProperty("dTime", this.getdTime().getTime());
 		return jObject;

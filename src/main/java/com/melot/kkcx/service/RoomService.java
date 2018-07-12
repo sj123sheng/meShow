@@ -241,8 +241,8 @@ public class RoomService {
     	jsonObj.addProperty("addShowMoney", addShowMoney);
     	if (type == 1) {
     		// 赠送幸运礼物 主播家族收入2/3
-    		jsonObj.addProperty("actorRate", Math.floor(actorRate * 2 / 3));
-    		jsonObj.addProperty("familyRate", Math.floor(familyRate * 2 / 3));
+    		jsonObj.addProperty("actorRate", Math.floor(actorRate * 2 / 3D));
+    		jsonObj.addProperty("familyRate", Math.floor(familyRate * 2 / 3D));
     	} else if (type == 9) {
     		// 周星奖励 100%归主播
     		jsonObj.addProperty("actorRate", 100);

@@ -286,7 +286,7 @@ public class HallFunction extends BaseAction{
         
         List<HallRoomInfoDTO> roomList = null;
         try {
-            Result<List<HallRoomInfoDTO>> moduleResult = hallRoomService.getPartLiveRoomList(cataId, Integer.valueOf(0), MAX_COUNT_OF_LIVING_ROOM);
+            Result<List<HallRoomInfoDTO>> moduleResult = hallRoomService.getPartLiveRoomList(cataId, 0, MAX_COUNT_OF_LIVING_ROOM);
             if (ResultUtils.checkResultNotNull(moduleResult)) {
                 roomList = moduleResult.getData();
             }

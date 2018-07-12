@@ -8,10 +8,13 @@ import java.util.Set;
 
 import com.melot.kktv.util.redis.RedisConfigHelper;
 
+import org.apache.log4j.Logger;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Tuple;
 
 public class ActivitySource {
+
+    private static Logger logger = Logger.getLogger(ActivitySource.class);
 	
 	private static final String SOURCE_NAME = "Activity";
 	
@@ -48,7 +51,7 @@ public class ActivitySource {
 			String value = jedis.hget(key, playerId);
 			if (value != null) sumVal = Double.valueOf(value).intValue();
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("ActivitySource.getPlayDimensionValue(" + "playId:" + playId + "apdId:" + apdId + "playerId:" + playerId + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis);
@@ -72,7 +75,7 @@ public class ActivitySource {
 			String key = String.format(DIMENSION_PLAY_KEY, playId, apdId);
 			result = jedis.hgetAll(key);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("ActivitySource.getAllPlayDimensionValue(" + "playId:" + playId + "apdId:" + apdId + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis);
@@ -132,7 +135,7 @@ public class ActivitySource {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("ActivitySource.getPlayerRankList(" + "playId:" + playId + "rankId:" + rankId + "startNum:" + startNum + "endNum:" + endNum + ") execute exception.", e);
         } finally {
             if(jedis!=null) {
                 freeInstance(jedis);
@@ -160,7 +163,7 @@ public class ActivitySource {
             String key = String.format(PLAY_PLAYER_KEY, playId);
             return jedis.exists(key);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("ActivitySource.existsPlayPlayerCache(" + "playId:" + playId + ") execute exception.", e);
         } finally {
             if(jedis!=null) {
                 freeInstance(jedis);
@@ -185,7 +188,7 @@ public class ActivitySource {
             }
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("ActivitySource.addPlayPlayerCache(" + "playId:" + playId + "userId:" + userId + ") execute exception.", e);
         } finally {
             if(jedis!=null) {
                 freeInstance(jedis);

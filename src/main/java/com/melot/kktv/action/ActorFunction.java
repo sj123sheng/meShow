@@ -487,7 +487,7 @@ public class ActorFunction {
             }
         }else if(response != null && !response.isSuccess()) {
             result.addProperty("errorMessage", response.getErrorMessage());
-        }else {
+        }else if (response != null){
             result.addProperty("errorMessage", response.getFailedReason());
         }
 

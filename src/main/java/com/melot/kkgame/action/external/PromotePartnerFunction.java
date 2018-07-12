@@ -112,7 +112,7 @@ public class PromotePartnerFunction extends BaseAction{
      */
     private JsonArray getPromoteRoomList( int cataId, int count){
         JsonArray roomArray = new JsonArray();
-        Result<List<HallRoomInfoDTO>> partLiveRoomListResult = hallRoomService.getPartLiveRoomList(cataId, Integer.valueOf(0), count);
+        Result<List<HallRoomInfoDTO>> partLiveRoomListResult = hallRoomService.getPartLiveRoomList(cataId, 0, count);
         if (ResultUtils.checkResultNotNull(partLiveRoomListResult)) {
             for (HallRoomInfoDTO roomInfo : partLiveRoomListResult.getData()) {
                 roomArray.add(HallRoomTF.roomInfoToJson(roomInfo, 1));

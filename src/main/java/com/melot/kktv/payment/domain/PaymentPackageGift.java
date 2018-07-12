@@ -20,7 +20,7 @@ public class PaymentPackageGift {
 	/**
 	 * 礼物名称
 	 */
-	public String giftName;
+	private String giftName;
 	
 	/**
 	 * 礼物描述

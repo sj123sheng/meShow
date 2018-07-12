@@ -31,9 +31,9 @@ public class TwitterService extends BaseService{
     
     private static Logger logger = Logger.getLogger(TwitterService.class);
     
-    private final static String clientId = "pTMw4BzFNY0efstRPlPXrVlFa";;
+    private final static String CLIENT_ID = "pTMw4BzFNY0efstRPlPXrVlFa";;
     
-    private final static String clientSecret = "MSLUrw2CVvvpzMasafBKkXsSl2nVQGd6eICytTuPrwntKe3bIS";
+    private final static String CLIENT_SECRET = "MSLUrw2CVvvpzMasafBKkXsSl2nVQGd6eICytTuPrwntKe3bIS";
     
     private String serverUrl;
     
@@ -41,7 +41,7 @@ public class TwitterService extends BaseService{
         String result = null;
         Transaction t = Cat.getProducer().newTransaction("MCall", "TwitterService.verifyUser");
         try {
-            final OAuth10aService service = new ServiceBuilder(clientId).apiSecret(clientSecret).build(TwitterApi.instance());
+            final OAuth10aService service = new ServiceBuilder(CLIENT_ID).apiSecret(CLIENT_SECRET).build(TwitterApi.instance());
             String[] params = sessionId.split(",");
             if (params.length > 1) {
                 String token = params[0];

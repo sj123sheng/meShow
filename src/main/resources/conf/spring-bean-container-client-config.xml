@@ -90,7 +90,9 @@
 	<kkrpc:reference id="friendEmoticonService" interface="com.melot.common.driver.service.FriendEmoticonService" version="1.0.0"></kkrpc:reference>
 
     <!-- 礼物配置信息 -->
-	<kkrpc:reference id="giftListService" interface="com.melot.room.gift.service.GiftListService" version="1.0.8"></kkrpc:reference>
+	<kkrpc:reference id="giftListService" interface="com.melot.room.gift.service.GiftListService" version="1.0.9"></kkrpc:reference>
+	<!-- 主播心愿礼物 -->
+	<kkrpc:reference id="actorPersonalizedGiftService" interface="com.melot.room.gift.service.ActorPersonalizedGiftService" version="1.0.9"></kkrpc:reference>
 	
 	<!-- 动态模块 -->
 	<kkrpc:reference id="newsCenter" interface="com.melot.news.service.NewsService" version="1.2.3"></kkrpc:reference>
@@ -119,6 +121,8 @@
 	<kkrpc:reference id="gameConfigService" interface="com.melot.kkactivity.driver.service.GameConfigService" version="1.0.1" />
 	
 	<kkrpc:reference id="bountyService" interface="com.melot.kk.bounty.api.service.BountyService" version="1.0.0" />
+	<!-- 登录相关模块 -->
+	<kkrpc:reference id="otherLoginService" interface="com.melot.kk.otherlogin.api.service.OtherLoginService" version="1.0.1" />
 
     <!-- 抓娃娃模块 -->
     <kkrpc:reference id="dollMachineService" interface="com.melot.kk.doll.api.service.DollMachineService" version="1.0.0" />
@@ -176,7 +180,7 @@
 
 	<!-- 贵族积分礼物服务 -->
 	<kkrpc:reference id="nobilityPointGiftService" interface="com.melot.kk.nobility.api.service.NobilityPointGiftService" version="1.0.0"/>
-
+	
 	<!-- 区域化开屏页服务 -->
 	<kkrpc:reference id="openPageService" interface="com.melot.kk.config.api.service.OpenPageService" version="1.0.0"/>
 	<!-- 大厅模块 -->
@@ -191,12 +195,18 @@
 
     <!-- 物流模块 -->
     <kkrpc:reference id="histDeliveryService" interface="com.melot.kk.logistics.api.service.HistDeliveryService" version="1.0.0"/>
-
+	
 	<!-- 用户等级升级模块 -->
     <kkrpc:reference id="userLevelRedEvelopeService" interface="com.melot.kk.userLevelUp.api.service.UserLevelRedEvelopeService" version="1.0.0"/>
+    
+    <!-- 用户开播记录-->
+    <kkrpc:reference id="liveRecordService" interface="com.melot.room.live.record.service.LiveRecordService" version="1.0.2"/>
 
 	<!-- 新版红包模块 -->
-	<kkrpc:reference id="redEnvelopersService" interface="com.melot.redenvelopers.driver.service.RedEnvelopersService" version="1.0.0"></kkrpc:reference>
+	<kkrpc:reference id="redEnvelopersService" retries="0" interface="com.melot.redenvelopers.driver.service.RedEnvelopersService" version="1.0.0"></kkrpc:reference>
+	
+	<kkrpc:reference id="confMedalService" interface="com.melot.module.medal.driver.service.ConfMedalService" version="1.0.0"></kkrpc:reference>
+
 
 	<kkrpc:reference id="feedbackInfoService" interface="com.melot.kk.module.report.service.FeedbackInfoService" version="1.0.0"></kkrpc:reference>
 </beans>

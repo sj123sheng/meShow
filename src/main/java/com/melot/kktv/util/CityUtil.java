@@ -61,11 +61,11 @@ public class CityUtil {
         
         try {
             List<Map<String, Object>> list = SqlMapClientHelper.getInstance(DB.SLAVE_PG).queryForList("Other.getCityInfo");
-            if (list != null && list.size() > 0) {
+            if (parentMap != null && list != null && list.size() > 0) {
                 for (Map<String, Object> map : list) {
-                	if (CENTRAL_CITY_ID.containsKey((Integer) map.get("parentId"))) {
+                	if (cityMap != null && CENTRAL_CITY_ID.containsKey((Integer) map.get("parentId"))) {
                 		cityMap.putIfAbsent((Integer) map.get("cityId"), CENTRAL_CITY_ID.get((Integer) map.get("parentId")));
-                	} else {
+                	} else if (cityMap != null){
                 		cityMap.putIfAbsent((Integer) map.get("cityId"), (String) map.get("cityName"));
                 	}
                     parentMap.putIfAbsent((Integer) map.get("cityId"), (Integer) map.get("parentId"));
@@ -173,7 +173,7 @@ public class CityUtil {
 		        		provinceId = getCityIdByCityName(ipInfo.getProvince());
 		        		if (CENTRAL_CITY.contains(ipInfo.getProvince())) {
 		        			return provinceId == null ? DEFAULT_CITY_ID : provinceId;
-		        		} else if (ipInfo.getCity() == null) {
+		        		} else if (ipInfo.getCity() == null && provinceId != null) {
 		        		    return getProvincialCapital(provinceId); 		        		    
 		        		} else {
 		        			city = ipInfo.getCity();

@@ -269,15 +269,15 @@ public class ResourceFunctions {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("ResourceFunctions.getVideoInfoByHttp(" + "videoUrl:" + videoUrl + ") execute exception.", e);
         } catch (IllegalStateException e) {
-            e.printStackTrace();
+            logger.error("ResourceFunctions.getVideoInfoByHttp(" + "videoUrl:" + videoUrl + ") execute exception.", e);
         } finally {
             if (httpClient != null) {
                 try {
                     httpClient.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    logger.error("ResourceFunctions.getVideoInfoByHttp(" + "videoUrl:" + videoUrl + ") execute exception.", e);
                 }
             }
         }

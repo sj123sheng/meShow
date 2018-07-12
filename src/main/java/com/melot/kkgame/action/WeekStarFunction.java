@@ -230,7 +230,7 @@ public class WeekStarFunction extends BaseAction{
                 jsonArray.add(jsonObject);
             }
         } catch (RedisException e) {
-            e.printStackTrace();
+            logger.error("WeekStarFunction.generateUserGiftRankingList(" + "userId:" + userId + ") execute exception.", e);
         }
         return jsonArray;
         

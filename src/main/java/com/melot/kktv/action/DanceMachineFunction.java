@@ -207,7 +207,7 @@ public class DanceMachineFunction {
         try {
             rtJO = SecurityFunctions.checkSignedValue(jsonObject);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("DanceMachineFunction.saveGameResult(" + "jsonObject:" + jsonObject + "checkTag:" + checkTag + "request:" + request + ") execute exception.", e);
         }
         if(rtJO != null) {
             return rtJO;

@@ -19,14 +19,16 @@ import redis.clients.jedis.Jedis;
 public class PeopleCountSource {
     private static final String GAME_BLACK_LIST = "game:black_list";
 
-    public static final String sourceName = "peopleCount";
+    public static final String SOURCENAME = "peopleCount";
+
+    private PeopleCountSource(){}
 
     /**
      * 获取redis资源
      * @return
      */
     private static JedisWrapper getInstance() {
-        return new JedisWrapper(RedisDataSourceFactory.getGlobalInstance().getJedisPool(sourceName), sourceName);
+        return new JedisWrapper(RedisDataSourceFactory.getGlobalInstance().getJedisPool(SOURCENAME), SOURCENAME);
     }
 
     /**

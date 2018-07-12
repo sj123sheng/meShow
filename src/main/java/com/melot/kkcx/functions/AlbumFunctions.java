@@ -718,6 +718,9 @@ public class AlbumFunctions {
 						//resId为当前海报，不可删除
 						result.addProperty("TagCode", "04160006");
 						break;
+
+					default:
+						break;
 				}
 				return result;
 			}
@@ -786,6 +789,9 @@ public class AlbumFunctions {
 					case 103:
 						//resId为当前海报，不可删除
 						result.addProperty("TagCode", "04160006");
+						break;
+
+					default:
 						break;
 				}
 				return result;
@@ -865,6 +871,9 @@ public class AlbumFunctions {
 					case 105:
 						//已经是当前海报
 						result.addProperty("TagCode", "04170008");
+						break;
+
+					default:
 						break;
 				}
 				return result;
