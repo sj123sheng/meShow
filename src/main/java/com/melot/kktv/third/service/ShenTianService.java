@@ -69,7 +69,7 @@ public class ShenTianService extends BaseService{
             
             InputStream in = url_con.getInputStream();
             BufferedReader rd = new BufferedReader(new InputStreamReader(in, "UTF-8"));
-            StringBuffer tempStr = new StringBuffer();
+            StringBuilder tempStr = new StringBuilder();
             String tempLine = null;
             while ((tempLine = rd.readLine()) != null) {
                 tempStr.append(tempLine);
