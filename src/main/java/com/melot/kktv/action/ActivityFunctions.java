@@ -8,6 +8,8 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.melot.kk.activityAPI.api.dto.ShareInfoDTO;
+import com.melot.kk.activityAPI.api.service.NewMissionService;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -18,8 +20,6 @@ import com.google.gson.JsonParser;
 import com.melot.common.driver.service.ShareService;
 import com.melot.feedback.driver.domain.Award;
 import com.melot.feedback.driver.service.FeedbackService;
-import com.melot.kk.activity.driver.MissionService;
-import com.melot.kk.activity.driver.domain.ShareInfo;
 import com.melot.kkactivity.driver.domain.GameConfig;
 import com.melot.kkactivity.driver.domain.GameGift;
 import com.melot.kkactivity.driver.service.GameConfigService;
@@ -1250,9 +1250,9 @@ public class ActivityFunctions {
                 paramJson.addProperty("userId", userId);
             }
             
-            MissionService missionService = (MissionService) MelotBeanFactory.getBean("missionService");
-            if (missionService != null) {
-                result = missionService.getVisiableActivityByVersion(paramJson);
+            NewMissionService newMissionService = (NewMissionService) MelotBeanFactory.getBean("newMissionService");
+            if (newMissionService != null) {
+                result = new JsonParser().parse(newMissionService.getVisibleActivity(paramJson.toString())).getAsJsonObject();
             }
         } catch (Exception e) {
             logger.error("调用MissionService模块异常", e);
@@ -1572,9 +1572,9 @@ public class ActivityFunctions {
             return result;
         }
         
-        MissionService missionService = MelotBeanFactory.getBean("missionService", MissionService.class);
-        if (missionService != null) {
-        	ShareInfo shareInfo = new ShareInfo();
+        NewMissionService newMissionService = (NewMissionService) MelotBeanFactory.getBean("newMissionService");
+        if (newMissionService != null) {
+        	ShareInfoDTO shareInfo = new ShareInfoDTO();
         	if (userId != 0) {
         		shareInfo.setUserId(userId);
         	}
@@ -1597,12 +1597,8 @@ public class ActivityFunctions {
             shareInfo.setShareReason(shareReason);
             shareInfo.setShareLink(sharelink);
         	
-        	JsonObject json = missionService.share(shareInfo);
-        	if (json != null && json.get("TagCode").getAsString().equals("00000000")) {
-        		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        	} else {
-        		result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
-        	}
+        	boolean shareResult = newMissionService.share(shareInfo);
+        	result.addProperty("TagCode", shareResult? TagCodeEnum.SUCCESS : TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
         } else {
         	result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
         }

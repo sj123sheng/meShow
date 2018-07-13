@@ -212,4 +212,7 @@
 
     <!-- 用户官方信息模块 -->
     <kkrpc:reference id="adminDataService" interface="com.melot.cms.admin.api.service.AdminDataService" version="1.0.0"></kkrpc:reference>
+
+	<!-- 活动API服务 -->
+	<kkrpc:reference id="newMissionService" interface="com.melot.kk.activityAPI.api.service.NewMissionService" version="1.0.0"></kkrpc:reference>
 </beans>
