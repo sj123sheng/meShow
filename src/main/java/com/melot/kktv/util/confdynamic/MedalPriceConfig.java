@@ -1,39 +1,41 @@
 package com.melot.kktv.util.confdynamic;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
+import org.apache.log4j.Logger;
+
+import com.google.common.collect.Lists;
+import com.melot.api.menu.sdk.utils.Collectionutils;
 import com.melot.kktv.model.MedalPrice;
-import com.melot.module.config.Config;
-import com.melot.module.config.model.ResultModel;
+import com.melot.module.medal.driver.domain.MedalPriceConf;
+import com.melot.module.medal.driver.service.ConfMedalService;
+import com.melot.sdk.core.util.MelotBeanFactory;
 
 public class MedalPriceConfig {
-	public static final String TABLENAME = "CONF_MEDALPRICE";
-
-	public static BigDecimal getPrice(long type, int period){
-		BigDecimal keyValue = new BigDecimal(type + "");
-		BigDecimal queryValue = new BigDecimal(period + "");
-		Object result = Config.find(TABLENAME, keyValue, "PRICE", queryValue);
-		if(result == null || "".equals(result))	return null;
-		return new BigDecimal(result + "");
-	}
+	private static Logger logger = Logger.getLogger(MedalPriceConfig.class);
 	
-	@SuppressWarnings("unchecked")
+	private MedalPriceConfig() {}
+	
 	public static List<MedalPrice> getMedalPriceListByType(int type){
-		List<MedalPrice> medalPriceList = new ArrayList<MedalPrice>();
-		Map<Object, ResultModel> resultMap = (Map<Object, ResultModel>)Config.find(TABLENAME, type);
-		if(resultMap == null || resultMap.size() == 0)	return null;
-		for(Object key : resultMap.keySet()){
-			ResultModel rm = resultMap.get(key);
-			MedalPrice mp = new MedalPrice();
-//			mp.setType(new BigDecimal(rm.get("TYPE") + ""));
-			mp.setPeriod(new Integer(rm.get("PERIOD") + ""));
-			mp.setPrice(new Integer(rm.get("PRICE") + ""));
-			medalPriceList.add(mp);
-		}
-		return medalPriceList;
+	    try {
+            ConfMedalService confMedalService = (ConfMedalService) MelotBeanFactory.getBean("confMedalService");
+            List<MedalPriceConf> medalPriceConfs = confMedalService.getMedalPriceConf(type, 0);
+            if (Collectionutils.isEmpty(medalPriceConfs)) {
+                return null;
+            }
+            List<MedalPrice> medalPrices = Lists.newArrayList();
+            for (MedalPriceConf medalPriceConf : medalPriceConfs) {
+                MedalPrice medalPrice = new MedalPrice();
+                medalPrice.setPeriod(medalPriceConf.getPeriod());
+                medalPrice.setPrice(medalPriceConf.getPrice().intValue());
+                medalPrices.add(medalPrice);
+            }
+            
+            return medalPrices;
+        } catch (Exception e) {
+            logger.error("getMedalPriceListByType(type=" + type + ")", e);
+            return null;
+        }
 	}
 	
 	

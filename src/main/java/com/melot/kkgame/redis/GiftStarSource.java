@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import redis.clients.jedis.Tuple;
 
 import com.melot.game.config.sdk.domain.GiftStarRecord;
@@ -31,6 +32,8 @@ import com.melot.kkgame.redis.support.RedisTemplate;
 public class GiftStarSource extends RedisTemplate{
 	
 	public static final String STAR_KEY="giftStar_";
+
+	private static Logger logger = Logger.getLogger(GiftStarSource.class);
 
 	@Override
 	public String getSourceName() {
@@ -64,7 +67,7 @@ public class GiftStarSource extends RedisTemplate{
 				return recordList;
 			}
 		} catch (RedisException e) {
-			e.printStackTrace();
+			logger.error("GiftStarSource.getRecordFromRedis(" + "dateStr:" + dateStr + "type:" + type + "giftId:" + giftId + "min:" + min + ") execute exception.", e);
 		}
 		return null;
 	}

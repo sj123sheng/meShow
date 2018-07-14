@@ -38,11 +38,7 @@
 	<bean id="resourceFunction" class="com.melot.kktv.action.ResourceFunctions" />
 	<bean id="tagFunction" class="com.melot.kktv.action.TagFunctions" />
 	<bean id="tempFunction" class="com.melot.kktv.action.TempFunctions" />
-	<bean id="ticketFunction" class="com.melot.kktv.action.TicketAction" />
 	<bean id="userLotteryPrizeFunction" class="com.melot.kktv.action.UserLotteryPrizeFunctions" />
-	<bean id="videoFunction" class="com.melot.kktv.action.VideoFunctions">
-		<property name="bangVideoSource" ref="bangVideoSource" />
-	</bean>
 	<bean id="guardFunction" class="com.melot.kktv.action.GuardFunctions" />
 	<bean id="redEnvelopeFunction" class="com.melot.kktv.action.RedEnvelopeFunctions" />
 	<bean id="noticeFunction" class="com.melot.kktv.action.NoticeFunctions" />
@@ -78,8 +74,7 @@
   	<bean id="lotteryTaskSource" class="com.melot.kkgame.redis.LotteryTaskSource" parent="redisTemplate" />
   	<bean id="msgSource" class="com.melot.kkgame.redis.external.MessageSource" parent="redisTemplate" />
   	<bean id="rankingListSource" class="com.melot.kkgame.redis.RankingListSource" parent="redisTemplate" />
-   	<bean id="bangVideoSource" class="com.melot.kkgame.redis.BangVideoSource" parent="redisTemplate"/>
-   	
+
    	<!-- notification in room talk area -->
    	<bean id="roomMsgSource" class="com.melot.kkgame.redis.RoomMessageSource" parent="redisTemplate" />
   	

@@ -1,10 +1,13 @@
 package com.chinacreator.videoalliance.util;
 
+import org.apache.log4j.Logger;
+
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
 public class Base64 extends BaseNCodec {
 
+	private static Logger logger = Logger.getLogger(Base64.class);
 	/**
 	 * BASE32 characters are 6 bits in length. They are formed by taking a block
 	 * of 3 octets to form a 24-bit string, which is converted into 4 BASE64
@@ -232,7 +235,7 @@ public class Base64 extends BaseNCodec {
 					final String sep = new String(lineSeparator, "UTF-8");
 					throw new IllegalArgumentException("lineSeparator must not contain base64 characters: [" + sep + "]");
 				} catch (UnsupportedEncodingException e) {
-					e.printStackTrace();
+					logger.error("Base64.Base64(" + "lineLength:" + lineLength + "lineSeparator:" + lineSeparator + "urlSafe:" + urlSafe + ") execute exception.", e);
 				}
 			}
 			if (lineLength > 0) { // null line-sep forces no chunking rather

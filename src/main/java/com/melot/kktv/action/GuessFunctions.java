@@ -32,6 +32,8 @@ public class GuessFunctions {
 
     private static Logger logger = Logger.getLogger(GuessFunctions.class);
 
+    private static final String GUESSWITHDRAW_CLIENTIP = "12.0.2.0";
+
     @Resource
     GuessConfService guessConfService;
 
@@ -638,7 +640,7 @@ public class GuessFunctions {
             // 调用竞猜模块微信提现
             String clientIP = CommonUtil.getIpAddr(request);
             if(clientIP.startsWith("10.0.")) {
-                clientIP = "12.0.2.0";
+                clientIP = GUESSWITHDRAW_CLIENTIP;
             }
             Result<Boolean> withdrawResult = guessAccountService.guessWithdraw(userId, uuid, unionid, clientIP);
             String code = withdrawResult.getCode();

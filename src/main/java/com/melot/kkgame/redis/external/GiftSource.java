@@ -15,6 +15,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.melot.kkgame.redis.support.RedisException;
 import com.melot.kkgame.redis.support.RedisTemplate;
+import org.apache.log4j.Logger;
 
 /**
  * Title: SmsSource
@@ -26,6 +27,8 @@ import com.melot.kkgame.redis.support.RedisTemplate;
  * @since 2015-7-3 下午6:40:27 
  */
 public class GiftSource extends RedisTemplate{
+
+    private Logger logger = Logger.getLogger(GiftSource.class);
     
     private Map<Integer,GiftInfo>giftConfigs = new HashMap<Integer, GiftInfo>();
     
@@ -75,7 +78,7 @@ public class GiftSource extends RedisTemplate{
                 giftConfigs.put(giftInfo.getGiftId(), giftInfo);
             }
         } catch (RedisException e) {
-            e.printStackTrace();
+            logger.error("GiftSource.reloadGiftConfigs() execute exception.", e);
         }
     }
     

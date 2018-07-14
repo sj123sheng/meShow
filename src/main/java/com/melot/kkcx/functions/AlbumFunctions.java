@@ -40,7 +40,6 @@ import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.module.api.exceptions.MelotModuleException;
 import com.melot.module.poster.driver.domain.PosterInfo;
-import com.melot.module.poster.driver.domain.UpYunInfo;
 import com.melot.module.poster.driver.service.PosterService;
 import com.melot.sdk.core.util.MelotBeanFactory;
 
@@ -719,6 +718,9 @@ public class AlbumFunctions {
 						//resId为当前海报，不可删除
 						result.addProperty("TagCode", "04160006");
 						break;
+
+					default:
+						break;
 				}
 				return result;
 			}
@@ -787,6 +789,9 @@ public class AlbumFunctions {
 					case 103:
 						//resId为当前海报，不可删除
 						result.addProperty("TagCode", "04160006");
+						break;
+
+					default:
 						break;
 				}
 				return result;
@@ -866,6 +871,9 @@ public class AlbumFunctions {
 					case 105:
 						//已经是当前海报
 						result.addProperty("TagCode", "04170008");
+						break;
+
+					default:
 						break;
 				}
 				return result;
@@ -1130,85 +1138,6 @@ public class AlbumFunctions {
 			logger.error("Failed to insert to DB." + e);
 			result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
 		}
-
-		return result;
-	}
-
-	/**
-	 * 新版获取又拍云上传参数（10004018）
-	 * @param jsonObject
-	 * @param checkTag
-	 * @param request
-	 * @return
-	 * @throws Exception
-	 */
-	public JsonObject getUpyunUploadParamsNew(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception{
-		JsonObject result = new JsonObject();
-
-		// 该接口需要验证token,未验证的返回错误码
-		if (!checkTag) {
-			result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-			return result;
-		}
-
-		int userId, pictureType;
-		String localUrl = null;
-		try {
-			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "04120001", 1, Integer.MAX_VALUE);
-			pictureType = CommonUtil.getJsonParamInt(jsonObject, "pictureType", 0, "04120002", 1, Integer.MAX_VALUE);
-			localUrl = CommonUtil.getJsonParamString(jsonObject, "localUrl", null, "04120003", 1, Integer.MAX_VALUE);
-		} catch (CommonUtil.ErrorGetParameterException e) {
-			result.addProperty("TagCode", e.getErrCode());
-			return result;
-		} catch (Exception e) {
-			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-			return result;
-		}
-
-		UpYunInfo upYunInfo = null;
-		PosterService posterService = MelotBeanFactory.getBean("posterService", PosterService.class);
-		if (posterService == null) {
-			//调用模块异常
-			result.addProperty("TagCode", "04130100");
-			return result;
-		}
-		try {
-			upYunInfo = posterService.getUploadPosterUrl(userId, localUrl, pictureType, 0);
-			if (upYunInfo != null && upYunInfo.getTagCode() != null) {
-				if (upYunInfo.getTagCode().equals("10010001")) {
-					//非主播
-					result.addProperty("TagCode", "04120005");
-					return result;
-				} else if (upYunInfo.getTagCode().equals("10010002")) {
-					//海报池达到峰值
-					result.addProperty("TagCode", "04120006");
-					return result;
-				} else if (upYunInfo.getTagCode().equals("10010004")) {
-					//获取文件地址失败
-					result.addProperty("TagCode", "04120004");
-					return result;
-				}
-			} else {
-				//调用模块未得到正常结果
-				result.addProperty("TagCode", "04130101");
-				return result;
-			}
-		} catch (Exception e) {
-			logger.error("call PosterService getUploadPosterUrl error userId:" + userId + ",pictureType:" + pictureType + ",localUrl:" + localUrl, e);
-		}
-
-		if (upYunInfo != null && upYunInfo.getPolicy() != null) {
-			result.addProperty("policy", upYunInfo.getPolicy());
-		}
-		if (upYunInfo.getSignature() != null) {
-			result.addProperty("signature", upYunInfo.getSignature());
-		}
-		if (upYunInfo.getUrl() != null) {
-			result.addProperty("url", upYunInfo.getUrl());
-		}
-		result.addProperty("bucket", Constant.YOUPAI_BUCKET);
-		result.addProperty("domain", Constant.YOUPAI_DOMAIN);
-		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 
 		return result;
 	}

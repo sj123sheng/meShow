@@ -837,6 +837,11 @@ public class HallFunctions {
                     // 栏目是否做CND缓存
                     json.addProperty("cdnState", hp.getCdnState());
                 }
+                
+                //  栏目类型
+                if (hp.getSeatType() != null) {
+                    json.addProperty("seatType", hp.getSeatType());
+                }
                 plateList.add(json);
             }
             

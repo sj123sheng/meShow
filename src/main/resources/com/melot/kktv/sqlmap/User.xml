@@ -56,11 +56,6 @@
 		       ro.greetmsghref
 		from room_info ro where ro.roomid = #userId#
 	</select>
-	
-	<!-- 获取用户官方号类型 -->
-	<select id="getAdminType" parameterClass="java.lang.Integer" resultClass="java.lang.Integer">
-		select type from officialid_info where userid = #userid# and rownum = 1
-	</select>
 
 	<!-- 判断用户是否封号 -->
 	<select id="isInUserBlackList" parameterClass="java.lang.Integer" resultClass="java.lang.Integer">
@@ -142,39 +137,9 @@
 		select  count(1) from user_info t where t.deviceuid = #deviceUId# and t.inviter is not null
 	</select>
 	
-	<!-- 获取用户短信保护开关 -->
-	<select id="getUserSmsSwitch" parameterClass="java.lang.Integer" resultClass="java.lang.Integer">
-		select count(1) from user_sms_switch where userid = #userId#
-	</select>
-	
-	<!-- 开启用户账号保护 -->
-	<delete id="delUserSmsSwitch" parameterClass="java.lang.Integer">
-		delete from user_sms_switch where userid = #userId#
-	</delete>
-	
-	<!-- 插入更改短信异常开关流水记录 -->
-	<insert id="insertUserSmsSwitchRecord" parameterClass="java.util.Map">
-		insert into USER_SMS_SWITCH_RECORD(userid, dtime, state)values(#userId#, #dtime#, #state#)
-	</insert>
-	
-	<!-- 插入短信异常开关表 -->
-	<insert id="insertUserSmsSwitch" parameterClass="java.util.Map">
-		insert into user_sms_switch(userid, dtime)values(#userId#, #dtime#) 
-	</insert>
-	
 	<!-- 插入用户临时密码表 -->
 	<insert id="insertUserTempPassword" parameterClass="java.util.Map">
 		insert into temp_user_password(userid, origin_password, record_time) values(#userId#, #password#, #dtime#)
-	</insert>
-	
-	<!-- 获取游客首次登录记录 -->
-	<select id="getGuestFirstRecord" parameterClass="java.lang.Integer" resultClass="java.lang.Integer">
-		select count(1) from user_first_record where userid = #userId#
-	</select>
-	
-	<!-- 插入游客首次登录记录 -->
-	<insert id="insertGuestFirstRecord" parameterClass="java.util.Map">
-		insert into user_first_record(userid, newtime, appid, platform, channel, deviceuid) values(#userId#, #dtime#, #appId#, #platform#, #channelId#, #deviceUId#)
 	</insert>
 	
 	<insert id="insertHist" parameterClass="java.util.Map">

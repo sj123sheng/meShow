@@ -50,7 +50,7 @@ public class GiftRecordSource {
 			jedis = getInstance();
 			return jedis.hget(HEADLINE_RANK + dateId, timeField);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("GiftRecordSource.getHeadlineRank(" + "dateId:" + dateId + "timeField:" + timeField + ") execute exception.", e);
 		} finally {
 			if (jedis != null) {
 				freeInstance(jedis);
@@ -69,7 +69,7 @@ public class GiftRecordSource {
 			jedis = getInstance();
 			return jedis.hgetAll(HEADLINE_TOTAL);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("GiftRecordSource.getHeadlineTotal() execute exception.", e);
 		} finally {
 			if (jedis != null) {
 				freeInstance(jedis);
@@ -91,7 +91,7 @@ public class GiftRecordSource {
             jedis = getInstance();
             return jedis.hget(HEADLINE_SUNSHINE_RANK + dateId, timeField);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("GiftRecordSource.getHeadlineSunshineRank(" + "dateId:" + dateId + "timeField:" + timeField + ") execute exception.", e);
         } finally {
             if (jedis != null) {
                 freeInstance(jedis);
@@ -110,7 +110,7 @@ public class GiftRecordSource {
             jedis = getInstance();
             return jedis.hgetAll(HEADLINE_SUNSHINE_TOTAL);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("GiftRecordSource.getHeadlineSunshineTotal() execute exception.", e);
         } finally {
             if (jedis != null) {
                 freeInstance(jedis);
@@ -147,7 +147,7 @@ public class GiftRecordSource {
             jedis = getInstance();
             return jedis.sismember(SHAREVAULT_NEW_USER, userId.toString());
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("GiftRecordSource.unReceivedNoviceGift(" + "userId:" + userId + ") execute exception.", e);
         } finally {
             if (jedis != null) {
                 freeInstance(jedis);
@@ -166,7 +166,7 @@ public class GiftRecordSource {
             jedis = getInstance();
             jedis.srem(SHAREVAULT_NEW_USER, userId.toString());
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("GiftRecordSource.removeNoviceGift(" + "userId:" + userId + ") execute exception.", e);
         } finally {
             if (jedis != null) {
                 freeInstance(jedis);

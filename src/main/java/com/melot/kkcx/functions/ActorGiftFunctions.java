@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
@@ -13,13 +14,16 @@ import org.apache.log4j.Logger;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.melot.kktv.model.ActorGift;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.PlatformEnum;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
+import com.melot.room.gift.constant.ReturnResultCode;
+import com.melot.room.gift.domain.ReturnResult;
+import com.melot.room.gift.dto.ActorGiftDTO;
+import com.melot.room.gift.service.ActorPersonalizedGiftService;
 
 /**
  * Title: ActorGiftFunctions
@@ -35,6 +39,11 @@ public class ActorGiftFunctions {
     
     /** 日志记录对象 */
     private static Logger logger = Logger.getLogger(ActorGiftFunctions.class);
+    
+    private static String REGEX = ",";
+    
+    @Resource
+    ActorPersonalizedGiftService actorPersonalizedGiftService;
     
     /**
      * 获取主播个性礼物（50001005）
@@ -58,28 +67,23 @@ public class ActorGiftFunctions {
             return result;
         }
         
-        Map<Object, Object> map = new HashMap<Object, Object>();
-        map.put("actorId", userId);
         try {
-            SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("ActorGift.getActorGiftList", map);
-        } catch (SQLException e) {
-            logger.error("获取主播个性礼物失败(actorId:" + userId, e);
-            result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
+            ReturnResult<List<ActorGiftDTO>> resp = actorPersonalizedGiftService.getActorPersonalizedGiftList(userId);
+            if (resp != null && ReturnResultCode.SUCCESS.getCode().equals(resp.getCode())) {
+                List<ActorGiftDTO> actorGiftList = resp.getData();
+                if (actorGiftList != null && !actorGiftList.isEmpty()) {
+                    ArrayList<Integer> giftList = new ArrayList<Integer>();
+                    for (ActorGiftDTO actorGift : actorGiftList) {
+                      giftList.add(actorGift.getGiftId());
+                    }
+                    result.add("actorGiftList", new Gson().toJsonTree(giftList).getAsJsonArray());
+                }
+            }
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             return result;
         }
-        String TagCode = (String) map.get("TagCode");
-        if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-            @SuppressWarnings("unchecked")
-            List <ActorGift> actorGiftList = (List <ActorGift>) map.get("actorGiftList");
-            ArrayList<Integer> giftList = new ArrayList<Integer>();
-            for (ActorGift actorGift : actorGiftList) {
-                giftList.add(actorGift.getGiftId());
-            }
-            result.add("actorGiftList", new Gson().toJsonTree(giftList).getAsJsonArray());
-            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-            return result;
-        } 
-        result.addProperty("TagCode",  "010500" + TagCode);
         return result;
     }
     
@@ -111,23 +115,19 @@ public class ActorGiftFunctions {
             return result;
         }
         
-        Map<Object, Object> map = new HashMap<Object, Object>();
-        map.put("actorId", userId);
-        map.put("giftIds", giftIds);
-        map.put("idx", 0);
         try {
-            SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("ActorGift.addActorGift", map);
-        } catch (SQLException e) {
-            logger.error("添加主播个性礼物回调入库失败(actorId:" + userId + ",giftId:" + giftIds , e);
-            result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
+            List<Integer> giftIdList = new ArrayList<>();
+            String[] giftIdStr = giftIds.split(REGEX);
+            for (String giftId : giftIdStr) {
+                giftIdList.add(Integer.valueOf(giftId));
+            }
+            actorPersonalizedGiftService.addActorPersonalizedGift(userId, giftIdList);
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             return result;
         }
-        String TagCode = (String) map.get("TagCode");
-        if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-            return result;
-        } 
-        result.addProperty("TagCode",  "010600" + TagCode);
+        
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
     
@@ -159,22 +159,14 @@ public class ActorGiftFunctions {
             return result;
         }
         
-        Map<Object, Object> map = new HashMap<Object, Object>();
-        map.put("actorId", userId);
-        map.put("giftId", giftId);
         try {
-            SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("ActorGift.deleteActorGift", map);
-        } catch (SQLException e) {
-            logger.error("删除主播个性礼物回调入库失败(actorId:" + userId + ",giftId:" + giftId , e);
-            result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
+            actorPersonalizedGiftService.deleteActorPersonalizedGift(userId, giftId);
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             return result;
         }
-        String TagCode = (String) map.get("TagCode");
-        if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-            return result;
-        } 
-        result.addProperty("TagCode",  "010700" + TagCode);
+        
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
 
@@ -200,21 +192,14 @@ public class ActorGiftFunctions {
             return result;
         }
         
-        Map<Object, Object> map = new HashMap<Object, Object>();
-        map.put("giftId", giftId);
         try {
-            SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("ActorGift.deleteActorGiftByGiftId", map);
-        } catch (SQLException e) {
-            logger.error("删除已下架的用户个性礼物回调入库失败(giftId:" + giftId , e);
-            result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
+            actorPersonalizedGiftService.deleteActorPersonalizedGiftByGiftId(giftId);
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             return result;
         }
-        String TagCode = (String) map.get("TagCode");
-        if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-            return result;
-        } 
-        result.addProperty("TagCode",  "010800" + TagCode);
+        
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
     

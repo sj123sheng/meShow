@@ -1,8 +1,16 @@
 package com.melot.kktv.util.confdynamic;
 
-import com.melot.module.config.Config;
+import org.apache.log4j.Logger;
+
+import com.melot.kk.config.api.domain.ConfSystemInfo;
+import com.melot.kk.config.api.service.ConfigInfoService;
+import com.melot.sdk.core.util.MelotBeanFactory;
 
 public class SystemConfig {
+    
+    private static Logger logger = Logger.getLogger(SystemConfig.class);
+    
+    private SystemConfig() {}
 
 	public static final java.lang.String versionSeverURL = "versionSeverURL";
 
@@ -44,12 +52,17 @@ public class SystemConfig {
 	
 	public static final String fanFeedbackEndAmount = "fanFeedbackEndAmount";
 	
-	public static final String TABLENAME = "CONF_SYSTEM";
-
 	public static String getValue(String key, int appId) {
-		Object result = Config.find(TABLENAME, key, "VALUE", appId);
-		if (result == null || "".equals(result))
-			return null;
-		return (String) result;
+	    try {
+	        ConfigInfoService configInfoService = (ConfigInfoService) MelotBeanFactory.getBean("configInfoService");
+	        ConfSystemInfo confSystemInfo = configInfoService.getConfSystemInfoByKeyAndAppID(key, appId);
+	        if (confSystemInfo == null) {
+	            return null;
+	        }
+	        return confSystemInfo.getcValue();
+        } catch (Exception e) {
+            logger.error("getValue(key=" + key + ", appId=" + appId + ")", e);
+            return null;
+        }
 	}
 }

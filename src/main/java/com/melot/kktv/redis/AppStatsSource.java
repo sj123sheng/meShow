@@ -2,9 +2,12 @@ package com.melot.kktv.redis;
 
 import com.melot.kktv.util.redis.RedisConfigHelper;
 
+import org.apache.log4j.Logger;
 import redis.clients.jedis.Jedis;
 
 public class AppStatsSource {
+
+	private static Logger logger = Logger.getLogger(AppStatsSource.class);
 	
 	private static final String SOURCE_NAME = "AppStats";
 	
@@ -22,34 +25,6 @@ public class AppStatsSource {
 		RedisConfigHelper.returnJedis(SOURCE_NAME, jedis, false);
 	}
 	
-	public static void addInstallPack(String string) {
-		Jedis jedis = null;
-		try {
-			jedis = getInstance();
-			jedis.rpush(QUEUE_INSTALL_PACK, string);
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			if(jedis!=null) {
-				freeInstance(jedis);
-			}
-		}
-	}
-	
-	public static void addMobileDevice(String string) {
-		Jedis jedis = null;
-		try {
-			jedis = getInstance();
-			jedis.rpush(QUEUE_MOBILE_DEVICE, string);
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			if(jedis!=null) {
-				freeInstance(jedis);
-			}
-		}
-	}
-	
 	/**
 	 * 存储App渠道推广信息
 	 * @param name Md5(appId+ipAddr+userAgent)
@@ -63,7 +38,7 @@ public class AppStatsSource {
 			jedis.lpush(key, channel);
 			jedis.expire(key, seconds);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("AppStatsSource.setAppPromoteInfo(" + "name:" + name + "channel:" + channel + "seconds:" + seconds + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis);
@@ -83,7 +58,7 @@ public class AppStatsSource {
 			String key = String.format(PROMOTE_CHANNEL_KEY, name);
 			return jedis.rpop(key);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("AppStatsSource.getAppPromoteInfo(" + "name:" + name + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis);    

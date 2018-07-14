@@ -42,9 +42,9 @@ public class ShenTianService extends BaseService{
     
     private String serverUrl;
     
-    private static final String key = "f30f0f82dsewleld29dwe0qleperjgpw";
+    private static final String KEY = "f30f0f82dsewleld29dwe0qleperjgpw";
     
-    private static final String secret = "kke_s13_ld^4ew11e";
+    private static final String SECRET = "kke_s13_ld^4ew11e";
 
     /**
      * @param sessionid 调用接口凭证
@@ -58,8 +58,8 @@ public class ShenTianService extends BaseService{
         Transaction t = Cat.getProducer().newTransaction("MCall", "ShenTianService.verifyUser");
         try {
             long time = new Date().getTime();
-            String params = "app_id=" + key + "&timestamp=" + time + "&token=" + sessionId + "&uid=" + uuid;
-            String sign = CommonUtil.md5(params + secret).toLowerCase();
+            String params = "app_id=" + KEY + "&timestamp=" + time + "&token=" + sessionId + "&uid=" + uuid;
+            String sign = CommonUtil.md5(params + SECRET).toLowerCase();
             URL url = new URL(serverUrl + "?" + params + "&sign=" + sign);            
             url_con = (HttpURLConnection) url.openConnection();
             url_con.setRequestMethod("GET");
@@ -69,7 +69,7 @@ public class ShenTianService extends BaseService{
             
             InputStream in = url_con.getInputStream();
             BufferedReader rd = new BufferedReader(new InputStreamReader(in, "UTF-8"));
-            StringBuffer tempStr = new StringBuffer();
+            StringBuilder tempStr = new StringBuilder();
             String tempLine = null;
             while ((tempLine = rd.readLine()) != null) {
                 tempStr.append(tempLine);

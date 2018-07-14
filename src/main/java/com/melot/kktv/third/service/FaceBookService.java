@@ -32,9 +32,9 @@ public class FaceBookService extends BaseService{
     
     private static Logger logger = Logger.getLogger(FaceBookService.class);
     
-    private final static String clientId = "475289669332579";;
+    private final static String CLIENT_ID = "475289669332579";;
     
-    private final static String clientSecret = "657ad42924b9397ed80d9e6a5205913c";
+    private final static String CLIENT_SECRET = "657ad42924b9397ed80d9e6a5205913c";
     
     private String serverUrl;
     
@@ -42,7 +42,7 @@ public class FaceBookService extends BaseService{
         String result = null;
         Transaction t = Cat.getProducer().newTransaction("MCall", "FaceBookService.verifyUser");
         try {
-            OAuth20Service service = new ServiceBuilder(clientId).apiSecret(clientSecret).build(FacebookApi.instance());
+            OAuth20Service service = new ServiceBuilder(CLIENT_ID).apiSecret(CLIENT_SECRET).build(FacebookApi.instance());
             OAuth2AccessToken accessToken = new OAuth2AccessToken(sessionId);
             OAuthRequest request = new OAuthRequest(Verb.GET, serverUrl);
             service.signRequest(accessToken, request);

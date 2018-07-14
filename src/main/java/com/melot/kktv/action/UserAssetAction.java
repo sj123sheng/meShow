@@ -47,13 +47,10 @@ import com.melot.module.medal.driver.domain.UserWearMedalListModel;
 import com.melot.module.medal.driver.service.ActivityMedalService;
 import com.melot.module.medal.driver.service.UserMedalService;
 import com.melot.module.packagegift.driver.domain.CarPrice;
-import com.melot.module.packagegift.driver.domain.EntranceTicket;
-import com.melot.module.packagegift.driver.domain.PageEntranceTicket;
 import com.melot.module.packagegift.driver.domain.Prop;
 import com.melot.module.packagegift.driver.domain.UserCarInfo;
 import com.melot.module.packagegift.driver.domain.UserVip;
 import com.melot.module.packagegift.driver.service.CarService;
-import com.melot.module.packagegift.driver.service.EntranceTicketService;
 import com.melot.module.packagegift.driver.service.VipService;
 import com.melot.sdk.core.util.MelotBeanFactory;
 
@@ -81,7 +78,6 @@ public class UserAssetAction {
 		JsonObject result = new JsonObject();
 		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 		result.add("props", getUserPropList(paramJsonObject, checkTag, request));
-		result.add("tickets", getUserTicketList(paramJsonObject, checkTag, request));
 		result.add("cars", getUserCarList(paramJsonObject, checkTag, request));
 		return result;
 	}
@@ -244,59 +240,6 @@ public class UserAssetAction {
             result.addProperty("ucId", StringUtil.parseFromStr(ucId, -1));
 		}
 		result.add("CarList", jsonArray);
-		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-		return result;
-	}
-	
-	/**
-	 * 获取用户所拥有的门票列表(10005050)
-	 * 
-	 * @param paramJsonObject
-	 * @return 用户的门票列表
-	 */
-	public JsonObject getUserTicketList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-		// 返回result
-		JsonObject result = new JsonObject();
-		// 获取/ 验证参数
-		Integer userId =null;
-		try {
-			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-		} catch (CommonUtil.ErrorGetParameterException e) {
-			result.addProperty("TagCode", e.getErrCode());
-			return result;
-		} catch (Exception e) {
-			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-			return result;
-		}
-		// 从redis中获取用户门票列表
-		EntranceTicketService enterTicketService = (EntranceTicketService) MelotBeanFactory.getBean("entranceTicketService");
-		PageEntranceTicket ticket = enterTicketService.getUserTicketListForApi(userId, null, null, null, null, 1, 0, 20);
-		
-		JsonArray jsonArray = new JsonArray();
-		if (ticket != null && ticket.getEntranceTicket() != null && ticket.getEntranceTicket().size() > 0) {
-			for (EntranceTicket ticketInfo : ticket.getEntranceTicket()) {
-				JsonObject ticketJson = new JsonObject();
-				if (ticketInfo.getTicketId() != null) {
-					ticketJson.addProperty("ticketId", ticketInfo.getTicketId());
-				}
-				if (ticketInfo.getIcon() != null) {
-					ticketJson.addProperty("icon", ConfigHelper.getHttpdir() + ticketInfo.getIcon());
-				}
-				if (ticketInfo.getDefinition() != null) {
-					ticketJson.addProperty("definition", ticketInfo.getDefinition());
-				}
-				if (ticketInfo.getStartTime() != null) {
-					ticketJson.addProperty("startTime", ticketInfo.getStartTime().getTime());
-				}
-				if (ticketInfo.getEndTime() != null) {
-					ticketJson.addProperty("endTime", ticketInfo.getEndTime().getTime());
-				}
-				// 添加列表
-				jsonArray.add(ticketJson);
-			}
-		}
-		// 返回列表
-		result.add("ticketList", jsonArray);
 		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 		return result;
 	}
@@ -1529,6 +1472,7 @@ public class UserAssetAction {
             switch (errCode) {
             case 101:
                 result.addProperty("TagCode", "05650003");
+                break;
             case 102:
                 result.addProperty("TagCode" , "05650002");
                 break;

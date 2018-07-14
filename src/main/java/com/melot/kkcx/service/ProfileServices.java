@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import com.melot.kk.otherlogin.api.service.OtherLoginService;
 import org.apache.log4j.Logger;
 
 import com.google.gson.Gson;
@@ -468,17 +469,13 @@ public class ProfileServices {
     }
     
     public static int insertChangeUserName(int userId, String nickName, int state) {
-        int result = 0;
         try {
-            Map<String, Object> map = new HashMap<String, Object>();
-            map.put("userId", userId);
-            map.put("newName", nickName);
-            map.put("state", state);
-            result = (Integer) SqlMapClientHelper.getInstance(DB.MASTER).insert("Profile.insertChangeUserName", map);
-        } catch(Exception e) {
-            logger.error("ProfileServices.insertChangeUserName(userId:" + userId + "nickName:" + nickName + ") return exception.", e);
+            OtherLoginService otherLoginService = (OtherLoginService) MelotBeanFactory.getBean("otherLoginService");
+            return otherLoginService.insertChangeUserName(userId, nickName, state);
+        } catch (Exception e) {
+            logger.error("ProfileServices.insertChangeUserName(" + "userId:" + userId + "nickName:" + nickName + "state:" + state + ") execute exception.", e);
         }
-        return result;
+        return 0;
     }
     
     /**
@@ -522,7 +519,7 @@ public class ProfileServices {
 		if (ps == null) {
 			return -1;
 		} else {
-			if (Pattern.matches(isNormal, ps) || !Pattern.matches(isPureMars, ps)) {
+			if (Pattern.matches(IS_NORMAL, ps) || !Pattern.matches(IS_PURE_MARS, ps)) {
 				//强度为低
 				return 1;
 			} else {
@@ -545,16 +542,16 @@ public class ProfileServices {
 	
 	private static boolean checkExistMore(String ps) {
 		int count = 0;
-		if (Pattern.matches(existUpperLetter, ps)) {
+		if (Pattern.matches(EXIST_UPPER_LETTER, ps)) {
 			count++;
 		}
-		if (Pattern.matches(existLowerLetter, ps)) {
+		if (Pattern.matches(EXIST_LOWER_LETTER, ps)) {
 			count++;
 		}
-		if (Pattern.matches(existNumber, ps)) {
+		if (Pattern.matches(EXIST_NUMBER, ps)) {
 			count++;
 		}
-		if (!Pattern.matches(existMars, ps)) {
+		if (!Pattern.matches(EXIST_MARS, ps)) {
 			count++;
 		}
 		if (count >= 3) {
@@ -563,16 +560,16 @@ public class ProfileServices {
 		return false;
 	}
 	
-	private final static String isNormal = "^[A-Z]+$||^[a-z]+$||^[0-9]+$";
+	private final static String IS_NORMAL = "^[A-Z]+$||^[a-z]+$||^[0-9]+$";
 	
-	private final static String isPureMars = ".*[a-zA-Z0-9].*";
+	private final static String IS_PURE_MARS = ".*[a-zA-Z0-9].*";
 	
-	private final static String existMars = "[a-zA-Z0-9]*";
+	private final static String EXIST_MARS = "[a-zA-Z0-9]*";
 	
-	private final static String existUpperLetter = ".*[A-Z].*";
+	private final static String EXIST_UPPER_LETTER = ".*[A-Z].*";
 	
-	private final static String existLowerLetter = ".*[a-z].*";
+	private final static String EXIST_LOWER_LETTER = ".*[a-z].*";
 	
-	private final static String existNumber = ".*[0-9].*";
+	private final static String EXIST_NUMBER = ".*[0-9].*";
 	
 }

@@ -43,6 +43,10 @@ import com.melot.module.packagegift.driver.domain.ResXman;
 import com.melot.module.packagegift.driver.domain.XmanConf;
 import com.melot.module.packagegift.driver.domain.XmanUserInfo;
 import com.melot.module.packagegift.driver.service.XmanService;
+import com.melot.room.gift.constant.ReturnResultCode;
+import com.melot.room.gift.domain.ReturnResult;
+import com.melot.room.gift.dto.ActorGiftDTO;
+import com.melot.room.gift.service.ActorPersonalizedGiftService;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import org.apache.log4j.Logger;
 
@@ -52,10 +56,13 @@ import java.util.*;
 
 public class NodeFunctions {
     
-    public static Logger logger = Logger.getLogger(NodeFunctions.class);
+    private static Logger logger = Logger.getLogger(NodeFunctions.class);
 
     @Resource
     UserApplyActorService userApplyActorService;
+    
+    @Resource
+    ActorPersonalizedGiftService actorPersonalizedGiftService;
 	
 	/**
 	 * 获取用户信息(For Node)(10005044)
@@ -1318,7 +1325,17 @@ public class NodeFunctions {
         //主播个性礼物
     	t = Cat.getProducer().newTransaction("MCall", "ActorGiftService.getActorPersonalizedGiftList");
 		try {
-			result.add("actorGiftList", ActorGiftService.getActorPersonalizedGiftList(userId));
+		    ReturnResult<List<ActorGiftDTO>> resp = actorPersonalizedGiftService.getActorPersonalizedGiftList(userId);
+            if (resp != null && ReturnResultCode.SUCCESS.getCode().equals(resp.getCode())) {
+                List<ActorGiftDTO> actorGiftList = resp.getData();
+                if (actorGiftList != null && !actorGiftList.isEmpty()) {
+                    ArrayList<Integer> giftList = new ArrayList<Integer>();
+                    for (ActorGiftDTO actorGift : actorGiftList) {
+                      giftList.add(actorGift.getGiftId());
+                    }
+                    result.add("actorGiftList", new Gson().toJsonTree(giftList).getAsJsonArray());
+                }
+            }
 			t.setStatus(Transaction.SUCCESS);
 		} catch (Exception e) {
 			logger.error("ActorGiftService.getActorPersonalizedGiftList(" + userId + ") execute exception.", e);

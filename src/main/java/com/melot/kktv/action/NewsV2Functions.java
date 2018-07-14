@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.melot.kkcore.user.api.UserRegistry;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
@@ -180,11 +181,11 @@ public class NewsV2Functions {
             newsInfo.setNewsTitle(newsTitle);
         }
         newsInfo.setPlatform(platform);
-            newsInfo.setAppId(appId);
-            // 校验媒体类型
-            if (mediaType > NewsMediaTypeEnum.VIDEO) {
-                result.addProperty("TagCode", "06020010");
-                return result;
+        newsInfo.setAppId(appId);
+        // 校验媒体类型
+        if (mediaType > NewsMediaTypeEnum.VIDEO) {
+            result.addProperty("TagCode", "06020010");
+            return result;
         }
 
         if (mediaType == NewsMediaTypeEnum.VIDEO) {
@@ -239,7 +240,6 @@ public class NewsV2Functions {
             List<Resource> resourceList = new ArrayList<Resource>();
             for (int i = 0;i<imageList.length;i++) {
                 String tempUrl = imageList[i];
-                String tempMd5 = md5List[i];
                 if(!StringUtil.strIsNull(tempUrl)){
                     Resource resource = new Resource();
                     resource.setState(ResourceStateConstant.uncheck);
@@ -247,8 +247,8 @@ public class NewsV2Functions {
                     resource.setResType(ResTypeConstant.resource);
                     resource.seteCloudType(ECloudTypeConstant.aliyun);
                     resource.setUserId(userId);
-                    if(!StringUtil.strIsNull(tempMd5)){
-                        resource.setMd5(tempMd5);
+                    if(md5List.length >= i+1){
+                        resource.setMd5(md5List[i]);
                     }
                     if (!StringUtil.strIsNull(tempUrl)) {
                         tempUrl = tempUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
@@ -672,7 +672,7 @@ public class NewsV2Functions {
         try {
             rtJO = SecurityFunctions.checkSignedValue(jsonObject);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("NewsV2Functions.addPlayTimes(" + "jsonObject:" + jsonObject + "checkTag:" + checkTag + ") execute exception.", e);
         }
         if(rtJO != null) {
             return rtJO;
@@ -686,6 +686,14 @@ public class NewsV2Functions {
             result.addProperty("TagCode", e.getErrCode());
             return result;
         }
+
+        //如果是游客就不添加播放记录
+        UserRegistry userRegistry = UserService.getUserRegistryInfo(userId);
+        if(userRegistry.getOpenPlatform()==0||userRegistry.getOpenPlatform()==-5||userRegistry.getOpenPlatform()==-7){
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        }
+
         boolean flag = NewsService.addNewsMediaPlay(userId,newsId);
         if(flag){
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
@@ -919,7 +927,7 @@ public class NewsV2Functions {
             result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
             return result;
         }
-        
+
         //特殊时期接口暂停使用
         if (configService.getIsSpecialTime()) {
             result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
@@ -949,7 +957,7 @@ public class NewsV2Functions {
             result.addProperty("TagCode", e.getErrCode());
             return result;
         }
-        
+
         if (!UserService.checkUserIdentify(userId)) {
             result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
             return result;
@@ -1303,7 +1311,7 @@ public class NewsV2Functions {
                         break;
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.error("NewsV2Functions.getTopicPage(" + "jsonObject:" + jsonObject + "checkTag:" + checkTag + "request:" + request + ") execute exception.", e);
                 }
             }
         }
@@ -1325,10 +1333,16 @@ public class NewsV2Functions {
                 result.addProperty("TagCode", TagCodeEnum.SUCCESS);
                 return result;
             } else {
+                result.addProperty("pathPrefix", ConfigHelper.getHttpdir()); // 图片前缀
+                result.addProperty("mediaPathPrefix", ConfigHelper.getMediahttpdir()); // 多媒体前缀
+                result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());// 七牛前缀
                 result.addProperty("TagCode", TagCodeEnum.SUCCESS);
                 return result;
             }
         } else {
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir()); // 图片前缀
+            result.addProperty("mediaPathPrefix", ConfigHelper.getMediahttpdir()); // 多媒体前缀
+            result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());// 七牛前缀
             result.addProperty("countTotal", count);
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
@@ -1612,7 +1626,7 @@ public class NewsV2Functions {
 
     /**
      * 根据newsType获取动态(20006030)
-     * 
+     *
      * @param jsonObject
      * @param checkTag
      * @param request
@@ -1626,49 +1640,49 @@ public class NewsV2Functions {
         int userId, newsType, start, offset, state, platform, actorId = 0;
         // 解析参数
         try {
-        	userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 0, Integer.MAX_VALUE);
-        	actorId = CommonUtil.getJsonParamInt(jsonObject, "actorId", 0, null, 0, Integer.MAX_VALUE);
-        	newsType = CommonUtil.getJsonParamInt(jsonObject, "newsType", 10, null, 0, Integer.MAX_VALUE);
-        	start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, null, 0, Integer.MAX_VALUE);
-        	offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 20, null, 1, Integer.MAX_VALUE);
-        	state = CommonUtil.getJsonParamInt(jsonObject, "state", 1, null, 0, Integer.MAX_VALUE);
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 0, Integer.MAX_VALUE);
+            actorId = CommonUtil.getJsonParamInt(jsonObject, "actorId", 0, null, 0, Integer.MAX_VALUE);
+            newsType = CommonUtil.getJsonParamInt(jsonObject, "newsType", 10, null, 0, Integer.MAX_VALUE);
+            start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, null, 0, Integer.MAX_VALUE);
+            offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 20, null, 1, Integer.MAX_VALUE);
+            state = CommonUtil.getJsonParamInt(jsonObject, "state", 1, null, 0, Integer.MAX_VALUE);
             platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
         } catch (ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
         }
-        
+
         if (userId == 0 && actorId == 0) {
-        	result.addProperty("TagCode", "06300001");
-        	return result;
+            result.addProperty("TagCode", "06300001");
+            return result;
         }
-        
+
         if (actorId == 0) {
-        	//老版参数兼容,之前userId作为actorId使用,且不传actorId
-        	actorId = userId;
+            //老版参数兼容,之前userId作为actorId使用,且不传actorId
+            actorId = userId;
         }
-        
+
         int count = NewsService.getNewsCountByResType(actorId, newsType, state);
         if (count > 0) {
-        	List<NewsInfo> newsList;
-        	if (checkTag) {
-        		newsList = NewsService.getNewsListAndPraiseByResType(actorId, userId, newsType, start, offset);
-        	} else {
-            	newsList = NewsService.getNewsListByResType(actorId, newsType, start, offset);
-        	}
+            List<NewsInfo> newsList;
+            if (checkTag) {
+                newsList = NewsService.getNewsListAndPraiseByResType(actorId, userId, newsType, start, offset);
+            } else {
+                newsList = NewsService.getNewsListByResType(actorId, newsType, start, offset);
+            }
             if (newsList != null && newsList.size() > 0) {
-            	JsonArray jNewsList = new JsonArray();
-            	for (NewsInfo newsInfo : newsList) {
-            		JsonObject json = NewsService.getNewResourceJson(newsInfo, platform, false);
+                JsonArray jNewsList = new JsonArray();
+                for (NewsInfo newsInfo : newsList) {
+                    JsonObject json = NewsService.getNewResourceJson(newsInfo, platform, false);
                     jNewsList.add(json);
                 }
-            	
-            	
-            	result.add("newsList", jNewsList);
-                
+
+
+                result.add("newsList", jNewsList);
+
             }
-        } 
-        
+        }
+
         RoomInfo actorInfo = RoomService.getRoomInfo(actorId);
         if (actorInfo != null) {
             result.addProperty("nickname", actorInfo.getNickname());
@@ -1726,7 +1740,7 @@ public class NewsV2Functions {
                 }
             }
         }
-        
+
         result.addProperty("pathPrefix", ConfigHelper.getHttpdir()); // 图片前缀
         result.addProperty("mediaPathPrefix", ConfigHelper.getMediahttpdir()); // 多媒体前缀
         result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());// 七牛前缀
@@ -1734,7 +1748,7 @@ public class NewsV2Functions {
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
-    
+
     /**
      * 删除评论(20006006)
      *
@@ -2011,7 +2025,7 @@ public class NewsV2Functions {
                         break;
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.error("NewsV2Functions.getHotMediaNewsList(" + "jsonObject:" + jsonObject + "checkTag:" + checkTag + "request:" + request + ") execute exception.", e);
                 }
             }
             result.add("hotNewsList", hotNewsList);
@@ -2309,11 +2323,11 @@ public class NewsV2Functions {
                     break;
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("NewsV2Functions.getJson(" + "checkTag:" + checkTag + "userId:" + userId + "offset:" + offset + "hotNews:" + hotNews + "hotNewsList:" + hotNewsList + ") execute exception.", e);
             }
         }
     }
-    
+
 
     private static VideoInfo getVideoInfoByHttp(String videoUrl) {
         videoUrl = new StringBuilder().append(ConfigHelper.getVideoURL()).append(videoUrl).append("?avinfo").toString();
@@ -2354,15 +2368,15 @@ public class NewsV2Functions {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("NewsV2Functions.getVideoInfoByHttp(" + "videoUrl:" + videoUrl + ") execute exception.", e);
         } catch (IllegalStateException e) {
-            e.printStackTrace();
+            logger.error("NewsV2Functions.getVideoInfoByHttp(" + "videoUrl:" + videoUrl + ") execute exception.", e);
         } finally {
             if (httpClient != null) {
                 try {
                     httpClient.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    logger.error("NewsV2Functions.getVideoInfoByHttp(" + "videoUrl:" + videoUrl + ") execute exception.", e);
                 }
             }
         }

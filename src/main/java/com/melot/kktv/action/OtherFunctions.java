@@ -1,7 +1,6 @@
 package com.melot.kktv.action;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -14,15 +13,12 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.chinacreator.videoalliance.util.ChinaUnicomEnum;
-import com.chinacreator.videoalliance.util.DesUtil;
 import com.dianping.cat.Cat;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.gson.reflect.TypeToken;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.blacklist.service.BlacklistService;
 import com.melot.common.melot_utils.StringUtils;
@@ -60,33 +56,28 @@ import com.melot.kkcx.service.FamilyService;
 import com.melot.kkcx.service.ProfileServices;
 import com.melot.kkcx.service.RoomService;
 import com.melot.kkgame.redis.ActorInfoSource;
-import com.melot.kktv.model.ResCuSpOrder;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.service.ConfigService;
-import com.melot.kktv.service.ConsumeService;
-import com.melot.kktv.service.GeneralService;
 import com.melot.kktv.service.UserService;
 import com.melot.kktv.util.AppChannelEnum;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
-import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
 import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.Constant;
 import com.melot.kktv.util.DBEnum;
 import com.melot.kktv.util.DateUtil;
 import com.melot.kktv.util.PlatformEnum;
 import com.melot.kktv.util.SecretKeyUtil;
-import com.melot.kktv.util.SecurityFunctions;
 import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.confdynamic.SystemConfig;
-import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
+import com.melot.module.packagegift.driver.domain.LoudSpeakerHistory;
+import com.melot.module.packagegift.driver.service.MallService;
 import com.melot.module.packagegift.driver.service.TicketService;
 import com.melot.module.packagegift.driver.service.VipService;
 import com.melot.module.packagegift.util.GiftPackageEnum;
 import com.melot.sdk.core.util.MelotBeanFactory;
-import com.melot.stream.driver.service.LiveStreamConfigService;
 
 /**
  * 其他相关的接口类
@@ -101,9 +92,6 @@ public class OtherFunctions {
     
 	private static Logger showMoneyLogger = Logger.getLogger("showMoneyLogger");
 	
-    /** 小喇叭自动通过审核 */
-    private static final int SPEAK_STATE_AUTO_COMMIT = 1;
-    
     private static final int SEND_LOUDER_SPEAKER_COST = 10 * 1000;
     
     @Autowired
@@ -117,6 +105,9 @@ public class OtherFunctions {
 
     @Resource
     UserVerifyService userVerifyService;
+    
+    @Resource
+    MallService mallService;
     
     @SuppressWarnings("unused")
     private ActorInfoSource actorInfoSource;
@@ -147,7 +138,6 @@ public class OtherFunctions {
 	 * @return 发送结果
 	 */
 	public JsonObject speakToTotalStation(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
-		
 	    JsonObject result = new JsonObject();
 		
 	    // 该接口需要验证token,未验证的返回错误码
@@ -188,23 +178,7 @@ public class OtherFunctions {
 		    content = content.substring(0, 40);
         }
 		
-		Map<Object, Object> map = new HashMap<Object, Object>();
-		map.put("userId", userId);
-		map.put("roomId", roomId);
-		map.put("content", content);
-		map.put("nickName", nickName);
-		map.put("href", href);
-        map.put("appId", appId);
-		
-		int state = 0;
-		//state改为0，表示需要后台审核喇叭内容，1表示不需要审核
-		map.put("state", state);
-		
-		// type: 1-普通喇叭，2-红包喇叭
-        map.put("type", 1);
-		
 		boolean flag = false, vipFlag = false;
-		
 		Integer count = null;
 		//喇叭券秀币价值
 		long costMoney = SEND_LOUDER_SPEAKER_COST;
@@ -254,8 +228,6 @@ public class OtherFunctions {
             }
             
             logger.info("用户[" + userId + "]在房间[" + roomId + "]发送了一个小喇叭,花费[" + costMoney + "]");
-//            }
-			map.put("costMoney", ((Number) costMoney).intValue());
 		} else if (sendType == 1) {
 			//使用喇叭券发送喇叭，先扣除券
 		    try {
@@ -268,315 +240,85 @@ public class OtherFunctions {
 				result.addProperty("TagCode", "20020004");
 				return result;
 			}
-			map.put("costMoney", 0);
-			map.put("ticketId", ticketId);
+			costMoney = 0;
 		}
 		
-		//调用发送喇叭存储过程 P_LOUDSPEAKER
-		boolean ret = false;
 		try {
-			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Other.loudSpeaker", map);
-			
-			String TagCode = (String) map.get("TagCode");
-			if (!TagCodeEnum.SUCCESS.equals(TagCode)) {
-				if (sendType == 1) {
-					//发送喇叭存储过程失败，将扣除的券加1
-					ret = ticketService.insertSendTicket(userId, ticketId, GiftPackageEnum.TICKET_SEND, 1, "用户" + userId + "发送喇叭操作失败退回已扣除喇叭券", 0);
-					if (!ret) {
-						logger.error("用户:" + userId + "，发送喇叭失败，券" + ticketId + "，已扣除1张，退回失败");
-					}
-				} else if (sendType == 0 && costMoney > 0) {
-					if (vipFlag == true && count != null && count < 3) {
-					    vipService.setSvipDailyLoudspeakerCount(userId, -1);
-					}
-					// 发送喇叭存储过程失败，将扣除的秀币返还
-					showMoneyLogger.info("Failed: 发送喇叭失败，需返还秀币{userId: " + userId + ", showMoney: " + costMoney);
-	                logger.error("执行过程中发生异常,返还已扣除的秀币, userId " + userId + " showMoney : " + costMoney);
-				}
-				logger.error("调用存储过程(Other.loudSpeaker)未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
-				result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);				
-			} else {
-			    if (map.get("state").equals(SPEAK_STATE_AUTO_COMMIT)) {
-			        //喇叭信息存入 Redis 通道，以便房间可以取到喇叭信息显示在房间上
-			        //喇叭内容必须先通过后台审核，取消直接推消息渠道
-			        Map<String, Object> messageMap = new HashMap<String, Object>();
-			        messageMap.put("nickname", nickName);
-			        messageMap.put("portrait", UserService.getUserInfoV2(userId).getPortrait());
-			        messageMap.put("richLevel", com.melot.kkcx.service.UserService.getRichLevel(userId));
-			        messageMap.put("propList", com.melot.kkcx.service.UserService.getUserProps(userId));
-			        messageMap.put("content", content);
-			        messageMap.put("userId", userId);
-			        messageMap.put("roomId", roomId);
-			        messageMap.put("href", href);
-			        messageMap.put("time", System.currentTimeMillis());
-			        messageMap.put("appId", appId);
-			        
-			        RoomInfo roomInfo = com.melot.kktv.service.RoomService.getRoomInfo(roomId);
-			        if (roomInfo != null) {
-			            if (roomInfo.getScreenType() != null) {
-			                messageMap.put("screenType", roomInfo.getScreenType());
-			            }
-			            if (roomInfo.getRoomSource() != null) {
-			                messageMap.put("roomSource", roomInfo.getRoomSource());
-			            } else {
-			                messageMap.put("roomSource", AppIdEnum.AMUSEMENT);
-			            }
-			            if (roomInfo.getType() != null) {
-			                messageMap.put("roomType", roomInfo.getType());
-			            } else {
-			                messageMap.put("roomType", AppIdEnum.AMUSEMENT);
-			            }
-			        }
-			        
-			        JsonArray array = new JsonArray();
-			        array.add(new Gson().toJsonTree(messageMap));
-			        String message = "{\"MsgTag\":50010101,\"MsgList\":" + array.toString() +"}";
-			        com.melot.kkcx.service.GeneralService.sendMsgToRoom(1, 0, 0, 0, appId, message);
-	            }
-			    
-			    result.addProperty("state", state);
-				result.addProperty("money", com.melot.kktv.service.UserService.getUserShowMoney(userId));
-				result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-			}
+		    LoudSpeakerHistory loudSpeakerHistory = new LoudSpeakerHistory();
+		    loudSpeakerHistory.setRoomId(roomId);
+		    loudSpeakerHistory.setUserId(userId);
+		    loudSpeakerHistory.setContent(content);
+		    loudSpeakerHistory.setAmount((int) costMoney);
+		    loudSpeakerHistory.setHref(href);
+		    loudSpeakerHistory.setNickname(nickName);
+		    loudSpeakerHistory.setState(0);
+		    loudSpeakerHistory.setTicketId(ticketId);
+		    loudSpeakerHistory.setAppId(AppIdEnum.AMUSEMENT);
+		    loudSpeakerHistory.setType(1);
+		    
+		    Map<String, Object> messageMap = new HashMap<String, Object>();
+            messageMap.put("nickname", nickName);
+            messageMap.put("portrait", UserService.getUserInfoV2(userId).getPortrait());
+            messageMap.put("richLevel", com.melot.kkcx.service.UserService.getRichLevel(userId));
+            messageMap.put("propList", com.melot.kkcx.service.UserService.getUserProps(userId));
+            messageMap.put("content", content);
+            messageMap.put("userId", userId);
+            messageMap.put("roomId", roomId);
+            messageMap.put("href", href);
+            messageMap.put("time", System.currentTimeMillis());
+            messageMap.put("appId", appId);
+            
+            RoomInfo roomInfo = com.melot.kktv.service.RoomService.getRoomInfo(roomId);
+            if (roomInfo != null) {
+                if (roomInfo.getScreenType() != null) {
+                    messageMap.put("screenType", roomInfo.getScreenType());
+                }
+                if (roomInfo.getRoomSource() != null) {
+                    messageMap.put("roomSource", roomInfo.getRoomSource());
+                } else {
+                    messageMap.put("roomSource", AppIdEnum.AMUSEMENT);
+                }
+                if (roomInfo.getType() != null) {
+                    messageMap.put("roomType", roomInfo.getType());
+                } else {
+                    messageMap.put("roomType", AppIdEnum.AMUSEMENT);
+                }
+            }
+            
+            JsonArray array = new JsonArray();
+            array.add(new Gson().toJsonTree(messageMap));
+            String message = "{\"MsgTag\":50010101,\"MsgList\":" + array.toString() +"}";
+            
+		    int sendCode = mallService.sendMsgToRoom(1, 0, 0, 0, appId, message, 0, loudSpeakerHistory);
+		    boolean ret = false;
+		    if (sendCode == 0) {
+		        result.addProperty("state", 0);
+                result.addProperty("money", com.melot.kktv.service.UserService.getUserShowMoney(userId));
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+		    } else {
+		        logger.error("用户发送喇叭失败，userId：" + userId);
+                if (sendType == 1) {
+                    //发送喇叭存储过程执行异常，将扣除的券加1
+                    ret = ticketService.insertSendTicket(userId, ticketId, GiftPackageEnum.TICKET_SEND, 1, "用户" + userId + "发送喇叭操作异常退回已扣除喇叭券", 0);
+                    if (!ret) {
+                        logger.error("用户:" + userId + "，发送喇叭异常，券" + ticketId + "，已扣除1张，退回失败");
+                    }
+                } else if (sendType == 0 && costMoney > 0) {
+                    if (vipFlag == true && count != null && count < 3) {
+                        vipService.setSvipDailyLoudspeakerCount(userId, -1);
+                    }
+                    // 发送喇叭失败，将扣除的秀币返还
+                    showMoneyLogger.info("Failed: 发送喇叭失败，需返还秀币{userId: " + userId + ", showMoney: " + costMoney);
+                }
+                result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+		    }
 		} catch (Exception e) {
-			if (sendType == 1) {
-				//发送喇叭存储过程执行异常，将扣除的券加1
-				ret = ticketService.insertSendTicket(userId, ticketId, GiftPackageEnum.TICKET_SEND, 1, "用户" + userId + "发送喇叭操作异常退回已扣除喇叭券", 0);
-				if (!ret) {
-					logger.error("用户:" + userId + "，发送喇叭异常，券" + ticketId + "，已扣除1张，退回失败");
-				}
-			} else if (sendType == 0 && costMoney > 0) {
-				if (vipFlag == true && count != null && count < 3) {
-				    vipService.setSvipDailyLoudspeakerCount(userId, -1);
-				}
-				// 发送喇叭存储过程失败，将扣除的秀币返还
-				showMoneyLogger.info("Failed: 发送喇叭失败，续返还秀币{userId: " + userId + ", showMoney: " + costMoney);
-                logger.error("执行过程中发生异常,返还已扣除的秀币, userId " + userId + " showMoney : " + costMoney);
-			}
-			
-			logger.error("未能正常调用存储过程", e);
-			result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
+		    logger.error("发送喇叭异常：", e);
 		}
 
 		return result;
 	}
 	
-	/**
-	 * 获取联通免流量访问地址(20000004)
-	 * @param jsonObject
-	 * @return
-	 * @throws Exception
-	 */
-	public JsonObject getChinaUnicomFreeFlowAccessUrl(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
-		
-		// 安全sv验证
-		JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
-		if(rtJO != null) return rtJO;
-		
-		// 定义使用的参数
-		String usermob = null;
-		String reqIp = null;
-		List<String> flowurls = null;
-		// 定义返回结果
-		JsonObject result = new JsonObject();
-		// 解析参数
-		try {
-			// 获取IP	
-			reqIp = convert3GIP(CommonUtil.getIpAddr(request));
-			if (reqIp == null) {
-				// 无效ip地址
-				result.addProperty("TagCode", "20040007");
-				return result;
-			}
-			String encryptUsermob = CommonUtil.getJsonParamString(jsonObject, "usermob", null, "20040001", 1, 64);
-			try {
-				usermob = DesUtil.decode(
-						encryptUsermob,
-						ConfigHelper.getChinaUnicomPassword());
-			} catch (Exception e) {}
-			if (usermob == null) {
-				// usermob解密失败
-				result.addProperty("TagCode", "20040004");
-				return result;
-			}
-			
-			String flowurl = CommonUtil.getJsonParamString(jsonObject, "flowurl", null, "20040002", 1, 500);
-			try {
-				TypeToken<List<String>> typeToken = new TypeToken<List<String>>(){};
-				flowurls = new Gson().fromJson(flowurl, typeToken.getType());
-			} catch (Exception e) {
-				// flow解析错误
-				result.addProperty("TagCode", "20040006");
-				return result;
-			}
-		} catch (ErrorGetParameterException e) {
-			result.addProperty("TagCode", e.getErrCode());
-			return result;
-		}
-		// 判断usermob是否已经订购
-		try {
-			Map<String, Object> map = new HashMap<String, Object>();
-			map.put("usermob", usermob);
-			map.put("spid", ConfigHelper.getChinaUnicomSpid());
-			map.put("ordertype", ChinaUnicomEnum.ORDER_TYPE_MONTH);
-			ResCuSpOrder resCuSporder = (ResCuSpOrder) SqlMapClientHelper.getInstance(DB.MASTER)
-					.queryForObject("Other.selectResCuSpOrder", map);
-			if (resCuSporder != null) {
-				if (resCuSporder.getType() == 0 || (resCuSporder.getType() == 1
-						&& resCuSporder.getEndtime().getTime() > System.currentTimeMillis())) {
-					// 主播编号为偶数取第一个地址 奇数取第二个地址
-					List<String> freeurls = new ArrayList<String>();
-					LiveStreamConfigService liveStreamConfigService = (LiveStreamConfigService) MelotBeanFactory.getBean("liveStreamConfigService");
-					List<String> urls = liveStreamConfigService.getFreeUnicomServer(flowurls);
-					for (String url : urls) {
-						if (url != null) {
-							freeurls.add(url);
-						}
-					}
-					// 用户使用流量信息
-					if (resCuSporder.getStatstime() != null && resCuSporder.getFlowbyte() != null) {
-						result.addProperty("statstime", resCuSporder.getStatstime());
-						result.addProperty("flowbyte", resCuSporder.getFlowbyte());
-					}
-					
-					result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-					result.add("freeurl", new JsonParser().parse(new Gson().toJson(freeurls)).getAsJsonArray());
-				} else {
-					result.addProperty("TagCode", "20040005");
-				}
-			} else {
-				result.addProperty("TagCode", "20040005");
-			}
-		} catch (Exception e) {
-			logger.error("fail to excute sql, usermob " + usermob, e);
-			result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
-		}
-		
-		return result;
-	}
-	
-	/**
-	 * 查询是否联通3G及手机伪码订购关系(20000005)
-	 * @param jsonObject
-	 * @param request
-	 * @return
-	 * @throws Exception
-	 */
-	public JsonObject getChinaUnicomSpOrderState(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
-		
-		// 定义返回结果
-		JsonObject result = new JsonObject();
-		
-		// 选填
-		String usermob = null;
-		String reqIp = null;
-		int openLimit = 1;
-		int platform = PlatformEnum.ANDROID;
-		// 解析参数
-		try {
-			// 获取IP	
-			reqIp = convert3GIP(CommonUtil.getIpAddr(request));
-			if (reqIp == null) {
-				// 无效ip地址
-				result.addProperty("TagCode", "20050002");
-				return result;
-			}
-			String encryptUsermob = CommonUtil.getJsonParamString(jsonObject, "usermob", null, null, 1, 64);
-			if (encryptUsermob != null) {
-				try {
-					usermob = DesUtil.decode(
-							encryptUsermob,
-							ConfigHelper.getChinaUnicomPassword());
-				} catch (Exception e) {}
-				if (usermob == null) {
-					// usermob解密失败
-					result.addProperty("TagCode", "20050001");
-					return result;
-				}
-			}
-			// openLimit 是否省份限制
-			openLimit = CommonUtil.getJsonParamInt(jsonObject, "openLimit", 1, null, 0, 1);
-			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.ANDROID, null, 1, Integer.MAX_VALUE);
-		} catch (ErrorGetParameterException e) {
-			result.addProperty("TagCode", e.getErrCode());
-			return result;
-		}
-		
-		try {
-			// 验证是否联通3G
-			Map<String, Object> map1 = new HashMap<String, Object>();
-			map1.put("reqIp", reqIp);
-			map1.put("openLimit", openLimit);
-			map1.put("platform", platform);
-			Integer ret = (Integer) SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Other.isCu3gUser", map1);
-			if (ret != null && ret.intValue() > 0) {
-				result.addProperty("is3g", 1);// 是3G
-			} else {
-				result.addProperty("is3g", 0);// 非3G
-			}
-			
-			// 若手机伪码不为空,查询该手机伪码订购关系
-			if (usermob != null) {
-				Map<String, Object> map = new HashMap<String, Object>();
-				map.put("usermob", usermob);
-				map.put("spid", ConfigHelper.getChinaUnicomSpid());
-				map.put("ordertype", ChinaUnicomEnum.ORDER_TYPE_MONTH);
-				ResCuSpOrder resCuSporder = (ResCuSpOrder) SqlMapClientHelper.getInstance(DB.MASTER)
-						.queryForObject("Other.selectResCuSpOrder", map);
-				if (resCuSporder != null) {
-					int type = resCuSporder.getType();
-					// 失效时间
-					// 当type=1时不为空
-					// 当type=0，ordertype=0、2、3时，不为空，ordertype=1时，为空
-					if (!(resCuSporder.getType() == 0 && resCuSporder.getOrdertype() == 1)) {
-						// 退订关系下返回sp业务到期时间
-						result.addProperty("spDeadline", resCuSporder.getEndtime().getTime());
-					}
-					// TODO
-					result.addProperty("spType", 1);
-					result.addProperty("spState", type);
-					
-					// 用户使用流量信息
-					if (resCuSporder.getStatstime() != null && resCuSporder.getFlowbyte() != null) {
-						result.addProperty("statstime", resCuSporder.getStatstime());
-						result.addProperty("flowbyte", resCuSporder.getFlowbyte());
-					}
-				}
-			}
-			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-		} catch (Exception e) {
-			logger.error("fail to excute sql, request ip " + reqIp + " usermob " + usermob, e);
-			result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
-		}
-		
-		return result;
-	}
-	
-	/**
-	 * IP转化:去除分隔符.,第2,3,4段不足3位用0补全
-	 * @param inIp
-	 * @return outIp
-	 */
-	private static String convert3GIP(String inIp) {
-		String outIp = null;
-		if (inIp != null && inIp.indexOf(".") > 0) {
-			String[] ipArr = inIp.split("\\.");
-			if (ipArr.length == 4) {
-				outIp = ipArr[0].trim();
-				for (int i = 1; i < 4; i++) {
-					if (ipArr[i].trim().length() == 1) {
-						outIp = outIp + "00" + ipArr[i].trim();
-					} else if (ipArr[i].trim().length() == 2) {
-						outIp = outIp + "0" + ipArr[i].trim();
-					} else {
-						outIp = outIp + ipArr[i].trim();
-					}
-				}
-			}
-		}
-		return outIp;
-	}
-
 	/**
 	 *	获取所有可用表情列表及用户购买状态(20000006)
 	 */
@@ -730,6 +472,79 @@ public class OtherFunctions {
 			result.addProperty("TagCode", tagCode_prefix + "08");
 			return result;
 		}
+	}
+
+	/**
+	 * 获得举报处理结果列表接口(20000009)
+	 */
+	public JsonObject getCommitRecordList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+		JsonObject result = new JsonObject();
+		int start, offset;
+		try {
+			start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, null, 0, Integer.MAX_VALUE);
+			offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 10, null, 1, Integer.MAX_VALUE);
+		} catch (CommonUtil.ErrorGetParameterException e) {
+			result.addProperty("TagCode", e.getErrCode());
+			return result;
+		} catch (Exception e) {
+			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+			return result;
+		}
+
+		List<RecordProcessedRecord> recordList = null;
+		try {
+			RecordProcessedRecordService recordProcessedRecordService = MelotBeanFactory.getBean("recordProcessedRecordService", RecordProcessedRecordService.class);
+			recordList = recordProcessedRecordService.getHistRecordWeiGuiList(start, offset);
+		} catch (Exception e) {
+			logger.error("Fail to call recordProcessedRecordService.getProcessedRecordList", e);
+		}
+
+		JsonArray recordArray = new JsonArray();
+
+		if (recordList != null) {
+			for (RecordProcessedRecord record : recordList) {
+				JsonObject json = new JsonObject();
+				json.addProperty("userId", record.getBeUserId());
+				json.addProperty("nickname", record.getBeUserName());
+				json.addProperty("processDesc", record.getReportMemo());
+				if(record.getIllegalType() != null) {
+					switch(record.getIllegalType()) {
+						case 1:
+							json.addProperty("recordstr", String.format(Constant.remind_demo, DateUtil.formatDate(record.getEndTime(), null)));
+							break;
+						case 2:
+							json.addProperty("recordstr", String.format(Constant.warn_demo, DateUtil.formatDate(record.getEndTime(), null)));
+							break;
+						case 3:
+							json.addProperty("recordstr", String.format(Constant.limit_demo, DateUtil.formatDate(record.getEndTime(), null)));
+							break;
+						case 4:
+							json.addProperty("recordstr", String.format(Constant.seal_demo, DateUtil.formatDate(record.getEndTime(), null)));
+							break;
+						case 5:
+							json.addProperty("recordstr", String.format(Constant.reduce_money, DateUtil.formatDate(record.getEndTime(), null)));
+							break;
+						default:
+							break;
+					}
+				}
+
+				//add违规处理结果返回
+				if(record.getIllegalType() == 3){ //限播处理才返回
+					if (record.getReliveTime() == null) {
+						json.addProperty("reOpenstr", Constant.REPORT_FOREVER);
+					} else {
+						json.addProperty("reOpenstr", String.format(Constant.REPORT_CANCEL, DateUtil.formatDate(record.getReliveTime(), null)));
+					}
+				}
+				recordArray.add(json);
+			}
+		}
+
+		result.add("recordList", recordArray);
+		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+
+		return result;
 	}
  
     /* ----------------------- 申请家族主播流程相关接口 ----------------------- */

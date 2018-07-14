@@ -1,35 +1,76 @@
 package com.melot.kkcx.functions;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.dianping.cat.Cat;
 import com.dianping.cat.message.Transaction;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
-import com.melot.family.driver.domain.DO.UserApplyActorDO;
 import com.melot.family.driver.domain.FamilyInfo;
+import com.melot.family.driver.domain.DO.UserApplyActorDO;
 import com.melot.family.driver.service.UserApplyActorService;
 import com.melot.kk.opus.api.constant.OpusCostantEnum;
 import com.melot.kk.userSecurity.api.domain.DO.UserVerifyDO;
 import com.melot.kk.userSecurity.api.service.UserVerifyService;
 import com.melot.kkcore.actor.api.RoomInfoKeys;
 import com.melot.kkcore.actor.service.ActorService;
-import com.melot.kkcore.user.api.*;
+import com.melot.kkcore.user.api.GameMoneyHistory;
+import com.melot.kkcore.user.api.ProfileKeys;
+import com.melot.kkcore.user.api.UserInfoDetail;
+import com.melot.kkcore.user.api.UserProfile;
+import com.melot.kkcore.user.api.UserRegistry;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.model.ActorLevel;
 import com.melot.kkcx.model.CommonDevice;
 import com.melot.kkcx.model.RichLevel;
 import com.melot.kkcx.model.StarInfo;
-import com.melot.kkcx.service.*;
+import com.melot.kkcx.service.FamilyService;
+import com.melot.kkcx.service.GeneralService;
+import com.melot.kkcx.service.MessageBoxServices;
+import com.melot.kkcx.service.ProfileServices;
+import com.melot.kkcx.service.UserAssetServices;
+import com.melot.kkcx.service.UserService;
 import com.melot.kkgame.redis.LiveTypeSource;
-import com.melot.kktv.model.*;
+import com.melot.kktv.model.BuyProperties;
+import com.melot.kktv.model.ConsumerRecord;
+import com.melot.kktv.model.Family;
+import com.melot.kktv.model.GiftRecord;
+import com.melot.kktv.model.Honor;
+import com.melot.kktv.model.MedalInfo;
+import com.melot.kktv.model.WinLotteryRecord;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.MedalSource;
 import com.melot.kktv.redis.QQVipSource;
 import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.LiveVideoService;
 import com.melot.kktv.service.UserRelationService;
-import com.melot.kktv.util.*;
+import com.melot.kktv.util.AppChannelEnum;
+import com.melot.kktv.util.AppIdEnum;
+import com.melot.kktv.util.CityUtil;
+import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.ConfigHelper;
+import com.melot.kktv.util.DateUtil;
+import com.melot.kktv.util.PlatformEnum;
+import com.melot.kktv.util.StringUtil;
+import com.melot.kktv.util.TagCodeEnum;
+import com.melot.kktv.util.TextFilter;
 import com.melot.kktv.util.confdynamic.MedalConfig;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
@@ -40,18 +81,15 @@ import com.melot.module.medal.driver.service.UserMedalService;
 import com.melot.module.packagegift.driver.domain.ResUserXman;
 import com.melot.module.packagegift.driver.domain.ResXman;
 import com.melot.module.packagegift.driver.service.XmanService;
+import com.melot.room.live.record.constant.PageResult;
+import com.melot.room.live.record.domain.ReturnResult;
+import com.melot.room.live.record.dto.HistActorLiveDTO;
+import com.melot.room.live.record.service.LiveRecordService;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import com.melot.showmoney.driver.domain.PageGameMoneyHistory;
 import com.melot.showmoney.driver.domain.PageShowMoneyHistory;
 import com.melot.showmoney.driver.domain.ShowMoneyHistory;
 import com.melot.showmoney.driver.service.ShowMoneyService;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import java.sql.SQLException;
-import java.util.*;
 
 public class ProfileFunctions {
 	
@@ -70,6 +108,9 @@ public class ProfileFunctions {
 	@Resource
 	ActorService actorService;
 
+	@Resource
+	LiveRecordService liveRecordService;
+	
 	private LiveTypeSource liveTypeSource;
 
     public void setLiveTypeSource(LiveTypeSource liveTypeSource) {
@@ -1600,134 +1641,60 @@ public class ProfileFunctions {
 	 * @return json对象形式的返回结果
 	 */
 	public JsonObject getUserLiveList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
-		// 获取参数
-		JsonElement userIdje = jsonObject.get("userId");
-		JsonElement startTimeje = jsonObject.get("startTime");
-		JsonElement endTimeje = jsonObject.get("endTime");
-		JsonElement pageIndexje = jsonObject.get("pageIndex");
+	    JsonObject result = new JsonObject();
 
 		// 验证参数
-		int userId;
-		long startTime;
-		long endTime;
-		int pageIndex;
-		if (userIdje != null && !userIdje.isJsonNull() && !userIdje.getAsString().equals("")) {
-			// 验证数字
-			try {
-				userId = userIdje.getAsInt();
-			} catch (Exception e) {
-				JsonObject result = new JsonObject();
-				result.addProperty("TagCode", "05160002");
-				return result;
-			}
-		} else {
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", "05160001");
-			return result;
-		}
-		if (startTimeje != null && !startTimeje.isJsonNull() && !startTimeje.getAsString().equals("")) {
-			// 验证数字
-			try {
-				startTime = startTimeje.getAsLong();
-			} catch (Exception e) {
-				JsonObject result = new JsonObject();
-				result.addProperty("TagCode", "05160004");
-				return result;
-			}
-		} else {
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", "05160003");
-			return result;
-		}
-		if (endTimeje != null && !endTimeje.isJsonNull() && !endTimeje.getAsString().equals("")) {
-			// 验证数字
-			try {
-				endTime = endTimeje.getAsLong();
-			} catch (Exception e) {
-				JsonObject result = new JsonObject();
-				result.addProperty("TagCode", "05160006");
-				return result;
-			}
-		} else {
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", "05160005");
-			return result;
-		}
-		if (pageIndexje != null && !pageIndexje.isJsonNull() && !pageIndexje.getAsString().equals("")) {
-			// 验证数字
-			try {
-				pageIndex = pageIndexje.getAsInt();
-			} catch (Exception e) {
-				JsonObject result = new JsonObject();
-				result.addProperty("TagCode", "05160008");
-				return result;
-			}
-		} else {
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", "05160007");
-			return result;
-		}
-
-		// 调用存储过程得到结果
-		Map<Object, Object> map = new HashMap<Object, Object>();
-		map.put("userId", userId);
-		map.put("startTime", new Date(startTime));
-		map.put("endTime", new Date(endTime));
-		map.put("pageIndex", pageIndex);
+		int userId, pageIndex;
+		long startTime, endTime;
 		try {
-			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Profile.getUserLiveList", map);
-		} catch (SQLException e) {
-			logger.error("未能正常调用存储过程", e);
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
-			return result;
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "05160002", 1, Integer.MAX_VALUE);
+            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, "05160008", 1, Integer.MAX_VALUE);
+            startTime = CommonUtil.getJsonParamLong(jsonObject, "startTime", 0, "05160004", 1, Long.MAX_VALUE);
+            endTime = CommonUtil.getJsonParamLong(jsonObject, "endTime", 0, "05160006", startTime, Long.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch(Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+		
+		try {
+		    ReturnResult<PageResult<HistActorLiveDTO>> resp = liveRecordService.pageActorLiveDTO(userId, new Date(startTime), new Date(endTime), pageIndex, 6);
+	        if (resp != null && "0".equals(resp.getCode())) {
+	            PageResult<HistActorLiveDTO> pageResult = resp.getData();
+	            List<HistActorLiveDTO> histActorLiveList = pageResult.getItems();
+	            JsonArray jRecordList = new JsonArray();
+	            if (histActorLiveList != null) {
+	                for (HistActorLiveDTO histActorLiveDTO : histActorLiveList) {
+	                    JsonObject jObject = new JsonObject();
+	                    long liveEndTime = System.currentTimeMillis();
+	                    long liveStartTime = histActorLiveDTO.getStartTime().getTime();
+	                    jObject.addProperty("startTime", liveStartTime);
+	                    if (histActorLiveDTO.getEndTime() != null) {
+	                        liveEndTime = histActorLiveDTO.getEndTime().getTime();
+	                        jObject.addProperty("endTime", liveEndTime);
+	                    }
+	                    if (liveEndTime > liveStartTime) {
+	                        long duration = (liveEndTime - liveStartTime)/(60*1000);
+	                        jObject.addProperty("duration", duration);
+	                        jObject.addProperty("isValid", duration < 10 ? 0 : 1);
+	                    }
+	                    jRecordList.add(jObject);
+	                }
+	            }
+	            
+	            result.add("recordList", jRecordList);
+	            result.addProperty("pageTotal", pageResult.getPageCount());
+	        }
+		} catch (Exception e) {
+		    logger.error("liveRecordService.pageActorLiveDTO(" + userId + ", " +  new Date(startTime) + ", " + new Date(endTime) + ", " + pageIndex + ", 6)", e);
+		    result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+	        return result;
 		}
-		String TagCode = (String) map.get("TagCode");
-		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-			// 取出列表
-			@SuppressWarnings("unchecked")
-			List<LiveRecord> recordList =  (List<LiveRecord>) map.get("recordList");
-
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", TagCode);
-			result.addProperty("pageTotal", (Integer) map.get("pageTotal"));
-			JsonArray jRecordList = new JsonArray();
-			for (LiveRecord liveRecord : recordList) {
-				JsonObject jObject = new JsonObject();
-				long liveEndTime = System.currentTimeMillis();
-				long liveStartTime = liveRecord.getStartTime().getTime();
-		        jObject.addProperty("startTime", liveStartTime);
-		        if (liveRecord.getEndTime() != null) {
-		            liveEndTime = liveRecord.getEndTime().getTime();
-		            jObject.addProperty("endTime", liveEndTime);
-		        }
-		        if (liveEndTime > liveStartTime) {
-		            long duration = (liveEndTime - liveStartTime)/(60*1000);
-		            jObject.addProperty("duration", duration);
-		            jObject.addProperty("isValid", duration < 10 ? 0 : 1);
-		        }
-		        jRecordList.add(jObject);
-			}
-			result.add("recordList", jRecordList);
-
-			// 返回结果
-			return result;
-		} else if (TagCode.equals("02")) {
-			/* '02';分页超出范围 */
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-			result.addProperty("pageTotal", (Integer) map.get("pageTotal"));
-			result.add("recordList", new JsonArray());
-
-			// 返回结果
-			return result;
-		} else {
-			// 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
-			logger.error("调用存储过程(Profile.getUserLiveList(" + new Gson().toJson(map) + "))未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
-			return result;
-		}
+		
+		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
 	}
 
 	/**

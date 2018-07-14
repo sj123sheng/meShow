@@ -487,7 +487,7 @@ public class ActorFunction {
             }
         }else if(response != null && !response.isSuccess()) {
             result.addProperty("errorMessage", response.getErrorMessage());
-        }else {
+        }else if (response != null){
             result.addProperty("errorMessage", response.getFailedReason());
         }
 
@@ -498,7 +498,10 @@ public class ActorFunction {
         userVerifyService.updateZmrzApplyStatus(bizNo, verifyStatus);
         // 更新芝麻认证记录的面部照片
         try {
-            String channelStatuses = response.getChannelStatuses();
+            String channelStatuses = null;
+            if (response != null) {
+                channelStatuses = response.getChannelStatuses();
+            }
             if(!StringUtils.isEmpty(channelStatuses)) {
                 JSONArray jsonArray = JSONArray.parseArray(channelStatuses);
                 if(jsonArray != null && jsonArray.size() > 0) {

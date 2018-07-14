@@ -9,10 +9,13 @@ import java.util.Set;
 
 import com.melot.kktv.util.redis.RedisConfigHelper;
 
+import org.apache.log4j.Logger;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Tuple;
 
 public class HotDataSource {
+
+	private static Logger logger = Logger.getLogger(HotDataSource.class);
 	
 	private static final String SOURCE_NAME = "HotData";
 	
@@ -30,7 +33,7 @@ public class HotDataSource {
             jedis = getInstance();
             jedis.del(key);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("HotDataSource.del(" + "key:" + key + ") execute exception.", e);
         } finally {
             if(jedis!=null) {
                 freeInstance(jedis);
@@ -51,7 +54,7 @@ public class HotDataSource {
 			}
 			return data;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("HotDataSource.getHotData(" + "key:" + key + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis);
@@ -66,7 +69,7 @@ public class HotDataSource {
 			jedis = getInstance();
 			return jedis.hget(key, field);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("HotDataSource.getHotFieldValue(" + "key:" + key + "field:" + field + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis);
@@ -81,7 +84,7 @@ public class HotDataSource {
 			jedis = getInstance();
 			jedis.hset(key, field, value);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("HotDataSource.setHotFieldValue(" + "key:" + key + "field:" + field + "value:" + value + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis);
@@ -96,7 +99,7 @@ public class HotDataSource {
 			jedis.hset(key, field, value);
 			jedis.expire(key, seconds);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("HotDataSource.setHotFieldValue(" + "key:" + key + "field:" + field + "value:" + value + "seconds:" + seconds + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis);
@@ -114,7 +117,7 @@ public class HotDataSource {
 			}
 			return values; 
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("HotDataSource.getHotFieldValues(" + "key:" + key + "fields:" + fields + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis);
@@ -130,7 +133,7 @@ public class HotDataSource {
 			jedis.hmset(key, hotData);
 			jedis.expire(key, expireTime);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("HotDataSource.setHotData(" + "key:" + key + "hotData:" + hotData + "expireTime:" + expireTime + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis);
@@ -145,7 +148,7 @@ public class HotDataSource {
 			jedis = getInstance();
 			result = jedis.hincrBy(key, field, incValue);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("HotDataSource.incHotFieldValue(" + "key:" + key + "field:" + field + "incValue:" + incValue + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis);
@@ -166,7 +169,7 @@ public class HotDataSource {
 			jedis.expire(key, expireTime);
 			return true;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("HotDataSource.incHotData(" + "key:" + key + "fields:" + fields + "incValues:" + incValues + "expireTime:" + expireTime + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis);
@@ -183,7 +186,7 @@ public class HotDataSource {
 				jedis.hdel(key, fields[i]);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("HotDataSource.delHotData(" + "key:" + key + "fields:" + fields + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis);
@@ -200,7 +203,7 @@ public class HotDataSource {
 					jedis.expireAt(key, expireTime);
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error("HotDataSource.setTempData(" + "key:" + key + "value:" + value + "expireTime:" + expireTime + ") execute exception.", e);
 			} finally {
 				if(jedis!=null) {
 					freeInstance(jedis);
@@ -214,7 +217,7 @@ public class HotDataSource {
 			jedis = getInstance();
 			return jedis.sismember(key, userId);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("HotDataSource.hasTempData(" + "key:" + key + "userId:" + userId + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis);
@@ -233,7 +236,7 @@ public class HotDataSource {
 			}
 			return true;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("HotDataSource.setTempDataString(" + "key:" + key + "value:" + value + "seconds:" + seconds + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis);
@@ -252,7 +255,7 @@ public class HotDataSource {
                 jedis.expire(key, seconds);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("HotDataSource.incTempDataString(" + "key:" + key + "value:" + value + "seconds:" + seconds + ") execute exception.", e);
         } finally {
             if(jedis!=null) {
                 freeInstance(jedis);
@@ -267,7 +270,7 @@ public class HotDataSource {
 			jedis = getInstance();
 			return jedis.get(key);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("HotDataSource.getTempDataString(" + "key:" + key + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis);
@@ -282,7 +285,7 @@ public class HotDataSource {
             jedis = getInstance();
             jedis.del(key);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("HotDataSource.delTempData(" + "key:" + key + ") execute exception.", e);
         } finally {
             if(jedis!=null) {
                 freeInstance(jedis);
@@ -301,7 +304,7 @@ public class HotDataSource {
             	jedis.zadd(key, i+1d, list.get(i));
             jedis.expire(key, seconds);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("HotDataSource.addSortedSet(" + "key:" + key + "list:" + list + "seconds:" + seconds + ") execute exception.", e);
         } finally {
             if(jedis!=null) {
                 freeInstance(jedis);
@@ -319,7 +322,7 @@ public class HotDataSource {
         		count = value.intValue();
         	}
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("HotDataSource.countSortedSet(" + "key:" + key + ") execute exception.", e);
         } finally {
             if(jedis!=null) {
                 freeInstance(jedis);
@@ -336,7 +339,7 @@ public class HotDataSource {
             if (jedis.exists(key))
             	set = jedis.zrange(key, start, end);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("HotDataSource.rangeSortedSet(" + "key:" + key + "start:" + start + "end:" + end + ") execute exception.", e);
         } finally {
             if(jedis!=null) {
                 freeInstance(jedis);
@@ -360,7 +363,7 @@ public class HotDataSource {
                 jedis.persist(key);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("HotDataSource.sadd(" + "key:" + key + "seconds:" + seconds + "members:" + members + ") execute exception.", e);
         } finally {
             if(jedis!=null) {
                 freeInstance(jedis);
@@ -376,7 +379,7 @@ public class HotDataSource {
             if (jedis.exists(key))
                 jedis.srem(key, value);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("HotDataSource.srem(" + "key:" + key + "value:" + value + ") execute exception.", e);
         } finally {
             if(jedis!=null) {
                 freeInstance(jedis);
@@ -392,7 +395,7 @@ public class HotDataSource {
             if (jedis.exists(key))
                 set = jedis.srandmember(key, count);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("HotDataSource.srandmember(" + "key:" + key + "count:" + count + ") execute exception.", e);
         } finally {
             if(jedis!=null) {
                 freeInstance(jedis);
@@ -409,7 +412,7 @@ public class HotDataSource {
 
             return bool;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("HotDataSource.exists(" + "key:" + key + ") execute exception.", e);
         } finally {
             if (jedis != null) {
                 freeInstance(jedis);
@@ -429,7 +432,7 @@ public class HotDataSource {
             }
             return sortMap;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("HotDataSource.getRevRangeWithScore(" + "key:" + key + ") execute exception.", e);
         } finally {
             if (jedis != null) {
                 freeInstance(jedis);

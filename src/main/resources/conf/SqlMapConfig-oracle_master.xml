@@ -21,7 +21,6 @@
 	<sqlMap resource="com/melot/kktv/sqlmap/ActorGift.xml" />
 	
 	<sqlMap resource="com/melot/kktv/sqlmap/Index.xml" />
-	<sqlMap resource="com/melot/kktv/sqlmap/News.xml" />
 	<sqlMap resource="com/melot/kktv/sqlmap/Profile.xml" />
 	<sqlMap resource="com/melot/kktv/sqlmap/Resource.xml" />
 	<sqlMap resource="com/melot/kktv/sqlmap/Family.xml" />
@@ -33,8 +32,6 @@
 	<sqlMap resource="com/melot/kktv/sqlmap/Guess.xml" />
 	<sqlMap resource="com/melot/kktv/sqlmap/Tag.xml" />
 	<sqlMap resource="com/melot/kktv/sqlmap/Exchange.xml" />
-	<sqlMap resource="com/melot/kktv/sqlmap/NewsTagConf.xml" />
-	<sqlMap resource="com/melot/kktv/sqlmap/NewsTagRes.xml" />
 	<sqlMap resource="com/melot/kktv/sqlmap/Temp.xml" />
 	
 	<!-- api-menu-sdk jar -->

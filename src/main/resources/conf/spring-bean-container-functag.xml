@@ -881,11 +881,6 @@
 		<constructor-arg name="t" ref="userAssetFunction" />
 		<constructor-arg name="methodName" value="getUserCarList" />
 	</bean>
-	<!-- 获取用户所拥有的门票列表 -->
-	<bean id="10005050" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="userAssetFunction" />
-		<constructor-arg name="methodName" value="getUserTicketList" />
-	</bean>
 	<!-- 设置用户进入房间显示的座驾 -->
 	<bean id="10005033" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="userAssetFunction" />
@@ -1180,106 +1175,12 @@
 		<constructor-arg name="t" ref="newsV2Function" />
 		<constructor-arg name="methodName" value="checkAudioWhiteUser" />
 	</bean>
-	<!-- 获取用户动态列表 -->
-	<!-- 
-	<bean id="20010401" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="newsFunction" />
-		<constructor-arg name="methodName" value="getUserNewsListNew" />
-	</bean>
-	 -->
-	
-	<!-- 用户动态接口类 -->
-	<!-- 删除动态 -->
-	<bean id="10006003" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="newsFunction" />
-		<constructor-arg name="methodName" value="deleteNews" />
-	</bean>
-	<!-- 获取用户动态列表 -->
-	<bean id="10006004" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="newsFunction" />
-		<constructor-arg name="methodName" value="getUserNewsList" />
-	</bean>
-	<!-- 打赏动态 -->
-	<bean id="10006013" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="newsFunction" />
-		<constructor-arg name="methodName" value="addRewardOnNews" />
-	</bean>
-	<!-- 删除评论 -->
-	<bean id="10006006" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="newsFunction" />
-		<constructor-arg name="methodName" value="deleteNewsComment" />
-	</bean>
-	<!-- 获取动态的评论列表 -->
-	<bean id="10006007" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="newsFunction" />
-		<constructor-arg name="methodName" value="getUserNewsCommentList" />
-	</bean>
-	<!-- 获取消息提醒简要信息 -->
-	<bean id="10006008" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="newsFunction" />
-		<constructor-arg name="methodName" value="getUserMessage" />
-	</bean>
-	<!-- 新评论提醒列表 -->
-	<bean id="10006009" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="newsFunction" />
-		<constructor-arg name="methodName" value="getNewCommentedNewsList" />
-	</bean>
-	<!-- 新系统列表 -->
-	<bean id="10006010" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="newsFunction" />
-		<constructor-arg name="methodName" value="getUserSysMsgList" />
-	</bean>
-	<!-- 清除系统消息 -->
-	<bean id="10006011" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="newsFunction" />
-		<constructor-arg name="methodName" value="clearSysMsg" />
-	</bean>
-	<!-- 根据动态Id获取动态详细信息 -->
-	<bean id="10006012" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="newsFunction" />
-		<constructor-arg name="methodName" value="getNewsInfoByNewsId" />
-	</bean>
-	<!-- 获取动态列表  -->
-	<bean id="10006014" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="newsFunction" />
-		<constructor-arg name="methodName" value="getRecommendNewsList" />
-	</bean>
-	<!-- 获取打赏Top 20 列表 -->
-	<bean id="10006015" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="newsFunction" />
-		<constructor-arg name="methodName" value="getRewardNewsTopList" />
-	</bean>
-	<!-- 获取动态打赏列表 -->
-	<bean id="10006016" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="newsFunction" />
-		<constructor-arg name="methodName" value="getNewsRewardList" />
-	</bean>
-	<!-- 获取热门视频动态列表 -->
-	<bean id="10006017" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="newsFunction" />
-		<constructor-arg name="methodName" value="getHotMediaNewsList" />
-	</bean>
-	<!-- 获取热门视频动态列表 -->
-	<bean id="10006018" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="newsFunction" />
-		<constructor-arg name="methodName" value="getHotNewsTagList" />
-	</bean>
 	
 	<!-- 其他接口类 -->
 	<!-- 发送小喇叭: 唱响20000002，直播10007000 -->
 	<bean id="20000002" name="10007000" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="otherFunction" />
 		<constructor-arg name="methodName" value="speakToTotalStation" />
-	</bean>
-	<!-- 获取联通免流量访问地址 -->
-	<bean id="20000004" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="otherFunction" />
-		<constructor-arg name="methodName" value="getChinaUnicomFreeFlowAccessUrl" />
-	</bean>
-	<!-- 查询是否联通3G及手机伪码订购关系 -->
-	<bean id="20000005" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="otherFunction" />
-		<constructor-arg name="methodName" value="getChinaUnicomSpOrderState" />
 	</bean>
 	<!-- 获取所有可用表情列表及用户购买状态 -->
 	<bean id="20000006" class="com.melot.sdk.core.function.GenericFunction">
@@ -1291,6 +1192,13 @@
 		<constructor-arg name="t" ref="otherFunction" />
 		<constructor-arg name="methodName" value="commitReportV2" />
 	</bean>
+
+	<!-- 获得举报处理结果列表接口 -->
+	<bean id="20000009" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="otherFunction" />
+		<constructor-arg name="methodName" value="getCommitRecordList" />
+	</bean>
+
 	<!-- 获取申请主播状态信息 -->
 	<bean id="20010501" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="otherFunction" />
@@ -1630,24 +1538,6 @@
 		<constructor-arg name="methodName" value="getExchangePointResult" />
 	</bean>
 	
-	
-	<!-- 门票接口类 -->
-	<!-- 查询门票信息 -->
-	<bean id="10005049" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="ticketFunction" />
-		<constructor-arg name="methodName" value="getTicketInfo" />
-	</bean>
-	<!-- 获取房间门票信息 -->
-	<bean id="10005058" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="ticketFunction" />
-		<constructor-arg name="methodName" value="getTicketInfoByRoomId" />
-	</bean>
-	<!-- 购买门票 -->
-	<bean id="10005048" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="ticketFunction" />
-		<constructor-arg name="methodName" value="buyTicket" />
-	</bean>
-	
 	<!-- 用户抽奖接口类 -->
 	<!-- 抽奖 -->
 	<bean id="10010001" class="com.melot.sdk.core.function.GenericFunction">
@@ -1674,32 +1564,6 @@
 		<constructor-arg name="t" ref="userLotteryPrizeFunction" />
 		<constructor-arg name="methodName" value="getUserLotteryList" />
 	</bean>
-	
-	<!-- 视频接口类 -->
-	<!-- 新版不发动态 -->
-	<bean id="20002050" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="videoFunction" />
-		<constructor-arg name="methodName" value="getUploadTokenNew" />
-	</bean>
-	<!-- 上传作品七牛回调接口 -->
-	<bean id="20002051" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="videoFunction" />
-		<constructor-arg name="methodName" value="callbackForUploadVideoNew" />
-	</bean>
-	<!-- 获取老棒视频列表 -->
-	<bean id="10002056" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="videoFunction" />
-		<constructor-arg name="methodName" value="getVideoListByUserId" />
-		<constructor-arg name="cacheType" value="180" />
-		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
-	</bean>	
-	<!-- 获取老棒视频详情 -->
-	<bean id="10002057" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="videoFunction" />
-		<constructor-arg name="methodName" value="getVideoDetailByVideoId" />
-		<constructor-arg name="cacheType" value="180" />
-		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
-	</bean>	
 	
 	<!-- 运营后台需要的接口类 -->
 	<!-- 用户反馈接口 -->
@@ -1925,11 +1789,6 @@
 		<constructor-arg name="t" ref="albumFunction" />
 		<constructor-arg name="methodName" value="setUserPoster" />
 	</bean>
-	<!-- 新版获取又拍云上传路径 -->
-	<bean id="10004018" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="albumFunction" />
-		<constructor-arg name="methodName" value="getUpyunUploadParamsNew" />
-	</bean>
 	<!-- 新版海报入库 -->
 	<bean id="10004019" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="albumFunction" />
@@ -1969,6 +1828,11 @@
 	<bean id="20031008" class="com.melot.sdk.core.function.GenericFunction">
 	    <constructor-arg name="t" ref="redEnvelopeFunction"/>
 	    <constructor-arg name="methodName" value="getRoomRedEvelopeRecords"/>
+	</bean>
+	<!-- 查询房间延迟红包记录接口 -->
+	<bean id="51011102" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="redEnvelopeFunction"/>
+		<constructor-arg name="methodName" value="getDelayRedEnvelopeRecord"/>
 	</bean>
     
 	<!-- 移动端精选频道 -->

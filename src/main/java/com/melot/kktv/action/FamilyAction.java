@@ -2613,12 +2613,12 @@ public class FamilyAction {
                     }
                 } else {
                     // 正常,返回我的家族
-                    if (open != null && open.intValue() != 2) {
-                        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-                    } else {
+//                    if (open != null && open.intValue() != 2) {
+//                        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+//                    } else {
                         // 家族冻结（用户），可以
                         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-                    }
+//                    }
                 }
             }
         } else {
@@ -2631,7 +2631,7 @@ public class FamilyAction {
                 try {
                     frozenFamilyId = (Integer) SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Family.getFrozenFamilyUserById", userId);
                 } catch (SQLException e) {
-                    e.printStackTrace();
+                    logger.error("FamilyAction.getApplyForFamilyInfo(" + "jsonObject:" + jsonObject + "checkTag:" + checkTag + "request:" + request + ") execute exception.", e);
                 }
                 
                 if (frozenFamilyId != null) {

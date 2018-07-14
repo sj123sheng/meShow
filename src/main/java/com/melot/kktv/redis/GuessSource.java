@@ -5,9 +5,12 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.kktv.util.redis.RedisConfigHelper;
 
+import org.apache.log4j.Logger;
 import redis.clients.jedis.Jedis;
 
 public class GuessSource {
+
+	private static Logger logger = Logger.getLogger(GuessSource.class);
 	
 	private static final String SOURCE_NAME = "Guess";
 
@@ -45,7 +48,7 @@ public class GuessSource {
 				jedis.expireAt(GUESSOPTCNT_KEY + guessId, expireTime);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("GuessSource.incOptionUserCount(" + "guessId:" + guessId + "optionId:" + optionId + "expireTime:" + expireTime + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis);
@@ -72,7 +75,7 @@ public class GuessSource {
 			}
 			jedis.hset(USERGUESS_KEY+guessId, userId, option);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("GuessSource.setUserOption(" + "userId:" + userId + "guessId:" + guessId + "option:" + option + "expireTime:" + expireTime + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis);
@@ -95,7 +98,7 @@ public class GuessSource {
 				return new JsonParser().parse(userOption).getAsJsonObject();
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("GuessSource.getUserOption(" + "userId:" + userId + "guessId:" + guessId + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis);
@@ -131,7 +134,7 @@ public class GuessSource {
 				return optionArray;
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("GuessSource.getOptionList(" + "guessId:" + guessId + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis);
@@ -153,7 +156,7 @@ public class GuessSource {
 			jedis.set(GUESSOPTLIST_KEY + guessId, optionList);
 			jedis.expireAt(GUESSOPTLIST_KEY + guessId, expireTime);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("GuessSource.setOptionList(" + "guessId:" + guessId + "optionList:" + optionList + "expireTime:" + expireTime + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis);

@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -22,6 +23,7 @@ import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Page;
 import com.melot.kktv.base.Result;
+import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.ParameterKeys;
@@ -51,6 +53,9 @@ public class UserLevelFunctions {
     
     @Resource
     KkUserService kkUserService;
+    
+    @Autowired
+    ConfigService configService;
     
     /**
      * 升级用户点击我知道了，发庆升面板【51010901】
@@ -271,6 +276,7 @@ public class UserLevelFunctions {
                     }
                     userJson.addProperty("userId", userProfile.getUserId());
                     userJson.addProperty("nickname", userProfile.getNickName());
+                    userJson.addProperty("gender", userProfile.getGender());
                     if (!StringUtil.strIsNull(userProfile.getPortrait())) {
                         userJson.addProperty("portrait", userProfile.getPortrait());
                     }
@@ -283,6 +289,7 @@ public class UserLevelFunctions {
                         ResXman resXman = xmanService.getResXmanByUserId(userProfile.getUserId());
                         if (resXman != null && resXman.getMysType() == 2) {
                             userJson.addProperty("nickname", "神秘人");
+                            userJson.addProperty("portrait", configService.getXmanPortrait());
                         }
                     }
                     getList.add(userJson);
