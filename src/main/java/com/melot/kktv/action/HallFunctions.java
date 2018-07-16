@@ -1,10 +1,6 @@
 package com.melot.kktv.action;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
@@ -18,6 +14,7 @@ import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.util.*;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.math.RandomUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.google.gson.JsonArray;
@@ -49,7 +46,7 @@ public class HallFunctions {
 
 	@Resource
 	private HomeService hallHomeService;
-    
+
 	private static Logger logger = Logger.getLogger(HallFunctions.class);
 	
 	/**
@@ -272,10 +269,30 @@ public class HallFunctions {
 			result.addProperty("roomTotal", roomTotal);
 			
 			JsonArray roomArray = new JsonArray();
+			JsonObject json;
 			List<HallRoomInfoDTO> roomList = sysMenu.getRooms();
+			HallRoomInfoDTO roomInfo;
 			if (roomList != null) {
-				for (HallRoomInfoDTO roomInfo : roomList) {
-					roomArray.add(HallRoomTF.roomInfoToJson(roomInfo, platform));
+				int i = 0;
+				if (sysMenu.getDataSourceType() != null && sysMenu.getDataSourceType() == 16) {
+					// 如果是聚合栏目，需要判断同城，添加距离
+					int dist;
+					while (i < roomList.size()) {
+						roomInfo = roomList.get(i);
+						json = HallRoomTF.roomInfoWithPlaybackToJson(roomInfo, platform);
+						if (!Objects.equals(cityId, roomList.get(i).getRegisterCity())) {
+							break;
+						}
+						dist = (5 + start + i ) * 100 + RandomUtils.nextInt(100);
+						// 随机添加距离
+						json.addProperty("distance", dist);
+						i++;
+						roomArray.add(json);
+					}
+				}
+				while (i < roomList.size()) {
+					roomInfo = roomList.get(i++);
+					roomArray.add(HallRoomTF.roomInfoWithPlaybackToJson(roomInfo, platform));
 				}
 			}
 			
@@ -709,7 +726,7 @@ public class HallFunctions {
                         List<HallRoomInfoDTO> roomList = temp.getRooms();
                         if (roomList != null) {
                             for (HallRoomInfoDTO roomInfo : roomList) {
-                                roomArray.add(HallRoomTF.roomInfoToJson(roomInfo, platform));
+                                roomArray.add(HallRoomTF.roomInfoWithPlaybackToJson(roomInfo, platform));
                             }
                         }
                         json.add("result", roomArray);
