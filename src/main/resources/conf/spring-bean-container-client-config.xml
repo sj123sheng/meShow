@@ -87,6 +87,7 @@
 	
 	<!-- 配置信息 -->
 	<kkrpc:reference id="configInfoService" interface="com.melot.kk.config.api.service.ConfigInfoService" version="1.0.1"></kkrpc:reference>
+    <kkrpc:reference id="playbackActorService" interface="com.melot.kk.config.api.service.PlaybackActorService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="friendEmoticonService" interface="com.melot.common.driver.service.FriendEmoticonService" version="1.0.0"></kkrpc:reference>
 
     <!-- 礼物配置信息 -->
