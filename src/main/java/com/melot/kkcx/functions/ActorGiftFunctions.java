@@ -9,6 +9,8 @@ import java.util.Map;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import com.melot.common.driver.service.RoomExtendConfService;
+import com.melot.sdk.core.util.MelotBeanFactory;
 import org.apache.log4j.Logger;
 
 import com.google.gson.Gson;
@@ -68,16 +70,10 @@ public class ActorGiftFunctions {
         }
         
         try {
-            ReturnResult<List<ActorGiftDTO>> resp = actorPersonalizedGiftService.getActorPersonalizedGiftList(userId);
-            if (resp != null && ReturnResultCode.SUCCESS.getCode().equals(resp.getCode())) {
-                List<ActorGiftDTO> actorGiftList = resp.getData();
-                if (actorGiftList != null && !actorGiftList.isEmpty()) {
-                    ArrayList<Integer> giftList = new ArrayList<Integer>();
-                    for (ActorGiftDTO actorGift : actorGiftList) {
-                      giftList.add(actorGift.getGiftId());
-                    }
-                    result.add("actorGiftList", new Gson().toJsonTree(giftList).getAsJsonArray());
-                }
+            RoomExtendConfService roomExtendConfService = (RoomExtendConfService) MelotBeanFactory.getBean("roomExtendConfService");
+            List<Integer> giftList = roomExtendConfService.getActorPersonalizedGiftList(userId);
+            if (giftList != null){
+                result.add("actorGiftList", new Gson().toJsonTree(giftList).getAsJsonArray());
             }
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         } catch (Exception e) {
@@ -121,7 +117,8 @@ public class ActorGiftFunctions {
             for (String giftId : giftIdStr) {
                 giftIdList.add(Integer.valueOf(giftId));
             }
-            actorPersonalizedGiftService.addActorPersonalizedGift(userId, giftIdList);
+            RoomExtendConfService roomExtendConfService = (RoomExtendConfService) MelotBeanFactory.getBean("roomExtendConfService");
+            roomExtendConfService.addActorPersonalizedGift(userId, giftIdList);
         } catch (Exception e) {
             result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             return result;
@@ -160,7 +157,8 @@ public class ActorGiftFunctions {
         }
         
         try {
-            actorPersonalizedGiftService.deleteActorPersonalizedGift(userId, giftId);
+            RoomExtendConfService roomExtendConfService = (RoomExtendConfService) MelotBeanFactory.getBean("roomExtendConfService");
+            roomExtendConfService.deleteActorPersonalizedGift(userId, giftId);
         } catch (Exception e) {
             result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             return result;
@@ -193,7 +191,8 @@ public class ActorGiftFunctions {
         }
         
         try {
-            actorPersonalizedGiftService.deleteActorPersonalizedGiftByGiftId(giftId);
+            RoomExtendConfService roomExtendConfService = (RoomExtendConfService) MelotBeanFactory.getBean("roomExtendConfService");
+            roomExtendConfService.deleteActorPersonalizedGiftByGiftId(giftId);
         } catch (Exception e) {
             result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             return result;
