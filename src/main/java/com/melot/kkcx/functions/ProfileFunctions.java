@@ -1544,7 +1544,7 @@ public class ProfileFunctions {
 							//查询并存储拼接信息
 							RoomGiftService roomGiftService = (RoomGiftService) MelotBeanFactory.getBean("roomGiftService");
 							com.melot.room.gift.domain.ReturnResult<List<GiftInfoDTO>> returnResultOfIds = roomGiftService.listGiftWithGiftIds(giftIdList);
-							if (returnResultOfIds.getCode().equals(TagCodeEnum.SUCCESS)){
+							if (returnResultOfIds.getCode().equals("0")){
 								for (GiftInfoDTO giftInfoTemp : returnResultOfIds.getData()) {
 									giftInfoMap.put(giftInfoTemp.getGiftId(), giftInfoTemp);
 								}
