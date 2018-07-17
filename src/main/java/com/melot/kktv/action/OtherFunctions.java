@@ -1636,15 +1636,16 @@ public class OtherFunctions {
 		}
 		Page<VideoInfo> page = videoInfoServiceNew.getPublishVideoList(actorId, start, num);
 		JsonArray videoListArray = new JsonArray();
-		long count = 0;
-		if (page != null && CollectionUtils.isNotEmpty(page.getList())) {
-			count = page.getCount();
-			for (VideoInfo videoInfo : page.getList()) {
-				videoListArray.add(videoInfos2Json(videoInfo));
+		if (page != null) {
+			long count = page.getCount();
+			if (CollectionUtils.isNotEmpty(page.getList())) {
+				for (VideoInfo videoInfo : page.getList()) {
+					videoListArray.add(videoInfos2Json(videoInfo));
+				}
 			}
+			result.add("videoInfoList", videoListArray);
+			result.addProperty("count", count);
 		}
-		result.add("videoInfoList", videoListArray);
-		result.addProperty("count", count);
 		result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
 		return result;
 	}
