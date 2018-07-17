@@ -15,6 +15,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import com.melot.api.menu.sdk.dao.RecommendDao;
 import com.melot.api.menu.sdk.dao.RoomSubCatalogDao;
 import com.melot.api.menu.sdk.dao.SysMenuDao;
@@ -140,7 +142,10 @@ public class HallPageService {
      * 
      */
     private int getLivePoint(List<RoomInfo> rooms){
-        int i=0; 
+        int i = 0; 
+        if (CollectionUtils.isEmpty(rooms)) {
+            return i;
+        }
         for (int size = rooms.size(); i < size; i++) {
             RoomInfo roomInfo = rooms.get(i);
             if(roomInfo.getLiveEndtime() != null){
