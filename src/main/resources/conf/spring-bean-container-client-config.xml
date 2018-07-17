@@ -84,8 +84,8 @@
 	<kkrpc:reference id="starService" interface="com.melot.common.driver.service.StarService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="shareService" interface="com.melot.common.driver.service.ShareService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="roomExtendConfService" interface="com.melot.common.driver.service.RoomExtendConfService" version="1.0.0"></kkrpc:reference>
-	<kkrpc:reference id="videoInfoService" interface="com.melot.video.driver.service.VideoInfoService" version="1.0.0"></kkrpc:reference> 
-	
+	<kkrpc:reference id="videoInfoService" interface="com.melot.video.driver.service.VideoInfoService" version="1.0.0"></kkrpc:reference>
+	<kkrpc:reference id="videoInfoServiceNew" interface="com.melot.video.driver.service.VideoInfoServiceNew" version="1.0.0"></kkrpc:reference>
 	<!-- 配置信息 -->
 	<kkrpc:reference id="configInfoService" interface="com.melot.kk.config.api.service.ConfigInfoService" version="1.0.1"></kkrpc:reference>
     <kkrpc:reference id="playbackActorService" interface="com.melot.kk.config.api.service.PlaybackActorService" version="1.0.0"></kkrpc:reference>

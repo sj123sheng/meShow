@@ -454,11 +454,6 @@
 		    <version>1.0.0</version>
 		</dependency>
 		<dependency>
-            <groupId>com.melot</groupId>
-            <artifactId>game-video-store-driver</artifactId>
-            <version>1.0.6</version>
-        </dependency>
-		<dependency>
 			<groupId>com.melot.module.driver.msgbuilder</groupId>
 			<artifactId>kk-module-msgbuilder</artifactId>
 			<version>1.3.0</version>
@@ -698,6 +693,12 @@
 			<groupId>com.melot.kk</groupId>
 			<artifactId>kk-activityAPI-api</artifactId>
 			<version>1.0.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.melot.kk</groupId>
+			<artifactId>kk-gamevideostore-api</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
 		</dependency>
     </dependencies>
  	
