@@ -9,6 +9,7 @@ import java.util.Map;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import com.melot.common.driver.domain.ActorGift;
 import com.melot.common.driver.service.RoomExtendConfService;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import org.apache.log4j.Logger;
@@ -71,9 +72,13 @@ public class ActorGiftFunctions {
         
         try {
             RoomExtendConfService roomExtendConfService = (RoomExtendConfService) MelotBeanFactory.getBean("roomExtendConfService");
-            List<Integer> giftList = roomExtendConfService.getActorPersonalizedGiftList(userId);
+            List<ActorGift> giftList = roomExtendConfService.getActorPersonalizedGiftList(userId);
             if (giftList != null){
-                result.add("actorGiftList", new Gson().toJsonTree(giftList).getAsJsonArray());
+                List<Integer> giftIds = new ArrayList<>();
+                for (ActorGift actorGift : giftList){
+                    giftIds.add(actorGift.getGiftId());
+                }
+                result.add("actorGiftList", new Gson().toJsonTree(giftIds).getAsJsonArray());
             }
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         } catch (Exception e) {
