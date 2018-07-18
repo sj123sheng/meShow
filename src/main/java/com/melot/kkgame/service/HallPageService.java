@@ -15,8 +15,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections.CollectionUtils;
-
 import com.melot.api.menu.sdk.dao.RecommendDao;
 import com.melot.api.menu.sdk.dao.RoomSubCatalogDao;
 import com.melot.api.menu.sdk.dao.SysMenuDao;
@@ -102,11 +100,17 @@ public class HallPageService {
             return new ArrayList<RoomInfo>();
         }
         List<RoomInfo> topRoomList = getTopRoomListByTitleId(titleId);//查询置顶在播房间
+        if (topRoomList == null) {
+            topRoomList = new ArrayList<>();
+        }
         remainCount -= topRoomList.size(); //除去置顶房间数剩余房间数
         List<RoomInfo> remainingRoomList = null;//非置顶房间
         
         int numToQuery = demandCount + liveTotal +totalPartSize * 2; 
         remainingRoomList = getRemainningRoomList(titleId, pageHomeItem.getDataSourceType(), startIndex, numToQuery); //取出栏目正在播的列表
+        if (remainingRoomList == null) {
+            remainingRoomList = new ArrayList<>();
+        }
         int livePoint = getLivePoint(remainingRoomList);
         List<RoomInfo> tempList = remainingRoomList.subList(0, livePoint);
         
@@ -142,10 +146,7 @@ public class HallPageService {
      * 
      */
     private int getLivePoint(List<RoomInfo> rooms){
-        int i = 0; 
-        if (CollectionUtils.isEmpty(rooms)) {
-            return i;
-        }
+        int i=0; 
         for (int size = rooms.size(); i < size; i++) {
             RoomInfo roomInfo = rooms.get(i);
             if(roomInfo.getLiveEndtime() != null){
