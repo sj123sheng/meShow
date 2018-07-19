@@ -1,17 +1,17 @@
 package com.melot.kkcx.functions;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
-import com.melot.common.driver.domain.GiftRecord;
-import com.melot.common.driver.domain.GiftRecordDTO;
-import com.melot.common.driver.service.GiftHistoryService;
-import com.melot.room.gift.domain.GiftInfo;
-import com.melot.room.gift.dto.GiftInfoDTO;
-import com.melot.room.gift.service.RoomGiftService;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -25,10 +25,17 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
+import com.melot.api.menu.sdk.utils.Collectionutils;
+import com.melot.common.driver.domain.GiftRecord;
+import com.melot.common.driver.domain.GiftRecordDTO;
+import com.melot.common.driver.service.GiftHistoryService;
 import com.melot.family.driver.domain.FamilyInfo;
 import com.melot.family.driver.domain.DO.UserApplyActorDO;
 import com.melot.family.driver.service.UserApplyActorService;
+import com.melot.kk.module.report.util.CommonStateCode;
 import com.melot.kk.opus.api.constant.OpusCostantEnum;
+import com.melot.kk.recharge.api.dto.HistBuyProductRechargeDto;
+import com.melot.kk.recharge.api.service.RechargeService;
 import com.melot.kk.userSecurity.api.domain.DO.UserVerifyDO;
 import com.melot.kk.userSecurity.api.service.UserVerifyService;
 import com.melot.kkcore.actor.api.RoomInfoKeys;
@@ -50,7 +57,7 @@ import com.melot.kkcx.service.ProfileServices;
 import com.melot.kkcx.service.UserAssetServices;
 import com.melot.kkcx.service.UserService;
 import com.melot.kkgame.redis.LiveTypeSource;
-import com.melot.kktv.model.BuyProperties;
+import com.melot.kktv.base.Result;
 import com.melot.kktv.model.ConsumerRecord;
 import com.melot.kktv.model.Family;
 import com.melot.kktv.model.Honor;
@@ -82,6 +89,8 @@ import com.melot.module.medal.driver.service.UserMedalService;
 import com.melot.module.packagegift.driver.domain.ResUserXman;
 import com.melot.module.packagegift.driver.domain.ResXman;
 import com.melot.module.packagegift.driver.service.XmanService;
+import com.melot.room.gift.dto.GiftInfoDTO;
+import com.melot.room.gift.service.RoomGiftService;
 import com.melot.room.live.record.constant.PageResult;
 import com.melot.room.live.record.domain.ReturnResult;
 import com.melot.room.live.record.dto.HistActorLiveDTO;
@@ -111,6 +120,9 @@ public class ProfileFunctions {
 
 	@Resource
 	LiveRecordService liveRecordService;
+	
+	@Resource
+	RechargeService rechargeService;
 	
 	private LiveTypeSource liveTypeSource;
 
@@ -3024,44 +3036,60 @@ public class ProfileFunctions {
             return result;
         }
         
-        Map<Object, Object> map = new HashMap<Object, Object>();
-        map.put("userId", userId);
-		map.put("startTime", new Date(startTime));
-		map.put("endTime", new Date(endTime));
-		map.put("pageIndex", pageIndex);
-		try {
-			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Profile.getUserBuyPropertiesList", map);
-		} catch (SQLException e) {
-			logger.error("未能正常调用存储过程", e);
-			result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
-			return result;
-		}
-		String TagCode = (String) map.get("TagCode");
-		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-			// 取出列表
-			@SuppressWarnings("unchecked")
-			List<Object> recordList = (ArrayList<Object>) map.get("recordList");
-			result.addProperty("TagCode", TagCode);
-			result.addProperty("pageTotal", (Integer) map.get("pageTotal"));
-			JsonArray jRecordList = new JsonArray();
-			for (Object object : recordList) {
-				jRecordList.add(((BuyProperties) object).toJsonObject());
-			}
-			result.add("recordList", jRecordList);
-			// 返回结果
-			return result;
-		} else if (TagCode.equals("02")) {
-			/* '02';分页超出范围 */
-			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-			result.addProperty("pageTotal", 0);
-			result.add("recordList", new JsonArray());
-			return result;
-		} else {
-			// 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
-			logger.error("调用存储过程(Profile.getUserChargeList)未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
-			result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
-			return result;
-		}
+        try {
+            int count = 0;
+            JsonArray jRecordList = new JsonArray();
+            Date startDate = new Date(startTime);
+            Date endDate = new Date(endTime);
+            Result<Map<String, Object>> resp =  rechargeService.getUserBuyProductRecordCount(userId, startDate, endDate);
+            if (resp != null && CommonStateCode.SUCCESS.equals(resp.getCode())) {
+                Map<String, Object> map = resp.getData();
+                if (map.get("count") != null) {
+                    count = (int) map.get("count");
+                }
+                if (count > 0) {
+                    Result<List<HistBuyProductRechargeDto>> histResp = rechargeService.getUserBuyProductRecords(userId, startDate, endDate, (pageIndex -1) * 20, 20);
+                    if (histResp != null && CommonStateCode.SUCCESS.equals(histResp.getCode())) {
+                        List<HistBuyProductRechargeDto> histBuyProductRechargeList = histResp.getData();
+                        if (!Collectionutils.isEmpty(histBuyProductRechargeList)) {
+                            for (HistBuyProductRechargeDto histBuyProductRechargeDto : histBuyProductRechargeList) {
+                                JsonObject jsonObj = new JsonObject();
+                                if (histBuyProductRechargeDto.getAmount() != null) {
+                                    jsonObj.addProperty("amount", histBuyProductRechargeDto.getAmount());
+                                }
+                                if (histBuyProductRechargeDto.getRechargeTime() != null) {
+                                    jsonObj.addProperty("consumeTime", histBuyProductRechargeDto.getRechargeTime().getTime());
+                                }
+                                if (histBuyProductRechargeDto.getPaymentName() != null) {
+                                    jsonObj.addProperty("paymentDesc", histBuyProductRechargeDto.getPaymentName());
+                                }
+                                if (histBuyProductRechargeDto.getPaymentMode() != null) {
+                                    jsonObj.addProperty("paymentMode", histBuyProductRechargeDto.getPaymentMode());
+                                }
+                                if (histBuyProductRechargeDto.getType() != null) {
+                                    jsonObj.addProperty("type", histBuyProductRechargeDto.getType());
+                                }
+                                if (histBuyProductRechargeDto.getDescribe() != null) {
+                                    jsonObj.addProperty("typeDesc", histBuyProductRechargeDto.getDescribe());
+                                }
+                                if (histBuyProductRechargeDto.getMimoney() != null) {
+                                    jsonObj.addProperty("showMoney", histBuyProductRechargeDto.getMimoney());
+                                }
+                                jRecordList.add(jsonObj);
+                            }
+                        }
+                    }
+                }
+            }
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            result.addProperty("pageTotal", (int) Math.ceil((double) count/20));
+            result.add("recordList", jRecordList);
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            logger.error("ProfileFunctions.getUserBuyPropertiesList execute exception: ", e);
+        }
+        
+        return result;
 	}
 	
 	/**
