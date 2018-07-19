@@ -15,8 +15,6 @@
 		
 		<action name="entrance" class="com.melot.kktv.action.EntranceAction"/>
 
-		<action name="callback" class="com.melot.kktv.action.CallbackAction"/>
-		
 		<action name="timMsgCallback" class="com.melot.kkcx.action.TimMsgAction" method="timMsgCallback">
 		</action>
 
