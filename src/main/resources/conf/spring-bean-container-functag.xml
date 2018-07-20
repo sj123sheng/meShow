@@ -403,31 +403,6 @@
 		<constructor-arg name="t" ref="profileFunction" />
 		<constructor-arg name="methodName" value="getUserLiveList" />
 	</bean>
-	<!-- 获取新注册任务列表 -->
-	<bean id="10005020" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="profileFunction" />
-		<constructor-arg name="methodName" value="getNewUserTaskList" />
-	</bean>
-	<!-- 完成任务列表中的任务 -->
-	<bean id="10005021" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="profileFunction" />
-		<constructor-arg name="methodName" value="finishTask" />
-	</bean>
-	<!-- 7日签到补签 -->
-	<bean id="50005002" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="profileFunction" />
-		<constructor-arg name="methodName" value="replenishSignIn" />
-	</bean>
-	<!-- 7日签到抽奖资格校验 -->
-	<bean id="50005004" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="profileFunction" />
-		<constructor-arg name="methodName" value="isWeeklyLotteryDraw" />
-	</bean>
-	<!-- 领取任务奖励 -->
-	<bean id="10005022" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="profileFunction" />
-		<constructor-arg name="methodName" value="getReward" />
-	</bean>
 	<!-- 获取用户中奖记录列表 -->
 	<bean id="10005024" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="profileFunction" />
@@ -1299,16 +1274,6 @@
 		<constructor-arg name="t" ref="profileSecurityFunction" />
 		<constructor-arg name="methodName" value="grabRedEvelopeViaIdentity" />
 	</bean>
-	<!-- 领取任务奖励 -->
-	<bean id="40000006" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="profileSecurityFunction" />
-		<constructor-arg name="methodName" value="getReward" />
-	</bean>
-	<!-- 七日签到抽奖 -->
-	<bean id="40000023" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="profileSecurityFunction" />
-		<constructor-arg name="methodName" value="weeklyLottery" />
-	</bean>
 	<!-- 安全第三方平台注册接口 -->
 	<bean id="40000003" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="profileSecurityFunction" />
@@ -1735,30 +1700,10 @@
 		<constructor-arg name="t" ref="albumFunction" />
 		<constructor-arg name="methodName" value="deletePhoto" />
 	</bean>
-	<!-- 删除照片V2 删除S3资源上的照片-->
-	<bean id="10004023" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="albumFunction" />
-		<constructor-arg name="methodName" value="deletePhotoV2" />
-	</bean>
 	<!-- 获取用户照片列表 -->
 	<bean id="10004003" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="albumFunction" />
 		<constructor-arg name="methodName" value="getUserPhotoList" />
-	</bean>
-	<!-- 评论照片 -->
-	<bean id="10004004" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="albumFunction" />
-		<constructor-arg name="methodName" value="commentPhoto" />
-	</bean>
-	<!-- 删除照片评论 -->
-	<bean id="10004005" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="albumFunction" />
-		<constructor-arg name="methodName" value="deletePhotoComment" />
-	</bean>
-	<!-- 获取获取照片详情(包含所有评论) -->
-	<bean id="10004006" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="albumFunction" />
-		<constructor-arg name="methodName" value="getPhotoCommentList" />
 	</bean>
 	<bean id="10004013" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="albumFunction" />
@@ -1779,20 +1724,10 @@
 		<constructor-arg name="t" ref="albumFunction" />
 		<constructor-arg name="methodName" value="deleteUserPoster" />
 	</bean>
-	<!-- 用户删除海报V2 -->
-	<bean id="10004020" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="albumFunction" />
-		<constructor-arg name="methodName" value="deleteUserPosterV2" />
-	</bean>
 	<!-- 设置用户海报为当前海报 -->
 	<bean id="10004017" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="albumFunction" />
 		<constructor-arg name="methodName" value="setUserPoster" />
-	</bean>
-	<!-- 新版海报入库 -->
-	<bean id="10004019" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="albumFunction" />
-		<constructor-arg name="methodName" value="insertToDBNew" />
 	</bean>
 	<!-- 新版海报入库V2 -->
 	<bean id="10004021" class="com.melot.sdk.core.function.GenericFunction">

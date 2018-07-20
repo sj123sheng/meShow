@@ -20,20 +20,20 @@ import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.redis.RedisConfigHelper;
 import com.melot.sdk.core.util.MelotBeanFactory;
 
+import org.apache.log4j.Logger;
 import redis.clients.jedis.Jedis;
 
 public class FamilyHonorSource {
-	
+
+	private static Logger logger = Logger.getLogger(FamilyHonorSource.class);
+
 	private static final String SOURCE_NAME = RedisServiceKey.SERVICE_SOURCE_FAMILYHONORCACHE;
-	
-	/** familyRank_rankType_slotType_familyId **/
-    private static final String FAMILYRANKING_KEY = "familyRank_%s_%s_%s";
     
     /** familyRank_rankType_slotType_familyId **/
-    private static final String FAMILYRANKING_KEY_NEW = "familyRank_new_%s_%s_%s";
-    
+    private static final String FAMILYRANKING_KEY_NEW = "familyRank_new_v2_%s_%s_%s";
+
     /** familyRank_rankType_slotType_familyId **/
-    private static final String FAMILYRANKING_KEY_REDIS_CACHE = "familyrank_redis_cache_%s_%s_%s";
+    private static final String FAMILYRANKING_KEY_REDIS_CACHE = "familyrank_redis_cache_v2_%s_%s_%s";
 	
 	private static Jedis getInstance() {
 		return RedisConfigHelper.getJedis(SOURCE_NAME);
@@ -100,7 +100,7 @@ public class FamilyHonorSource {
 			
 			jedisErrorFlag = false;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("FamilyHonorSource.getFamilyHonor(" + "familyId:" + familyId + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis, jedisErrorFlag);
@@ -128,7 +128,7 @@ public class FamilyHonorSource {
 			}
 			jedisErrorFlag = false ;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("FamilyHonorSource.getConsumeTotal(" + "count:" + count + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis, jedisErrorFlag);
@@ -156,7 +156,7 @@ public class FamilyHonorSource {
 			}
 			jedisErrorFlag = false ;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("FamilyHonorSource.getMedalTotal(" + "count:" + count + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis, jedisErrorFlag);
@@ -184,7 +184,7 @@ public class FamilyHonorSource {
 			}
 			jedisErrorFlag = false ;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("FamilyHonorSource.getCrownCountTotal(" + "count:" + count + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis, jedisErrorFlag);
@@ -210,7 +210,7 @@ public class FamilyHonorSource {
 			
 			jedisErrorFlag = false;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("FamilyHonorSource.getFamilyHonor(" + "familyId:" + familyId + "honorType:" + honorType + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis, jedisErrorFlag);
@@ -236,7 +236,7 @@ public class FamilyHonorSource {
 			
 			jedisErrorFlag = false;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("FamilyHonorSource.getFamilyHonorList(" + "honorType:" + honorType + "start:" + start + "end:" + end + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis, jedisErrorFlag);
@@ -263,7 +263,7 @@ public class FamilyHonorSource {
 			
 			jedisErrorFlag = false;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("FamilyHonorSource.getFamilyHonorCount(" + "honorType:" + honorType + ") execute exception.", e);
 		} finally {
 			if(jedis!=null) {
 				freeInstance(jedis, jedisErrorFlag);
@@ -283,65 +283,43 @@ public class FamilyHonorSource {
 	 * @param familyId
 	 * @return
 	 */
-	public static String getFamilyUserRanking(int rankType, int slotType, int familyId) {
-	    Jedis jedis = null;
-        try {
-            jedis = getInstance();
-            return jedis.get(String.format(FAMILYRANKING_KEY, rankType, slotType, familyId));
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (jedis != null) {
-                freeInstance(jedis, false);
-            }
-        }
-        return null;
-	}
-	
-	/**
-	 * 获取排行榜
-	 * @param rankType
-	 * @param slotType
-	 * @param familyId
-	 * @return
-	 */
 	public static String getFamilyUserRankingNew(int rankType, int slotType, int familyId) {
 	    Jedis jedis = null;
         try {
         	jedis = getInstance();
-        	
+
         	String str = jedis.get(String.format(FAMILYRANKING_KEY_REDIS_CACHE, rankType, slotType, familyId));
         	if (StringUtils.isBlank(str)) {
         		
         		List<JsonObject> jsonArray = new ArrayList<JsonObject>();
-        		
+
 	        	Set<String> set =  jedis.zrevrange(String.format(FAMILYRANKING_KEY_NEW, rankType, slotType, familyId), 0, 20);
 	        	if (set != null && set.size() > 0) {
 	        		for (String userId : set) {
-	        			
+
 	        			JsonObject result = new JsonObject();
 	        			String portrait = null;
 	        			int roomId = 0;
 	        			String nickname = null;
 	        			int gender = 0;
 	        			int iconTag = 0;
-	        			
+
 	        			long total = getFamilyUserRankingTotal(rankType,slotType,familyId,userId).longValue();
-	        			
+
 	        			if (rankType == RankingEnum.RANKING_TYPE_RICH) {
-	        				KkUserService userService = (KkUserService) MelotBeanFactory.getBean("kkUserService");	
+	        				KkUserService userService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
 	        				if (userService == null) {
 								continue;
 							}
 	        				UserInfoDetail userInfoDetail =	userService.getUserDetailInfo(Integer.valueOf(userId));
-	        				
+
 	        				roomId = userInfoDetail.getProfile().getUserId();
 	        				nickname = userInfoDetail.getProfile().getNickName();
 	        				gender = userInfoDetail.getProfile().getGender();
 	        				portrait = userInfoDetail.getProfile().getPortrait();
-	        				
+
 	        				result.addProperty("contribution", total);
-	        				
+
 						}else if (rankType == RankingEnum.RANKING_TYPE_ACTOR) {
 							RoomInfo roomInfo = RoomService.getRoomInfo(Integer.valueOf(userId));
 							if (roomInfo == null) {
@@ -354,9 +332,9 @@ public class FamilyHonorSource {
 							    iconTag = roomInfo.getIcon();
 							}
                             gender = roomInfo.getGender();
-                            
+
                             result.addProperty("earnTotal", total);
-	                 
+
 		                     if (roomInfo.getRoomSource() != null && roomInfo.getRoomSource() == 10 && !StringUtil.strIsNull(portrait)) {
 		                         result.addProperty("poster_path_original",  portrait);
 		                         result.addProperty("poster_path_1280", portrait + "!1280");
@@ -376,13 +354,13 @@ public class FamilyHonorSource {
 		                         }
 	                     	}
 						}
-	        			
+
 	        			result.addProperty("userId", Integer.valueOf(userId));
 	        			result.addProperty("roomId",roomId);
 	        			result.addProperty("nickname", nickname);
 	        			result.addProperty("gender", gender);
 	        			result.addProperty("iconTag", iconTag);
-	        			
+
 	        		    if (!StringUtil.strIsNull(portrait)) {
 	                         result.addProperty("portrait_path_original",  portrait);
 	                         result.addProperty("portrait_path_48",  portrait + "!48");
@@ -390,7 +368,7 @@ public class FamilyHonorSource {
 	                         result.addProperty("portrait_path_256", portrait + "!256");
 	                         result.addProperty("portrait_path_1280", portrait + "!1280");
 	                    }
-	        		    
+
 	                    jsonArray.add(result);
 					}
 				}
@@ -401,7 +379,7 @@ public class FamilyHonorSource {
         	}
         	return str;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("FamilyHonorSource.getFamilyUserRankingNew(" + "rankType:" + rankType + "slotType:" + slotType + "familyId:" + familyId + ") execute exception.", e);
         } finally {
             if (jedis != null) {
                 freeInstance(jedis, false);
@@ -429,7 +407,7 @@ public class FamilyHonorSource {
         	    }
         	}
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("FamilyHonorSource.getFamilyUserRankingTotal(" + "rankType:" + rankType + "slotType:" + slotType + "familyId:" + familyId + "member:" + member + ") execute exception.", e);
         } finally {
             if (jedis != null) {
                 freeInstance(jedis, false);

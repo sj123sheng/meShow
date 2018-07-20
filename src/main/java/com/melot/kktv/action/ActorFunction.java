@@ -498,7 +498,10 @@ public class ActorFunction {
         userVerifyService.updateZmrzApplyStatus(bizNo, verifyStatus);
         // 更新芝麻认证记录的面部照片
         try {
-            String channelStatuses = response.getChannelStatuses();
+            String channelStatuses = null;
+            if (response != null) {
+                channelStatuses = response.getChannelStatuses();
+            }
             if(!StringUtils.isEmpty(channelStatuses)) {
                 JSONArray jsonArray = JSONArray.parseArray(channelStatuses);
                 if(jsonArray != null && jsonArray.size() > 0) {

@@ -56,11 +56,6 @@
 		       ro.greetmsghref
 		from room_info ro where ro.roomid = #userId#
 	</select>
-	
-	<!-- 获取用户官方号类型 -->
-	<select id="getAdminType" parameterClass="java.lang.Integer" resultClass="java.lang.Integer">
-		select type from officialid_info where userid = #userid# and rownum = 1
-	</select>
 
 	<!-- 判断用户是否封号 -->
 	<select id="isInUserBlackList" parameterClass="java.lang.Integer" resultClass="java.lang.Integer">
