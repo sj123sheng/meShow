@@ -209,7 +209,4 @@
 
 
 	<kkrpc:reference id="feedbackInfoService" interface="com.melot.kk.module.report.service.FeedbackInfoService" version="1.0.0"></kkrpc:reference>
-
-    <!-- 用户官方信息模块 -->
-    <kkrpc:reference id="adminDataService" interface="com.melot.cms.admin.api.service.AdminDataService" version="1.0.0"></kkrpc:reference>
 </beans>

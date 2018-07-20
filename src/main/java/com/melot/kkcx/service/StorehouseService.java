@@ -23,7 +23,7 @@ import com.melot.server.protobuf.GiftwareProtos;
 public class StorehouseService {
 
 	private static Logger logger = Logger.getLogger(StorehouseService.class);
-
+	
 	/**
 	 * 获取用户库存礼物中指定礼物的数量
 	 * @param userId 用户ID

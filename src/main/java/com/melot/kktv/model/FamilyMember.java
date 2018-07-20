@@ -11,12 +11,9 @@ import com.melot.kktv.util.FamilyMemberEnum;
 import com.melot.kktv.util.PlatformEnum;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
-import org.apache.log4j.Logger;
 
 @SuppressWarnings("unused")
 public class FamilyMember {
-
-	private static Logger logger = Logger.getLogger(FamilyMember.class);
 
 	private Integer familyId;
 	private Integer memberId;
@@ -66,7 +63,7 @@ public class FamilyMember {
                 this.richLevel = userProfile.getUserLevel();
             }
         } catch (Exception e) {
-            logger.error("FamilyMember.initJavaBean(" + "familyMember:" + familyMember + "platform:" + platform + ") execute exception.", e);
+            e.printStackTrace();
         }
     }
 	

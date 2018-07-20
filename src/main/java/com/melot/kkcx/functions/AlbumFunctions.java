@@ -1,29 +1,47 @@
 package com.melot.kkcx.functions;
 
+import java.io.File;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.melot.kk.module.resource.service.ResourceNewService;
-import com.melot.kk.opus.api.domain.UserPicture;
+import com.melot.kk.opus.api.constant.OpusCostantEnum;
+import com.melot.kk.opus.api.domain.TempUserResource;
 import com.melot.kkcx.service.AlbumServices;
 import com.melot.kkcx.service.ProfileServices;
 import com.melot.kktv.action.FamilyAction;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
+import com.melot.kktv.model.Photo;
+import com.melot.kktv.model.PhotoComment;
 import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.LiveVideoService;
-import com.melot.kktv.util.*;
+import com.melot.kktv.util.AppIdEnum;
+import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.ConfigHelper;
+import com.melot.kktv.util.Constant;
+import com.melot.kktv.util.PictureTypeEnum;
+import com.melot.kktv.util.PictureTypeExtendEnum;
+import com.melot.kktv.util.TagCodeEnum;
+import com.melot.kktv.util.db.DB;
+import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.module.api.exceptions.MelotModuleException;
 import com.melot.module.poster.driver.domain.PosterInfo;
 import com.melot.module.poster.driver.service.PosterService;
 import com.melot.sdk.core.util.MelotBeanFactory;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import java.io.File;
-import java.util.List;
 
 public class AlbumFunctions {
 
@@ -37,6 +55,45 @@ public class AlbumFunctions {
 
 	@Autowired
 	private ConfigService configService;
+
+	@SuppressWarnings("unused")
+	private static JsonObject addBackground(int userId, int fileId, String fileName, String path_original) {
+		// 调用存储过程入库
+		Map<Object, Object> map = new HashMap<Object, Object>();
+		map.put("userId", userId);
+		map.put("fileId", fileId);
+		map.put("fileName", fileName);
+		map.put("path_original", path_original);
+		try {
+			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Album.addBackground", map);
+		} catch (SQLException e) {
+			logger.error("添加背景图片回调入库失败(userId:" + userId + ",fileId:" + fileId + ",fileName:" + fileName + ",path_original:" + path_original, e);
+			JsonObject obj = new JsonObject();
+			obj.addProperty("TagCode", "04010009");
+			// 本次请求结束
+			return obj;
+		}
+		String TagCode = (String) map.get("TagCode");
+		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
+
+			// 从oracle中获取最新用户信息,更新到redis的userInfo信息
+			JsonObject updateUserInfo = new JsonObject();
+			updateUserInfo.addProperty("background", path_original);
+			updateUserInfo.addProperty("background_path_original", path_original);
+			ProfileServices.updateRedisUserInfo(userId, updateUserInfo);
+
+			JsonObject obj = new JsonObject();
+			obj.addProperty("TagCode", TagCodeEnum.SUCCESS);
+			obj.addProperty("pictureId", (Integer) map.get("pictureId"));
+			// 本次请求结束
+			return obj;
+		}
+		logger.error("调用存储过程(Album.addBackground(" + new Gson().toJson(map) + "))未的到正常结果(userId:" + userId + ",fileId:" + fileId + ",fileName:" + fileName + ",path_original:" + path_original);
+		JsonObject obj = new JsonObject();
+		obj.addProperty("TagCode", "04010009");
+		// 本次请求结束
+		return obj;
+	}
 
 	/**
 	 * 删除照片(10004002)
@@ -52,9 +109,28 @@ public class AlbumFunctions {
 			result.addProperty("TagCode", "30001007");
 			return result;
 		}
+
 		// 获取参数
+		JsonElement userIdje = jsonObject.get("userId");
 		JsonElement photoIdje = jsonObject.get("photoId");
+
+		// 验证参数
+		int userId;
 		int photoId;
+		if (userIdje != null && !userIdje.isJsonNull() && !userIdje.getAsString().equals("")) {
+			// 验证数字
+			try {
+				userId = userIdje.getAsInt();
+			} catch (Exception e) {
+				JsonObject result = new JsonObject();
+				result.addProperty("TagCode", "04020002");
+				return result;
+			}
+		} else {
+			JsonObject result = new JsonObject();
+			result.addProperty("TagCode", "04020001");
+			return result;
+		}
 		if (photoIdje != null && !photoIdje.isJsonNull() && !photoIdje.getAsString().equals("")) {
 			// 验证数字
 			try {
@@ -69,12 +145,138 @@ public class AlbumFunctions {
 			result.addProperty("TagCode", "04020003");
 			return result;
 		}
-		boolean flag = LiveVideoService.delPicture(photoId);
-		if (flag) {
+
+		// 调用存储过程得到结果
+		Map<Object, Object> map = new HashMap<Object, Object>();
+		map.put("userId", userId);
+		map.put("photoId", photoId);
+
+		try {
+			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Album.deletePhoto", map);
+		} catch (SQLException e) {
+			logger.error("未能正常调用存储过程", e);
+			JsonObject result = new JsonObject();
+			result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
+			return result;
+		}
+		String TagCode = (String) map.get("TagCode");
+		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
+			TempUserResource tempUserResource = LiveVideoService.getTempUserResourceById(null, userId, OpusCostantEnum.CHECKING_PHOTO_RES_TYPE, photoId, null);
+			if (tempUserResource != null) {
+				LiveVideoService.delTempUserResourceById(tempUserResource.getId(), userId, OpusCostantEnum.CHECKING_PHOTO_RES_TYPE, photoId, null);
+			}
+			try {
+				resourceNewService.delResource(photoId);
+			} catch (Exception e) {
+				logger.error("[AlbumFunctions]: Failed to delete photoId:[" + photoId + "]" + e);
+			}
 			JsonObject result = new JsonObject();
 			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 			return result;
+		} else if (TagCode.equals("03") || TagCode.equals("04")) {
+			/* '03'; -- 照片不属于该用户 */
+			/* '04'; -- 照片不存在 */
+			JsonObject result = new JsonObject();
+			result.addProperty("TagCode", "040201" + TagCode + "");
+			return result;
 		} else {
+			// 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
+			logger.error("调用存储过程(Album.deletePhoto(" + new Gson().toJson(map) + "))未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
+			JsonObject result = new JsonObject();
+			result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
+			return result;
+		}
+	}
+
+	/**
+	 * 删除照片V2(10004023)
+	 *
+	 * @param jsonObject 请求对象
+	 * @param checkTag 是否验证token标记
+	 * @return 结果字符串
+	 */
+	public JsonObject deletePhotoV2(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+		// 该接口需要验证token,未验证的返回错误码
+		if (!checkTag) {
+			JsonObject result = new JsonObject();
+			result.addProperty("TagCode", "30001007");
+			return result;
+		}
+
+		// 获取参数
+		JsonElement userIdje = jsonObject.get("userId");
+		JsonElement photoIdje = jsonObject.get("photoId");
+
+		// 验证参数
+		int userId;
+		int photoId;
+		if (userIdje != null && !userIdje.isJsonNull() && !userIdje.getAsString().equals("")) {
+			// 验证数字
+			try {
+				userId = userIdje.getAsInt();
+			} catch (Exception e) {
+				JsonObject result = new JsonObject();
+				result.addProperty("TagCode", "04020002");
+				return result;
+			}
+		} else {
+			JsonObject result = new JsonObject();
+			result.addProperty("TagCode", "04020001");
+			return result;
+		}
+		if (photoIdje != null && !photoIdje.isJsonNull() && !photoIdje.getAsString().equals("")) {
+			// 验证数字
+			try {
+				photoId = photoIdje.getAsInt();
+			} catch (Exception e) {
+				JsonObject result = new JsonObject();
+				result.addProperty("TagCode", "04020004");
+				return result;
+			}
+		} else {
+			JsonObject result = new JsonObject();
+			result.addProperty("TagCode", "04020003");
+			return result;
+		}
+
+		// 调用存储过程得到结果
+		Map<Object, Object> map = new HashMap<Object, Object>();
+		map.put("userId", userId);
+		map.put("photoId", photoId);
+
+		try {
+			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Album.deletePhoto", map);
+		} catch (SQLException e) {
+			logger.error("未能正常调用存储过程", e);
+			JsonObject result = new JsonObject();
+			result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
+			return result;
+		}
+		String TagCode = (String) map.get("TagCode");
+		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
+			TempUserResource tempUserResource = LiveVideoService.getTempUserResourceById(null, userId, OpusCostantEnum.CHECKING_PHOTO_RES_TYPE, photoId, null);
+			if (tempUserResource != null) {
+				LiveVideoService.delTempUserResourceById(tempUserResource.getId(), userId, OpusCostantEnum.CHECKING_PHOTO_RES_TYPE, photoId, null);
+			}
+			try {
+				// 将亚马逊的S3、又拍云等服务器资源文件删除
+				resourceNewService.delResource(photoId);
+			} catch (Exception e) {
+				logger.error("[AlbumFunctions]: Failed to delete photoId:[" + photoId + "]" + e);
+			}
+
+			JsonObject result = new JsonObject();
+			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+			return result;
+		} else if (TagCode.equals("03") || TagCode.equals("04")) {
+			/* '03'; -- 照片不属于该用户 */
+			/* '04'; -- 照片不存在 */
+			JsonObject result = new JsonObject();
+			result.addProperty("TagCode", "040201" + TagCode + "");
+			return result;
+		} else {
+			// 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
+			logger.error("调用存储过程(Album.deletePhoto(" + new Gson().toJson(map) + "))未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
 			JsonObject result = new JsonObject();
 			result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
 			return result;
@@ -123,39 +325,286 @@ public class AlbumFunctions {
 		}
 
 		JsonArray jPhotoList = new JsonArray();
-		int pageTotal = LiveVideoService.getPictureCount(userId)/12;
-		if(pageTotal > 0 && pageTotal>pageIndex){
-            List<UserPicture> photos = LiveVideoService.getPictureList(userId,12*pageIndex-1,12);
-            for(UserPicture photo:photos){
-				JsonObject jObject = new JsonObject();
-				jObject.addProperty("photoId", photo.getPhotoId());
-				jObject.addProperty("photoName", photo.getPhotoName());
-				jObject.addProperty("photo_path_original", ConfigHelper.getHttpdir() + photo.getPhoto_path_original());
-				jObject.addProperty("photo_path_1280", ConfigHelper.getHttpdir() + photo.getPhoto_path_1280());
-				jObject.addProperty("photo_path_272", ConfigHelper.getHttpdir() + photo.getPhoto_path_272());
-				jObject.addProperty("photo_path_128", ConfigHelper.getHttpdir() + photo.getPhoto_path_128());
-				jObject.addProperty("uploadTime", photo.getUploadTime().getTime());
-				jObject.addProperty("clicks", photo.getClicks());
-				jObject.addProperty("comments", photo.getComments());
-				jObject.addProperty("picType", photo.getPicType());
-				// 以下字段用于兼容旧接口
-				if (photo.getPicType() == 1) {
-					jObject.addProperty("posterTag", 0);
-				} else {
-					jObject.addProperty("posterTag", 1);
-				}
-				jObject.addProperty("description", "");
-				jObject.addProperty("photoURL", ConfigHelper.getHttpdir() + photo.getPhoto_path_original());
-				jObject.addProperty("webthumburl", ConfigHelper.getHttpdir() + photo.getPhoto_path_272());
-				jObject.addProperty("mobilethumburl", ConfigHelper.getHttpdir() + photo.getPhoto_path_128());
-				jPhotoList.add(jObject);
+
+		// 调用存储过程得到结果
+		Map<Object, Object> map = new HashMap<Object, Object>();
+		map.put("userId", userId);
+		map.put("pageIndex", pageIndex);
+		try {
+			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Album.getUserPhotoList", map);
+		} catch (SQLException e) {
+			logger.error("未能正常调用存储过程", e);
+			result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
+			return result;
+		}
+		String TagCode = (String) map.get("TagCode");
+		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
+			// 取出列表
+			@SuppressWarnings("unchecked")
+			List<Object> photoList = (ArrayList<Object>) map.get("photoList");
+			for (Object object : photoList) {
+				Photo photo = (Photo) object;
+				JsonObject pObj = photo.toJsonObject();
+				jPhotoList.add(pObj);
 			}
+			result.addProperty("pageTotal", (Integer) map.get("pageTotal"));
+		} else if (TagCode.equals("02")) {
+			/* '02';分页超出范围 */
+			result.addProperty("pageTotal", (Integer) map.get("pageTotal"));
+		} else {
+			// 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
+			logger.error("调用存储过程(Album.getUserPhotoList(" + new Gson().toJson(map) + "))未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
+			result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
+			return result;
 		}
 		// 返回结果
-		result.addProperty("pageTotal", pageTotal);
 		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 		result.add("photoList", jPhotoList);
 		return result;
+	}
+
+	/**
+	 * 评论照片
+	 *
+	 * @param jsonObject 请求对象
+	 * @param checkTag 是否验证token标记
+	 * @return 结果字符串
+	 */
+	public JsonObject commentPhoto(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+		// 该接口需要验证token,未验证的返回错误码
+		if (!checkTag) {
+			JsonObject result = new JsonObject();
+			result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+			return result;
+		}
+
+		// 获取参数
+		JsonElement userIdje = jsonObject.get("userId");
+		JsonElement photoIdje = jsonObject.get("photoId");
+		JsonElement contentje = jsonObject.get("content");
+
+		// 验证参数
+		int userId;
+		int photoId;
+		String content;
+		if (userIdje != null && !userIdje.isJsonNull() && !userIdje.getAsString().equals("")) {
+			// 验证数字
+			try {
+				userId = userIdje.getAsInt();
+			} catch (Exception e) {
+				JsonObject result = new JsonObject();
+				result.addProperty("TagCode", "04040002");
+				return result;
+			}
+		} else {
+			JsonObject result = new JsonObject();
+			result.addProperty("TagCode", "04040001");
+			return result;
+		}
+		if (photoIdje != null && !photoIdje.isJsonNull() && !photoIdje.getAsString().equals("")) {
+			// 验证数字
+			try {
+				photoId = photoIdje.getAsInt();
+			} catch (Exception e) {
+				JsonObject result = new JsonObject();
+				result.addProperty("TagCode", "04040004");
+				return result;
+			}
+		} else {
+			JsonObject result = new JsonObject();
+			result.addProperty("TagCode", "04040003");
+			return result;
+		}
+		if (contentje != null && !contentje.isJsonNull() && !contentje.getAsString().equals("")) {
+			content = contentje.getAsString();
+			// matchXSSTag
+			if(CommonUtil.matchXSSTag(content)) {
+				JsonObject result = new JsonObject();
+				result.addProperty("TagCode", "04040006");
+				return result;
+			}
+		} else {
+			JsonObject result = new JsonObject();
+			result.addProperty("TagCode", "04040005");
+			return result;
+		}
+
+		// 调用存储过程得到结果
+		Map<Object, Object> map = new HashMap<Object, Object>();
+		map.put("userId", userId);
+		map.put("photoId", photoId);
+		map.put("content", content);
+		try {
+			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Album.commentPhoto", map);
+		} catch (SQLException e) {
+			logger.error("未能正常调用存储过程", e);
+			JsonObject result = new JsonObject();
+			result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
+			return result;
+		}
+		String TagCode = (String) map.get("TagCode");
+		JsonObject result = new JsonObject();
+		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
+			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+			return result;
+		} else if (TagCode.equals("03")) {
+			/* '03'; 照片不存在 */
+			result.addProperty("TagCode", "040401" + TagCode + "");
+			return result;
+		} else {
+			// 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
+			logger.error("调用存储过程(Album.commentPhoto(" + new Gson().toJson(map) + "))未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
+			result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
+			return result;
+		}
+	}
+
+	/**
+	 * 删除照片评论
+	 *
+	 * @param jsonObject 请求对象
+	 * @param checkTag 是否验证token标记
+	 * @return 结果字符串
+	 */
+	public JsonObject deletePhotoComment(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+		// 该接口需要验证token,未验证的返回错误码
+		if (!checkTag) {
+			JsonObject result = new JsonObject();
+			result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+			return result;
+		}
+
+		// 获取参数
+		JsonElement userIdje = jsonObject.get("userId");
+		JsonElement photoCommentIdje = jsonObject.get("photoCommentId");
+
+		// 验证参数
+		int userId;
+		int photoCommentId;
+		if (userIdje != null && !userIdje.isJsonNull() && !userIdje.getAsString().equals("")) {
+			// 验证数字
+			try {
+				userId = userIdje.getAsInt();
+			} catch (Exception e) {
+				JsonObject result = new JsonObject();
+				result.addProperty("TagCode", "04050002");
+				return result;
+			}
+		} else {
+			JsonObject result = new JsonObject();
+			result.addProperty("TagCode", "04050001");
+			return result;
+		}
+		if (photoCommentIdje != null && !photoCommentIdje.isJsonNull() && !photoCommentIdje.getAsString().equals("")) {
+			// 验证数字
+			try {
+				photoCommentId = photoCommentIdje.getAsInt();
+			} catch (Exception e) {
+				JsonObject result = new JsonObject();
+				result.addProperty("TagCode", "04050004");
+				return result;
+			}
+		} else {
+			JsonObject result = new JsonObject();
+			result.addProperty("TagCode", "04050003");
+			return result;
+		}
+
+		// 调用存储过程得到结果
+		Map<Object, Object> map = new HashMap<Object, Object>();
+		map.put("userId", userId);
+		map.put("photoCommentId", photoCommentId);
+		try {
+			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Album.deletePhotoComment", map);
+		} catch (SQLException e) {
+			logger.error("未能正常调用存储过程", e);
+			JsonObject result = new JsonObject();
+			result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
+			return result;
+		}
+		String TagCode = (String) map.get("TagCode");
+		JsonObject result = new JsonObject();
+		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
+			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+			return result;
+		} else if (TagCode.equals("03") || TagCode.equals("04")) {
+			/* '03'; --评论不存在 */
+			/* '03'; --用户不是照片所有者,无权限删除 */
+			result.addProperty("TagCode", "040501" + TagCode + "");
+			return result;
+		} else {
+			// 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
+			logger.error("调用存储过程(Album.deletePhotoComment(" + new Gson().toJson(map) + "))未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
+			result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
+			return result;
+		}
+	}
+
+	/**
+	 * 获取获取照片详情(包含所有评论)
+	 *
+	 * @param jsonObject 请求对象
+	 * @return 结果字符串
+	 */
+	public JsonObject getPhotoCommentList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+		// 获取参数
+		JsonElement photoIdje = jsonObject.get("photoId");
+
+		// 验证参数
+		int photoId;
+		if (photoIdje != null && !photoIdje.isJsonNull() && !photoIdje.getAsString().equals("")) {
+			// 验证数字
+			try {
+				photoId = photoIdje.getAsInt();
+			} catch (Exception e) {
+				JsonObject result = new JsonObject();
+				result.addProperty("TagCode", "04060002");
+				return result;
+			}
+		} else {
+			JsonObject result = new JsonObject();
+			result.addProperty("TagCode", "04060001");
+			return result;
+		}
+
+		// 调用存储过程得到结果
+		Map<Object, Object> map = new HashMap<Object, Object>();
+		map.put("photoId", photoId);
+		try {
+			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Album.getPhotoCommentList", map);
+		} catch (SQLException e) {
+			logger.error("未能正常调用存储过程", e);
+			JsonObject result = new JsonObject();
+			result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
+			return result;
+		}
+		String TagCode = (String) map.get("TagCode");
+		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
+			// 取出列表
+			@SuppressWarnings("unchecked")
+			List<Object> commentList = (ArrayList<Object>) map.get("commentList");
+
+			JsonObject result = new JsonObject();
+			result.addProperty("TagCode", TagCode);
+			JsonArray jCommentList = new JsonArray();
+			for (Object object : commentList) {
+				jCommentList.add(((PhotoComment) object).toJsonObject());
+			}
+			result.add("commentList", jCommentList);
+			// 返回结果
+			return result;
+		} else if (TagCode.equals("03")) {
+			/* '03'; -- 照片不存在 */
+			JsonObject result = new JsonObject();
+			result.addProperty("TagCode", "040601" + TagCode + "");
+			return result;
+		} else {
+			// 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
+			logger.error("调用存储过程(Album.getPhotoCommentList(" + new Gson().toJson(map) + "))未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
+			JsonObject result = new JsonObject();
+			result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
+			return result;
+		}
 	}
 
 	/**
@@ -269,6 +718,81 @@ public class AlbumFunctions {
 						//resId为当前海报，不可删除
 						result.addProperty("TagCode", "04160006");
 						break;
+
+					default:
+						break;
+				}
+				return result;
+			}
+			if (flag == true) {
+				try {
+					// 将亚马逊的S3、又拍云等服务器资源文件删除
+					resourceNewService.delResource(resId);
+				} catch (Exception e) {
+					logger.error("[AlbumFunctions]: Failed to delete poster[" + resId + "]" + e);
+				}
+				result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+			} else {
+				result.addProperty("TagCode", "04160004");
+			}
+		} else {
+			result.addProperty("TagCode", "04160005");
+		}
+		return result;
+	}
+
+	/**
+	 * 用户删除海报V2(10004020)
+	 * @param jsonObject
+	 * @param checkTag
+	 * @param request
+	 * @return
+	 */
+	public JsonObject deleteUserPosterV2(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+		// 该接口需要验证token,未验证的返回错误码
+		if (!checkTag) {
+			JsonObject result = new JsonObject();
+			result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+			return result;
+		}
+
+		int userId, resId;
+		JsonObject result = new JsonObject();
+		try {
+			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+			resId = CommonUtil.getJsonParamInt(jsonObject, "resId", 0, "04160001", 1, Integer.MAX_VALUE);
+		} catch(CommonUtil.ErrorGetParameterException e) {
+			result.addProperty("TagCode", e.getErrCode());
+			return result;
+		} catch(Exception e) {
+			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+			return result;
+		}
+
+		PosterService posterService = MelotBeanFactory.getBean("posterService", PosterService.class);
+		boolean flag;
+		if (posterService != null) {
+			try {
+				flag = posterService.delPosterV2(userId, resId);
+			} catch (MelotModuleException e) {
+				switch (e.getErrCode()) {
+					case 101:
+						//resId不存在
+						result.addProperty("TagCode", "04160002");
+						break;
+
+					case 102:
+						//resId不属于userId
+						result.addProperty("TagCode", "04160003");
+						break;
+
+					case 103:
+						//resId为当前海报，不可删除
+						result.addProperty("TagCode", "04160006");
+						break;
+
+					default:
+						break;
 				}
 				return result;
 			}
@@ -347,6 +871,9 @@ public class AlbumFunctions {
 					case 105:
 						//已经是当前海报
 						result.addProperty("TagCode", "04170008");
+						break;
+
+					default:
 						break;
 				}
 				return result;
@@ -462,6 +989,13 @@ public class AlbumFunctions {
 				logger.error("Failed to insert to DB.", e);
 				result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
 			}
+		} else if (pictureType == PictureTypeEnum.background) { // 4 : 背景图
+			try {
+				result = AlbumServices.addBackgroundNew(userId , url, pictureName);
+			} catch (Exception e) {
+				logger.error("Failed to insert to DB." + e);
+				result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
+			}
 		} else if (pictureType == PictureTypeEnum.family_poster) { // 5:家族海报
 			com.melot.family.driver.domain.FamilyPoster familyPoster = new com.melot.family.driver.domain.FamilyPoster();
 			try {
@@ -488,7 +1022,7 @@ public class AlbumFunctions {
 			}
 		} else { // 1.直播海报(弃用) 2.照片 3.资源图片
 			try {
-			    if (pictureType == 3 || pictureType == 10 || pictureType == 7|| pictureType == 12|| pictureType == 13 || pictureType == 99|| pictureType == 4) {
+			    if (pictureType == 3 || pictureType == 10 || pictureType == 7|| pictureType == 12|| pictureType == 13 || pictureType == 99) {
 					result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 					result.addProperty("pictureId", 1); // 必须返回一个值否则客户端会报错
 				} else if(pictureType == 8){
@@ -606,6 +1140,122 @@ public class AlbumFunctions {
 		}
 
 		return result;
+	}
+
+	/**
+	 * 新版海报入库（10004019）
+	 * @param jsonObject
+	 * @param checkTag
+	 * @param request
+	 * @return
+	 * @throws Exception
+	 */
+	public JsonObject insertToDBNew(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+		JsonObject result = new JsonObject();
+
+		// 该接口需要验证token,未验证的返回错误码
+		if (!checkTag) {
+			result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+			return result;
+		}
+
+		int userId, pictureType;
+		String url = null;
+		try {
+			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "04130001", 1, Integer.MAX_VALUE);
+			pictureType = CommonUtil.getJsonParamInt(jsonObject, "pictureType", 0, "04130004", 1, Integer.MAX_VALUE);
+			url = CommonUtil.getJsonParamString(jsonObject, "url", null, "04130002", 1, Integer.MAX_VALUE);
+			url = url.replaceFirst(ConfigHelper.getHttpdir(), "");
+			if(!url.startsWith("/")){
+				url = "/"+url;
+			}
+			url = url.replaceFirst("/kktv", "");
+		} catch (CommonUtil.ErrorGetParameterException e) {
+			result.addProperty("TagCode", e.getErrCode());
+			return result;
+		} catch (Exception e) {
+			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+			return result;
+		}
+		
+		PosterService posterService = MelotBeanFactory.getBean("posterService", PosterService.class);
+		
+		//特殊时期用户没有上传过海报可上传一次（官方号不限制）
+		if (configService.getIsSpecialTime() && !ProfileServices.checkIsOfficial(userId)) {
+//		    try {
+//		        List<PosterInfo> posterList = posterService.getPosterList(userId);
+//		        //海报池有可用海报
+//                if (posterList != null && posterList.size() > 0) {
+//                    for (PosterInfo posterInfo : posterList) {
+//                        if (posterInfo.getState() != 3) {
+//                            result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+//                            return result;
+//                        }
+//                    }
+//                }
+//		    } catch (Exception e) {
+//	            logger.error("call PosterService getPosterList error userId:" + userId, e);
+//	        }
+		    if (ProfileServices.checkUserUpdateProfileByType(userId, "3")) {
+                result.addProperty("message", "该用户操作次数超过当日限制");
+                result.addProperty("TagCode", TagCodeEnum.FUNCTAG_LIMIT_EXCEPTION);
+                return result; 
+            } else {
+                ProfileServices.setUserUpdateProfileByType(userId, "3");
+            }
+		}
+
+		Integer resId = 0;
+		if(configService.getResourceType().contains(","+ pictureType+",")){
+			com.melot.kk.module.resource.domain.Resource resource = new com.melot.kk.module.resource.domain.Resource();
+			resource.setImageUrl(url);
+			resource.setUserId(userId);
+			resource.setResType(1);
+			resource.setMimeType(2);
+			resource.seteCloudType(2);
+			try{
+				Result<Integer> r =resourceNewService.addResource(resource);
+				if(r!= null && r.getCode().equals(CommonStateCode.SUCCESS)){
+					resId = r.getData();
+				}
+			}catch (Exception e){
+				logger.debug("Failed to insert to resource DB." + e);
+				result.addProperty("TagCode", TagCodeEnum.UNCATCHED_EXCEPTION);
+			}
+		}
+
+		if (posterService == null) {
+			//调用模块异常
+			result.addProperty("TagCode", "04130100");
+			return result;
+		}
+		try {
+			String tagCode = posterService.savePosterV2(userId, resId, ConfigHelper.getHttpdir(), url, 0);;
+			if (tagCode != null) {
+				if (tagCode.equals("00000000")) {
+					// 入库成功
+					result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+					return result;
+				} else if (tagCode.equals("10010001")) {
+					// 非主播不能上传海报
+					result.addProperty("TagCode", "04130003");
+					return result;
+				} else if (tagCode.equals("10010002")) {
+					//海报池达到峰值
+					result.addProperty("TagCode", "04120006");
+					return result;
+				}
+			} else {
+				//调用模块未得到正常结果
+				result.addProperty("TagCode", "04130101");
+				return result;
+			}
+		} catch (Exception e) {
+			logger.error("call PosterService savePoster error userId:" + userId + ",pictureType:" + pictureType + ",url:"+ url, e);
+		}
+
+		return result;
+
 	}
 
 	/**

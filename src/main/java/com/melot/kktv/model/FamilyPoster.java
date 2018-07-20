@@ -32,13 +32,11 @@ public class FamilyPoster {
 			if (this.path_174 != null) {
 				posterJson.addProperty("path_174", this.path_174);
 			}
-			break;
 		case PlatformEnum.IPHONE:
 			// 返回 222*148px
 			if (this.path_222 != null) {
 				posterJson.addProperty("path_222", this.path_222);
 			}
-			break;
 		case PlatformEnum.IPAD:
 			// 返回 222*148px
 			if (this.path_222 != null) {

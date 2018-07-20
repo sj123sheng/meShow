@@ -1,6 +1,10 @@
 package com.melot.kktv.action;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
@@ -14,7 +18,6 @@ import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.util.*;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.math.RandomUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.google.gson.JsonArray;
@@ -46,7 +49,7 @@ public class HallFunctions {
 
 	@Resource
 	private HomeService hallHomeService;
-
+    
 	private static Logger logger = Logger.getLogger(HallFunctions.class);
 	
 	/**
@@ -833,11 +836,6 @@ public class HallFunctions {
                 if (hp.getCdnState() != null) {
                     // 栏目是否做CND缓存
                     json.addProperty("cdnState", hp.getCdnState());
-                }
-                
-                //  栏目类型
-                if (hp.getSeatType() != null) {
-                    json.addProperty("seatType", hp.getSeatType());
                 }
                 plateList.add(json);
             }

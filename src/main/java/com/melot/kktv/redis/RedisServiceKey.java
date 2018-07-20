@@ -17,12 +17,12 @@ public class RedisServiceKey {
 	/*
 	 * Redis Key
 	 */
-	public static final String SERVICE_KEY_FAMILYSTATS_CONSUMETOTAL = "familyStats.consumeTotal.new_v2";
-	public static final String SERVICE_KEY_FAMILYSTATS_MEDALCOUNT = "familyStats.medalCount_v2";
-	public static final String SERVICE_KEY_FAMILYSTATS_MEMBERCOUNT = "familyStats.memberCount_v2";
-	public static final String SERVICE_KEY_FAMILYSTATS_TOTALLIVE = "familyStats.totalLive_v2";
-	public static final String SERVICE_KEY_FAMILYSTATS_CROWNCOUNT = "familyStats.crownCount_v2";
-	public static final String SERVICE_KEY_FAMILYSTATS_DIAMONDCOUNT = "familyStats.diamondCount_v2";
-	public static final String SERVICE_KEY_FAMILYSTATS_HEARTCOUNT = "familyStats.heartCount_v2";
-	public static final String SERVICE_KEY_FAMILYSTATS_WEEKLYCONSUME = "familyStats.weeklyConsume_v2";
+	public static final String SERVICE_KEY_FAMILYSTATS_CONSUMETOTAL = "familyStats.consumeTotal.new";
+	public static final String SERVICE_KEY_FAMILYSTATS_MEDALCOUNT = "familyStats.medalCount";
+	public static final String SERVICE_KEY_FAMILYSTATS_MEMBERCOUNT = "familyStats.memberCount";
+	public static final String SERVICE_KEY_FAMILYSTATS_TOTALLIVE = "familyStats.totalLive";
+	public static final String SERVICE_KEY_FAMILYSTATS_CROWNCOUNT = "familyStats.crownCount";
+	public static final String SERVICE_KEY_FAMILYSTATS_DIAMONDCOUNT = "familyStats.diamondCount";
+	public static final String SERVICE_KEY_FAMILYSTATS_HEARTCOUNT = "familyStats.heartCount";
+	public static final String SERVICE_KEY_FAMILYSTATS_WEEKLYCONSUME = "familyStats.weeklyConsume";
 }
