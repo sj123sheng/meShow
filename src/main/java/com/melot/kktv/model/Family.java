@@ -150,12 +150,14 @@ public class Family {
 						this.familyPoster = new JsonObject();
 						this.familyPoster.addProperty("path_174", familyPoster.getPath_174());
 					}
+					break;
 				case PlatformEnum.IPHONE:
 					// 返回 222*148px
 					if (familyPoster.getPath_original() != null) {
 						this.familyPoster = new JsonObject();
 						this.familyPoster.addProperty("path_222", familyPoster.getPath_222());
 					}
+					break;
 				case PlatformEnum.IPAD:
 					// 返回 222*148px
 					if (familyPoster.getPath_original() != null) {

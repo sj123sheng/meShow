@@ -424,40 +424,6 @@ public class ProfileSecurityFunctions {
 	}
 
 	/**
-	 * 领取任务奖励(40000006)
-	 *
-	 * @param jsonObject 请求对象
-	 * @param request 请求对象
-	 * @return
-	 */
-	public JsonObject getReward(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
-		JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
-		if(rtJO != null)
-			return rtJO;
-
-		//签名正确，调用我们原来的接口
-		ProfileFunctions profileFunctions = MelotBeanFactory.getBean("profileFunction", ProfileFunctions.class);
-		return profileFunctions.getReward(jsonObject, checkTag, request);
-	}
-
-	/**
-	 * 七日签到抽奖(40000023)
-	 *
-	 * @param jsonObject 请求对象
-	 * @param request 请求对象
-	 * @return
-	 */
-	public JsonObject weeklyLottery(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
-		JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
-		if (rtJO != null) {
-			return rtJO;
-		}
-
-		ProfileFunctions profileFunctions = MelotBeanFactory.getBean("profileFunction", ProfileFunctions.class);
-		return profileFunctions.weeklyLottery(jsonObject, checkTag, request);
-	}
-
-	/**
 	 * 安全第三方平台用户注册(40000003)
 	 *
 	 * @param jsonObject 请求对象
@@ -1359,4 +1325,5 @@ public class ProfileSecurityFunctions {
         }
         return result;
     }
+    
 }

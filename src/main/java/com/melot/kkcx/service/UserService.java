@@ -9,6 +9,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.melot.cms.admin.api.bean.OfficialIdInfo;
+import com.melot.cms.admin.api.constant.AdminApiTagCodes;
+import com.melot.cms.admin.api.service.AdminDataService;
+import com.melot.cms.api.base.Result;
+import com.melot.kk.otherlogin.api.service.OtherLoginService;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.log4j.Logger;
 
@@ -17,7 +22,6 @@ import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.common.driver.service.StarService;
 import com.melot.goldcoin.domain.UserGoldAssets;
 import com.melot.goldcoin.service.GoldcoinService;
-import com.melot.kk.otherlogin.api.service.OtherLoginService;
 import com.melot.kkcore.account.service.AccountSecurityService;
 import com.melot.kkcore.user.api.UserAssets;
 import com.melot.kkcore.user.api.UserGameAssets;
@@ -778,9 +782,17 @@ public class UserService {
     public static Integer getUserAdminType(int userId) {
         Integer adminType = null;
         try {
-            adminType = (Integer) SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("User.getAdminType", userId);
+			AdminDataService adminDataService = (AdminDataService) MelotBeanFactory.getBean("adminDataService");
+			Result<OfficialIdInfo> result =  adminDataService.officialIdInfoGetInfo(userId);
+			if (result.getCode().equals(AdminApiTagCodes.SUCCESS)){
+				if (result.getData() != null) {
+					adminType = result.getData().getType();
+				}
+			}else {
+				logger.error("AdminDataService:"+result.getMsg() + " Code:" + result.getCode());
+			}
         } catch (Exception e) {
-            logger.error("Fail to execute getAdminType sql, userId " + userId, e);
+            logger.error("UserService.getUserAdminType(" + "userId:" + userId + ") execute exception.", e);
         }
         return adminType;
     }

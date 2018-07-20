@@ -2,6 +2,7 @@ package com.melot.kktv.redis;
 
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import redis.clients.jedis.Jedis;
 
 import com.google.gson.Gson;
@@ -18,6 +19,8 @@ import com.melot.kktv.util.redis.RedisConfigHelper;
  * @modify by reason:{方法名}:{原因}
  */
 public class FamilyRoomSource {
+
+	private static Logger logger = Logger.getLogger(FamilyRoomSource.class);
 	
 	public static final String FAMILY_ROOM_SOURCE = "famlilyRoom";
 	
@@ -84,7 +87,7 @@ public class FamilyRoomSource {
 			jedis = getInstance();
 			return jedis.get(FAMILY_ROOM_SOURCE);
 		} catch(Exception e ) {
-			e.printStackTrace();
+			logger.error("FamilyRoomSource.getJsonObjectFromRedis() execute exception.", e);
 		} finally {
 			if (jedis != null) {
 				freeInstance(jedis) ;
