@@ -292,7 +292,9 @@ public class HallFunctions {
 				}
 				while (i < roomList.size()) {
 					roomInfo = roomList.get(i++);
-					roomArray.add(HallRoomTF.roomInfoWithPlaybackToJson(roomInfo, platform));
+					json = HallRoomTF.roomInfoWithPlaybackToJson(roomInfo, platform);
+					json.addProperty("distance", 0);
+					roomArray.add(json);
 				}
 			}
 			
