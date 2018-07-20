@@ -1,8 +1,6 @@
 package com.melot.kktv.service;
 
-import com.google.common.collect.Lists;
 import com.melot.kk.opus.api.domain.TempUserResource;
-import com.melot.kk.opus.api.domain.UserPicture;
 import com.melot.kk.opus.api.service.VideoService;
 import org.apache.log4j.Logger;
 
@@ -27,6 +25,30 @@ public class LiveVideoService {
 	private static Logger logger = Logger.getLogger(LiveVideoService.class);
 
     /**
+     * 获取用户临时资源信息
+     * @param id
+     * @param userId
+     * @param status
+     * @return
+     */
+    public static TempUserResource getTempUserResourceById(Integer id, Integer userId, Integer resType, Integer resId, Integer status) {
+        try {
+            VideoService videoService = (VideoService) MelotBeanFactory.getBean("videoService");
+            if (videoService != null) {
+                return videoService.getTempUserResourceById(id, userId, resType, resId, status);
+            } else {
+                logger.error("LiveVideoService.getTempUserResourceById exception (videoService is null)");
+            }
+        } catch (Exception e) {
+            logger.error("LiveVideoService.getTempUserResourceById exception, userId : " + userId
+                    + " id : " + id
+                    + " userId : " + userId
+                    + " status : " + status, e);
+        }
+        return null;
+    }
+    
+    /**
      * 添加临时资源表
      * @param tempUserResource
      * @return
@@ -46,7 +68,52 @@ public class LiveVideoService {
         return 0;
     }
     
-
+    /**
+     * 获取用户临时资源列表
+     * @param userId
+     * @param resType
+     * @param status
+     * @return
+     */
+    public static List<TempUserResource> getTempUserResByUserId(int userId, Integer resType, Integer status) {
+        try {
+            VideoService videoService = (VideoService) MelotBeanFactory.getBean("videoService");
+            if (videoService != null) {
+               return videoService.getTempUserResByUserId(userId, resType, status);
+            } else {
+                logger.error("LiveVideoService.getTempUserResByUserId exception (videoService is null)");
+            }
+        } catch (Exception e) {
+            logger.error("LiveVideoService.getTempUserResByUserId exception, userId : " 
+                            + userId
+                            + " ,resType : " + resType
+                            + " ,status :" + status, e);
+        }
+        return null;
+    }
+    
+    /**
+     * 删除用户临时资源文件
+     * @param id
+     * @param userId
+     * @param status
+     */
+    public static void delTempUserResourceById(Integer id, Integer userId, Integer resType, Integer resId, Integer status) {
+        try {
+            VideoService videoService = (VideoService) MelotBeanFactory.getBean("videoService");
+            if (videoService != null) {
+               videoService.delTempUserResourceById(id, userId, resType, resId, status);
+            } else {
+                logger.error("LiveVideoService.delTempUserResourceById exception (videoService is null)");
+            }
+        } catch (Exception e) {
+            logger.error("LiveVideoService.delTempUserResourceById exception, id : " 
+                            + id
+                            + " ,userId : " + userId
+                            + " ,status :" + status, e);
+        }
+    }
+    
     /**
      * 检测是否有头像审核
      * @param userId
@@ -63,80 +130,4 @@ public class LiveVideoService {
         }
         return false;
     }
-
-    public static boolean delPicture(int photoId) {
-        try {
-            VideoService videoService = (VideoService) MelotBeanFactory.getBean("videoService");
-            if (videoService != null) {
-                return videoService.deletePicture(Lists.newArrayList(photoId));
-            }
-        } catch (Exception e) {
-            logger.error("videoService.delPicture execute exception, photoId : " + photoId, e);
-        }
-        return false;
-    }
-
-    public static int getPictureCount(int userId) {
-        try {
-            VideoService videoService = (VideoService) MelotBeanFactory.getBean("videoService");
-            if (videoService != null) {
-                return videoService.getPictureCount(userId);
-            }
-        } catch (Exception e) {
-            logger.error("videoService.getPictureCount execute exception, userId : " + userId, e);
-        }
-        return 0;
-    }
-
-    public static List<UserPicture> getPictureList(int userId,int start,int offset) {
-        try {
-            VideoService videoService = (VideoService) MelotBeanFactory.getBean("videoService");
-            if (videoService != null) {
-                return videoService.getPictureList(userId,start,offset);
-            }
-        } catch (Exception e) {
-            logger.error("videoService.getPictureCount execute exception, userId : " + userId, e);
-        }
-        return null;
-    }
-
-    public static boolean addPicture(int userId, int pictureType, String path_original, String pictureName) {
-        try {
-            VideoService videoService = (VideoService) MelotBeanFactory.getBean("videoService");
-            if (videoService != null) {
-                return videoService.addPicture(userId,pictureType,path_original,pictureName);
-            }
-        } catch (Exception e) {
-            logger.error("videoService.addPicture execute exception.", e);
-        }
-        return false;
-    }
-
-    public static boolean addPictureV2(int resId,int userId, int pictureType, String path_original, String pictureName) {
-        try {
-            VideoService videoService = (VideoService) MelotBeanFactory.getBean("videoService");
-            if (videoService != null) {
-                return videoService.addPictureV2(resId,userId,pictureType,path_original,pictureName);
-            }
-        } catch (Exception e) {
-            logger.error("videoService.addPictureV2 execute exception.", e);
-        }
-        return false;
-    }
-
-    public static boolean addVideoTape(int userId, String path_original, String videoName) {
-        try {
-            VideoService videoService = (VideoService) MelotBeanFactory.getBean("videoService");
-            if (videoService != null) {
-                return videoService.addVideoTape(userId,path_original,videoName);
-            }
-        } catch (Exception e) {
-            logger.error("videoService.addVideoTape execute exception.", e);
-        }
-        return false;
-    }
-
-
-
-
 }
