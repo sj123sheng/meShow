@@ -755,23 +755,14 @@ public class FamilyService {
 	 * TagCode:返回码
 	 */
 	public static Map<String, Object> updateFamilyMemberGrade(int familyId, int userId, int memberId, int memberGrade) {
-		
-		Map<String, Object> resMap = new HashMap<String, Object>();
-		
 		try {
-			Map<Object, Object> map = new HashMap<Object, Object>();
-			map.put("familyId", familyId);
-			map.put("userId", userId);
-			map.put("memberId", memberId);
-			map.put("memberGrade", memberGrade);
-			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Family.updateMemberGrade", map);
-			String TagCode = (String) map.get("TagCode");
-			resMap.put("TagCode", TagCode);
-		} catch (SQLException e) {
+			FamilyAdminNewService familyAdminNewService =
+					(FamilyAdminNewService)MelotBeanFactory.getBean("familyAdminNewService");
+			return familyAdminNewService.updateFamilyMemberGrade(familyId,userId,memberId,memberGrade);
+		} catch (Exception e) {
 			logger.error("fail to call updateMemberGrade!", e);
 		}
-		
-		return resMap;
+		return null;
 	}
 	
 	/**
@@ -1142,8 +1133,10 @@ public class FamilyService {
 	
 	public static int getFamilyByFamilyLeader(int leaderId) {
 	    try {
-            return (Integer) SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Family.getFamilyByFamilyLeader", leaderId);
-        } catch (SQLException e) {
+			FamilyAdminNewService familyAdminNewService =
+					(FamilyAdminNewService)MelotBeanFactory.getBean("familyAdminNewService");
+			return familyAdminNewService.getFamilyByFamilyLeader(leaderId);
+        } catch (Exception e) {
             logger.error("FamilyService.getFamilyByFamilyLeader exception, leaderId :" + leaderId, e);
         }
 	    return 0;
@@ -1166,7 +1159,8 @@ class ApplyFamilyUsersToRedis extends Thread {
     @Override
     public synchronized void start() {
         try {
-            List<Integer> applyUserList = (List<Integer>) SqlMapClientHelper.getInstance(DB.MASTER).queryForList("Family.getFamilyApplyerIdList", familyId);
+            FamilyInfoService familyInfoService = (FamilyInfoService) MelotBeanFactory.getBean("newFamilyInfoService");
+            List<Integer> applyUserList = familyInfoService.getFamilyApplyerIdList(familyId);
         
             if (applyUserList != null && applyUserList.size() > 0) {
                 
@@ -1178,7 +1172,7 @@ class ApplyFamilyUsersToRedis extends Thread {
                 }
             }
             
-        } catch (SQLException e) {
+        } catch (Exception e) {
             logger.error("Family.getFamilyApplyList", e);
         }
     }
