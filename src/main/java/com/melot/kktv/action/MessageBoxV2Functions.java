@@ -1,5 +1,6 @@
 package com.melot.kktv.action;
 
+import com.google.common.collect.Lists;
 import com.google.gson.*;
 import com.melot.kk.message.api.dto.RecommendedMsg;
 import com.melot.kk.message.api.service.RecommendedMsgService;
@@ -21,7 +22,6 @@ import com.melot.sdk.core.util.MelotBeanFactory;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.collections.Lists;
 
 import redis.clients.jedis.Jedis;
 

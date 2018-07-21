@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
-import org.testng.collections.Lists;
 
+import com.google.common.collect.Lists;
 import com.melot.kk.message.api.dto.RecommendedMsg;
 import com.melot.kktv.model.RecommendedMessage;
 
