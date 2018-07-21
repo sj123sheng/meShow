@@ -13,10 +13,10 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
-import org.testng.collections.Lists;
 
 import redis.clients.jedis.Jedis;
 
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -46,8 +46,6 @@ import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.sdk.core.util.MelotBeanFactory;
-
-import oracle.net.aso.s;
 
 public class MessageBoxFunctions {
 
