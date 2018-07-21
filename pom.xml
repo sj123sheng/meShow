@@ -658,7 +658,7 @@
 		<dependency>
 		  <groupId>com.melot.kk</groupId>
 		  <artifactId>kk-userLevelUp-api</artifactId>
-		  <version>1.0.0-SNAPSHOT</version>
+		  <version>1.0.0</version>
 		</dependency>
 
 		<!-- 登录相关模块 -->
@@ -684,14 +684,14 @@
 		<dependency>
 		  <groupId>com.melot.kk</groupId>
 		  <artifactId>kk-medal-api</artifactId>
-		  <version>1.0.0-SNAPSHOT</version>
+		  <version>1.0.0</version>
 		</dependency>
 
         <!-- 用户官方信息模块 -->
         <dependency>
             <groupId>com.melot.cms</groupId>
             <artifactId>cms-admin-api</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>1.0.0</version>
         </dependency>
 
 		<dependency>
@@ -704,6 +704,12 @@
 			<groupId>com.melot.kk</groupId>
 			<artifactId>kk-gamevideostore-api</artifactId>
 			<version>1.0.0-SNAPSHOT</version>
+		</dependency>
+		
+		<dependency>
+		  <groupId>com.melot.kk</groupId>
+		  <artifactId>kk-message-api</artifactId>
+		  <version>1.0.0-SNAPSHOT</version>
 		</dependency>
     </dependencies>
  	
