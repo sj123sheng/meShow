@@ -689,7 +689,7 @@ public class NewsV2Functions {
 
         //如果是游客就不添加播放记录
         UserRegistry userRegistry = UserService.getUserRegistryInfo(userId);
-        if(userRegistry.getOpenPlatform()==0||userRegistry.getOpenPlatform()==-5||userRegistry.getOpenPlatform()==-7){
+        if(userRegistry == null||userRegistry.getOpenPlatform()==0||userRegistry.getOpenPlatform()==-5||userRegistry.getOpenPlatform()==-7){
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
         }
