@@ -106,35 +106,6 @@
 		p_getCarList(?,?,?,?,?,?,?,?)}
 	</procedure>
 
-	<!-- 获取车辆基本信息 -->
-	<parameterMap class="java.util.Map" id="getCarInfoMap">
-		<parameter property="carId" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
-			jdbcType="VARCHAR" />
-		<parameter property="name" mode="OUT" javaType="java.lang.String"
-			jdbcType="VARCHAR" />
-		<parameter property="photo" mode="OUT" javaType="java.lang.String"
-			jdbcType="VARCHAR" />
-		<parameter property="icon" mode="OUT" javaType="java.lang.String"
-			jdbcType="VARCHAR" />
-		<parameter property="origPrice" mode="OUT" javaType="java.lang.Long"
-			jdbcType="BIGINT" />
-		<parameter property="nowPrice" mode="OUT" javaType="java.lang.Long"
-			jdbcType="BIGINT" />
-		<parameter property="ifLimit" mode="OUT" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="hasSold" mode="OUT" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="category" mode="OUT" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-	</parameterMap>
-
-	<procedure id="getCarInfo" parameterMap="getCarInfoMap">
-		{call
-		p_getcarinfo(?,?,?,?,?,?,?,?,?,?)}
-	</procedure>
-
 	<!-- 获取用户中奖记录列表 -->
 	<resultMap id="winLotteryRecord" class="com.melot.kktv.model.WinLotteryRecord">
 		<result property="time" column="time" javaType="java.util.Date"

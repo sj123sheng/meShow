@@ -41,11 +41,6 @@
 		select t.option_id, t.option_content from conf_guess_option t where t.guess_id = #guessId#
 	</select>
 	
-	<!-- 判断用户是否已经下注 -->
-	<select id="isUserGuessed" parameterClass="java.util.Map" resultClass="java.lang.Integer">
-		select count(userId) as count from hist_guess where guess_id = #guessId# and userId = #userId#
-	</select>
-	
 	<resultMap id="userGuessResult" class="com.melot.kktv.model.UserGuessInfo">
 		<result property="guessId" column="GUESS_ID" />
 		<result property="guessContent" column="GUESS_CONTENT" />
@@ -77,25 +72,10 @@
 	    join conf_guess_option t3 on t1.user_option = t3.option_id
 	    where t1.userid = #userId# order by t2.end_time desc
 	</select>
-	
-	<!-- 判断是否存在需要下注的  guess 和 option， 并且没有过期 -->
-	<select id="isGuessOptionExists" parameterClass="java.util.Map" resultClass="java.util.Date">
-		select c.end_time as count from conf_guess_option co, conf_guess c
-	       where co.guess_id = #guessId# and co.option_id = #optionId#
-	             and co.guess_id = c.guess_id and c.end_time > sysdate
-	</select>
 
-	<!-- 用户下注，插入到 消费记录表 和 竞猜记录表 -->
-	<select id="generateHistId" resultClass="java.lang.Integer">
-		select seq_consumehistory.nextval from dual
-	</select>
 	<insert id="insertConsumeHistory" parameterClass="java.util.Map">
 		insert into consume_history(histid, ntype, userid, amount, dtime, typedesc, product, count)
        		values(#histId#, #ntype#, #userId#, #showMoney#, sysdate, #typeDesc#, #product#, #count#)	
-	</insert>
-	<insert id="insertGuessHistory" parameterClass="java.util.Map">
-		insert into hist_guess(hist_id, guess_id, userid, amount, user_option, dtime) 
-          values(#histId#, #guessId#, #userId#, #showMoney#, #optionId#, sysdate)
 	</insert>
 
 </sqlMap>
