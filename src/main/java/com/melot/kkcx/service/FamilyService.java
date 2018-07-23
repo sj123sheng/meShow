@@ -544,12 +544,12 @@ public class FamilyService {
 	 * @param actorCount
 	 */
 	private static void updateFamilyMemberCount(int familyId, int memberCount) {		
-	    FamilyAdminService familyAdminService = (FamilyAdminService) MelotBeanFactory.getBean("familyAdminService");
-	    if (familyAdminService != null) {
+	    FamilyInfoService familyInfoService = (FamilyInfoService) MelotBeanFactory.getBean("newFamilyInfoService");
+	    if (familyInfoService != null) {
 	        FamilyInfo familyInfo = new FamilyInfo();
 	        familyInfo.setFamilyId(familyId);
 	        familyInfo.setMemberCount(memberCount);
-	        familyAdminService.updateFamilyInfo(familyInfo);
+			familyInfoService.updateFamilyInfo(familyInfo);
 	    }
 	}
 	
