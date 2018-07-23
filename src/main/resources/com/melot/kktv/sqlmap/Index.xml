@@ -6,44 +6,6 @@
 
 <sqlMap namespace="Index">
 
-	<!-- 获取用户收到的礼物列表 -->
-	<resultMap id="giftRecord" class="com.melot.kktv.model.GiftRecord">
-		<result property="userId" column="senderId" />
-		<result property="giftId" column="giftId" />
-		<result property="giftName" column="giftName" />
-		<result property="unit" column="unit" />
-		<result property="sendPrice" column="sendPrice" />
-		<result property="rsvPrice" column="rsvPrice" />
-		<result property="count" column="count" />
-		<result property="sendTime" column="sendTime" javaType="java.util.Date"
-			jdbcType="TIMESTAMP" />
-		<result property="xmanNick" column="xmanNick"/>
-		<result property="xmanId" column="xmanId"/>
-	</resultMap>
-
-	<parameterMap id="userRsvGiftListMap" class="java.util.Map">
-		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="startTime" mode="IN" javaType="java.util.Date"
-			jdbcType="TIMESTAMP" />
-		<parameter property="endTime" mode="IN" javaType="java.util.Date"
-			jdbcType="TIMESTAMP" />
-		<parameter property="pageIndex" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-
-		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
-			jdbcType="VARCHAR" />
-		<parameter property="pageTotal" mode="OUT" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="recordList" mode="OUT" jdbcType="ORACLECURSOR"
-			javaType="java.sql.ResultSet" resultMap="giftRecord" />
-	</parameterMap>
-
-	<procedure id="getUserRsvGiftList" parameterMap="userRsvGiftListMap">
-		{call
-		p_getUserRsvGiftList_V2(?,?,?,?,?,?,?)}
-	</procedure>
-
 	<!-- 获取活动列表 -->
 	<resultMap id="Activity" class="com.melot.kktv.model.Activity">
 		<result property="activityId" column="activityid" javaType="java.lang.Integer"

@@ -1,20 +1,25 @@
 package com.melot.kktv.action;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.melot.kktv.model.RechargeRecord;
+import com.melot.kk.module.report.util.CommonStateCode;
+import com.melot.kk.recharge.api.dto.RecharingRecordDto;
+import com.melot.kk.recharge.api.service.RechargeService;
+import com.melot.kktv.base.Result;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.DateUtil;
@@ -33,6 +38,9 @@ public class ChargingFunctions {
 
 	/** 日志记录对象 */
 	private static Logger logger = Logger.getLogger(ChargingFunctions.class);
+	
+	@Resource
+	RechargeService rechargeService;
 
 	/**
 	 * 获取充值的说明信息
@@ -104,47 +112,61 @@ public class ChargingFunctions {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
         }
         
-		// 调用存储过程得到结果
-		Map<Object, Object> map = new HashMap<Object, Object>();
-		map.put("userId", userId);
-		map.put("startTime", new Date(startTime));
-		map.put("endTime", new Date(endTime));
-		map.put("pageIndex", pageIndex);
-		try {
-			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Profile.getUserChargeList", map);
-		} catch (SQLException e) {
-			logger.error("未能正常调用存储过程", e);
-			result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
-			return result;
-		}
-		String TagCode = (String) map.get("TagCode");
-		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-			// 取出列表
-			@SuppressWarnings("unchecked")
-			List<Object> recordList = (ArrayList<Object>) map.get("recordList");
-			result.addProperty("TagCode", TagCode);
-			result.addProperty("pageTotal", (Integer) map.get("pageTotal"));
-			result.addProperty("chargeTotal", (Long) map.get("chargeTotal"));
-			JsonArray jRecordList = new JsonArray();
-			for (Object object : recordList) {
-				jRecordList.add(((RechargeRecord) object).toJsonObject());
-			}
-			result.add("recordList", jRecordList);
-			// 返回结果
-			return result;
-		} else if (TagCode.equals("02")) {
-			/* '02';分页超出范围 */
-			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-			result.addProperty("pageTotal", 0);
-			result.add("recordList", new JsonArray());
-			return result;
-		} else {
-			// 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
-			logger.error("调用存储过程(Profile.getUserChargeList)未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
-			result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
-			return result;
-		}
-	}
+        try {
+            int count = 0;
+            BigDecimal chargeTotal = new BigDecimal(0);;
+            JsonArray jRecordList = new JsonArray();
+            Date startDate = new Date(startTime);
+            Date endDate = new Date(endTime);
+            Result< Map<String,Object>> resp = rechargeService.getUserRechargingExceeptProductRecordCount(userId, startDate, endDate);
+            if (resp != null && CommonStateCode.SUCCESS.equals(resp.getCode())) {
+                Map<String, Object> map = resp.getData();
+                if (map.get("count") != null) {
+                    count =  (int) map.get("count");
+                }
+                if (map.get("showmoney") != null) {
+                    chargeTotal = (BigDecimal) map.get("showmoney");
+                }
+                
+                if (count > 0) {
+                    Result<List<RecharingRecordDto>> rechargingResp = rechargeService.getUserRechargingExceeptProductRecords(userId, startDate, endDate, (pageIndex -1) * 20, 20);
+                    if (rechargingResp != null && CommonStateCode.SUCCESS.equals(rechargingResp.getCode())) {
+                        List<RecharingRecordDto> recharingList = rechargingResp.getData();
+                        if (!CollectionUtils.isEmpty(recharingList)) {
+                            for (RecharingRecordDto recharingRecordDto : recharingList) {
+                                JsonObject jObject = new JsonObject();
+                                jObject.addProperty("orderId", recharingRecordDto.getOrderid());
+                                jObject.addProperty("rechargeTime", recharingRecordDto.getRechargetime().getTime());
+                                jObject.addProperty("amount", recharingRecordDto.getAmount());
+                                jObject.addProperty("miMoney", recharingRecordDto.getMimoney());
+                                jObject.addProperty("paymentMode", recharingRecordDto.getPaymentmode());
+                                jObject.addProperty("state", recharingRecordDto.getState());
+                                if (recharingRecordDto.getState() == 1) {
+                                    jObject.addProperty("affirmTime", recharingRecordDto.getAffirmtime().getTime());
+                                }
+                                if (recharingRecordDto.getErrcode() != null) {
+                                    jObject.addProperty("errcode", recharingRecordDto.getErrcode());
+                                }
+                                if (recharingRecordDto.getPaymentname() != null) {
+                                    jObject.addProperty("modeDesc", recharingRecordDto.getPaymentname());
+                                }
+                                jRecordList.add(jObject);
+                            }
+                        }
+                    }
+                }
+            }
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            result.addProperty("pageTotal", (int) Math.ceil((double) count/20));
+            result.addProperty("chargeTotal", chargeTotal);
+            result.add("recordList", jRecordList);
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            logger.error("ChargingFunctions.getChargeRecordList execute exception: ", e);
+        }
+        
+        return result;
+    }
 	
 	/**
 	 * 用户是否充值过秀币(10005036)

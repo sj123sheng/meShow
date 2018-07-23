@@ -10,6 +10,11 @@ import java.util.Map;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import com.melot.kktv.base.Page;
+import com.melot.kktv.util.*;
+import com.melot.video.driver.domain.VideoInfo;
+import com.melot.video.driver.service.VideoInfoServiceNew;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -59,17 +64,6 @@ import com.melot.kkgame.redis.ActorInfoSource;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.UserService;
-import com.melot.kktv.util.AppChannelEnum;
-import com.melot.kktv.util.AppIdEnum;
-import com.melot.kktv.util.CommonUtil;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.Constant;
-import com.melot.kktv.util.DBEnum;
-import com.melot.kktv.util.DateUtil;
-import com.melot.kktv.util.PlatformEnum;
-import com.melot.kktv.util.SecretKeyUtil;
-import com.melot.kktv.util.StringUtil;
-import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.confdynamic.SystemConfig;
 import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.module.packagegift.driver.domain.LoudSpeakerHistory;
@@ -108,7 +102,11 @@ public class OtherFunctions {
     
     @Resource
     MallService mallService;
-    
+
+    @Resource
+	VideoInfoServiceNew videoInfoServiceNew;
+
+
     @SuppressWarnings("unused")
     private ActorInfoSource actorInfoSource;
 
@@ -1614,5 +1612,76 @@ public class OtherFunctions {
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
-    
+
+	/**
+	 * 获取主播已发布视频列表(for用户)
+	 * 86010001
+	 */
+	public JsonObject getLaunchedVideoList(JsonObject jsonObject,boolean checkTag, HttpServletRequest request){
+		JsonObject result = new JsonObject();
+		int actorId = 0;
+		int start;
+		int num;
+		//校验token
+		try {
+			actorId = CommonUtil.getJsonParamInt(jsonObject, "actorId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+			start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, null, 1, Integer.MAX_VALUE);
+			num = CommonUtil.getJsonParamInt(jsonObject, "num", 10, null, 1, Integer.MAX_VALUE);
+		} catch (CommonUtil.ErrorGetParameterException e) {
+			result.addProperty("TagCode", e.getErrCode());
+			return result;
+		} catch (Exception e) {
+			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+			return result;
+		}
+		Page<VideoInfo> page = videoInfoServiceNew.getPublishVideoList(actorId, start, num);
+		JsonArray videoListArray = new JsonArray();
+		if (page != null) {
+			long count = page.getCount();
+			if (CollectionUtils.isNotEmpty(page.getList())) {
+				for (VideoInfo videoInfo : page.getList()) {
+					videoListArray.add(videoInfos2Json(videoInfo));
+				}
+			}
+			result.add("videoInfoList", videoListArray);
+			result.addProperty("count", count);
+		}
+		result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+		return result;
+	}
+
+	private JsonObject videoInfos2Json(VideoInfo video){
+		JsonObject json = new JsonObject();
+		if(video.getActorId() != null){
+			json.addProperty("actorId", video.getActorId());
+		}
+		if(video.getCdnType() != null){
+			json.addProperty("cdnType", video.getCdnType());
+		}
+		json.addProperty("duration", video.getDuration());
+		if(video.getFileName() != null){
+			json.addProperty("fileName", video.getFileName());
+		}
+		if( video.getFileUrl() != null){
+			json.addProperty("fileUrl", video.getFileUrl());
+		}
+		if( video.getStartTime() != null){
+			json.addProperty("startTime", video.getStartTime().getTime());
+		}
+		if( video.getEndTime() != null){
+			json.addProperty("endTime", video.getEndTime().getTime());
+		}
+
+		if( video.getTitle() != null){
+			json.addProperty("title", video.getTitle());
+		}
+		if( video.getPoster() != null){
+			json.addProperty("poster", video.getPoster());
+		}
+		json.addProperty("likeCount", video.getLikeCount());
+		json.addProperty("hateCount", video.getHateCount());
+		json.addProperty("shareTime", video.getShareTime());
+
+		return json;
+	}
 }

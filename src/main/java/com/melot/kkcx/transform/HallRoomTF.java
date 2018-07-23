@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import com.melot.api.menu.sdk.dao.domain.RoomSideLabel;
+import com.melot.kk.config.api.service.PlaybackActorService;
 import com.melot.kk.hall.api.domain.HallRoomInfoDTO;
 import com.melot.kkcx.service.GeneralService;
 import com.melot.kkcx.service.UserAssetServices;
@@ -18,8 +19,32 @@ import com.melot.kktv.util.DateUtil;
 import com.melot.kktv.util.PlatformEnum;
 import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.confdynamic.SystemConfig;
+import com.melot.sdk.core.util.MelotBeanFactory;
+import org.apache.log4j.Logger;
 
 public class HallRoomTF {
+
+    private static Logger logger = Logger.getLogger(HallRoomTF.class);
+
+    private static PlaybackActorService playbackActorService;
+
+    static {
+        playbackActorService = (PlaybackActorService) MelotBeanFactory.getBean("playbackActorService");
+    }
+
+    public static JsonObject roomInfoWithPlaybackToJson(HallRoomInfoDTO roomInfo, int platform) {
+        JsonObject res = roomInfoToJson(roomInfo, platform);
+        boolean isPlaybackActor = false;
+        try {
+            if (roomInfo.getActorId() != null) {
+                isPlaybackActor = playbackActorService.isPlaybackActor(roomInfo.getActorId());
+            }
+        } catch (Exception e) {
+            logger.error(String.format("module error：playbackActorService.isPlaybackActor(actorId=%s)", roomInfo.getActorId()), e);
+        }
+        res.addProperty("isPlaybackActor", isPlaybackActor);
+        return res;
+    }
 
     /**
      * Transform RoomInfo Object to JsonObject
@@ -41,7 +66,6 @@ public class HallRoomTF {
     public static JsonObject roomInfoToJson(HallRoomInfoDTO roomInfo, int platform, boolean ifHttpPack) {
         return roomInfoToJson(roomInfo, platform, ifHttpPack, false);
     }
-
 
     /**
      * @param roomInfo

@@ -30,47 +30,6 @@
 		p_getHonorList(?,?,?)}
 	</procedure>
 
-	<!-- 获取用户充值记录列表列表 -->
-	<resultMap id="rechargeRecord" class="com.melot.kktv.model.RechargeRecord">
-		<result property="orderId" column="orderId" />
-		<result property="rechargeTime" column="rechargeTime" javaType="java.util.Date"
-			jdbcType="TIMESTAMP" />
-		<result property="amount" column="amount" javaType="java.lang.Float"
-			jdbcType="FLOAT"/>
-		<result property="miMoney" column="miMoney" javaType="java.lang.Long"
-			jdbcType="BIGINT" />
-		<result property="paymentMode" column="paymentMode" />
-		<result property="state" column="state" />
-		<result property="errCode" column="errcode" />
-		<result property="affirmTime" column="affirmTime" />
-		<result property="modeDesc" column="paymentname" />
-	</resultMap>
-
-	<parameterMap id="getUserChargeListMap" class="java.util.Map">
-		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="startTime" mode="IN" javaType="java.util.Date"
-			jdbcType="TIMESTAMP" />
-		<parameter property="endTime" mode="IN" javaType="java.util.Date"
-			jdbcType="TIMESTAMP" />
-		<parameter property="pageIndex" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-
-		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
-			jdbcType="VARCHAR" />
-		<parameter property="chargeTotal" mode="OUT" javaType="java.lang.Long"
-			jdbcType="INTEGER" />
-		<parameter property="pageTotal" mode="OUT" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="recordList" mode="OUT" jdbcType="ORACLECURSOR"
-			javaType="java.sql.ResultSet" resultMap="rechargeRecord" />
-	</parameterMap>
-
-	<procedure id="getUserChargeList" parameterMap="getUserChargeListMap">
-		{call
-		p_getUserChargeList_v2(?,?,?,?,?,?,?,?)}
-	</procedure>
-
 	<!-- 获取用户消费记录列表列表 -->
 	<resultMap id="consumerRecord" class="com.melot.kktv.model.ConsumerRecord">
 		<result property="consumerTime" column="dtime" javaType="java.util.Date"
@@ -105,45 +64,6 @@
 	<procedure id="getUserConsumerList" parameterMap="getUserConsumerListMap">
 		{call
 		p_getUserConsumerList(?,?,?,?,?,?,?,?)}
-	</procedure>
-
-	<!-- 获取用户送出的礼物列表 -->
-	<resultMap id="giftRecord" class="com.melot.kktv.model.GiftRecord">
-		<result property="userId" column="receiverId" />
-		<result property="giftId" column="giftId" />
-		<result property="giftName" column="giftName" />
-		<result property="unit" column="unit" />
-		<result property="sendPrice" column="sendPrice" />
-		<result property="rsvPrice" column="rsvPrice" />
-		<result property="count" column="count" />
-		<result property="sendTime" column="sendTime" javaType="java.util.Date"
-			jdbcType="TIMESTAMP" />
-		<result property="xmanNick" column="xmanNick"/>
-		<result property="xmanId" column="xmanId"/>
-		<result property="price" column="price" />
-	</resultMap>
-
-	<parameterMap id="getUserSendGiftListMap" class="java.util.Map">
-		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="startTime" mode="IN" javaType="java.util.Date"
-			jdbcType="TIMESTAMP" />
-		<parameter property="endTime" mode="IN" javaType="java.util.Date"
-			jdbcType="TIMESTAMP" />
-		<parameter property="pageIndex" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-
-		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
-			jdbcType="VARCHAR" />
-		<parameter property="pageTotal" mode="OUT" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="recordList" mode="OUT" jdbcType="ORACLECURSOR"
-			javaType="java.sql.ResultSet" resultMap="giftRecord" />
-	</parameterMap>
-
-	<procedure id="getUserSendGiftList" parameterMap="getUserSendGiftListMap">
-		{call
-		P_GETUSERSENDGIFTLIST_V3(?,?,?,?,?,?,?)}
 	</procedure>
 
 	<!-- 获取商城车市中的车辆列表 -->
@@ -276,39 +196,5 @@
 			t.giftid = #giftId#
 		</isGreaterThan>
 	</select>
-	
-	<resultMap class="com.melot.kktv.model.BuyProperties" id="buyPropertiesRecord">
-		<result property="typeDesc" column="describe"/>
-		<result property="type" column="type" />
-		<result property="paymentMode" column="paymentmode" />
-		<result property="paymentDesc" column="paymentname" />
-		<result property="amount" column="amount" />
-		<result property="consumeTime" column="rechargeTime" javaType="java.util.Date"
-			jdbcType="TIMESTAMP" />
-		<result property="showMoney" column="mimoney" />
-	</resultMap>
-	
-	<parameterMap class="java.util.Map" id="getUserBuyPropertiesListMap">
-		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="startTime" mode="IN" javaType="java.util.Date"
-			jdbcType="TIMESTAMP" />
-		<parameter property="endTime" mode="IN" javaType="java.util.Date"
-			jdbcType="TIMESTAMP" />
-		<parameter property="pageIndex" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-			
-		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
-			jdbcType="VARCHAR" />
-		<parameter property="pageTotal" mode="OUT" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="recordList" mode="OUT" jdbcType="ORACLECURSOR"
-			javaType="java.sql.ResultSet" resultMap="buyPropertiesRecord" />
-	</parameterMap>
-	<!-- 获取用户现金消费列表 -->
-	<procedure id="getUserBuyPropertiesList" parameterMap="getUserBuyPropertiesListMap">
-	{call
-		p_getUserBuyPropertiesList(?,?,?,?,?,?,?)}
-	</procedure>
 	
 </sqlMap>

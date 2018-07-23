@@ -118,6 +118,7 @@ public class ActivityCenterFunctions {
         int start;
         int offset;
         int appId;
+        int versionCode;
         
         try {
             locationType = CommonUtil.getJsonParamInt(jsonObject, "locationType", 0, "02020001", 0, Integer.MAX_VALUE);
@@ -126,6 +127,7 @@ public class ActivityCenterFunctions {
             start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, null, 0, Integer.MAX_VALUE);
             offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 10, null, 1, Integer.MAX_VALUE);
             appId = CommonUtil.getJsonParamInt(jsonObject, "a", 1, null, 1, Integer.MAX_VALUE);
+            versionCode = CommonUtil.getJsonParamInt(jsonObject, "v", 0, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -136,7 +138,12 @@ public class ActivityCenterFunctions {
         
         try {
             KkActivityService kkActivityService = (KkActivityService) MelotBeanFactory.getBean("kkActivityService");
-            List<KkBanner> kkBannerList = kkActivityService.getKKBannersByType(bannerType, locationType, channelId, start, offset, appId);
+            List<KkBanner> kkBannerList;
+            if (versionCode > 0) {
+                kkBannerList = kkActivityService.getKKBannersByType(bannerType, locationType, channelId, start, offset, appId, versionCode);
+            }else {
+                kkBannerList = kkActivityService.getKKBannersByType(bannerType, locationType, channelId, start, offset, appId, null);
+            }
             JsonArray bannerList = new JsonArray();
             //置顶位置排序
             for (int i = 0; i < kkBannerList.size(); i++){

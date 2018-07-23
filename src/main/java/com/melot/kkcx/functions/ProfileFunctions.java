@@ -4,8 +4,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -23,10 +25,17 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
+import com.melot.api.menu.sdk.utils.Collectionutils;
+import com.melot.common.driver.domain.GiftRecord;
+import com.melot.common.driver.domain.GiftRecordDTO;
+import com.melot.common.driver.service.GiftHistoryService;
 import com.melot.family.driver.domain.FamilyInfo;
 import com.melot.family.driver.domain.DO.UserApplyActorDO;
 import com.melot.family.driver.service.UserApplyActorService;
+import com.melot.kk.module.report.util.CommonStateCode;
 import com.melot.kk.opus.api.constant.OpusCostantEnum;
+import com.melot.kk.recharge.api.dto.HistBuyProductRechargeDto;
+import com.melot.kk.recharge.api.service.RechargeService;
 import com.melot.kk.userSecurity.api.domain.DO.UserVerifyDO;
 import com.melot.kk.userSecurity.api.service.UserVerifyService;
 import com.melot.kkcore.actor.api.RoomInfoKeys;
@@ -48,10 +57,9 @@ import com.melot.kkcx.service.ProfileServices;
 import com.melot.kkcx.service.UserAssetServices;
 import com.melot.kkcx.service.UserService;
 import com.melot.kkgame.redis.LiveTypeSource;
-import com.melot.kktv.model.BuyProperties;
+import com.melot.kktv.base.Result;
 import com.melot.kktv.model.ConsumerRecord;
 import com.melot.kktv.model.Family;
-import com.melot.kktv.model.GiftRecord;
 import com.melot.kktv.model.Honor;
 import com.melot.kktv.model.MedalInfo;
 import com.melot.kktv.model.WinLotteryRecord;
@@ -81,6 +89,8 @@ import com.melot.module.medal.driver.service.UserMedalService;
 import com.melot.module.packagegift.driver.domain.ResUserXman;
 import com.melot.module.packagegift.driver.domain.ResXman;
 import com.melot.module.packagegift.driver.service.XmanService;
+import com.melot.room.gift.dto.GiftInfoDTO;
+import com.melot.room.gift.service.RoomGiftService;
 import com.melot.room.live.record.constant.PageResult;
 import com.melot.room.live.record.domain.ReturnResult;
 import com.melot.room.live.record.dto.HistActorLiveDTO;
@@ -110,6 +120,9 @@ public class ProfileFunctions {
 
 	@Resource
 	LiveRecordService liveRecordService;
+	
+	@Resource
+	RechargeService rechargeService;
 	
 	private LiveTypeSource liveTypeSource;
 
@@ -1514,51 +1527,81 @@ public class ProfileFunctions {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-		
-		// 调用存储过程得到结果
-		Map<Object, Object> map = new HashMap<Object, Object>();
-		map.put("userId", userId);
-		map.put("startTime", new Date(startTime));
-		map.put("endTime", new Date(endTime));
-		map.put("pageIndex", pageIndex);
+
 		try {
-			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Profile.getUserSendGiftList", map);
-		} catch (SQLException e) {
-			logger.error("未能正常调用存储过程", e);
-			result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
-			return result;
-		}
-		String TagCode = (String) map.get("TagCode");
-		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-			// 取出列表
-			@SuppressWarnings("unchecked")
-			List<GiftRecord> recordList = (ArrayList<GiftRecord>) map.get("recordList");
-			recordList = UserService.addUserExtra(recordList);
-			
-			result.addProperty("TagCode", TagCode);
-			result.addProperty("pageTotal", (Integer) map.get("pageTotal"));
-			JsonArray jRecordList = new JsonArray();
-			if (recordList != null) {
-				for (GiftRecord record : recordList) {
-					jRecordList.add(record.toSendJsonObject());
+			GiftHistoryService giftHistoryService = (GiftHistoryService) MelotBeanFactory.getBean("giftHistoryService");
+			GiftRecordDTO giftdata = giftHistoryService.getUserSendGiftList(userId, startTime, endTime, pageIndex);
+			if (giftdata != null) {
+				String TagCode = giftdata.getTagcode();
+				if (TagCode.equals(TagCodeEnum.SUCCESS)){
+					List<GiftRecord> recordList = giftdata.getRecordList();
+					recordList = UserService.addUserExtra(recordList);
+
+					result.addProperty("TagCode", TagCode);
+					result.addProperty("pageTotal", giftdata.getPageTotal());
+
+					JsonArray jRecordList = new JsonArray();
+					if (recordList != null) {
+                        List<Integer> giftIdList;//需拼接信息的礼物id
+						Map<Integer, GiftInfoDTO> giftInfoMap = new HashMap<>();
+						Set<Integer> tempSet = new HashSet<>();
+						for (GiftRecord record : recordList) {
+						    if (record.getGiftName() == null){
+								tempSet.add(record.getGiftId());
+                            }
+						}
+						giftIdList = new ArrayList<>(tempSet);
+
+						if (giftIdList.size() > 0) {
+							//查询并存储拼接信息
+							RoomGiftService roomGiftService = (RoomGiftService) MelotBeanFactory.getBean("roomGiftService");
+							com.melot.room.gift.domain.ReturnResult<List<GiftInfoDTO>> returnResultOfIds = roomGiftService.listGiftWithGiftIds(giftIdList);
+							if (returnResultOfIds.getCode().equals("0")){
+								for (GiftInfoDTO giftInfoTemp : returnResultOfIds.getData()) {
+									giftInfoMap.put(giftInfoTemp.getGiftId(), giftInfoTemp);
+								}
+							} else {
+                                logger.error("调用模块返回不成功:RoomGiftService.listGiftWithGiftIds() return code: " + returnResultOfIds.getCode() + "desc: " + returnResultOfIds.getDesc());
+							}
+						}
+
+						for (GiftRecord record : recordList) {
+							if (record.getGiftName() == null && giftInfoMap.containsKey(record.getGiftId())){
+								GiftInfoDTO temp = giftInfoMap.get(record.getGiftId());
+								record.setGiftName(temp.getGiftName());
+								record.setUnit(temp.getUnit());
+								record.setSendPrice(temp.getSendPrice());
+								record.setRsvPrice(temp.getRsvPrice());
+							}
+							jRecordList.add(toSendJsonObject(record));
+						}
+					}
+					result.add("recordList", jRecordList);
+
+					// 返回结果
+					return result;
+				}else if (TagCode.equals("02")) {
+					/* '02';分页超出范围 */
+					result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+					result.addProperty("pageTotal", giftdata.getPageTotal());
+					result.add("recordList", new JsonArray());
+
+					// 返回结果
+					return result;
+				} else {
+					// 模块内部抛异常
+					logger.error("模块内部抛异常:GiftHistoryService.getUserSendGiftList(" + "userId:" + userId + "startTime:" + startTime + "endTime:" + endTime + "pageIndex:" + pageIndex + ") execute exception.");
+					result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+					return result;
 				}
+			} else {
+				//模块返回空数据
+				result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+				return result;
 			}
-			result.add("recordList", jRecordList);
-
-			// 返回结果
-			return result;
-		} else if (TagCode.equals("02")) {
-			/* '02';分页超出范围 */
+		} catch (Exception e) {
+			logger.error("ProfileFunctions.getUserSendGiftList execute exception.", e);
 			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-			result.addProperty("pageTotal", (Integer) map.get("pageTotal"));
-			result.add("recordList", new JsonArray());
-
-			// 返回结果
-			return result;
-		} else {
-			// 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
-			logger.error("调用存储过程(Profile.getUserSendGiftList(" + new Gson().toJson(map) + "))未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
-			result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
 			return result;
 		}
 	}
@@ -1569,7 +1612,6 @@ public class ProfileFunctions {
 	 * @param jsonObject 请求对象
 	 * @return 结果字符串
 	 */
-	@SuppressWarnings("unchecked")
     public JsonObject getUserRsvGiftList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
 	    JsonObject result = new JsonObject();
 	    
@@ -1588,50 +1630,146 @@ public class ProfileFunctions {
             return result;
         }
 
-		// 调用存储过程得到结果
-		Map<Object, Object> map = new HashMap<Object, Object>();
-		map.put("userId", userId);
-		map.put("startTime", new Date(startTime));
-		map.put("endTime", new Date(endTime));
-		map.put("pageIndex", pageIndex);
 		try {
-			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Index.getUserRsvGiftList", map);
-		} catch (SQLException e) {
-			logger.error("未能正常调用存储过程", e);
-			result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
-			return result;
-		}
-		String TagCode = (String) map.get("TagCode");
-		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-			// 取出列表
-			List<Object> recordList = (ArrayList<Object>) map.get("recordList");
+			GiftHistoryService giftHistoryService = (GiftHistoryService) MelotBeanFactory.getBean("giftHistoryService");
+			GiftRecordDTO giftdata = giftHistoryService.getUserRsvGiftList(userId, startTime, endTime, pageIndex);
+			if (giftdata != null) {
+				String TagCode = giftdata.getTagcode();
+				if (TagCode.equals(TagCodeEnum.SUCCESS)) {
+					List<GiftRecord> recordList = giftdata.getRecordList();
 
-			result.addProperty("TagCode", TagCode);
-			result.addProperty("pageTotal", (Integer) map.get("pageTotal"));
-			JsonArray jRecordList = new JsonArray();
-			for (Object object : recordList) {
-			    JsonObject recObj = ((GiftRecord) object).toRsvJsonObject();
-			    // 默认为kk唱响用户
-			    recObj.addProperty("roomSource", AppIdEnum.AMUSEMENT);
-                recObj.addProperty("roomType", AppIdEnum.AMUSEMENT);
-				jRecordList.add(recObj);
+					result.addProperty("TagCode", TagCode);
+					result.addProperty("pageTotal", giftdata.getPageTotal());
+
+					JsonArray jRecordList = new JsonArray();
+					if (recordList != null) {
+						List<Integer> giftIdList;//需拼接信息的礼物id
+						Map<Integer, GiftInfoDTO> giftInfoMap = new HashMap<>();
+						Set<Integer> tempSet = new HashSet<>();
+						for (GiftRecord record : recordList) {
+							if (record.getGiftName() == null){
+								tempSet.add(record.getGiftId());
+							}
+						}
+						giftIdList = new ArrayList<>(tempSet);
+
+						if (giftIdList.size() > 0) {
+							//查询并存储拼接信息
+							RoomGiftService roomGiftService = (RoomGiftService) MelotBeanFactory.getBean("roomGiftService");
+							com.melot.room.gift.domain.ReturnResult<List<GiftInfoDTO>> returnResultOfIds = roomGiftService.listGiftWithGiftIds(giftIdList);
+							if (returnResultOfIds.getCode().equals("0")){
+								for (GiftInfoDTO giftInfoTemp : returnResultOfIds.getData()) {
+									giftInfoMap.put(giftInfoTemp.getGiftId(), giftInfoTemp);
+								}
+							} else {
+								logger.error("调用模块返回不成功:RoomGiftService.listGiftWithGiftIds() return code: " + returnResultOfIds.getCode() + "desc: " + returnResultOfIds.getDesc());
+							}
+						}
+
+						for (GiftRecord record : recordList) {
+							if (record.getGiftName() == null && giftInfoMap.containsKey(record.getGiftId())){
+								GiftInfoDTO temp = giftInfoMap.get(record.getGiftId());
+								record.setGiftName(temp.getGiftName());
+								record.setUnit(temp.getUnit());
+								record.setSendPrice(temp.getSendPrice());
+								record.setRsvPrice(temp.getRsvPrice());
+							}
+							JsonObject recObj = toRsvJsonObject(record);
+							// 默认为kk唱响用户
+							recObj.addProperty("roomSource", AppIdEnum.AMUSEMENT);
+							recObj.addProperty("roomType", AppIdEnum.AMUSEMENT);
+							jRecordList.add(recObj);
+						}
+					}
+					result.add("recordList", jRecordList);
+
+					// 返回结果
+					return result;
+				} else if (TagCode.equals("02")) {
+					/* '02';分页超出范围 */
+					result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+					result.addProperty("pageTotal", giftdata.getPageTotal());
+					result.add("recordList", new JsonArray());
+					return result;
+				} else {
+					// 模块内部抛异常
+					logger.error("模块内部抛异常:GiftHistoryService.getUserRsvGiftList(" + "userId:" + userId + "startTime:" + startTime + "endTime:" + endTime + "pageIndex:" + pageIndex + ") execute exception.");
+					result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+					return result;
+				}
+			} else {
+				//模块返回空数据
+				result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+				return result;
 			}
-			result.add("recordList", jRecordList);
-
-			// 返回结果
-			return result;
-		} else if (TagCode.equals("02")) {
-			/* '02';分页超出范围 */
+		} catch (Exception e) {
+			logger.error("ProfileFunctions.getUserSendGiftList execute exception.", e);
 			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-			result.addProperty("pageTotal", 0);
-			result.add("recordList", new JsonArray());
-			return result;
-		} else {
-			// 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
-			logger.error("调用存储过程(Index.getUserRsvGiftList(" + new Gson().toJson(map) + "))未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
-			result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
 			return result;
 		}
+	}
+
+	/**
+	 * 转成用户接受礼物的JsonObject
+	 *
+	 * @return JsonObject
+	 */
+	private JsonObject toRsvJsonObject(GiftRecord record) {
+		JsonObject jObject = new JsonObject();
+		if (record.getXmanNick() != null) {
+			jObject.addProperty("senderNick", record.getXmanNick());
+		} else {
+			jObject.addProperty("senderNick", UserService.getUserInfoNew(record.getUserId()).getNickName());
+		}
+		if (record.getXmanId() != null) {
+			jObject.addProperty("senderId", record.getXmanId());
+		} else {
+			jObject.addProperty("senderId", record.getUserId());
+		}
+		jObject.addProperty("giftId", record.getGiftId());
+		jObject.addProperty("giftName", record.getGiftName());
+		jObject.addProperty("unit", record.getUnit());
+		jObject.addProperty("sendPrice", record.getSendPrice());
+		jObject.addProperty("rsvPrice", record.getRsvPrice());
+		jObject.addProperty("count", record.getCount());
+		jObject.addProperty("sendTime", record.getSendTime().getTime());
+
+		return jObject;
+	}
+
+	/**
+	 * 转成用户送出礼物列表的JsonObject
+	 *
+	 * @return JsonObject
+	 */
+	private JsonObject toSendJsonObject(GiftRecord record) {
+		JsonObject jObject = new JsonObject();
+		if (record.getXmanNick() != null) {
+			jObject.addProperty("receiverNick", record.getXmanNick());
+		} else {
+			jObject.addProperty("receiverNick", UserService.getUserInfoNew(record.getUserId()).getNickName());
+		}
+		if (record.getXmanId() != null) {
+			jObject.addProperty("receiverId", record.getXmanId());
+		} else {
+			jObject.addProperty("receiverId", record.getUserId());
+		}
+		jObject.addProperty("giftId", record.getGiftId());
+		jObject.addProperty("giftName", record.getGiftName());
+		jObject.addProperty("unit", record.getUnit());
+		jObject.addProperty("sendPrice", record.getSendPrice());
+		jObject.addProperty("rsvPrice", record.getRsvPrice());
+		jObject.addProperty("count", record.getCount());
+		jObject.addProperty("sendTime", record.getSendTime().getTime());
+
+		//送礼类型 0:非库存礼物  1:库存礼物 2：钻石礼物
+		int sendType = 0;
+		if (record.getPrice() != null && record.getPrice() >= 100) {
+			sendType = Integer.valueOf(String.valueOf(record.getPrice()).substring(2, 3));
+		}
+		jObject.addProperty("sendType", sendType);
+
+		return jObject;
 	}
 	
 	/**
@@ -1697,568 +1835,6 @@ public class ProfileFunctions {
         return result;
 	}
 
-	/**
-	 * 获取新注册任务列表(10005020)
-	 * 
-	 * @param paramJsonObject
-	 * @return 新用户任务列表
-	 */
-	public JsonObject getNewUserTaskList(JsonObject paramJsonObject, boolean checkTag, HttpServletRequest request) {
-	    JsonObject result = new JsonObject();
-	    
-	    // 获取参数
-        int userId, platform, appId, channelKey;
-        try {
-            userId = CommonUtil.getJsonParamInt(paramJsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
-            platform = CommonUtil.getJsonParamInt(paramJsonObject, "platform", PlatformEnum.WEB, null, 1, Integer.MAX_VALUE);
-            appId = CommonUtil.getJsonParamInt(paramJsonObject, "a", AppIdEnum.AMUSEMENT, null, 1, Integer.MAX_VALUE);
-            channelKey = CommonUtil.getJsonParamInt(paramJsonObject, "ck", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
-        } catch(CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
-            return result;
-        } catch(Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-            return result;
-        }
-//	    
-//        Map<String, Object> map = getUserTaskList(userId, platform, channelKey, appId, 0);
-//        if (map != null && map.size() > 0) {
-//            if (userId > 0) {
-//                if (map.containsKey("checkDays") && ((Integer) map.get("checkDays")) > 0) {
-//                    result.addProperty("checkedDays", (Integer) map.get("checkDays"));
-//                    
-//                    if (map.containsKey("checkinReward") && map.get("checkinReward") != null) {
-//                        result.add("checkinReward", (JsonElement) map.get("checkinReward"));
-//                    }
-//                }
-//                if (map.containsKey("replenishDays")) {
-//                    int replenishDays = (Integer) map.get("replenishDays");
-//                    result.addProperty("replenishDays", replenishDays);
-//                    result.addProperty("replenishMoney", replenishDays*50);
-//                }
-//                if (map.containsKey("weeklyCheckinReward")) {
-//                    result.add("weeklyCheckinReward", (JsonElement) map.get("weeklyCheckinReward"));
-//                }
-//                if (map.containsKey("signInDays")) {
-//                    result.add("signInDays", (JsonElement) map.get("signInDays"));
-//                }
-//            }
-//            
-//            if (map.containsKey("weeklyCheckedDays")) {
-//                result.addProperty("weeklyCheckedDays", (Integer) map.get("weeklyCheckedDays"));
-//            }
-//            if (map.containsKey("indexDay")) {
-//                result.addProperty("indexDay", (Integer) map.get("indexDay"));
-//            }
-//            if (map.containsKey("firstRechargeReward")) {
-//                result.add("firstRechargeReward", (JsonElement) map.get("firstRechargeReward"));
-//            }
-//            if (map.containsKey("taskList")) {
-//                result.add("newUserTaskList", (JsonElement) map.get("taskList"));
-//            }
-//        }
-		
-		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-		return result;
-	}
-
-//    /**
-//     * 获取用户任务列表
-//     * 读取mongodb所有任务/redis已完成任务/oracle已领取任务
-//     * @param userId
-//     * @param platform
-//     * @param channelKey
-//     * @return
-//     */
-//    private static Map<String, Object> getUserTaskList(int userId, int platform, int channelKey, int appId, int rewardTaskId) {
-//        Map<String, Object> result = new HashMap<String, Object>();
-//        
-//        if (platform == PlatformEnum.IPHONE_GAMAGIC) {
-//            platform = PlatformEnum.IPHONE;
-//        }
-//        
-//        TaskInterfaceService taskInterfaceService = (TaskInterfaceService) MelotBeanFactory.getBean("taskInterfaceService");
-//        GetUserTaskListResp resp = null;
-//        try {
-//            resp = taskInterfaceService.getUserTaskList(userId, platform, appId);
-//        } catch (MelotModuleException e) {
-//            
-//        } catch (Exception e) {
-//            logger.error("TaskInterfaceService.getgetUserTaskList(" + userId + ", " + platform + ", " + appId + ") execute exception", e);
-//            return result;
-//        }
-//        if (resp != null) {
-//            List<UserTask> list = resp.getUserTasks();
-//            if (list != null && list.size() > 0) {
-//                JsonArray taskArr = new JsonArray();
-//                Task task;
-//                for (UserTask userTask : list) {
-//                    task = new Task();
-//                    if (userTask.getTaskOrder() != null) {
-//                        task.setOrder(userTask.getTaskOrder());
-//                    }
-//                    if (userTask.getTaskName() != null) {
-//                        task.setTaskDesc(userTask.getTaskName());
-//                    }
-//                    if (userTask.getTaskId() != null) {
-//                        task.setTaskId(userTask.getTaskId());
-//                        
-//                        if (rewardTaskId > 0 && rewardTaskId == userTask.getTaskId()) {
-//                            task.setStatus(2);
-//                        } else {
-//                            if (userTask.getStatus() != null) {
-//                                task.setStatus(userTask.getStatus());
-//                            }
-//                        }
-//                    }
-//                    if (userTask.getTaskReward() != null) {
-//                        task.setTaskReward(userTask.getTaskReward());
-//                    }
-//                    if (userTask.getVersionCode() != null) {
-//                        task.setVersionCode(userTask.getVersionCode());
-//                    }
-//                    if (userTask.getTaskId() != null && userTask.getTaskId() == 10000014) {
-//                    	Integer kbi = null;
-//                    	try {
-//                    		FeedbackService feedbackService = (FeedbackService) MelotBeanFactory.getBean("feedbackService");
-//							kbi = feedbackService.getTotalProfitByUserId(userId);
-//						} catch (Exception e) {
-//							logger.error("call FeedbackService getTotalProfitByUserId, userId : " + userId, e);
-//						}
-//                    	task.setGetMoney((kbi == null || kbi < 0) ? 0 : kbi);
-//                    } else if (userTask.getGetMoney() != null) {
-//                        task.setGetMoney(userTask.getGetMoney());
-//                    }
-//                    if (userTask.getGetMoney() != null) {
-//                        task.setGetMoney(userTask.getGetMoney());
-//                    }
-//                    
-//                    taskArr.add(task.toJsonObject());
-//                }
-//                result.put("taskList", taskArr);
-//            }
-//            
-//            result.put("checkDays", resp.getCheckedDays());
-//            
-//            List<ConfTaskReward> checkinRewardList = resp.getCheckinReward();
-//            if (checkinRewardList != null && checkinRewardList.size() > 0) {
-//                JsonArray checkinReward = new JsonArray();
-//                for (ConfTaskReward confTaskReward : checkinRewardList) {
-//                    JsonObject reward = new JsonObject();
-//                    reward.addProperty(String.valueOf(confTaskReward.getContiniuDays()), confTaskReward.getRewardCount());
-//                    checkinReward.add(reward);
-//                }
-//                
-//                result.put("checkinReward", checkinReward);
-//            }
-//            
-//            
-//            List<ConfTaskReward> firstRechargeRewardList = resp.getFirstRechargeReward();
-//            if (firstRechargeRewardList != null && firstRechargeRewardList.size() > 0) {
-//                JsonArray firstRechargeReward = new JsonArray();
-//                for (ConfTaskReward confTaskReward : firstRechargeRewardList) {
-//                    JsonObject rewardObj = new JsonObject();
-//                    rewardObj.addProperty("icon", confTaskReward.getRewardIcon());
-//                    rewardObj.addProperty("desc", confTaskReward.getRewardDesc());
-//                    firstRechargeReward.add(rewardObj);
-//                }
-//                
-//                result.put("firstRechargeReward", firstRechargeReward);
-//            }
-//            
-//            //7日签到
-//            result.put("weeklyCheckedDays", resp.getWeeklyCheckedDays());
-//            result.put("indexDay", resp.getIndexDay());
-//            result.put("replenishDays", resp.getReplenishDays());
-//            List<ConfTaskReward> weeklyCheckinRewardList = resp.getWeeklyCheckinReward();
-//            if (weeklyCheckinRewardList != null && weeklyCheckinRewardList.size() > 0) {
-//                JsonArray weeklyCheckinReward = new JsonArray();
-//                for (ConfTaskReward confTaskReward : weeklyCheckinRewardList) {
-//                    JsonObject reward = new JsonObject();
-//                    reward.addProperty(String.valueOf(confTaskReward.getContiniuDays()), confTaskReward.getRewardDesc());
-//                    weeklyCheckinReward.add(reward);
-//                }
-//                
-//                result.put("weeklyCheckinReward", weeklyCheckinReward);
-//            }
-//            String weeklyCheckInStr = resp.getSignInDays();
-//            if (weeklyCheckInStr != null) {
-//                String[] weeklyCheckInDays = weeklyCheckInStr.split(",");
-//                ArrayList<Integer> signInDaysList = new ArrayList<Integer>();
-//                for (String day : weeklyCheckInDays) {
-//                    signInDaysList.add(Integer.parseInt(day));
-//                }
-//                result.put("signInDays", new Gson().toJsonTree(signInDaysList).getAsJsonArray());
-//            }
-//        }
-//        
-//        return result;
-//    }
-
-	/**
-	 * 完成任务列表中的任务(10005021)
-	 * 
-	 * @param jsonObject 请求对象
-	 * @param checkTag 是否验证token标记
-	 * @return
-	 */
-	public JsonObject finishTask(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-	    JsonObject result = new JsonObject();
-		
-	    // 该接口需要验证token,未验证的返回错误码
-		if (!checkTag) {
-			result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-			return result;
-		}
-		
-		// 获取参数
-        int userId, taskId, platform, appId;
-        try {
-            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "05210002", 1, Integer.MAX_VALUE);
-            taskId = CommonUtil.getJsonParamInt(jsonObject, "taskId", 0, "05210004", 1, Integer.MAX_VALUE);
-            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.WEB, null, 1, Integer.MAX_VALUE);
-            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 1, Integer.MAX_VALUE);
-        } catch(CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
-            return result;
-        } catch(Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-            return result;
-        }
-
-//		// 获取参数
-//		JsonElement ckje = jsonObject.get("ck");
-//		
-//		Integer channelKey = 1;// 完成任务 放开任务列表
-//		if (ckje != null && !ckje.isJsonNull() && !ckje.getAsString().isEmpty()) {
-//			try {
-//				channelKey = Integer.valueOf(ckje.getAsString());
-//			} catch (Exception e) {
-//				channelKey = null;
-//			}
-//		}
-//		
-//		if (taskId == 10000014) {
-//			//邀请好友任务不可完成
-//			result.addProperty("TagCode", "05210007");
-//			return result;
-//		}
-//		TaskInterfaceService taskInterfaceService = (TaskInterfaceService) MelotBeanFactory.getBean("taskInterfaceService");
-//        try {
-//            long taskCount = taskInterfaceService.finishUserTask(userId, taskId, platform, appId);
-//            if (taskId == 10000015) {
-//                result.addProperty("sunShineCount", taskCount);
-//            }
-//        } catch (MelotModuleException e) {
-//            switch (e.getErrCode()) {
-////            case 101:
-////                // 该任务不存在
-////                result.addProperty("TagCode", "05210104");
-////                break;
-//                
-//            case 102:
-//                // 没有绑定手机号码
-//                result.addProperty("TagCode", "05210006");
-//                break;
-//
-//            case 103:
-//                // 该任务已完成或已领取任务奖励
-//                result.addProperty("TagCode", "05210103");
-//                break;
-//
-//            case 104:
-//                // 调用存储过程异常(查询任务是否已领奖) 
-//                result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
-//                break;
-//
-//            case 105:
-//                // 调用存储过程未得到正常结果(赠送阳光入库) 
-//                result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
-//                break;
-//
-//            default:
-//                // 调用存储过程未得到正常结果(详情查看日志) 
-//                result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
-//                break;
-//            }
-//            
-//            return result;
-//        } catch (Exception e) {
-//            // 调用存储过程未得到正常结果(详情查看日志) 
-//            result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
-//            return result;
-//        }
-//        
-//        Map<String, Object> map = getUserTaskList(userId, platform, channelKey, appId, 0);
-//        result.add("newUserTaskList", (JsonElement) map.get("taskList"));
-        
-        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        return result;
-    }
-    
-    /**
-     * 7日签到补签(50005002)
-     * 
-     * @param jsonObject 请求对象
-     * @param checkTag 是否验证token标记
-     * @return
-     */
-    public JsonObject replenishSignIn(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-        JsonObject result = new JsonObject();
-        
-        if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-            return result;
-        }
-        
-        // 获取参数
-        int userId, appId, platform;
-        try {
-            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 1, Integer.MAX_VALUE);
-            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.WEB, null, 1, Integer.MAX_VALUE);
-        } catch(CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
-            return result;
-        } catch(Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-            return result;
-        }
-
-//        int sunShineCount = 0;
-//        TaskInterfaceService taskInterfaceService = (TaskInterfaceService) MelotBeanFactory.getBean("taskInterfaceService");
-//        try {
-//            sunShineCount = (int) taskInterfaceService.replenishSignIn(userId, appId, platform);
-//        } catch (MelotModuleException e) {
-//            switch (e.getErrCode()) {
-//            case 101:
-//                // 用户没有需要补签的天数
-//                result.addProperty("TagCode", "05020001");
-//                break;
-//                
-//            case 102:
-//                // 扣除秀币失败
-//                result.addProperty("TagCode", "05020002");
-//                break;
-//
-//            default:
-//                // 调用存储过程未得到正常结果(详情查看日志) 
-//                result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
-//                break;
-//            }
-//            
-//            return result;
-//        } catch (Exception e) {
-//            // 调用存储过程未得到正常结果(详情查看日志) 
-//            result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
-//            return result;
-//        }
-//        
-//        Map<String, Object> map = getUserTaskList(userId, platform, 0, appId, 0);
-//        result.add("newUserTaskList", (JsonElement) map.get("taskList"));
-//        result.addProperty("sunShineCount", sunShineCount);
-        
-        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        return result;
-    }
-    
-    /**
-     * 7日签到抽奖(50005003)
-     * 
-     * @param jsonObject
-     * @param checkTag
-     * @param request
-     * @return
-     */
-    public JsonObject weeklyLottery(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-        JsonObject result = new JsonObject();
-        
-        if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-            return result;
-        }
-        
-        // 获取参数
-        int userId;
-        boolean isDraw = false;
-        try {
-            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-        } catch(CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
-            return result;
-        } catch(Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-            return result;
-        }
-        
-//        try {
-//            UserProfile userProfile = com.melot.kktv.service.UserService.getUserInfoV2(userId);
-//            if (userProfile == null || userProfile.getIdentifyPhone() == null) {
-//                result.addProperty("TagCode", "05030003");
-//            } else {
-//                TaskInterfaceService taskInterfaceService = (TaskInterfaceService) MelotBeanFactory.getBean("taskInterfaceService");
-//                isDraw = taskInterfaceService.isDraw(userId);
-//                if (isDraw && TagCodeEnum.SUCCESS.equals(taskInterfaceService.updateDraw(userId))){
-//                    String awardRulesId = "lotteryAtweeklyCheckIn";
-//                    
-//                    //抽奖
-//                    Map<String, Object> retMap = LotteryArithmetic.lottery(awardRulesId, userId, null, null);
-//                    if (retMap != null && !retMap.isEmpty()) {
-//                        int prizeId = Integer.parseInt((String) retMap.get(LotteryArithmeticCache.SERVICE_KEY_giftId));
-//                        result.addProperty("prizeId", prizeId);
-//                        result.addProperty("prizeName", (String) retMap.get(LotteryArithmeticCache.SERVICE_KEY_giftName));
-//                        result.addProperty("prizeCount", (Integer) retMap.get(LotteryArithmeticCache.SERVICE_KEY_giftCount));
-//                        LotteryPrizeList lotteryPrizeArray = MelotBeanFactory.getBean("lotteryPrizeList", LotteryPrizeList.class);
-//                        Map<Integer, LotteryPrize> lotteryPrizeList = lotteryPrizeArray.getList();
-//                        result.addProperty("prizeIcon", lotteryPrizeList.get(prizeId).getPrizeIcon());
-//                        result.addProperty("prizeDesc", lotteryPrizeList.get(prizeId).getPrizeDesc());
-//                        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-//                    } else {
-//                        result.addProperty("TagCode", "05030002");
-//                    }
-//                } else {
-//                    result.addProperty("TagCode", "05030001");
-//                }
-//            }
-//        } catch (Exception e) {
-//            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
-//        }
-        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        return result;
-    }
-    
-    /**
-     * 7日签到抽奖资格校验(50005004)
-     * 
-     * @param jsonObject
-     * @param checkTag
-     * @param request
-     * @return
-     */
-    public JsonObject isWeeklyLotteryDraw(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-        JsonObject result = new JsonObject();
-        
-        if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-            return result;
-        }
-        
-        // 获取参数
-        int userId;
-        boolean isDraw;
-        try {
-            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-        } catch(CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
-            return result;
-        } catch(Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-            return result;
-        }
-        
-        try {
-//            TaskInterfaceService taskInterfaceService = (TaskInterfaceService) MelotBeanFactory.getBean("taskInterfaceService");
-//            isDraw = taskInterfaceService.isDraw(userId);
-//            result.addProperty("isDraw", isDraw ? 1:0);
-            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        } catch (Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
-        }
-        
-        return result;
-	}
-	
-	/**
-	 * 领取任务奖励(10005022)
-	 * 
-	 * @param jsonObject 请求对象
-	 * @param checkTag 是否验证token标记
-	 * @return
-	 */
-	public JsonObject getReward(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-	    JsonObject result = new JsonObject();
-		
-	    // 该接口需要验证token,未验证的返回错误码
-		if (!checkTag) {
-			result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-			return result;
-		}
-		
-		// 获取参数
-		int userId, taskId, platform, appId, channelKey;
-		try {
-            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "05220002", 1, Integer.MAX_VALUE);
-            taskId = CommonUtil.getJsonParamInt(jsonObject, "taskId", 0, "05220004", 1, Integer.MAX_VALUE);
-            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.WEB, null, 1, Integer.MAX_VALUE);
-            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 1, Integer.MAX_VALUE);
-            channelKey = CommonUtil.getJsonParamInt(jsonObject, "ck", 1, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
-        } catch(CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
-            return result;
-        } catch(Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-            return result;
-        }
-		
-//		if (taskId == 10000014) {
-//			result.addProperty("TagCode", "05220107");
-//			return result;
-//		}
-//		TaskInterfaceService taskInterfaceService = (TaskInterfaceService) MelotBeanFactory.getBean("taskInterfaceService");
-//		GetUserTaskRewardResp resp;
-//        try {
-//            resp = taskInterfaceService.updateUserTaskReward(userId, taskId, platform, appId, appId == AppIdEnum.AMUSEMENT ? true : false);
-//        } catch (MelotModuleException e) {
-//            switch (e.getErrCode()) {
-//            case 101:
-//                // 没有验证手机号码
-//                result.addProperty("TagCode", "05220012");
-//                break;
-//                
-//            case 102:
-//                // 不存在该任务
-//                result.addProperty("TagCode", "05220102");
-//                break;
-//
-//            case 103:
-//                // 任务未完成
-//                result.addProperty("TagCode", "05220103");
-//                break;
-//
-//            case 105:
-//                // 奖励已经发放
-//                result.addProperty("TagCode", "05220104");
-//                break;
-//
-//            case 106:
-//                // 调用存储过程未得到正常结果(详情查看日志) 
-//                result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
-//                break;
-//
-//            default:
-//                // 调用存储过程未得到正常结果(详情查看日志) 
-//                result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
-//                break;
-//            }
-//            
-//            return result;
-//        } catch (Exception e) {
-//            // 调用存储过程未得到正常结果(详情查看日志) 
-//            result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
-//            return result;
-//        }
-//        
-//        result.addProperty("getMoney", resp.getShowMoney());
-//        result.addProperty("getVip", resp.getPropId());
-//        result.addProperty("getCar", resp.getCarId());
-//        
-//        Map<String, Object> map = getUserTaskList(userId, platform, channelKey, appId, taskId);
-//        result.add("newUserTaskList", (JsonElement) map.get("taskList"));
-        
-        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        return result;
-	}
-    
     /**
 	 * 获取用户中奖记录列表
 	 * 
@@ -2898,44 +2474,60 @@ public class ProfileFunctions {
             return result;
         }
         
-        Map<Object, Object> map = new HashMap<Object, Object>();
-        map.put("userId", userId);
-		map.put("startTime", new Date(startTime));
-		map.put("endTime", new Date(endTime));
-		map.put("pageIndex", pageIndex);
-		try {
-			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Profile.getUserBuyPropertiesList", map);
-		} catch (SQLException e) {
-			logger.error("未能正常调用存储过程", e);
-			result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
-			return result;
-		}
-		String TagCode = (String) map.get("TagCode");
-		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-			// 取出列表
-			@SuppressWarnings("unchecked")
-			List<Object> recordList = (ArrayList<Object>) map.get("recordList");
-			result.addProperty("TagCode", TagCode);
-			result.addProperty("pageTotal", (Integer) map.get("pageTotal"));
-			JsonArray jRecordList = new JsonArray();
-			for (Object object : recordList) {
-				jRecordList.add(((BuyProperties) object).toJsonObject());
-			}
-			result.add("recordList", jRecordList);
-			// 返回结果
-			return result;
-		} else if (TagCode.equals("02")) {
-			/* '02';分页超出范围 */
-			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-			result.addProperty("pageTotal", 0);
-			result.add("recordList", new JsonArray());
-			return result;
-		} else {
-			// 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
-			logger.error("调用存储过程(Profile.getUserChargeList)未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
-			result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
-			return result;
-		}
+        try {
+            int count = 0;
+            JsonArray jRecordList = new JsonArray();
+            Date startDate = new Date(startTime);
+            Date endDate = new Date(endTime);
+            Result<Map<String, Object>> resp =  rechargeService.getUserBuyProductRecordCount(userId, startDate, endDate);
+            if (resp != null && CommonStateCode.SUCCESS.equals(resp.getCode())) {
+                Map<String, Object> map = resp.getData();
+                if (map.get("count") != null) {
+                    count = (int) map.get("count");
+                }
+                if (count > 0) {
+                    Result<List<HistBuyProductRechargeDto>> histResp = rechargeService.getUserBuyProductRecords(userId, startDate, endDate, (pageIndex -1) * 20, 20);
+                    if (histResp != null && CommonStateCode.SUCCESS.equals(histResp.getCode())) {
+                        List<HistBuyProductRechargeDto> histBuyProductRechargeList = histResp.getData();
+                        if (!Collectionutils.isEmpty(histBuyProductRechargeList)) {
+                            for (HistBuyProductRechargeDto histBuyProductRechargeDto : histBuyProductRechargeList) {
+                                JsonObject jsonObj = new JsonObject();
+                                if (histBuyProductRechargeDto.getAmount() != null) {
+                                    jsonObj.addProperty("amount", histBuyProductRechargeDto.getAmount());
+                                }
+                                if (histBuyProductRechargeDto.getRechargeTime() != null) {
+                                    jsonObj.addProperty("consumeTime", histBuyProductRechargeDto.getRechargeTime().getTime());
+                                }
+                                if (histBuyProductRechargeDto.getPaymentName() != null) {
+                                    jsonObj.addProperty("paymentDesc", histBuyProductRechargeDto.getPaymentName());
+                                }
+                                if (histBuyProductRechargeDto.getPaymentMode() != null) {
+                                    jsonObj.addProperty("paymentMode", histBuyProductRechargeDto.getPaymentMode());
+                                }
+                                if (histBuyProductRechargeDto.getType() != null) {
+                                    jsonObj.addProperty("type", histBuyProductRechargeDto.getType());
+                                }
+                                if (histBuyProductRechargeDto.getDescribe() != null) {
+                                    jsonObj.addProperty("typeDesc", histBuyProductRechargeDto.getDescribe());
+                                }
+                                if (histBuyProductRechargeDto.getMimoney() != null) {
+                                    jsonObj.addProperty("showMoney", histBuyProductRechargeDto.getMimoney());
+                                }
+                                jRecordList.add(jsonObj);
+                            }
+                        }
+                    }
+                }
+            }
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            result.addProperty("pageTotal", (int) Math.ceil((double) count/20));
+            result.add("recordList", jRecordList);
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            logger.error("ProfileFunctions.getUserBuyPropertiesList execute exception: ", e);
+        }
+        
+        return result;
 	}
 	
 	/**

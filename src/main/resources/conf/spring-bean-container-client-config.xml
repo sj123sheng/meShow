@@ -25,7 +25,7 @@
 	<!-- 配置要发布的服务实现 -->
 	<kkrpc:reference id="virtualIdService" interface="com.melot.asset.driver.service.VirtualIdService" version="1.0.2"></kkrpc:reference>
 	<kkrpc:reference id="assetService" interface="com.melot.asset.driver.service.AssetService" version="1.0.2"></kkrpc:reference>
-	<kkrpc:reference id="kkActivityService" interface="com.melot.kkactivity.driver.service.KkActivityService" version="1.0.5"></kkrpc:reference>
+	<kkrpc:reference id="kkActivityService" interface="com.melot.kkactivity.driver.service.KkActivityService" version="1.0.6"></kkrpc:reference>
 	<kkrpc:reference id="taskInterfaceService" interface="com.melot.module.task.driver.service.TaskInterfaceService" version="1.0.3"></kkrpc:reference>
 	<kkrpc:reference id="activityMedalService" interface="com.melot.module.medal.driver.service.ActivityMedalService" version="1.0.1"></kkrpc:reference>
 	<kkrpc:reference id="userMedalService" interface="com.melot.module.medal.driver.service.UserMedalService" version="1.0.1"></kkrpc:reference>
@@ -47,6 +47,7 @@
 	<kkrpc:reference id="giftHistoryBoardService" interface="com.melot.kk.activity.service.GiftHistoryBoardService" version="1.0.18"></kkrpc:reference>
 	<kkrpc:reference id="liveStreamConfigService" interface="com.melot.stream.driver.service.LiveStreamConfigService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="videoService" interface="com.melot.kk.opus.api.service.VideoService" version="1.0.1"></kkrpc:reference>
+	<kkrpc:reference id="giftHistoryService" interface="com.melot.common.driver.service.GiftHistoryService" version="1.0.0"></kkrpc:reference>
 	<!-- 商城模块 -->
 	<kkrpc:reference id="carService" interface="com.melot.module.packagegift.driver.service.CarService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="histPackageDealService" interface="com.melot.module.packagegift.driver.service.HistPackageDealService" version="1.0.0"></kkrpc:reference>
@@ -59,10 +60,10 @@
 	<kkrpc:reference id="mallService" interface="com.melot.module.packagegift.driver.service.MallService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="storehouseService" interface="com.melot.storehouse.service.StorehouseService" version="1.0.2"></kkrpc:reference>
 	<!-- 家族模块 -->
-	<kkrpc:reference id="newFamilyInfoService" interface="com.melot.family.driver.service.FamilyInfoService" version="1.0.0"></kkrpc:reference>
-	<kkrpc:reference id="familyAdminService" interface="com.melot.family.driver.service.FamilyAdminService" version="1.0.0"></kkrpc:reference>
-	<kkrpc:reference id="familyOperatorService" interface="com.melot.family.driver.service.FamilyOperatorService" version="1.0.0"></kkrpc:reference>
-	<kkrpc:reference id="familyAdminNewService" interface="com.melot.family.driver.service.FamilyAdminNewService" version="1.0.0" timeout="16000"></kkrpc:reference>
+	<kkrpc:reference id="newFamilyInfoService" interface="com.melot.family.driver.service.FamilyInfoService" version="2.0.0"></kkrpc:reference>
+	<kkrpc:reference id="familyAdminService" interface="com.melot.family.driver.service.FamilyAdminService" version="2.0.0"></kkrpc:reference>
+	<kkrpc:reference id="familyOperatorService" interface="com.melot.family.driver.service.FamilyOperatorService" version="2.0.0"></kkrpc:reference>
+	<kkrpc:reference id="familyAdminNewService" interface="com.melot.family.driver.service.FamilyAdminNewService" version="2.0.0" timeout="16000"></kkrpc:reference>
 	<kkrpc:reference id="familyTopConfService" interface="com.melot.family.driver.service.FamilyTopConfService" version="1.0.0"></kkrpc:reference>
 
 	<kkrpc:reference id="upIdfaService" interface="com.melot.ios.idfa.driver.UpIdfaService" version="1.0.0"></kkrpc:reference>
@@ -83,14 +84,16 @@
 	<kkrpc:reference id="starService" interface="com.melot.common.driver.service.StarService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="shareService" interface="com.melot.common.driver.service.ShareService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="roomExtendConfService" interface="com.melot.common.driver.service.RoomExtendConfService" version="1.0.0"></kkrpc:reference>
-	<kkrpc:reference id="videoInfoService" interface="com.melot.video.driver.service.VideoInfoService" version="1.0.0"></kkrpc:reference> 
-	
+	<kkrpc:reference id="videoInfoService" interface="com.melot.video.driver.service.VideoInfoService" version="1.0.0"></kkrpc:reference>
+	<kkrpc:reference id="videoInfoServiceNew" interface="com.melot.video.driver.service.VideoInfoServiceNew" version="1.0.0"></kkrpc:reference>
 	<!-- 配置信息 -->
 	<kkrpc:reference id="configInfoService" interface="com.melot.kk.config.api.service.ConfigInfoService" version="1.0.1"></kkrpc:reference>
+    <kkrpc:reference id="playbackActorService" interface="com.melot.kk.config.api.service.PlaybackActorService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="friendEmoticonService" interface="com.melot.common.driver.service.FriendEmoticonService" version="1.0.0"></kkrpc:reference>
 
     <!-- 礼物配置信息 -->
 	<kkrpc:reference id="giftListService" interface="com.melot.room.gift.service.GiftListService" version="1.0.9"></kkrpc:reference>
+    <kkrpc:reference id="roomGiftService" interface="com.melot.room.gift.service.RoomGiftService" version="1.0.9"></kkrpc:reference>
 	<!-- 主播心愿礼物 -->
 	<kkrpc:reference id="actorPersonalizedGiftService" interface="com.melot.room.gift.service.ActorPersonalizedGiftService" version="1.0.9"></kkrpc:reference>
 	
@@ -176,7 +179,7 @@
 	
 	<kkrpc:reference id="liveShopService" interface="com.melot.kk.liveshop.api.service.LiveShopService" version="1.0.1"/>
 	
-	<kkrpc:reference id="rechargeService" interface="com.melot.kk.recharge.api.service.RechargeService" version="1.0.0"/>
+	<kkrpc:reference id="rechargeService" interface="com.melot.kk.recharge.api.service.RechargeService" version="1.0.1"/>
 
 	<!-- 贵族积分礼物服务 -->
 	<kkrpc:reference id="nobilityPointGiftService" interface="com.melot.kk.nobility.api.service.NobilityPointGiftService" version="1.0.0"/>
@@ -215,4 +218,6 @@
 
 	<!-- 活动API服务 -->
 	<kkrpc:reference id="newMissionService" interface="com.melot.kk.activityAPI.api.service.NewMissionService" version="1.0.0"></kkrpc:reference>
+	
+	<kkrpc:reference id="recommendedMsgService" interface="com.melot.kk.message.api.service.RecommendedMsgService" version="1.0.0"/>
 </beans>
