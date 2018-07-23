@@ -57,20 +57,6 @@
 		]]>
 	</select>
 	
-	<!-- 根据userId和appId 获取用户首充信息 -->
-	<select id="getUserFirstRechargePackageInfo" parameterClass="java.util.Map" resultClass="java.util.HashMap">
-		select 
-  			h.packageid,
-			case
-			  when to_char(h.create_time,'yyyy-mm-dd HH24:MI:SS') <![CDATA[<]]> to_char(sysdate-7,'yyyy-mm-dd HH24:MI:SS') and h.status = 0 then
-			    2
-			  when to_char(h.create_time,'yyyy-mm-dd HH24:MI:SS') >= to_char(sysdate-7,'yyyy-mm-dd HH24:MI:SS') and h.status = 0 then
-			    0
-			else 1 end as status, ORDERID
-			from hist_recharge_package h where h.userid = #userId# and h.appid = #appId#
-			and rownum <![CDATA[<=]]> 1
-	</select>
-	
 	<resultMap class="com.melot.kktv.domain.RechargerPackage" id="packageRechargeMap">
 		<result property="packageId" column="packageid" javaType="java.lang.Integer" jdbcType="INTEGER" />
 		<result property="status" column="status" javaType="java.lang.Integer" jdbcType="INTEGER" />
