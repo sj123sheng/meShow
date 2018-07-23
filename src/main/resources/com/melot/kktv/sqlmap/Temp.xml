@@ -6,15 +6,6 @@
 
 <sqlMap namespace="Temp">
 
-	<!-- 获取用户 -->
-	<select id="getUserSendGiftAmount" parameterClass="java.util.Map" resultClass="java.lang.Long">
-		select nvl(sum(t.amount), 0) as totalAmount
-    	from gift_history t 
-    	where t.userid = #userId#
-    	and t.dtime >= #startTime#
-    	and <![CDATA[t.dtime < #endTime#]]>
-	</select>
-	
 	<parameterMap id="getUserMap" class="java.util.Map">
 		<parameter property="userId" mode="IN" javaType="java.lang.Integer" jdbcType="INTEGER" />
 		<parameter property="phoneNum" mode="IN" javaType="java.lang.String" jdbcType="VARCHAR" />

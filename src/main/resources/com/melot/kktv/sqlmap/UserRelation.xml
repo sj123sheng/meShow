@@ -39,26 +39,6 @@
 		P_GETUSERFOLLOWEDLIST_V2(?,?,?,?,?,?)}
 	</procedure>
 
-	<!-- 获取用户粉丝列表 -->
-	<parameterMap id="getUserFansListMap" class="java.util.Map">
-		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="fanIds" mode="IN" javaType="java.lang.String"
-			jdbcType="VARCHAR" />
-		<parameter property="selfTag" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-
-		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
-			jdbcType="VARCHAR" />
-		<parameter property="roomList" mode="OUT" jdbcType="ORACLECURSOR"
-			javaType="java.sql.ResultSet" resultMap="room" />
-	</parameterMap>
-
-	<procedure id="getUserFansList" parameterMap="getUserFansListMap">
-		{call
-		p_getUserFansList_V2(?,?,?,?,?)}
-	</procedure>
-
 	<!-- 授权管理 -->
 	<parameterMap id="grantMap" class="java.util.Map">
 		<parameter property="userId" mode="IN" javaType="java.lang.Integer"

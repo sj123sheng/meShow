@@ -119,19 +119,6 @@
        		values (#histId#, #type#, #userId#, #amount#, sysdate, #desc#, #product#, #count#)
 	</insert>
 	
-	<resultMap id="fansInfoResult" class="com.melot.kktv.model.FansRankingItem">
-        <result column="userId" property="userId" />
-        <result column="roomSource" property="roomSource" />
-    </resultMap>
-    
-	<!-- 获取粉丝信息 -->
-	<select id="getFansInfo" parameterClass="java.util.List" resultMap="fansInfoResult">
-		select actorid as userId, type as roomSource from actor_info where actorid in
-			<iterate open="(" close=")" conjunction=",">
-	            #fids[]#
-	        </iterate>
-	</select>
-	
 	<!-- 判断该设备是否可以被邀请 -->
 	<select id="getCanInvite" parameterClass="java.lang.String" resultClass="java.lang.Integer">
 		select  count(1) from user_info t where t.deviceuid = #deviceUId# and t.inviter is not null
