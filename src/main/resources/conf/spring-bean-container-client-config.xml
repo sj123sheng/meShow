@@ -220,4 +220,5 @@
 	<kkrpc:reference id="newMissionService" interface="com.melot.kk.activityAPI.api.service.NewMissionService" version="1.0.0"></kkrpc:reference>
 	
 	<kkrpc:reference id="recommendedMsgService" interface="com.melot.kk.message.api.service.RecommendedMsgService" version="1.0.0"/>
+	<kkrpc:reference id="messageService" interface="com.melot.common.driver.service.MessageService" version="1.0.0"/>
 </beans>

@@ -22,13 +22,16 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.melot.common.driver.service.MessageService;
 import com.melot.kk.message.api.dto.RecommendedMsg;
+import com.melot.kk.message.api.dto.SystemMessage;
 import com.melot.kk.message.api.service.RecommendedMsgService;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.service.MessageBoxServices;
 import com.melot.kkcx.service.UserService;
 import com.melot.kkcx.transform.RecommendedMessageTF;
+import com.melot.kkcx.transform.SystemMessageTF;
 import com.melot.kktv.model.KkAssistor;
 import com.melot.kktv.model.NewsComment;
 import com.melot.kktv.base.Page;
@@ -1179,10 +1182,9 @@ public class MessageBoxFunctions {
 	 * get the KK System Record
 	 * 
 	 */
-	@SuppressWarnings("unchecked")
 	private static JsonObject getKkSystemRecord(int userId, int perPageCount,
 			int curPage, long startTime, int platform,long lastReadTime) {
-		
+	    JsonObject result = new JsonObject();
 		Date beginTime = new Date(lastReadTime);
 		Date endTime = new Date(startTime);
 		// get the record from oracle by call stored procedure
@@ -1190,57 +1192,37 @@ public class MessageBoxFunctions {
 			curPage = 1;
 		}
 		int min = (curPage - 1) * perPageCount;
-		int max = curPage * perPageCount;
-		Map<Object, Object> map = new HashMap<Object, Object>();
-		map.put("userId", userId);
-		map.put("startTime", beginTime);
-		map.put("endTime", endTime);
-		map.put("min", min);
-		map.put("max", max);
-		try {
-			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject(
-					"KkSystemNotice.getKkSystemNoticeList", map);
-		} catch (SQLException e) {
- 			logger.error("未能正常调用存储过程", e);
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
-			return result;
-		}
-
-		String TagCode = (String) map.get("TagCode");
-		JsonArray jsonArr = new JsonArray();
-		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-			JsonObject result = new JsonObject();
-			List<KkSystemNotice> kSysNotice = (List<KkSystemNotice>) map.get("kkSysNotices");
-			if (kSysNotice != null && kSysNotice.size() > 0) {
-				kSysNotice = UserService.addUserExtra(kSysNotice);
-				for (KkSystemNotice k : kSysNotice) {
-					jsonArr.add(new JsonParser().parse(new Gson().toJson(k
-							.toJsonObject(lastReadTime,platform))));
-				}
-
-			}
-			result.addProperty("TagCode", TagCode);
-			if(min==0)
-				result.addProperty("total", (Integer) map.get("totalSysNotices"));
-			result.add("messageList", jsonArr);
-			result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
-			return result;
-		}else if (TagCode.equals("02") || TagCode.equals("03")) {
-			/* '02';分页超出范围 */
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-			result.addProperty("total", (Integer) map.get("totalSysNotices"));
-			//result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
-			result.add("messageList", new JsonArray());
-			// 返回结果
-			return result;
-		} else {
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);// fail to call stored procedure
-			return result;
-		}
-
+		MessageService messageService = (MessageService) MelotBeanFactory.getBean("messageService");
+        Page<SystemMessage> page = messageService.getKkSystemNoticeList(userId, beginTime, endTime, min, perPageCount);
+        
+        if (page == null) {
+            result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);// fail to call stored procedure
+            return result;
+        }
+        
+        List<SystemMessage> systemMessages = page.getList();
+        JsonArray jsonArr = new JsonArray();
+        if (CollectionUtils.isNotEmpty(systemMessages)) {
+            List<KkSystemNotice> kSysNotice = SystemMessageTF.getKkSystemNotices(systemMessages);
+            if (CollectionUtils.isNotEmpty(kSysNotice)) {
+                kSysNotice = UserService.addUserExtra(kSysNotice);
+                for (KkSystemNotice k : kSysNotice) {
+                    jsonArr.add(new JsonParser().parse(new Gson().toJson(k.toJsonObject(lastReadTime, platform))));
+                }
+            }
+            if (min == 0) {
+                result.addProperty("total", page.getCount());
+            }
+            result.add("messageList", jsonArr);
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } else {
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            result.addProperty("total", page.getCount());
+            result.add("messageList", new JsonArray());
+            return result;
+        }
 	}
 	
 	/**
