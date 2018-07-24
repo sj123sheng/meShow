@@ -44,9 +44,9 @@ public class FamilyMatchChampion {
 					}
 					break;
 				case PlatformEnum.ANDROID:
-					// 返回 174*116px
-					if (familyPoster.getPath_original()!=null) 
-						posterJson.addProperty("path_174", familyPoster.getPath_original() + "!174");
+					// 返回 222*148px
+					if (familyPoster.getPath_original()!=null)
+						posterJson.addProperty("path_222", familyPoster.getPath_original() + "!222");
 					break;
 				case PlatformEnum.IPHONE:
 					// 返回 222*148px

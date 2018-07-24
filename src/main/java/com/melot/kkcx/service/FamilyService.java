@@ -216,10 +216,10 @@ public class FamilyService {
 					}
 					break;
 				case PlatformEnum.ANDROID:
-					// 返回 174*116px
+					// 返回 222*148px
 					if (familyPoster.getPath_original() != null) {
 						familyPosterJson = new JsonObject();
-						familyPosterJson.addProperty("path_174", familyPoster.getPath_174());
+						familyPosterJson.addProperty("path_222", familyPoster.getPath_222());
 					}
 					break;
 				case PlatformEnum.IPHONE:
@@ -265,10 +265,10 @@ public class FamilyService {
 					}
 					break;
 				case PlatformEnum.ANDROID:
-					// 返回 174*116px
+					// 返回 222*148px
 					if (familyPoster.getPath_original() != null) {
 						familyPosterJson = new JsonObject();
-						familyPosterJson.addProperty("path_174", familyPoster.getPath_174());
+						familyPosterJson.addProperty("path_222", familyPoster.getPath_222());
 					}
 					break;
 				case PlatformEnum.IPHONE:
