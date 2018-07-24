@@ -11,7 +11,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.melot.cms.admin.api.bean.OfficialIdInfo;
 import com.melot.cms.admin.api.constant.AdminApiTagCodes;
+import com.melot.cms.admin.api.constant.OperatorInfoEnum;
 import com.melot.cms.admin.api.service.AdminDataService;
+import com.melot.cms.admin.api.service.OperatorService;
 import com.melot.cms.api.base.Result;
 import com.melot.kk.otherlogin.api.service.OtherLoginService;
 import org.apache.commons.beanutils.BeanUtils;
@@ -958,8 +960,14 @@ public class UserService {
 	
 	public static boolean isValidOperator(int operatorId) {
 		try {
-            return (Integer) SqlMapClientHelper.getInstance(DB.BACKUP).queryForObject("Index.isValidOperator", operatorId) > 0;
-        } catch (SQLException e) {
+			OperatorService operatorService = (OperatorService) MelotBeanFactory.getBean("operatorService");
+			Result<Integer> integerResult = operatorService.isExistOperator(operatorId, OperatorInfoEnum.FROZEN.NO.getType());
+			if (integerResult != null && integerResult.getCode().equals(AdminApiTagCodes.SUCCESS) && integerResult.getData() > 0){
+				return  true;
+			}else {
+				return false;
+			}
+        } catch (Exception e) {
             logger.error("UserService.isValidOperator( " + operatorId + ") execute exeception", e);
         }
         
