@@ -644,7 +644,7 @@ public class ProfileFunctions {
 			    try {
 			        JsonObject param1 = new JsonObject();
 			        param1.addProperty("userId", userId);
-			        param1.addProperty("pageIndex", -1);
+			        param1.addProperty("pageIndex", 1);
 			        param1.addProperty("platform", platform);
 			        AlbumFunctions albumFunctions = MelotBeanFactory.getBean("albumFunction", AlbumFunctions.class);
 			        JsonObject getPhotoListResult = null;
