@@ -6,29 +6,6 @@
 
 <sqlMap namespace="Resource">
 
-	<!--获取礼物信息列表 -->
-	<resultMap id="Gift" class="com.melot.kktv.model.Gift">
-		<result property="catalogId" column="catalogId" />
-		<result property="catalogName" column="catalogName" />
-		<result property="giftId" column="giftId" />
-		<result property="giftName" column="giftName" />
-		<result property="unit" column="unit" />
-		<result property="sendPrice" column="sendPrice" />
-		<result property="rsvPrice" column="rsvPrice" />
-	</resultMap>
-
-	<parameterMap id="giftListMap" class="java.util.Map">
-		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
-			jdbcType="VARCHAR" />
-		<parameter property="giftList" mode="OUT" jdbcType="ORACLECURSOR"
-			javaType="java.sql.ResultSet" resultMap="Gift" />
-	</parameterMap>
-
-	<procedure id="getGiftList" parameterMap="giftListMap">
-		{call
-		p_getGiftList(?,?)}
-	</procedure>
-
 	<!-- 获取热门礼物列表 -->
 	<resultMap id="Gift" class="com.melot.kktv.model.Gift">
 		<result property="catalogId" column="catalogId" />

@@ -238,48 +238,6 @@ public class ResourceFunctions {
 	}
 
 	/**
-	 * 获取礼物列表
-	 * 
-	 * @param jsonObject 请求对象
-	 * @return 结果字符串
-	 */
-	public static Object getGiftList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-		// 调用存储过程得到结果
-		Map<Object, Object> map = new HashMap<Object, Object>();
-		try {
-			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Resource.getGiftList", map);
-		} catch (SQLException e) {
-			logger.error("未能正常调用存储过程", e);
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
-			return result;
-		}
-		String TagCode = (String) map.get("TagCode");
-		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-			// 取出列表
-			@SuppressWarnings("unchecked")
-			List<Object> giftList = (ArrayList<Object>) map.get("giftList");
-
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", TagCode);
-			JsonArray jGiftList = new JsonArray();
-			for (Object object : giftList) {
-				jGiftList.add(((Gift) object).toJsonObject());
-			}
-			result.add("giftList", jGiftList);
-
-			// 返回结果
-			return result;
-		} else {
-			// 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
-			logger.error("调用存储过程(Resource.getGiftList)未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
-			return result;
-		}
-	}
-
-	/**
 	 * 获取道具价格列表
 	 * sql Resource.getPropPriceList 可删 
 	 * @param jsonObject 请求对象

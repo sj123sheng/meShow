@@ -195,16 +195,6 @@
 		<constructor-arg name="cacheType" value="60" />
 		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
 	</bean>
-	<!-- 获取用户一定时间内收到礼物个数 -->
-	<bean id="10002041" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="indexFunction" />
-		<constructor-arg name="methodName" value="getPeriodUserGiftReceiveCount" />
-	</bean>
-	<!-- 获取一定时间内礼物送出总数、打折总数和用户总数 -->
-	<bean id="10002042" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="indexFunction" />
-		<constructor-arg name="methodName" value="getPeriodGiftTotal" />
-	</bean>
 	<!-- 获取半小时上头条排行榜 -->
 	<bean id="10002043" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="indexFunction" />

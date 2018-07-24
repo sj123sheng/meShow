@@ -165,30 +165,4 @@
 		p_getNoticeDetail(?,?,?,?,?,?)}
 	</procedure>
 	
-	<!-- 获取用户一定时间内收到礼物个数 -->
-	<select id="getPeriodUserGiftReceiveCount" resultClass="java.lang.Long" parameterClass="java.util.Map">
-		select sum(t.giftcount) from gift_history t where
-		t.giftid = #giftId#
-		<isGreaterThan property="userId" compareValue="0" prepend="and">
-			t.touserid = #userId#
-		</isGreaterThan>
-		and t.dtime >= #startTime#
-		and <![CDATA[t.dtime <= #endTime#]]>
-    </select>
-    
-    <!-- 获取一定时间内送出礼物总数和参与投票用户总数 -->
-	<resultMap class="java.util.HashMap" id="getPeriodGiftTotalResult">
-    	<result property="totalGift" column="totalGift" javaType="java.lang.Long" jdbcType="Number"/>
-    	<result property="totalAmount" column="totalAmount" javaType="java.lang.Long" jdbcType="Number"/>
-    	<result property="totalUser" column="totalUser" javaType="java.lang.Long" jdbcType="Number"/>
-    </resultMap>
-    <select id="getPeriodGiftTotal" resultMap="getPeriodGiftTotalResult" parameterClass="java.util.Map">
-    	select nvl(sum(t.giftcount), 0) as totalGift, nvl(sum(t.amount), 0) as totalAmount, nvl(count(distinct t.userid), 0) as totalUser
-    	from gift_history t where t.giftid in ($giftIds$)
-   	 	and t.dtime >= to_date(#startTime#, 'yyyy-mm-dd hh24:mi:ss')
-   	 	<isNotNull prepend="and" property="endTime">
-   	 		<![CDATA[t.dtime < to_date(#endTime#, 'yyyy-mm-dd hh24:mi:ss')]]>
-   	 	</isNotNull>
-    </select>
-    
 </sqlMap>
