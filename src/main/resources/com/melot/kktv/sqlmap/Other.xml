@@ -32,11 +32,6 @@
 		{call p_getuserrechargetimes(?,?)}
 	</procedure>
 	
-	<!-- 修改首充礼包领取状态 -->
-	<update id="updateFirstRechargePackageStatus" parameterClass="java.util.Map">
-		update hist_first_recharge set status = #status# where userid = #userId# and appid = #appId# and packageid = #packageId#
-	</update>
-	
 	<!-- 点歌扣券插点歌信息 -->
 	<parameterMap class="java.util.Map" id="selectSongMap">
 		<parameter property="roomId" mode="IN" javaType="java.lang.Integer" jdbcType="INTEGER"/>
