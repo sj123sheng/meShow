@@ -60,7 +60,6 @@ import com.melot.kkgame.redis.LiveTypeSource;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.model.ConsumerRecord;
 import com.melot.kktv.model.Family;
-import com.melot.kktv.model.Honor;
 import com.melot.kktv.model.MedalInfo;
 import com.melot.kktv.model.WinLotteryRecord;
 import com.melot.kktv.redis.HotDataSource;
@@ -1302,61 +1301,12 @@ public class ProfileFunctions {
 	 * @param jsonObject 请求对象
 	 * @return json对象形式的返回结果
 	 */
-	public JsonObject getHonorList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
-		// 获取参数
-		JsonElement userIdje = jsonObject.get("userId");
-
-		// 验证参数
-		int userId;
-		if (userIdje != null && !userIdje.isJsonNull() && !userIdje.getAsString().equals("")) {
-			// 验证数字
-			try {
-				userId = userIdje.getAsInt();
-			} catch (Exception e) {
-				JsonObject result = new JsonObject();
-				result.addProperty("TagCode", "05030002");
-				return result;
-			}
-		} else {
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", "05030001");
-			return result;
-		}
-
-		// 调用存储过程得到结果
-		Map<Object, Object> map = new HashMap<Object, Object>();
-		map.put("userId", userId);
-		try {
-			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Profile.getHonorList", map);
-		} catch (SQLException e) {
-			logger.error("未能正常调用存储过程", e);
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
-			return result;
-		}
-		String TagCode = (String) map.get("TagCode");
-		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-			// 取出列表
-			@SuppressWarnings("unchecked")
-			List<Object> honorList = (ArrayList<Object>) map.get("honorList");
-
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", TagCode);
-			JsonArray jHonorList = new JsonArray();
-			for (Object object : honorList) {
-				jHonorList.add(((Honor) object).toJsonObject());
-			}
-			result.add("honorList", jHonorList);
-
-			// 返回结果
-			return result;
-		} else {
-			// 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
-			logger.error("调用存储过程(Profile.getHonorList(" + new Gson().toJson(map) + "))未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
-			return result;
-		}
+	public JsonObject getHonorList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {		
+		JsonObject result = new JsonObject();
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        JsonArray jHonorList = new JsonArray();
+		result.add("honorList", jHonorList);
+		return result;
 	}
 
 	/**

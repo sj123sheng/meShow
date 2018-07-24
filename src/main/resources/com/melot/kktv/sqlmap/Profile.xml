@@ -6,30 +6,6 @@
 
 <sqlMap namespace="Profile">
 
-	<!-- 获取用户荣誉列表 -->
-	<resultMap id="honor" class="com.melot.kktv.model.Honor">
-		<result property="rankType" column="rankType" />
-		<result property="slotType" column="slotType" />
-		<result property="ranking" column="ranking" />
-		<result property="honorTime" column="honorTime" javaType="java.util.Date"
-			jdbcType="TIMESTAMP" />
-	</resultMap>
-
-	<parameterMap id="honorListMap" class="java.util.Map">
-		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-
-		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
-			jdbcType="VARCHAR" />
-		<parameter property="honorList" mode="OUT" jdbcType="ORACLECURSOR"
-			javaType="java.sql.ResultSet" resultMap="honor" />
-	</parameterMap>
-
-	<procedure id="getHonorList" parameterMap="honorListMap">
-		{call
-		p_getHonorList(?,?,?)}
-	</procedure>
-
 	<!-- 获取用户消费记录列表列表 -->
 	<resultMap id="consumerRecord" class="com.melot.kktv.model.ConsumerRecord">
 		<result property="consumerTime" column="dtime" javaType="java.util.Date"
