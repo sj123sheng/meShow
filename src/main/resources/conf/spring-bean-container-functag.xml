@@ -906,11 +906,6 @@
 		<constructor-arg name="t" ref="userAssetFunction" />
 		<constructor-arg name="methodName" value="getUserGiftQuanlity" />
 	</bean>
-	<!-- 兑换礼物 -->
-	<bean id="10005054" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="userAssetFunction" />
-		<constructor-arg name="methodName" value="exchangeGift" />
-	</bean>
 	<!-- 根据虚拟号类型随机获取虚拟号列表 -->
 	<bean id="10005060" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="userAssetFunction" />
