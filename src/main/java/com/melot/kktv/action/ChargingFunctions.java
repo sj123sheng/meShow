@@ -1,9 +1,7 @@
 package com.melot.kktv.action;
 
 import java.math.BigDecimal;
-import java.sql.SQLException;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -25,8 +23,6 @@ import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.DateUtil;
 import com.melot.kktv.util.PlatformEnum;
 import com.melot.kktv.util.TagCodeEnum;
-import com.melot.kktv.util.db.DB;
-import com.melot.kktv.util.db.SqlMapClientHelper;
 
 /**
  * 充值接口类
@@ -175,9 +171,9 @@ public class ChargingFunctions {
 	 * @return
 	 */
 	public JsonObject whetherRecharged(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+	    JsonObject result = new JsonObject();
 		// 该接口需要验证token,未验证的返回错误码
 		if (!checkTag) {
-			JsonObject result = new JsonObject();
 			result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
 			return result;
 		}
@@ -192,48 +188,32 @@ public class ChargingFunctions {
 			try {
 				userId = userIdje.getAsInt();
 			} catch (Exception e) {
-				JsonObject result = new JsonObject();
 				result.addProperty("TagCode", "05360002");
 				return result;
 			}
 		} else {
-			JsonObject result = new JsonObject();
 			result.addProperty("TagCode", "05360001");
 			return result;
 		}
 
-		// 调用存储过程得到结果
-		Map<Object, Object> map = new HashMap<Object, Object>();
-		map.put("userId", userId);
-		try {
-			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Profile.whetherRecharged", map);
-		} catch (SQLException e) {
-			logger.error("未能正常调用存储过程", e);
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
-			return result;
-		}
-		String TagCode = (String) map.get("TagCode");
-		if (TagCode.equals("02")) {
-			// 未充值
-			JsonObject result = new JsonObject();
-			result.addProperty("isRecharged", 0);
-			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-			
-			return result;
-		} else if(TagCode.equals("03")) {
-			// 已充值
-			JsonObject result = new JsonObject();
-			result.addProperty("isRecharged", 1);
-			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-			return result;
-		} else {
-			// 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
-			logger.error("调用存储过程(Profile.whetherRecharged)未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
-			return result;
-		}
+        try {
+            int count = 0;
+            Result<Map<String, Object>> resp =  rechargeService.getUserRechargingRecordCount(userId, null, null);
+            if (resp != null && CommonStateCode.SUCCESS.equals(resp.getCode())) {
+                Map<String, Object> map = resp.getData();
+                if (map.get("count") != null) {
+                    count = (int) map.get("count");
+                }
+            }
+            result.addProperty("isRecharged", count > 0 ? 1 : 0);
+        } catch (Exception e) {
+            logger.error("rechargeService.getUserRechargingRecordCount execute exception, userId: " + userId, e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
 	}
 	
 }

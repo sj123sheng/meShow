@@ -145,17 +145,6 @@
 		p_getUserWinLotteryList(?,?,?,?,?,?,?,?)}
 	</procedure>
 	
-	<!-- 用户是否充值过秀币 -->
-	<parameterMap id="whetherRechargedMap" class="java.util.Map">
-		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
-			jdbcType="VARCHAR" />
-	</parameterMap>
-	<procedure id="whetherRecharged" parameterMap="whetherRechargedMap" resultClass="java.util.Map">
-		{call p_whetherRecharged(?,?)}
-	</procedure>
-	
 	<!-- 获取指定礼物指定时间内按一定比例获取到的消耗值 -->
 	<select id="getConsumGiftPool" parameterClass="java.util.Map" resultClass="java.lang.Long">
 		SELECT nvl(SUM(t.amount),0) sumVal FROM gift_history t 

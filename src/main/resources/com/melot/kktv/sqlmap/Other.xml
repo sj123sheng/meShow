@@ -6,32 +6,6 @@
 
 <sqlMap namespace="Other">
 
-	<resultMap class="com.melot.kktv.domain.RechargerPackage" id="packageRechargeMap">
-		<result property="packageId" column="packageid" javaType="java.lang.Integer" jdbcType="INTEGER" />
-		<result property="status" column="status" javaType="java.lang.Integer" jdbcType="INTEGER" />
-		<result property="orderId" column="orderid" javaType="java.lang.String" jdbcType="VARCHAR"/>
-		<result property="isRecive" column="isrecive" javaType="java.lang.Integer" jdbcType="INTEGER" />
-	</resultMap>
-	<parameterMap class="java.util.Map" id="getUserRechargePackageListMap">
-		<parameter property="userId" mode="IN" javaType="java.lang.Integer" jdbcType="INTEGER" />
-		<parameter property="appId" mode="IN" javaType="java.lang.Integer" jdbcType="INTEGER" />
-		<parameter property="tagCode" mode="OUT" javaType="java.lang.String" jdbcType="VARCHAR"/>
-		<parameter property="list" mode="OUT" javaType="java.sql.ResultSet" jdbcType="ORACLECURSOR" resultMap="packageRechargeMap" />
-	</parameterMap>
-	<!-- 根据userId和appId 获取用户已获得礼包列表 -->
-	<procedure id="getUserRechargePackageList" parameterMap="getUserRechargePackageListMap">
-		{call p_getrechargerpackagelist(?,?,?,?)}
-	</procedure>
-	
-	<parameterMap class="java.util.Map" id="getUserRechargeTimesMap">
-		<parameter property="userId" mode="IN" javaType="java.lang.Integer" jdbcType="INTEGER" />
-		<parameter property="count" mode="OUT" javaType="java.lang.Integer" jdbcType="INTEGER" />
-	</parameterMap>
-	<!-- 获取用户充值次数 -->
-	<procedure id="getUserRechargeTimes" parameterMap="getUserRechargeTimesMap" resultClass="java.lang.Integer">
-		{call p_getuserrechargetimes(?,?)}
-	</procedure>
-	
 	<!-- 点歌扣券插点歌信息 -->
 	<parameterMap class="java.util.Map" id="selectSongMap">
 		<parameter property="roomId" mode="IN" javaType="java.lang.Integer" jdbcType="INTEGER"/>

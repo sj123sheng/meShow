@@ -1,15 +1,12 @@
 package com.melot.kktv.action;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
-import com.melot.kk.activityAPI.api.dto.ShareInfoDTO;
-import com.melot.kk.activityAPI.api.service.NewMissionService;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -20,25 +17,33 @@ import com.google.gson.JsonParser;
 import com.melot.common.driver.service.ShareService;
 import com.melot.feedback.driver.domain.Award;
 import com.melot.feedback.driver.service.FeedbackService;
+import com.melot.kk.activityAPI.api.dto.ShareInfoDTO;
+import com.melot.kk.activityAPI.api.service.NewMissionService;
+import com.melot.kk.module.report.util.CommonStateCode;
+import com.melot.kk.recharge.api.service.RechargeService;
 import com.melot.kkactivity.driver.domain.GameConfig;
 import com.melot.kkactivity.driver.domain.GameGift;
 import com.melot.kkactivity.driver.service.GameConfigService;
-import com.melot.kktv.domain.RechargerPackage;
+import com.melot.kktv.base.Result;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.PlatformEnum;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.confdynamic.SystemConfig;
-import com.melot.kktv.util.db.DB;
-import com.melot.kktv.util.db.SqlMapClientHelper;
-import com.melot.module.packagegift.driver.domain.ResVip;
-import com.melot.module.packagegift.driver.service.VipService;
+import com.melot.module.packagegift.driver.domain.RechargePackage;
+import com.melot.module.packagegift.driver.service.PackageInfoService;
 import com.melot.sdk.core.util.MelotBeanFactory;
 
 public class ActivityFunctions {
 
 	private static Logger logger = Logger.getLogger(ActivityFunctions.class);
+	
+	@Resource
+	PackageInfoService packageInfoService;
+	
+	@Resource
+    RechargeService rechargeService;
 
     /**
      * 获取用户周期内投票信息接口返回码
@@ -1044,7 +1049,6 @@ public class ActivityFunctions {
      * @param jsonObject
      * @return
      */
-    @SuppressWarnings("unchecked")
     public JsonObject getUserFirstRechargePackageInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
         
@@ -1060,25 +1064,20 @@ public class ActivityFunctions {
             return result;
         }
         
-        Map<String, Integer> map = new HashMap<String, Integer>();
-        map.put("userId", userId);
-        map.put("appId", appId);
-        Map<String, Object> userFrPackage = null;
         try {
-            userFrPackage = (Map<String, Object>) SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Other.getUserFirstRechargePackageInfo", map);
-        } catch (SQLException e) {
-            result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
-            return result;
+            RechargePackage rechargePackage = packageInfoService.getUserFirstRechargePackageInfo(userId, appId);
+            if (rechargePackage != null) {
+                result.addProperty("packageId", rechargePackage.getPackageId());
+                result.addProperty("status", rechargePackage.getStatus());
+                result.addProperty("orderId", rechargePackage.getOrderId());
+            } else {
+                result.addProperty("packageId", 0);
+                result.addProperty("status", 0);
+            }
+        } catch (Exception e) {
+            logger.error("packageInfoService.getUserFirstRechargePackageInfo(userId: " + userId + ", appId: " + appId + ") execute exception: ",e);
         }
         
-        if (userFrPackage != null) {
-            result.addProperty("packageId", Integer.parseInt(String.valueOf(userFrPackage.get("PACKAGEID"))));
-            result.addProperty("status", Integer.parseInt(String.valueOf(userFrPackage.get("STATUS"))));
-            result.addProperty("orderId", String.valueOf(userFrPackage.get("ORDERID")));
-        } else {
-            result.addProperty("packageId", 0);
-            result.addProperty("status", 0);
-        }
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
@@ -1158,60 +1157,6 @@ public class ActivityFunctions {
     }
     
     /**
-     * 兑吧新用户注册VIP礼包赠送(50001001)
-     * @param jsonObject
-     * @return
-     */
-    public JsonObject addDuibaNewUserPresent(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-        JsonObject result = new JsonObject();
-        
-        int userId, chanelId;
-        String phoneNum;
-        try {
-            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-            phoneNum = CommonUtil.getJsonParamString(jsonObject, "phoneNum", null, "01010006", 1, Integer.MAX_VALUE);
-            chanelId = CommonUtil.getJsonParamInt(jsonObject, "c", 0, TagCodeEnum.CHANNEL_MISSING, 1, Integer.MAX_VALUE);
-        } catch (CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
-            return result;
-        } catch (Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-            return result;
-        }
-        
-        // 校验用户是否为兑吧注册新用户且未领取过礼物
-        Map<Object, Object> map = new HashMap<Object, Object>();
-        map.put("userId", userId);
-        map.put("phoneNum", phoneNum);
-        map.put("chanelId", chanelId);
-        try {
-            SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Temp.checkDuibaNewuser", map);
-        } catch (SQLException e) {
-            result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
-            return result;
-        }
-        String TagCode = (String) map.get("TagCode");
-        // 兑吧注册新用户赠送三天VIP
-        if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-            //送三天VIP
-            String presentDesc = "兑吧注册新用户赠送3天VIP";
-            VipService vipService = (VipService) MelotBeanFactory.getBean("vipService");
-            ResVip resVip = vipService.insertSendVipV2(userId, 3, 100001, 7, presentDesc, chanelId);
-            if (resVip != null && (resVip.getRespCode() == VipService.AssetModule_TAG_CODE_SUCCESS ||
-                resVip.getRespCode() == VipService.SendVipHandler_RESP_CODE_LIFE_TIME_FOREVER)) {
-                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-                return result;
-            } else {
-                result.addProperty("TagCode", "01010005");
-                return result;
-            }
-        } else {
-            result.addProperty("TagCode", "010100" + TagCode);
-            return result;
-        }
-    }    
-	
-    /**
      * 房间内活动信息展示2.0(50001002)
      * getRoomActivityDetail
      */
@@ -1263,65 +1208,10 @@ public class ActivityFunctions {
     }
     
     /**
-     * 第三方新用户注册VIP礼包赠送(50001011)
-     * @param jsonObject
-     * @return
-     */
-    public JsonObject addThirdChannelNewUserPresent(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-        JsonObject result = new JsonObject();
-        
-        int userId;
-        String phoneNum;
-        
-        try {
-            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-            phoneNum = CommonUtil.getJsonParamString(jsonObject, "phoneNum", null, "01110006", 1, Integer.MAX_VALUE);
-        } catch (CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
-            return result;
-        } catch (Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-            return result;
-        }
-        
-        // 校验用户是否为第三方注册新用户且未领取过礼物
-        Map<Object, Object> map = new HashMap<Object, Object>();
-        map.put("userId", userId);
-        map.put("phoneNum", phoneNum);
-        
-        try {
-            SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Temp.checkThirdChannelNewUser", map);
-        } catch (SQLException e) {
-            result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
-            return result;
-        }
-        String TagCode = (String) map.get("TagCode");
-        // 第三方注册新用户赠送三天VIP
-        if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-            int channelId = (Integer) map.get("channelId");
-            String presentDesc = "渠道号:" + channelId + "第三方注册新用户赠送3天VIP";
-            VipService vipService = (VipService) MelotBeanFactory.getBean("vipService");
-            ResVip resVip = vipService.insertSendVipV2(userId, 3, 100001, 7, presentDesc, channelId);
-            if (resVip != null && (resVip.getRespCode() == VipService.AssetModule_TAG_CODE_SUCCESS ||
-                resVip.getRespCode() == VipService.SendVipHandler_RESP_CODE_LIFE_TIME_FOREVER)) {
-                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-                return result;
-            } else {
-                result.addProperty("TagCode", "01110005");
-                return result;
-            }
-        } else {
-            result.addProperty("TagCode", "011100" + TagCode);
-            return result;
-        }
-    }    
-    
-    /**
      * 获取用户已获得礼包列表(50010014)
      * @param jsonObject
      * @return
      */
-    @SuppressWarnings("unchecked")
     public JsonObject getUserReceivePackageList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
         
@@ -1337,38 +1227,34 @@ public class ActivityFunctions {
             return result;
         }
         
-        Map<String, Object> param = new HashMap<String, Object>();
-        param.put("userId", userId);
-        param.put("appId", appId);
-        try {
-            SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Other.getUserRechargePackageList", param);
-        } catch (SQLException e) {
-            result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
-            return result;
-        }
-
-        List<RechargerPackage> userRechargePackage = (List<RechargerPackage>) param.get("list");
         JsonArray jsonArray = new JsonArray();
-        if (userRechargePackage != null) {
-            for (RechargerPackage userFrPackage : userRechargePackage) {
-                JsonObject jsonObject2 = new JsonObject();
-                jsonObject2.addProperty("packageId", userFrPackage.getPackageId());
-                jsonObject2.addProperty("status", userFrPackage.getStatus());
-                jsonObject2.addProperty("orderId", userFrPackage.getOrderId());
-                jsonObject2.addProperty("isRecive", userFrPackage.getIsRecive());
-                jsonArray.add(jsonObject2);
-            }
-        }
-        
-        // 获取用户充值次数
-        param.clear();
-        param.put("userId", userId);
         int count = 0;
         try {
-            SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Other.getUserRechargeTimes", param);
-            count = param.get("count") != null ? (Integer) param.get("count") : 0;
-        } catch (SQLException e) {
-            logger.error("fail to execute Other.getUserRechargeTimes, userId: " + userId, e);
+            List<RechargePackage> userRechargePackage = null;
+            userRechargePackage = packageInfoService.getUserRechargePackageList(userId, appId);
+            
+            if (userRechargePackage != null) {
+                for (RechargePackage userFrPackage : userRechargePackage) {
+                    JsonObject jsonObject2 = new JsonObject();
+                    jsonObject2.addProperty("packageId", userFrPackage.getPackageId());
+                    jsonObject2.addProperty("status", userFrPackage.getStatus());
+                    jsonObject2.addProperty("orderId", userFrPackage.getOrderId());
+                    jsonObject2.addProperty("isRecive", userFrPackage.getIsRecive());
+                    jsonArray.add(jsonObject2);
+                }
+            }
+            
+            Result<Map<String, Object>> resp =  rechargeService.getUserRechargingRecordCount(userId, null, null);
+            if (resp != null && CommonStateCode.SUCCESS.equals(resp.getCode())) {
+                Map<String, Object> map = resp.getData();
+                if (map.get("count") != null) {
+                    count = (int) map.get("count");
+                }
+            }
+        } catch (Exception e) {
+            logger.error("ActivityFunctions.getUserReceivePackageList() execute exception.", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
         }
         
         result.add("packageList", jsonArray);
