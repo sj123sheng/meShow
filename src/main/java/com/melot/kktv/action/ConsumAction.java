@@ -32,40 +32,6 @@ public class ConsumAction {
     private static Logger showMoneyLogger = Logger.getLogger("showMoneyLogger");
 	
 	/**
-	 * 获取指定礼物指定时间内按一定比例获取到的消耗值（10007009）
-	 * @param jsonObject
-	 * @return
-	 */
-	public JsonObject getConsumGiftPool(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-	    JsonObject result = new JsonObject();
-	    
-	    int giftId, rate;
-	    Date startTime, endTime;
-	    try {
-	        giftId = CommonUtil.getJsonParamInt(jsonObject, "giftId", 0, null, 1, Integer.MAX_VALUE);
-	        rate = CommonUtil.getJsonParamInt(jsonObject, "rate", 5, null, 1, Integer.MAX_VALUE);
-	        startTime = CommonUtil.getJsonParamDatetime(jsonObject, "startTime", null, "70090002", false);
-	        endTime = CommonUtil.getJsonParamDatetime(jsonObject, "endTime", null, "70090003", false);
-	    } catch(CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
-            return result;
-        } catch(Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-            return result;
-        }
-	    
-	    long poolCount = 0;
-	    if (rate > 0) {
-	        poolCount = StatisticsServices.getConsumGiftPool(giftId, startTime, endTime) * rate / 100;
-        }
-	    
-	    result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-	    result.addProperty("poolCount", poolCount);
-	    
-	    return result;
-	}
-	
-	/**
 	 * 购买表情包(20000007)
 	 * @param jsonObject
 	 * @return

@@ -6,42 +6,6 @@
 
 <sqlMap namespace="Profile">
 
-	<!-- 获取用户消费记录列表列表 -->
-	<resultMap id="consumerRecord" class="com.melot.kktv.model.ConsumerRecord">
-		<result property="consumerTime" column="dtime" javaType="java.util.Date"
-			jdbcType="TIMESTAMP" />
-		<result property="consumerType" column="ntype" />
-		<result property="amount" column="amount" />
-		<result property="typeDesc" column="typeDesc" />
-		<result property="product" column="product" />
-		<result property="count" column="count" />
-	</resultMap>
-
-	<parameterMap id="getUserConsumerListMap" class="java.util.Map">
-		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="startTime" mode="IN" javaType="java.util.Date"
-			jdbcType="TIMESTAMP" />
-		<parameter property="endTime" mode="IN" javaType="java.util.Date"
-			jdbcType="TIMESTAMP" />
-		<parameter property="pageIndex" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-
-		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
-			jdbcType="VARCHAR" />
-		<parameter property="consumerTotal" mode="OUT" javaType="java.lang.Long"
-			jdbcType="BIGINT" />
-		<parameter property="pageTotal" mode="OUT" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="recordList" mode="OUT" jdbcType="ORACLECURSOR"
-			javaType="java.sql.ResultSet" resultMap="consumerRecord" />
-	</parameterMap>
-
-	<procedure id="getUserConsumerList" parameterMap="getUserConsumerListMap">
-		{call
-		p_getUserConsumerList(?,?,?,?,?,?,?,?)}
-	</procedure>
-
 	<!-- 获取商城车市中的车辆列表 -->
 	<resultMap class="com.melot.kktv.model.Car" id="carInfoMap">
 		<result property="carid" column="carid" />
@@ -82,55 +46,4 @@
 		p_getCarList(?,?,?,?,?,?,?,?)}
 	</procedure>
 
-	<!-- 获取用户中奖记录列表 -->
-	<resultMap id="winLotteryRecord" class="com.melot.kktv.model.WinLotteryRecord">
-		<result property="time" column="time" javaType="java.util.Date"
-			jdbcType="TIMESTAMP" />
-		<result property="giftId" column="giftId" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<result property="winType" column="winType" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<result property="times" column="times" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<result property="count" column="count" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-	</resultMap>
-
-	<parameterMap id="getUserWinLotteryListMap" class="java.util.Map">
-		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="startTime" mode="IN" javaType="java.util.Date"
-			jdbcType="TIMESTAMP" />
-		<parameter property="endTime" mode="IN" javaType="java.util.Date"
-			jdbcType="TIMESTAMP" />
-		<parameter property="pageIndex" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="countPerPage" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-
-		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
-			jdbcType="VARCHAR" />
-		<parameter property="pageTotal" mode="OUT" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="recordList" mode="OUT" jdbcType="ORACLECURSOR"
-			javaType="java.sql.ResultSet" resultMap="winLotteryRecord" />
-	</parameterMap>
-
-	<procedure id="getUserWinLotteryList" parameterMap="getUserWinLotteryListMap">
-		{call
-		p_getUserWinLotteryList(?,?,?,?,?,?,?,?)}
-	</procedure>
-	
-	<!-- 获取指定礼物指定时间内按一定比例获取到的消耗值 -->
-	<select id="getConsumGiftPool" parameterClass="java.util.Map" resultClass="java.lang.Long">
-		SELECT nvl(SUM(t.amount),0) sumVal FROM gift_history t 
-		WHERE t.dtime >= #startTime# 
-		<isNotNull prepend="and" property="endTime">
-			<![CDATA[ t.dtime <= #endTime# ]]>
-		</isNotNull>
-		<isGreaterThan prepend="and" property="giftId" compareValue="0">
-			t.giftid = #giftId#
-		</isGreaterThan>
-	</select>
-	
 </sqlMap>

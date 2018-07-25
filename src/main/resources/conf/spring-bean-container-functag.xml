@@ -370,11 +370,6 @@
 		<constructor-arg name="t" ref="profileFunction" />
 		<constructor-arg name="methodName" value="getHonorList" />
 	</bean>
-	<!-- 获取用户消费记录列表 -->
-	<bean id="10005006" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="profileFunction" />
-		<constructor-arg name="methodName" value="getUserConsumerList" />
-	</bean>
 	<!-- 获取用户送出的礼物列表 -->
 	<bean id="10005007" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="profileFunction" />
@@ -392,11 +387,6 @@
 	<bean id="10005016" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="profileFunction" />
 		<constructor-arg name="methodName" value="getUserLiveList" />
-	</bean>
-	<!-- 获取用户中奖记录列表 -->
-	<bean id="10005024" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="profileFunction" />
-		<constructor-arg name="methodName" value="getUserWinLotteryList" />
 	</bean>
 	<!-- 修改房间主题 -->
 	<bean id="10005055" class="com.melot.sdk.core.function.GenericFunction">
@@ -960,11 +950,6 @@
 		<constructor-arg name="methodName" value="getSvipSpeaklouderCount" />
 	</bean>
 	<!-- 用户消费相关接口类 -->
-	<!-- 获取指定礼物指定时间内按一定比例获取到的消耗值 -->
-	<bean id="10007007" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="consumeFunction" />
-		<constructor-arg name="methodName" value="getConsumGiftPool" />
-	</bean>
 	<!-- 购买表情包 -->
 	<bean id="20000007" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="consumeFunction" />
