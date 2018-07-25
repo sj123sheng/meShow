@@ -12,7 +12,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import com.melot.family.driver.domain.FamilyApplicantMeshow;
-import com.melot.family.driver.service.FamilyAdminNewService;
+import com.melot.family.driver.service.*;
 import org.apache.log4j.Logger;
 
 import com.google.gson.Gson;
@@ -24,9 +24,6 @@ import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.api.menu.sdk.service.RoomInfoService;
 import com.melot.family.driver.domain.FamilyInfo;
 import com.melot.family.driver.domain.RespMsg;
-import com.melot.family.driver.service.FamilyAdminService;
-import com.melot.family.driver.service.FamilyInfoService;
-import com.melot.family.driver.service.FamilyOperatorService;
 import com.melot.kkcx.transform.RoomTF;
 import com.melot.kktv.domain.Honour;
 import com.melot.kktv.model.Family;
@@ -216,10 +213,10 @@ public class FamilyService {
 					}
 					break;
 				case PlatformEnum.ANDROID:
-					// 返回 174*116px
+					// 返回 222*148px
 					if (familyPoster.getPath_original() != null) {
 						familyPosterJson = new JsonObject();
-						familyPosterJson.addProperty("path_174", familyPoster.getPath_174());
+						familyPosterJson.addProperty("path_222", familyPoster.getPath_222());
 					}
 					break;
 				case PlatformEnum.IPHONE:
@@ -265,10 +262,10 @@ public class FamilyService {
 					}
 					break;
 				case PlatformEnum.ANDROID:
-					// 返回 174*116px
+					// 返回 222*148px
 					if (familyPoster.getPath_original() != null) {
 						familyPosterJson = new JsonObject();
-						familyPosterJson.addProperty("path_174", familyPoster.getPath_174());
+						familyPosterJson.addProperty("path_222", familyPoster.getPath_222());
 					}
 					break;
 				case PlatformEnum.IPHONE:
@@ -1141,7 +1138,11 @@ public class FamilyService {
         }
 	    return 0;
 	}
-	
+
+	public static int  getFrozenFamilyUserById(int userId){
+		FamilyUserService familyUserService = (FamilyUserService)MelotBeanFactory.getBean("familyUserService");
+		return familyUserService.getFrozenFamilyUserById(userId);
+	}
 }
 
 /** 用户申请Id同步到redis */

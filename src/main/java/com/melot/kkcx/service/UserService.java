@@ -11,7 +11,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.melot.cms.admin.api.bean.OfficialIdInfo;
 import com.melot.cms.admin.api.constant.AdminApiTagCodes;
+import com.melot.cms.admin.api.constant.OperatorInfoEnum;
 import com.melot.cms.admin.api.service.AdminDataService;
+import com.melot.cms.admin.api.service.OperatorService;
 import com.melot.cms.api.base.Result;
 import com.melot.kk.otherlogin.api.service.OtherLoginService;
 import org.apache.commons.beanutils.BeanUtils;
@@ -927,20 +929,6 @@ public class UserService {
         return result;
     }
     
-    public static void insertKbiHist(int userId, int exchangeAmount) {
-        try {
-            Map<String, Object> map = new HashMap<String, Object>();
-            map.put("userId", userId);
-            map.put("kbi", exchangeAmount);
-            map.put("toUser", userId);
-            map.put("note", "主播K豆兑换");
-            map.put("appId", AppIdEnum.AMUSEMENT);
-            SqlMapClientHelper.getInstance(DB.MASTER).insert("User.insertHist", map);
-        } catch(Exception e) {
-            logger.error("User.insertHist(userId:" + userId + "kbi:" + exchangeAmount + ") return exception.", e);
-        }
-    }
-	
 	/**
 	 * 是否为黑名单用户 (illeagle user)
 	 * @param userId
@@ -958,8 +946,14 @@ public class UserService {
 	
 	public static boolean isValidOperator(int operatorId) {
 		try {
-            return (Integer) SqlMapClientHelper.getInstance(DB.BACKUP).queryForObject("Index.isValidOperator", operatorId) > 0;
-        } catch (SQLException e) {
+			OperatorService operatorService = (OperatorService) MelotBeanFactory.getBean("operatorService");
+			Result<Integer> integerResult = operatorService.isExistOperator(operatorId, OperatorInfoEnum.FROZEN.NO.getType());
+			if (integerResult != null && integerResult.getCode().equals(AdminApiTagCodes.SUCCESS) && integerResult.getData() > 0){
+				return  true;
+			}else {
+				return false;
+			}
+        } catch (Exception e) {
             logger.error("UserService.isValidOperator( " + operatorId + ") execute exeception", e);
         }
         

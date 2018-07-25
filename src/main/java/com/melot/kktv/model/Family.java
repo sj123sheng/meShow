@@ -145,10 +145,10 @@ public class Family {
 					}
 					break;
 				case PlatformEnum.ANDROID:
-					// 返回 174*116px
+				    // 返回 222*148px
 					if (familyPoster.getPath_original() != null) {
 						this.familyPoster = new JsonObject();
-						this.familyPoster.addProperty("path_174", familyPoster.getPath_174());
+						this.familyPoster.addProperty("path_222", familyPoster.getPath_222());
 					}
 					break;
 				case PlatformEnum.IPHONE:

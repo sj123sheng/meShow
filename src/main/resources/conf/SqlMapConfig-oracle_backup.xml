@@ -12,7 +12,6 @@
 		useStatementNamespaces="true" 
 	/>
 	
-	<sqlMap resource="com/melot/kktv/sqlmap/slave/Index.xml" />
 	<sqlMap resource="com/melot/kktv/sqlmap/Mobile.xml" />
 	
 	<!-- melot-api-common -->

@@ -3,82 +3,10 @@
 
 <sqlMap namespace="Tag">
 
-    <!-- 读取标签 -->
-    <resultMap id="tagMap" class="com.melot.kktv.domain.TagInfo">
-        <result property="tagId" column="tag_id" 
-            javaType="java.lang.Integer" jdbcType="Integer" />
-        <result property="tagName" column="tag_name" 
-            javaType="java.lang.String" jdbcType="VARCHAR" />
-        <result property="tagCreater" column="tag_creater" 
-            javaType="java.lang.Integer" jdbcType="Integer" />    
-        <result property="tagSource" column="tag_source" 
-            javaType="java.lang.Integer" jdbcType="Integer" />
-        <result property="tagStatus" column="tag_status" 
-            javaType="java.lang.Integer" jdbcType="Integer" />
-        <result property="tagChecker" column="tag_checker" 
-            javaType="java.lang.Integer" jdbcType="Integer" />
-        <result property="tagCheckTime" column="tag_checktime" 
-            javaType="java.util.Date" jdbcType="Date" /> 
-    </resultMap>
-    
-    <select id="getTagInfoById" parameterClass="java.lang.Integer" resultMap="tagMap">
-        select * from conf_tag t where t.tag_id = #tagId# 
-    </select>
-    
-    <select id="getTagInfoByName" parameterClass="java.lang.String" resultMap="tagMap">
-        select * from conf_tag t where t.tag_name = #tagName# 
-    </select>
-    
-    <select id="checkUserTag" parameterClass="java.util.Map" resultClass="java.lang.Integer" >
-        select count(*) from res_user_tag t where t.tag_id = #tagId# and t.user_id = #userId# 
-    </select>
-    
-    <!-- 查询使用标签的用户 -->
-    <select id="getTaggingUser" parameterClass="java.lang.Integer" resultClass="java.lang.Integer">
-        select t.user_Id from res_user_tag t where t.tag_id = #tagId#
-    </select>
-    
     <!-- 读取用户标签 -->
     <select id ="getUserTags" parameterClass="java.lang.Integer" resultClass="java.lang.String">
         select LISTAGG(t1.tag_name, ',') WITHIN GROUP(ORDER BY t1.tag_name) from conf_tag t1 join res_user_tag t2
         	on t1.tag_id = t2.tag_id and t2.user_id = #userId#
-    </select>
-    
-    <!-- 创建标签 -->
-    <insert id="createTag" parameterClass="com.melot.kktv.domain.TagInfo">
-        <selectKey keyProperty="tagId" resultClass="java.lang.Integer">
-			select seq_conf_tag.nextval as tagId from dual   
-		</selectKey>
-        insert into conf_tag(tag_id,tag_name,tag_source,tag_creater,tag_status) 
-        values(#tagId#,#tagName#,#tagSource#,#tagCreater#,#tagStatus#)            
-	</insert>
-	
-	<!-- 插入贴标签记录 -->
-    <insert id="insertTagHist" parameterClass="java.util.Map">
-        insert into res_user_tag(tag_id,user_id,tagging_user,tagging_user_role,tagging_time) 
-        values(#tagId#,#ownerId#,#userId#,#userRole#,#time#)
-    </insert>
-    
-    <!-- 更新审核状态 -->
-	<update id="updateCheckStatus" parameterClass="java.util.Map">
-		update conf_tag t set t.tag_checker = #checker#, t.tag_checktime = #checkTime#, t.tag_status = #status# 
-		where t.tag_id in
-		<iterate property="tagIds" open="(" close=")" conjunction=",">
-			#tagIds[]#
-		</iterate>
-	</update>
-	
-	<!-- 删除标签用户 -->
-	<delete id="deleteTagUser" parameterClass="java.util.Map">
-		delete res_user_tag t where t.tag_id = #tagId# and user_id in 
-		<iterate property="userIds" open="(" close=")" conjunction=",">
-			#userIds[]#
-		</iterate>
-	</delete>
-    
-    <!-- 读取用户标签 -->
-    <select id ="selectUserByTag" parameterClass="java.lang.Integer" resultClass="java.lang.Integer">
-       select t.user_id from res_user_tag t where t.tag_id = #tagId#
     </select>
     
 </sqlMap>

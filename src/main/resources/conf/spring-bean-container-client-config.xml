@@ -65,7 +65,11 @@
 	<kkrpc:reference id="familyOperatorService" interface="com.melot.family.driver.service.FamilyOperatorService" version="2.0.0"></kkrpc:reference>
 	<kkrpc:reference id="familyAdminNewService" interface="com.melot.family.driver.service.FamilyAdminNewService" version="2.0.0" timeout="16000"></kkrpc:reference>
 	<kkrpc:reference id="familyTopConfService" interface="com.melot.family.driver.service.FamilyTopConfService" version="1.0.0"></kkrpc:reference>
+	<kkrpc:reference id="familyUserService" interface="com.melot.family.driver.service.FamilyUserService" version="1.0.0"></kkrpc:reference>
 
+	<kkrpc:reference id="operatorService" interface="com.melot.cms.admin.api.service.OperatorService" version="1.0.0"></kkrpc:reference>
+
+	<!-- cms 管理模块 -->
 	<kkrpc:reference id="upIdfaService" interface="com.melot.ios.idfa.driver.UpIdfaService" version="1.0.0"></kkrpc:reference>
 
 	<!-- 用户私信设置模块 -->
@@ -220,4 +224,5 @@
 	<kkrpc:reference id="newMissionService" interface="com.melot.kk.activityAPI.api.service.NewMissionService" version="1.0.0"></kkrpc:reference>
 	
 	<kkrpc:reference id="recommendedMsgService" interface="com.melot.kk.message.api.service.RecommendedMsgService" version="1.0.0"/>
+	<kkrpc:reference id="messageService" interface="com.melot.common.driver.service.MessageService" version="1.0.0"/>
 </beans>

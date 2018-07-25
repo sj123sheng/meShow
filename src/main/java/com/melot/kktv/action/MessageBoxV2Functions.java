@@ -2,12 +2,15 @@ package com.melot.kktv.action;
 
 import com.google.common.collect.Lists;
 import com.google.gson.*;
+import com.melot.common.driver.service.MessageService;
 import com.melot.kk.message.api.dto.RecommendedMsg;
+import com.melot.kk.message.api.dto.SystemMessage;
 import com.melot.kk.message.api.service.RecommendedMsgService;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcx.service.MessageBoxServices;
 import com.melot.kkcx.service.UserService;
 import com.melot.kkcx.transform.RecommendedMessageTF;
+import com.melot.kkcx.transform.SystemMessageTF;
 import com.melot.kktv.base.Page;
 import com.melot.kktv.model.*;
 import com.melot.kktv.redis.HotDataSource;
@@ -145,7 +148,8 @@ public class MessageBoxV2Functions {
                 
                 //only new versions of client would give the parameter named maxType.
                 JsonElement maxTypeje = jsonObject.get("maxType");
-                if (maxTypeje != null && !maxTypeje.isJsonNull()) {
+                // appId = 15为麻辣，不需要新鲜播报
+                if (maxTypeje != null && !maxTypeje.isJsonNull() && appId != 15) {
                     recMessage.generateRecommendedMessages(userId, jedis);
                 }
             } catch (Exception e) {
@@ -161,7 +165,9 @@ public class MessageBoxV2Functions {
         
         //根据推送提醒判断是否推送点赞及动态回复
         int msgCount = 0;
-        if (praiseState == 0 || comState == 0) {
+        // 新鲜播报数量，在appId = 15时，减去
+        int recommendedMessagesCount = 0;
+        if (praiseState == 0 || comState == 0 || appId == 15) {
             Jedis jedis = null;
             try {
                 jedis = UserMessageSource.getInstance();
@@ -184,6 +190,14 @@ public class MessageBoxV2Functions {
                            logger.error("get messageType failed", e);
                        }
                     }
+                    if (appId == 15 && msgtype == Message.MSGTYPE_RECOMMENDED) {
+                        try {
+                            Map<String, String> map = jedis.hgetAll(value);
+                            recommendedMessagesCount += Integer.parseInt(map.get("count"));
+                        } catch (Exception e) {
+                            logger.error("get recommended messageType failed", e);
+                        }
+                    }
                 }
             } catch (Exception e) {
                 logger.error("generatePraiseMessages or generateDynamicMessages failed when operate redis", e);
@@ -193,7 +207,7 @@ public class MessageBoxV2Functions {
                 }
             }
             
-            msgTotalCount = msgTotalCount - msgCount;
+            msgTotalCount = msgTotalCount - msgCount - recommendedMessagesCount;
         }
         
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
@@ -1202,7 +1216,6 @@ public class MessageBoxV2Functions {
      * get the KK System Record 
      * 
      */
-    @SuppressWarnings("unchecked")
     private static JsonObject getKkSystemRecord(int userId, int perPageCount, int curPage, long startTime, int platform,long lastReadTime) {
         
         JsonObject result = new JsonObject();
@@ -1213,51 +1226,40 @@ public class MessageBoxV2Functions {
             curPage = 1;
         }
         int min = (curPage - 1) * perPageCount;
-        int max = curPage * perPageCount;
-        Map<Object, Object> map = new HashMap<Object, Object>();
-        map.put("userId", userId);
-        map.put("startTime", beginTime);
-        map.put("endTime", endTime);
-        map.put("min", min);
-        map.put("max", max);
-        try {
-            SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("KkSystemNotice.getKkSystemNoticeList", map);
-        } catch (SQLException e) {
-            logger.error("未能正常调用存储过程", e);
-            result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
-            return result;
-        }
-
-        String TagCode = (String) map.get("TagCode");
-        JsonArray jsonArr = new JsonArray();
-        if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-            List<KkSystemNotice> kSysNotice = (List<KkSystemNotice>) map.get("kkSysNotices");
-            if (kSysNotice != null && kSysNotice.size() > 0) {
-            	kSysNotice = UserService.addUserExtra(kSysNotice);
-                for (KkSystemNotice k : kSysNotice) {
-                    jsonArr.add(new JsonParser().parse(new Gson().toJson(k.toJsonObject(lastReadTime,platform))));
-                }
-            }
-            result.addProperty("TagCode", TagCode);
-            if (min==0) {
-                result.addProperty("total", (Integer) map.get("totalSysNotices"));
-            }
-            result.add("messageList", jsonArr);
-            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
-            return result;
-        } else if (TagCode.equals("02") || TagCode.equals("03")) {
-            /* '02';分页超出范围 */
-            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-            result.addProperty("total", (Integer) map.get("totalSysNotices"));
-            //result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
-            result.add("messageList", new JsonArray());
-            return result;
-        } else {
+        
+        MessageService messageService = (MessageService) MelotBeanFactory.getBean("messageService");
+        Page<SystemMessage> page = messageService.getKkSystemNoticeList(userId, beginTime, endTime, min, perPageCount);
+        
+        if (page == null) {
             result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);// fail to call stored procedure
             return result;
         }
+        
+        List<SystemMessage> systemMessages = page.getList();
+        JsonArray jsonArr = new JsonArray();
+        if (CollectionUtils.isNotEmpty(systemMessages)) {
+            List<KkSystemNotice> kSysNotice = SystemMessageTF.getKkSystemNotices(systemMessages);
+            if (CollectionUtils.isNotEmpty(kSysNotice)) {
+                kSysNotice = UserService.addUserExtra(kSysNotice);
+                for (KkSystemNotice k : kSysNotice) {
+                    jsonArr.add(new JsonParser().parse(new Gson().toJson(k.toJsonObject(lastReadTime, platform))));
+                }
+            }
+            if (min == 0) {
+                result.addProperty("total", page.getCount());
+            }
+            result.add("messageList", jsonArr);
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } else {
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            result.addProperty("total", page.getCount());
+            result.add("messageList", new JsonArray());
+            return result;
+        }
     }
-    
+
     /**
      * 获取消息推送开关设置
      */

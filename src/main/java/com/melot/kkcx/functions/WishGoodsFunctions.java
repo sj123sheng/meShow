@@ -657,7 +657,7 @@ public class WishGoodsFunctions {
             JsonArray paymentConfigs = new JsonArray();
             if (paymentList != null) {
                 for (ConfPaymentInfoDto confPaymentInfo : paymentList) {
-                    if (buyWishConfigInfoDTO.getPaymentModes().contains(confPaymentInfo.getPaymentMode())) {
+                    if (buyWishConfigInfoDTO.getPaymentModes().contains(confPaymentInfo.getPaymentMode().intValue())) {
                         JsonObject confPaymentInfoJson = new JsonParser().parse(new Gson().toJson(confPaymentInfo)).getAsJsonObject();
                         paymentConfigs.add(confPaymentInfoJson);
                     }

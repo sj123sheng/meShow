@@ -46,7 +46,7 @@ public class AlbumServices {
 	}
 
 	public static JsonObject addPictureNew(int userId, int pictureType, String path_original, String pictureName) {
-		boolean flag = LiveVideoService.addPicture(userId,pictureType,path_original,pictureName);
+		boolean flag = LiveVideoService.addPicture(userId,pictureType,OpusCostantEnum.CHECKING_PHOTO_RESOURCEURL,pictureName);
 		if(flag){
 			JsonObject obj = new JsonObject();
 			obj.addProperty("TagCode", TagCodeEnum.SUCCESS);
@@ -62,7 +62,7 @@ public class AlbumServices {
 
 	public static JsonObject addPictureNewV2(int resId, int userId, int pictureType, String path_original, String pictureName) {
 
-		boolean flag = LiveVideoService.addPictureV2(resId,userId,pictureType,path_original,pictureName);
+		boolean flag = LiveVideoService.addPictureV2(resId,userId,pictureType,OpusCostantEnum.CHECKING_PHOTO_RESOURCEURL,pictureName);
 		if(flag){
 			JsonObject obj = new JsonObject();
 			obj.addProperty("TagCode", TagCodeEnum.SUCCESS);

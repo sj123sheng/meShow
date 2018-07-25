@@ -12,28 +12,6 @@ public class ConsumeService {
 	
 	private static Logger logger = Logger.getLogger(ConsumeService.class);
 	
-	 /**
-     * 更新消费记录
-     * @param userId
-     * @return
-     */
-    public static boolean insertConsumeHistory(int userId, int type, int price, int count, String desc, String product) {
-    	try {
-    		HashMap<String, Object> map = new HashMap<String, Object>();
-    		map.put("type", type);
-    		map.put("userId", userId);
-    		map.put("amount", price*count);
-    		map.put("desc", desc);
-    		map.put("product", product);
-    		map.put("count", count);
-    		SqlMapClientHelper.getInstance(DB.MASTER).insert("User.insertConsumeHistory", map);
-    		return true;
-    	} catch (Exception e) {
-    		logger.error("fail to execute sql User.updateShowMoney", e);
-    		return false;
-    	}
-    }
-	
     /**
      * 更新举报消费记录
      */

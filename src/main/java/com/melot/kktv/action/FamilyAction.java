@@ -2627,17 +2627,11 @@ public class FamilyAction {
                 result.addProperty("TagCode", "08280001");
             } else {
                 // 对于家族长是用户，家族解散中
-                Integer frozenFamilyId = null;
-                try {
-                    frozenFamilyId = (Integer) SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Family.getFrozenFamilyUserById", userId);
-                } catch (SQLException e) {
-                    logger.error("FamilyAction.getApplyForFamilyInfo(" + "jsonObject:" + jsonObject + "checkTag:" + checkTag + "request:" + request + ") execute exception.", e);
-                }
-                
-                if (frozenFamilyId != null) {
+				int frozenFamilyId = FamilyService.getFrozenFamilyUserById(userId);
+                if (frozenFamilyId > 0) {
                     // 获取家族冻结时间
                     int days = 90;
-                    FamilyInfo family = FamilyService.getFamilyInfoByFamilyId(frozenFamilyId.intValue(), appId);
+                    FamilyInfo family = FamilyService.getFamilyInfoByFamilyId(frozenFamilyId, appId);
                     if (family != null && family.getUpdateOpenTime() != null) {
                         days = (int) (90 - Math.ceil((System.currentTimeMillis() - family.getUpdateOpenTime().getTime()) / (1000 * 60 * 60 * 24d)));
                     }
