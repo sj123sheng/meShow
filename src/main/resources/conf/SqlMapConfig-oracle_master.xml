@@ -19,7 +19,6 @@
 	
 	<sqlMap resource="com/melot/kktv/sqlmap/Index.xml" />
 	<sqlMap resource="com/melot/kktv/sqlmap/Profile.xml" />
-	<sqlMap resource="com/melot/kktv/sqlmap/Resource.xml" />
 	<sqlMap resource="com/melot/kktv/sqlmap/Family.xml" />
 	<sqlMap resource="com/melot/kktv/sqlmap/EffectiveActivities.xml" />
 	<sqlMap resource="com/melot/kktv/sqlmap/KkAssistor.xml" />

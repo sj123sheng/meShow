@@ -1285,11 +1285,6 @@
 		<constructor-arg name="t" ref="resourceFunction" />
 		<constructor-arg name="methodName" value="getPropList" />
 	</bean>
-	<!-- 获取指定类别的座驾信息接口 -->
-	<bean id="10005056" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="resourceFunction" />
-		<constructor-arg name="methodName" value="getCarListByCategory" />
-	</bean>
 	<!-- 获取年度盛典结果信息接口 -->
 	<bean id="10009011" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="resourceFunction" />
@@ -1297,30 +1292,12 @@
 		<constructor-arg name="cacheType" value="60" />
 		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
 	</bean>
-	<!-- 获取用户送阳光中奖类别和详细明细信息接口 -->
-	<bean id="10009012" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="resourceFunction" />
-		<constructor-arg name="methodName" value="getSendSunshineInfo" />
-	</bean>
 	<!-- 获取用户剩余券数量 -->
 	<bean id="10006060" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="resourceFunction" />
 		<constructor-arg name="methodName" value="getUserRemainTickets" />
 	</bean>
 
-	<!-- 系统赠送接口类 -->
-	<!-- 标签接口类 -->
-	<!-- 贴标签 -->
-	<bean id="20010201" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="tagFunction" />
-		<constructor-arg name="methodName" value="userTagging" />
-	</bean>
-	<!-- 用户删除被贴标签 -->
-	<bean id="20010202" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="tagFunction" />
-		<constructor-arg name="methodName" value="deleteUserTag" />
-	</bean>
-	
 	<!-- 游戏api接口类 -->
 	<!-- 主播提交房间申请信息  -->
 	<bean id="20020064" class="com.melot.sdk.core.function.GenericFunction">

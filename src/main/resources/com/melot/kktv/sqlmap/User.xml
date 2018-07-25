@@ -92,16 +92,7 @@
 				                 order by 2 desc) t1 where rownum <![CDATA[<]]> 21) t2)t3
 			   order by 2 desc
 	</select>
-	
-	<!-- 插入消费历史(oracle) -->
-	<insert id="insertConsumeHistory" parameterClass="java.util.Map">
-	 	<selectKey keyProperty="histId" resultClass="java.lang.Integer">
-			select seq_consumehistory.nextval as histId from dual   
-		</selectKey>
-		insert into consume_history (histid, ntype, userid, amount, dtime, typedesc, product, count) 
-       		values (#histId#, #type#, #userId#, #amount#, sysdate, #desc#, #product#, #count#)
-	</insert>
-	
+
 	<!-- 判断该设备是否可以被邀请 -->
 	<select id="getCanInvite" parameterClass="java.lang.String" resultClass="java.lang.Integer">
 		select  count(1) from user_info t where t.deviceuid = #deviceUId# and t.inviter is not null
@@ -112,11 +103,4 @@
 		insert into temp_user_password(userid, origin_password, record_time) values(#userId#, #password#, #dtime#)
 	</insert>
 	
-	<insert id="insertHist" parameterClass="java.util.Map">
-	 	<selectKey keyProperty="histId" resultClass="java.lang.Integer">
-			select seq_hist_kbi_to_showmoney.nextval as histId from dual   
-		</selectKey>
-		insert into hist_kbi_to_showmoney (hist_id, user_id, kbi, showmoney, status, update_time, to_user, note,appId) 
-       		values (#histId#, #userId#, #kbi#, #kbi#,1,sysdate,#toUser#,#note#,#appId#)
-	</insert>
 </sqlMap>

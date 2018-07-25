@@ -929,20 +929,6 @@ public class UserService {
         return result;
     }
     
-    public static void insertKbiHist(int userId, int exchangeAmount) {
-        try {
-            Map<String, Object> map = new HashMap<String, Object>();
-            map.put("userId", userId);
-            map.put("kbi", exchangeAmount);
-            map.put("toUser", userId);
-            map.put("note", "主播K豆兑换");
-            map.put("appId", AppIdEnum.AMUSEMENT);
-            SqlMapClientHelper.getInstance(DB.MASTER).insert("User.insertHist", map);
-        } catch(Exception e) {
-            logger.error("User.insertHist(userId:" + userId + "kbi:" + exchangeAmount + ") return exception.", e);
-        }
-    }
-	
 	/**
 	 * 是否为黑名单用户 (illeagle user)
 	 * @param userId
