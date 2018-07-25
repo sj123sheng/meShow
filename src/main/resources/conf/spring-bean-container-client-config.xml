@@ -65,6 +65,9 @@
 	<kkrpc:reference id="familyAdminNewService" interface="com.melot.family.driver.service.FamilyAdminNewService" version="1.0.0" timeout="16000"></kkrpc:reference>
 	<kkrpc:reference id="familyTopConfService" interface="com.melot.family.driver.service.FamilyTopConfService" version="1.0.0"></kkrpc:reference>
 
+	<kkrpc:reference id="operatorService" interface="com.melot.cms.admin.api.service.OperatorService" version="1.0.0"></kkrpc:reference>
+
+	<!-- cms 管理模块 -->
 	<kkrpc:reference id="upIdfaService" interface="com.melot.ios.idfa.driver.UpIdfaService" version="1.0.0"></kkrpc:reference>
 
 	<!-- 用户私信设置模块 -->
@@ -176,7 +179,7 @@
 	
 	<kkrpc:reference id="liveShopService" interface="com.melot.kk.liveshop.api.service.LiveShopService" version="1.0.1"/>
 	
-	<kkrpc:reference id="rechargeService" interface="com.melot.kk.recharge.api.service.RechargeService" version="1.0.0"/>
+	<kkrpc:reference id="rechargeService" interface="com.melot.kk.recharge.api.service.RechargeService" version="1.0.1"/>
 
 	<!-- 贵族积分礼物服务 -->
 	<kkrpc:reference id="nobilityPointGiftService" interface="com.melot.kk.nobility.api.service.NobilityPointGiftService" version="1.0.0"/>

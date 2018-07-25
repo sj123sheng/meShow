@@ -20,6 +20,7 @@ import com.melot.kk.crowdfunding.api.dto.BuyWishConfigInfoDTO;
 import com.melot.kk.crowdfunding.api.dto.UserWishHistDTO;
 import com.melot.kk.crowdfunding.api.dto.WishGoodsInfoDTO;
 import com.melot.kk.crowdfunding.api.service.CrowdFundingService;
+import com.melot.kk.recharge.api.dto.ConfPaymentInfoDto;
 import com.melot.kkcore.actor.api.ActorInfo;
 import com.melot.kkcore.actor.service.ActorService;
 import com.melot.kkcore.user.api.UserProfile;
@@ -29,7 +30,6 @@ import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Page;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.payment.conf.PaymentInfoConf;
-import com.melot.kktv.payment.domain.ConfPaymentInfo;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConfigHelper;
@@ -653,11 +653,11 @@ public class WishGoodsFunctions {
             result.add("selectWishList", selectWishList);
             
             // 返回充值类型配置
-            List<ConfPaymentInfo> paymentList = PaymentInfoConf.getPaymentList(appId, version);
+            List<ConfPaymentInfoDto> paymentList = PaymentInfoConf.getPaymentList(appId, version);
             JsonArray paymentConfigs = new JsonArray();
             if (paymentList != null) {
-                for (ConfPaymentInfo confPaymentInfo : paymentList) {
-                    if (buyWishConfigInfoDTO.getPaymentModes().contains(confPaymentInfo.getPaymentMode())) {
+                for (ConfPaymentInfoDto confPaymentInfo : paymentList) {
+                    if (buyWishConfigInfoDTO.getPaymentModes().contains(confPaymentInfo.getPaymentMode().intValue())) {
                         JsonObject confPaymentInfoJson = new JsonParser().parse(new Gson().toJson(confPaymentInfo)).getAsJsonObject();
                         paymentConfigs.add(confPaymentInfoJson);
                     }

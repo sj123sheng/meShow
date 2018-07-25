@@ -552,20 +552,10 @@
 		<constructor-arg name="t" ref="activityFunction" />
 		<constructor-arg name="methodName" value="getUserReceivePackageList" />
 	</bean>
-    <!-- 兑吧新用户注册VIP礼包赠送-->
-	<bean id="50001001" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="activityFunction" />
-		<constructor-arg name="methodName" value="addDuibaNewUserPresent" />
-	</bean>
 	<!-- 房间内活动信息展示2.0-->
 	<bean id="50001002" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="activityFunction" />
 		<constructor-arg name="methodName" value="getRoomActivityDetail" />
-	</bean>
-    <!-- 第三方新用户注册VIP礼包赠送-->
-	<bean id="50001011" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="activityFunction" />
-		<constructor-arg name="methodName" value="addThirdChannelNewUserPresent" />
 	</bean>
 	 <!-- 获取用户分享回馈明细列表-->
 	<bean id="20010019" class="com.melot.sdk.core.function.GenericFunction">

@@ -23,10 +23,14 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
+import com.melot.api.menu.sdk.utils.Collectionutils;
 import com.melot.family.driver.domain.FamilyInfo;
 import com.melot.family.driver.domain.DO.UserApplyActorDO;
 import com.melot.family.driver.service.UserApplyActorService;
+import com.melot.kk.module.report.util.CommonStateCode;
 import com.melot.kk.opus.api.constant.OpusCostantEnum;
+import com.melot.kk.recharge.api.dto.HistBuyProductRechargeDto;
+import com.melot.kk.recharge.api.service.RechargeService;
 import com.melot.kk.userSecurity.api.domain.DO.UserVerifyDO;
 import com.melot.kk.userSecurity.api.service.UserVerifyService;
 import com.melot.kkcore.actor.api.RoomInfoKeys;
@@ -48,11 +52,9 @@ import com.melot.kkcx.service.ProfileServices;
 import com.melot.kkcx.service.UserAssetServices;
 import com.melot.kkcx.service.UserService;
 import com.melot.kkgame.redis.LiveTypeSource;
-import com.melot.kktv.model.BuyProperties;
-import com.melot.kktv.model.ConsumerRecord;
+import com.melot.kktv.base.Result;
 import com.melot.kktv.model.Family;
 import com.melot.kktv.model.GiftRecord;
-import com.melot.kktv.model.Honor;
 import com.melot.kktv.model.MedalInfo;
 import com.melot.kktv.model.WinLotteryRecord;
 import com.melot.kktv.redis.HotDataSource;
@@ -110,6 +112,9 @@ public class ProfileFunctions {
 
 	@Resource
 	LiveRecordService liveRecordService;
+	
+	@Resource
+	RechargeService rechargeService;
 	
 	private LiveTypeSource liveTypeSource;
 
@@ -1289,201 +1294,14 @@ public class ProfileFunctions {
 	 * @param jsonObject 请求对象
 	 * @return json对象形式的返回结果
 	 */
-	public JsonObject getHonorList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
-		// 获取参数
-		JsonElement userIdje = jsonObject.get("userId");
-
-		// 验证参数
-		int userId;
-		if (userIdje != null && !userIdje.isJsonNull() && !userIdje.getAsString().equals("")) {
-			// 验证数字
-			try {
-				userId = userIdje.getAsInt();
-			} catch (Exception e) {
-				JsonObject result = new JsonObject();
-				result.addProperty("TagCode", "05030002");
-				return result;
-			}
-		} else {
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", "05030001");
-			return result;
-		}
-
-		// 调用存储过程得到结果
-		Map<Object, Object> map = new HashMap<Object, Object>();
-		map.put("userId", userId);
-		try {
-			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Profile.getHonorList", map);
-		} catch (SQLException e) {
-			logger.error("未能正常调用存储过程", e);
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
-			return result;
-		}
-		String TagCode = (String) map.get("TagCode");
-		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-			// 取出列表
-			@SuppressWarnings("unchecked")
-			List<Object> honorList = (ArrayList<Object>) map.get("honorList");
-
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", TagCode);
-			JsonArray jHonorList = new JsonArray();
-			for (Object object : honorList) {
-				jHonorList.add(((Honor) object).toJsonObject());
-			}
-			result.add("honorList", jHonorList);
-
-			// 返回结果
-			return result;
-		} else {
-			// 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
-			logger.error("调用存储过程(Profile.getHonorList(" + new Gson().toJson(map) + "))未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
-			return result;
-		}
+	public JsonObject getHonorList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {		
+		JsonObject result = new JsonObject();
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        JsonArray jHonorList = new JsonArray();
+		result.add("honorList", jHonorList);
+		return result;
 	}
 
-	/**
-	 * 获取用户消费记录列表
-	 * 
-	 * @param jsonObject 请求对象
-	 * @param checkTag 是否验证token标记
-	 * @return json对象形式的返回结果
-	 */
-	public JsonObject getUserConsumerList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
-		// 该接口需要验证token,未验证的返回错误码
-		if (!checkTag) {
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-			return result;
-		}
-
-		// 获取参数
-		JsonElement userIdje = jsonObject.get("userId");
-		JsonElement startTimeje = jsonObject.get("startTime");
-		JsonElement endTimeje = jsonObject.get("endTime");
-		JsonElement pageIndexje = jsonObject.get("pageIndex");
-
-		// 验证参数
-		int userId;
-		long startTime;
-		long endTime;
-		int pageIndex;
-		if (userIdje != null && !userIdje.isJsonNull() && !userIdje.getAsString().equals("")) {
-			// 验证数字
-			try {
-				userId = userIdje.getAsInt();
-			} catch (Exception e) {
-				JsonObject result = new JsonObject();
-				result.addProperty("TagCode", "05060002");
-				return result;
-			}
-		} else {
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", "05060001");
-			return result;
-		}
-		if (startTimeje != null && !startTimeje.isJsonNull() && !startTimeje.getAsString().equals("")) {
-			// 验证数字
-			try {
-				startTime = startTimeje.getAsLong();
-			} catch (Exception e) {
-				JsonObject result = new JsonObject();
-				result.addProperty("TagCode", "05060004");
-				return result;
-			}
-		} else {
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", "05060003");
-			return result;
-		}
-		if (endTimeje != null && !endTimeje.isJsonNull() && !endTimeje.getAsString().equals("")) {
-			// 验证数字
-			try {
-				endTime = endTimeje.getAsLong();
-			} catch (Exception e) {
-				JsonObject result = new JsonObject();
-				result.addProperty("TagCode", "05060006");
-				return result;
-			}
-		} else {
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", "05060005");
-			return result;
-		}
-		if (pageIndexje != null && !pageIndexje.isJsonNull() && !pageIndexje.getAsString().equals("")) {
-			// 验证数字
-			try {
-				pageIndex = pageIndexje.getAsInt();
-			} catch (Exception e) {
-				JsonObject result = new JsonObject();
-				result.addProperty("TagCode", "05060008");
-				return result;
-			}
-		} else {
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", "05060007");
-			return result;
-		}
-
-		// 调用存储过程得到结果
-		Map<Object, Object> map = new HashMap<Object, Object>();
-		map.put("userId", userId);
-		map.put("startTime", new Date(startTime));
-		map.put("endTime", new Date(endTime));
-		map.put("pageIndex", pageIndex);
-		try {
-			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Profile.getUserConsumerList", map);
-		} catch (SQLException e) {
-			logger.error("未能正常调用存储过程", e);
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
-			return result;
-		}
-		String TagCode = (String) map.get("TagCode");
-		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-			// 取出列表
-			@SuppressWarnings("unchecked")
-			List<Object> recordList = (ArrayList<Object>) map.get("recordList");
-
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", TagCode);
-			result.addProperty("consumerTotal", (Long) map.get("consumerTotal"));
-			result.addProperty("pageTotal", (Integer) map.get("pageTotal"));
-			JsonArray jRecordList = new JsonArray();
-			for (Object object : recordList) {
-				jRecordList.add(((ConsumerRecord) object).toJsonObject());
-			}
-			result.add("recordList", jRecordList);
-
-			// 返回结果
-			return result;
-		} else if (TagCode.equals("02")) {
-			/* '02';分页超出范围 */
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-			if (map.get("consumerTotal") != null) {
-				result.addProperty("consumerTotal", (Integer) map.get("consumerTotal"));
-			} else {
-				result.addProperty("consumerTotal", 0);
-			}
-			result.addProperty("pageTotal", (Integer) map.get("pageTotal"));
-			result.add("recordList", new JsonArray());
-
-			// 返回结果
-			return result;
-		} else {
-			// 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
-			logger.error("调用存储过程(Profile.getUserConsumerList(" + new Gson().toJson(map) + "))未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
-			return result;
-		}
-	}
-	
 	/**
 	 * 获取用户送出的礼物列表
 	 * 
@@ -2898,44 +2716,60 @@ public class ProfileFunctions {
             return result;
         }
         
-        Map<Object, Object> map = new HashMap<Object, Object>();
-        map.put("userId", userId);
-		map.put("startTime", new Date(startTime));
-		map.put("endTime", new Date(endTime));
-		map.put("pageIndex", pageIndex);
-		try {
-			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Profile.getUserBuyPropertiesList", map);
-		} catch (SQLException e) {
-			logger.error("未能正常调用存储过程", e);
-			result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
-			return result;
-		}
-		String TagCode = (String) map.get("TagCode");
-		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-			// 取出列表
-			@SuppressWarnings("unchecked")
-			List<Object> recordList = (ArrayList<Object>) map.get("recordList");
-			result.addProperty("TagCode", TagCode);
-			result.addProperty("pageTotal", (Integer) map.get("pageTotal"));
-			JsonArray jRecordList = new JsonArray();
-			for (Object object : recordList) {
-				jRecordList.add(((BuyProperties) object).toJsonObject());
-			}
-			result.add("recordList", jRecordList);
-			// 返回结果
-			return result;
-		} else if (TagCode.equals("02")) {
-			/* '02';分页超出范围 */
-			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-			result.addProperty("pageTotal", 0);
-			result.add("recordList", new JsonArray());
-			return result;
-		} else {
-			// 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
-			logger.error("调用存储过程(Profile.getUserChargeList)未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
-			result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
-			return result;
-		}
+        try {
+            int count = 0;
+            JsonArray jRecordList = new JsonArray();
+            Date startDate = new Date(startTime);
+            Date endDate = new Date(endTime);
+            Result<Map<String, Object>> resp =  rechargeService.getUserBuyProductRecordCount(userId, startDate, endDate);
+            if (resp != null && CommonStateCode.SUCCESS.equals(resp.getCode())) {
+                Map<String, Object> map = resp.getData();
+                if (map.get("count") != null) {
+                    count = (int) map.get("count");
+                }
+                if (count > 0) {
+                    Result<List<HistBuyProductRechargeDto>> histResp = rechargeService.getUserBuyProductRecords(userId, startDate, endDate, (pageIndex -1) * 20, 20);
+                    if (histResp != null && CommonStateCode.SUCCESS.equals(histResp.getCode())) {
+                        List<HistBuyProductRechargeDto> histBuyProductRechargeList = histResp.getData();
+                        if (!Collectionutils.isEmpty(histBuyProductRechargeList)) {
+                            for (HistBuyProductRechargeDto histBuyProductRechargeDto : histBuyProductRechargeList) {
+                                JsonObject jsonObj = new JsonObject();
+                                if (histBuyProductRechargeDto.getAmount() != null) {
+                                    jsonObj.addProperty("amount", histBuyProductRechargeDto.getAmount());
+                                }
+                                if (histBuyProductRechargeDto.getRechargeTime() != null) {
+                                    jsonObj.addProperty("consumeTime", histBuyProductRechargeDto.getRechargeTime().getTime());
+                                }
+                                if (histBuyProductRechargeDto.getPaymentName() != null) {
+                                    jsonObj.addProperty("paymentDesc", histBuyProductRechargeDto.getPaymentName());
+                                }
+                                if (histBuyProductRechargeDto.getPaymentMode() != null) {
+                                    jsonObj.addProperty("paymentMode", histBuyProductRechargeDto.getPaymentMode());
+                                }
+                                if (histBuyProductRechargeDto.getType() != null) {
+                                    jsonObj.addProperty("type", histBuyProductRechargeDto.getType());
+                                }
+                                if (histBuyProductRechargeDto.getDescribe() != null) {
+                                    jsonObj.addProperty("typeDesc", histBuyProductRechargeDto.getDescribe());
+                                }
+                                if (histBuyProductRechargeDto.getMimoney() != null) {
+                                    jsonObj.addProperty("showMoney", histBuyProductRechargeDto.getMimoney());
+                                }
+                                jRecordList.add(jsonObj);
+                            }
+                        }
+                    }
+                }
+            }
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            result.addProperty("pageTotal", (int) Math.ceil((double) count/20));
+            result.add("recordList", jRecordList);
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            logger.error("ProfileFunctions.getUserBuyPropertiesList execute exception: ", e);
+        }
+        
+        return result;
 	}
 	
 	/**

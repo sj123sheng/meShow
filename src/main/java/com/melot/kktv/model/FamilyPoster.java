@@ -28,9 +28,9 @@ public class FamilyPoster {
 			}
 			break;
 		case PlatformEnum.ANDROID:
-			// 返回 174*116px
-			if (this.path_174 != null) {
-				posterJson.addProperty("path_174", this.path_174);
+			// 返回 222*148px
+			if (this.path_222 != null) {
+				posterJson.addProperty("path_222", this.path_222);
 			}
 			break;
 		case PlatformEnum.IPHONE:

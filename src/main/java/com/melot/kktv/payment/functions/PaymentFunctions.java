@@ -10,21 +10,21 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.melot.kk.recharge.api.dto.ConfPaymentInfoDto;
 import com.melot.kktv.payment.conf.PaymentActivityConf;
 import com.melot.kktv.payment.conf.PaymentGradeConf;
 import com.melot.kktv.payment.conf.PaymentInfoConf;
 import com.melot.kktv.payment.conf.PaymentPackageConf;
 import com.melot.kktv.payment.domain.ConfPaymentActivity;
-import com.melot.kktv.payment.domain.ConfPaymentGrade;
-import com.melot.kktv.payment.domain.ConfPaymentInfo;
-import com.melot.kktv.payment.domain.ConfPaymentPackage;
-import com.melot.kktv.payment.domain.PaymentPackageGift;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.PlatformEnum;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.module.medal.driver.domain.ConfMedal;
 import com.melot.module.medal.driver.service.UserMedalService;
+import com.melot.module.packagegift.driver.domain.ConfPaymentGrade;
+import com.melot.module.packagegift.driver.domain.ConfPaymentPackage;
+import com.melot.module.packagegift.driver.domain.PaymentPackageGift;
 import com.melot.sdk.core.util.MelotBeanFactory;
 
 public class PaymentFunctions {
@@ -214,7 +214,7 @@ public class PaymentFunctions {
         }
         
         // 返回充值类型配置
-        List<ConfPaymentInfo> paymentList = PaymentInfoConf.getPaymentList(appId, version);
+        List<ConfPaymentInfoDto> paymentList = PaymentInfoConf.getPaymentList(appId, version);
         if (paymentList != null) {
         	JsonArray paymentConfigs = new JsonArray();
         	try {

@@ -1,15 +1,14 @@
 package com.melot.kktv.payment.conf;
 
-import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import com.melot.kktv.payment.domain.ConfPaymentInfo;
-import com.melot.kktv.util.db.DB;
-import com.melot.kktv.util.db.SqlMapClientHelper;
+import com.melot.kk.module.report.util.CommonStateCode;
+import com.melot.kk.recharge.api.dto.ConfPaymentInfoDto;
+import com.melot.kk.recharge.api.service.RechargeService;
+import com.melot.kktv.base.Result;
+import com.melot.sdk.core.util.MelotBeanFactory;
 
 /**
  * 充值类型配置类
@@ -25,22 +24,19 @@ public class PaymentInfoConf {
 	 * @param appId
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
-	public static List<ConfPaymentInfo> getPaymentList(int appId, int version) {
+	public static List<ConfPaymentInfoDto> getPaymentList(int appId, int version) {
+	    List<ConfPaymentInfoDto> result = null;
+	    try {
+	        RechargeService rechargeService = (RechargeService) MelotBeanFactory.getBean("rechargeService");
+	        Result<List<ConfPaymentInfoDto>> resp = rechargeService.getConfPaymentInfos(appId, version, null);
+	        if (resp != null && CommonStateCode.SUCCESS.equals(resp.getCode())) {
+	            result = resp.getData();
+	        }
+	    } catch (Exception e) {
+	        logger.error("fail to query payment info config", e);
+	    }
 		
-		List<ConfPaymentInfo> data = null;
-		
-		try {
-		    Map<String, Object> map = new HashMap<String, Object>();
-		    map.put("appId", appId);
-		    map.put("version", version);
-		    data = (List<ConfPaymentInfo>)  SqlMapClientHelper.getInstance(DB.BACKUP)
-		            .queryForList("Payment.getConfPaymentList", map);
-		} catch (SQLException e) {
-		    logger.error("fail to query payment info config", e);
-		}
-		
-		return data;
+		return result;
 	}
 	
 }
