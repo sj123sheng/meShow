@@ -123,7 +123,11 @@ public class AlbumFunctions {
 		}
 
 		JsonArray jPhotoList = new JsonArray();
-		int pageTotal = LiveVideoService.getPictureCount(userId)/12 + 1;
+		int pictureCount = LiveVideoService.getPictureCount(userId);
+		int pageTotal = pictureCount/12;
+		if(pictureCount%12 > 0){
+			pageTotal = pageTotal+1;
+		}
 		if(pageTotal > 0 && pageTotal>= pageIndex){
             List<UserPicture> photos = LiveVideoService.getPictureList(userId,12*(pageIndex-1),12);
             for(UserPicture photo:photos){
