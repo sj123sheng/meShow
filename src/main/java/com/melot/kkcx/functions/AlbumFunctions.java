@@ -135,9 +135,9 @@ public class AlbumFunctions {
 				jObject.addProperty("photoId", photo.getPhotoId());
 				jObject.addProperty("photoName", photo.getPhotoName());
 				jObject.addProperty("photo_path_original", ConfigHelper.getHttpdir() + photo.getPhoto_path_original());
-				jObject.addProperty("photo_path_1280", ConfigHelper.getHttpdir() + photo.getPhoto_path_1280());
-				jObject.addProperty("photo_path_272", ConfigHelper.getHttpdir() + photo.getPhoto_path_272());
-				jObject.addProperty("photo_path_128", ConfigHelper.getHttpdir() + photo.getPhoto_path_128());
+				jObject.addProperty("photo_path_1280", ConfigHelper.getHttpdir() + photo.getPhoto_path_original()+"!1280");
+				jObject.addProperty("photo_path_272", ConfigHelper.getHttpdir() + photo.getPhoto_path_original()+"!272");
+				jObject.addProperty("photo_path_128", ConfigHelper.getHttpdir() + photo.getPhoto_path_original()+"!128");
 				jObject.addProperty("uploadTime", photo.getUploadTime().getTime());
 				jObject.addProperty("clicks", photo.getClicks());
 				jObject.addProperty("comments", photo.getComments());
@@ -150,8 +150,8 @@ public class AlbumFunctions {
 				}
 				jObject.addProperty("description", "");
 				jObject.addProperty("photoURL", ConfigHelper.getHttpdir() + photo.getPhoto_path_original());
-				jObject.addProperty("webthumburl", ConfigHelper.getHttpdir() + photo.getPhoto_path_272());
-				jObject.addProperty("mobilethumburl", ConfigHelper.getHttpdir() + photo.getPhoto_path_128());
+				jObject.addProperty("webthumburl", ConfigHelper.getHttpdir() + photo.getPhoto_path_original()+"!272");
+				jObject.addProperty("mobilethumburl", ConfigHelper.getHttpdir() + photo.getPhoto_path_original()+"!128");
 				jPhotoList.add(jObject);
 			}
 		}
