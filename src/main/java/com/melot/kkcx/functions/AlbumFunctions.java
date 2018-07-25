@@ -123,8 +123,8 @@ public class AlbumFunctions {
 		}
 
 		JsonArray jPhotoList = new JsonArray();
-		int pageTotal = LiveVideoService.getPictureCount(userId)/12;
-		if(pageTotal > 0 && pageTotal>pageIndex){
+		int pageTotal = LiveVideoService.getPictureCount(userId)/12 + 1;
+		if(pageTotal > 0 && pageTotal>= pageIndex){
             List<UserPicture> photos = LiveVideoService.getPictureList(userId,12*(pageIndex-1),12);
             for(UserPicture photo:photos){
 				JsonObject jObject = new JsonObject();
