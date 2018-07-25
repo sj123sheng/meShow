@@ -28,7 +28,5 @@
 	<!-- api-menu-sdk jar -->
 	<sqlMap resource="com/melot/api/menu/sdk/sqlmap/oracle/userFollowInfoDao.xml" />
 	
-	<!-- melot api common -->
-	<sqlMap resource="com/melot/common/kktv/sqlmap/Version.xml" />
 
 </sqlMapConfig>
