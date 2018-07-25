@@ -6,37 +6,6 @@
 
 <sqlMap namespace="Other">
 	
-	<!-- 发送全站消息  -->
-	<parameterMap id="loudSpeakerMap" class="java.util.Map">
-		<parameter property="roomId" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="nickName" mode="IN" javaType="java.lang.String"
-			jdbcType="VARCHAR" />
-		<parameter property="content" mode="IN" javaType="java.lang.String"
-			jdbcType="VARCHAR" />
-		<parameter property="href" mode="IN" javaType="java.lang.String"
-			jdbcType="VARCHAR" />
-		<parameter property="costMoney" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="ticketId" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="state" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="type" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="appId" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
-			jdbcType="VARCHAR" />
-	</parameterMap>
-	
-	<procedure id="loudSpeaker" parameterMap="loudSpeakerMap"
-		resultClass="java.util.Map">
-		{call P_LOUDSPEAKER_V2(?,?,?,?,?,?,?,?,?,?,?) }
-	</procedure>
-	
 	<!-- 男人装临时接口 -->
 	<parameterMap id="getUserEncodeMap" class="java.util.Map">
 		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
@@ -56,51 +25,6 @@
 			   AND ROWNUM <= 1
 		]]>
 	</select>
-	
-	<!-- 根据userId和appId 获取用户首充信息 -->
-	<select id="getUserFirstRechargePackageInfo" parameterClass="java.util.Map" resultClass="java.util.HashMap">
-		select 
-  			h.packageid,
-			case
-			  when to_char(h.create_time,'yyyy-mm-dd HH24:MI:SS') <![CDATA[<]]> to_char(sysdate-7,'yyyy-mm-dd HH24:MI:SS') and h.status = 0 then
-			    2
-			  when to_char(h.create_time,'yyyy-mm-dd HH24:MI:SS') >= to_char(sysdate-7,'yyyy-mm-dd HH24:MI:SS') and h.status = 0 then
-			    0
-			else 1 end as status, ORDERID
-			from hist_recharge_package h where h.userid = #userId# and h.appid = #appId#
-			and rownum <![CDATA[<=]]> 1
-	</select>
-	
-	<resultMap class="com.melot.kktv.domain.RechargerPackage" id="packageRechargeMap">
-		<result property="packageId" column="packageid" javaType="java.lang.Integer" jdbcType="INTEGER" />
-		<result property="status" column="status" javaType="java.lang.Integer" jdbcType="INTEGER" />
-		<result property="orderId" column="orderid" javaType="java.lang.String" jdbcType="VARCHAR"/>
-		<result property="isRecive" column="isrecive" javaType="java.lang.Integer" jdbcType="INTEGER" />
-	</resultMap>
-	<parameterMap class="java.util.Map" id="getUserRechargePackageListMap">
-		<parameter property="userId" mode="IN" javaType="java.lang.Integer" jdbcType="INTEGER" />
-		<parameter property="appId" mode="IN" javaType="java.lang.Integer" jdbcType="INTEGER" />
-		<parameter property="tagCode" mode="OUT" javaType="java.lang.String" jdbcType="VARCHAR"/>
-		<parameter property="list" mode="OUT" javaType="java.sql.ResultSet" jdbcType="ORACLECURSOR" resultMap="packageRechargeMap" />
-	</parameterMap>
-	<!-- 根据userId和appId 获取用户已获得礼包列表 -->
-	<procedure id="getUserRechargePackageList" parameterMap="getUserRechargePackageListMap">
-		{call p_getrechargerpackagelist(?,?,?,?)}
-	</procedure>
-	
-	<parameterMap class="java.util.Map" id="getUserRechargeTimesMap">
-		<parameter property="userId" mode="IN" javaType="java.lang.Integer" jdbcType="INTEGER" />
-		<parameter property="count" mode="OUT" javaType="java.lang.Integer" jdbcType="INTEGER" />
-	</parameterMap>
-	<!-- 获取用户充值次数 -->
-	<procedure id="getUserRechargeTimes" parameterMap="getUserRechargeTimesMap" resultClass="java.lang.Integer">
-		{call p_getuserrechargetimes(?,?)}
-	</procedure>
-	
-	<!-- 修改首充礼包领取状态 -->
-	<update id="updateFirstRechargePackageStatus" parameterClass="java.util.Map">
-		update hist_first_recharge set status = #status# where userid = #userId# and appid = #appId# and packageid = #packageId#
-	</update>
 	
 	<!-- 点歌扣券插点歌信息 -->
 	<parameterMap class="java.util.Map" id="selectSongMap">
