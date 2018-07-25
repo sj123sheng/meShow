@@ -120,27 +120,10 @@
 		<constructor-arg name="cacheType" value="60" />
 		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
 	</bean>
-	<!-- 获取通告列表 -->
-	<bean id="10002007" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="indexFunction" />
-		<constructor-arg name="methodName" value="getNoticeList" />
-		<constructor-arg name="cacheType" value="60" />
-		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
-	</bean>
 	<!-- 关键词搜索房间 -->
 	<bean id="10002008" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="indexFunction" />
 		<constructor-arg name="methodName" value="findRoomList" />
-	</bean>
-	<!-- 获取公告详细 -->
-	<bean id="10002012" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="indexFunction" />
-		<constructor-arg name="methodName" value="getNoticeDetail" />
-	</bean>
-	<!-- 获取活动详细 -->
-	<bean id="10002013" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="indexFunction" />
-		<constructor-arg name="methodName" value="getActivityDetail" />
 	</bean>
 	<!-- 获取推荐的直播房间列表 -->
 	<bean id="10002014" class="com.melot.sdk.core.function.GenericFunction">
@@ -275,11 +258,6 @@
 	<bean id="10001008" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="userFunction" />
 		<constructor-arg name="methodName" value="initUpdate" />
-	</bean>
-	<!-- 根据用户ID,获取用户来自的第三方平台 -->
-	<bean id="10001012" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="userFunction" />
-		<constructor-arg name="methodName" value="getUserFromByUserId" />
 	</bean>
 	<!-- 新登录接口 -->
 	<bean id="10001013" class="com.melot.sdk.core.function.GenericFunction">
@@ -598,16 +576,6 @@
 	<bean id="10003015" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="userRelationFunction" />
 		<constructor-arg name="methodName" value="getNotFollowActorList" />
-	</bean>
-	<!-- 授权管理 -->
-	<bean id="10003009" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="userRelationFunction" />
-		<constructor-arg name="methodName" value="grant" />
-	</bean>
-	<!-- 收回管理权限 -->
-	<bean id="10003010" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="userRelationFunction" />
-		<constructor-arg name="methodName" value="revoke" />
 	</bean>
 	<!-- 获取用户房间的管理员列表 -->
 	<bean id="10003011" class="com.melot.sdk.core.function.GenericFunction">
@@ -949,13 +917,7 @@
 		<constructor-arg name="t" ref="assetFunction" />
 		<constructor-arg name="methodName" value="getSvipSpeaklouderCount" />
 	</bean>
-	<!-- 用户消费相关接口类 -->
-	<!-- 购买表情包 -->
-	<bean id="20000007" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="consumeFunction" />
-		<constructor-arg name="methodName" value="buyFacePack" />
-	</bean>
-	
+
 	<!-- 用户动态接口类 -->
 	<!-- 发布动态 -->
 	<bean id="20006002" class="com.melot.sdk.core.function.GenericFunction">
@@ -1345,12 +1307,7 @@
 		<constructor-arg name="t" ref="resourceFunction" />
 		<constructor-arg name="methodName" value="getUserRemainTickets" />
 	</bean>
-	<!-- 用户点歌扣券 -->
-	<bean id="10006061" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="resourceFunction" />
-		<constructor-arg name="methodName" value="selectSong" />
-	</bean>
-	
+
 	<!-- 系统赠送接口类 -->
 	<!-- 标签接口类 -->
 	<!-- 贴标签 -->
@@ -1803,12 +1760,7 @@
 		<constructor-arg name="t" ref="gameTaskAction"/>
 		<constructor-arg name="methodName" value="getInterestSignRoomByTodayRoomState" />
 	</bean> 	
-	<!-- 用户分享推荐  -->
-	<bean id="20040008" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="gameTaskAction"/>
-		<constructor-arg name="methodName" value="getSharingFollowList"></constructor-arg>
-	</bean>
-	
+
 	<!-- (主键式)获取预告节目信息 -->
 	<bean id="20060001" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="eventFunction"/>
@@ -2030,12 +1982,7 @@
 		<constructor-arg name="t" ref="actorGiftFunction" />
 		<constructor-arg name="methodName" value="getAnimations" />
 	</bean>
-	<!-- 获取新房间礼物特效接口 -->
-	<bean id="50001014" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="actorGiftFunction" />
-		<constructor-arg name="methodName" value="getNewAnimations" />
-	</bean>
-	
+
 	<!-- 活动中心 -->
 	<!-- 获取通栏轮播图列表 -->
 	<bean id="50002001" class="com.melot.sdk.core.function.GenericFunction">
@@ -2651,11 +2598,6 @@
     <bean id="51020201" class="com.melot.sdk.core.function.GenericFunction">
         <constructor-arg name="t" ref="actorKKTVFunction" />
         <constructor-arg name="methodName" value="getProfitList" />
-    </bean>
-    <!-- 主播K豆兑换秀币-->
-    <bean id="51020202" class="com.melot.sdk.core.function.GenericFunction">
-        <constructor-arg name="t" ref="actorKKTVFunction" />
-        <constructor-arg name="methodName" value="exchangeKbi" />
     </bean>
 
     <!-- 欢乐PK 天梯赛接口 -->

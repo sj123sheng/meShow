@@ -361,63 +361,6 @@ public class HallFunction extends BaseAction{
     }
     
     /**
-     * 移动端体育精选频道 (20010310)
-     * 移动端原本与PC端一致,统一调用的getSubCataRoomList[cataId = 181]接口
-     * 现移动端规则又变,配合移动端版本发行,编写新接口getMobileHandpick为API改造留下变动空间
-     * @param jsonObject
-     * @return
-     */
-    public JsonObject getMobileHandpickForSport(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-        JsonObject result = new JsonObject();
-        final int FOLLOW_RECOMMAND_COUNT = 2;
-        final int size = 6; //返回总个数 
-        
-        int platform = 0;
-        Integer userId;
-        try {
-            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.WEB, null, 1, Integer.MAX_VALUE);
-            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
-        } catch (CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
-            return result;
-        }
-        
-        RoomSubCatalogDao roomSubCatalogDao = MelotBeanFactory.getBean("roomSubCatalogDao", RoomSubCatalogDao.class);
-        List<RoomInfo> hotActors =new ArrayList<RoomInfo>(RoomService.getTopActors(roomSubCatalogDao));
-        Collections.shuffle(hotActors); //随机排列
-        List<RoomInfo>goalRoomlist = null ;
-        JsonArray roomArray = new JsonArray();
-        if(checkTag){ //登录用户
-            goalRoomlist =  getUserFollowRooms(userId, 1, FOLLOW_RECOMMAND_COUNT);
-        }else{ //游客
-            goalRoomlist = getSuggestActorsForVisitor(hotActors, size);
-        }
-        for(RoomInfo roomInfo : goalRoomlist) {
-            if(roomInfo.getLiveEndtime() != null){//离线主播不作为推荐
-                continue;
-            }
-          
-            JsonObject json =   RoomTF.roomInfoToJson(roomInfo, platform);
-            roomArray.add(json);
-        }
-        if(roomArray.size() < size){  //应为推荐了未开播等原因, 需要补足
-            for (RoomInfo roomInfo : RoomService.getTopActors(roomSubCatalogDao)) {
-                if(!goalRoomlist.contains(roomInfo)){
-                    JsonObject json = RoomTF.roomInfoToJson(roomInfo, platform);
-                    roomArray.add(json);
-                }
-                if(roomArray.size() == size){
-                    break;
-                }
-            }
-        }
-        
-        result.add("roomList", roomArray);
-        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        return result;
-    }
-    
-    /**
      * 获取最新开播的主播列表 (20010400)
      * @param jsonObject
      * @return
@@ -608,42 +551,6 @@ public class HallFunction extends BaseAction{
         }
         return result;
     }
-    
-    /**
-     *  获取用户关注主播房间 
-     */
-    @SuppressWarnings("unchecked")
-    private List<RoomInfo> getUserFollowRooms(int userId,int pageIndex, int followNum){
-        int followsCount = UserRelationService.getFollowsCount(userId);
-        if(followsCount == 0 ){
-            return new ArrayList<RoomInfo>();
-        }
-        Map<Object, Object> map = new HashMap<Object, Object>();
-        map.put("userId", userId);
-        map.put("pageIndex", pageIndex);
-        map.put("countPerPage", followNum);
-        try {
-            SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("UserRelation.getUserFollowedList", map);
-        } catch (SQLException e) {
-            logger.error("未能正常调用存储过程", e);
-        }
-        if (TagCodeEnum.SUCCESS.equals(map.get("TagCode"))) {
-            List<Room> roomList = (ArrayList<Room>) map.get("roomList");
-            if (roomList != null && roomList.size() > 0) {
-            	roomList = UserService.addUserExtra(roomList);
-                StringBuffer actorRoomIds = new StringBuffer();
-                for (Room room : roomList) {
-                    if (room.getActorTag() != null && room.getActorTag().intValue() == 1) {
-                        actorRoomIds.append(room.getUserId()).append(",");
-                    }
-                }
-                if (actorRoomIds.length() > 0) {
-                  return  RoomService.getRoomListByRoomIds(actorRoomIds.toString());
-                }
-            }
-        }
-        return new ArrayList<RoomInfo>();
-    } 
     
     /**
      * 获取游客推荐精选

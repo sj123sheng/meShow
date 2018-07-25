@@ -18,23 +18,6 @@
 		update user_account_kuaiya set phonenum = #phoneNum# where userid = #userId# and uuid = #uuid#
 	</update>
 	
-	<!-- 根据用户ID,获取用户来自的第三方平台 -->
-	<parameterMap id="getUserFromByUserIdMap" class="java.util.Map">
-		<parameter property="userId" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-		<parameter property="openPlatform" mode="IN" javaType="java.lang.Integer"
-			jdbcType="INTEGER" />
-			
-		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
-			jdbcType="VARCHAR" />
-		<parameter property="uuid" mode="OUT" javaType="java.lang.String"
-			jdbcType="VARCHAR" />
-	</parameterMap>
-	<procedure id="getUserFromByUserId" parameterMap="getUserFromByUserIdMap"
-		resultClass="java.util.Map">
-		{call p_getUserFromByUserId_V2(?,?,?,?)}
-	</procedure>
-	
 	<!-- SQL -->
 	<typeAlias alias="User" type="com.melot.kktv.domain.UserInfo" />
 	<resultMap class="User" id="userInfoMap">

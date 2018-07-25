@@ -34,34 +34,6 @@ public class ActivityExchangeService {
 	private static final String CACHE_KEY = "Exchange.Cache.%s";
 	
 	/**
-	 * 判断限量车辆是否还有库存()
-	 * @return
-	 */
-	public static boolean isGiftRemain(ExpConfInfo expConfInfo) {
-		JsonArray expOutArray = new JsonParser().parse(expConfInfo.getExpOut()).getAsJsonArray();
-		List<TempExpData> outList = new Gson().fromJson(expOutArray, new TypeToken<List<TempExpData>>(){}.getType());
-		for (TempExpData outExpData : outList) {
-			//type表示兑换车辆
-			if(outExpData.getType() != 3) {
-				continue;
-			}
-			try {
-				CarInfo carInfo = (CarInfo) SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Resource.getCarRemain", outExpData.getId());
-				//若为0表示非限量
-				if(carInfo.getTotal() == 0) {
-					continue;
-				}
-				if (carInfo.getRemain() == 0) {
-					return false;
-				}
-			} catch (Exception e) {
-				logger.error("Fail to execute Resource.getCarRemain sql", e);
-				return false;
-			}
-		}	
-		return true;
-	}
-	/**
 	 * 判断库存是否满足表达式输入(兑换条件)
 	 * @param userId
 	 * @param expIn

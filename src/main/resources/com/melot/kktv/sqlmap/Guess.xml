@@ -6,9 +6,4 @@
 
 <sqlMap namespace="Guess">
 
-	<insert id="insertConsumeHistory" parameterClass="java.util.Map">
-		insert into consume_history(histid, ntype, userid, amount, dtime, typedesc, product, count)
-       		values(#histId#, #ntype#, #userId#, #showMoney#, sysdate, #typeDesc#, #product#, #count#)	
-	</insert>
-
 </sqlMap>

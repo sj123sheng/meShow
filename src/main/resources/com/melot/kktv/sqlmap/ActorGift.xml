@@ -6,10 +6,6 @@
 
 <sqlMap namespace="ActorGift">
 
-	<select id="getAnimationGifts" parameterClass="java.util.Map" resultClass="java.lang.Integer">
-		select a.giftid from gift_info a where a.invideo=#invideo# and a.appid=#appid# and a.valid = 1
-	</select>
-	
 	<resultMap id="WeekStarGiftMap" class="com.melot.kktv.model.WeekStarGift">
 		<result property="giftId" column="giftId" />
 		<result property="giftName" column="giftName" />

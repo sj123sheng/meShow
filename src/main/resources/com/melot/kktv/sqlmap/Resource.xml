@@ -6,28 +6,6 @@
 
 <sqlMap namespace="Resource">
 
-	<!-- 获取热门礼物列表 -->
-	<resultMap id="Gift" class="com.melot.kktv.model.Gift">
-		<result property="catalogId" column="catalogId" />
-		<result property="catalogName" column="catalogName" />
-		<result property="giftId" column="giftId" />
-		<result property="giftName" column="giftName" />
-		<result property="unit" column="unit" />
-		<result property="sendPrice" column="sendPrice" />
-		<result property="rsvPrice" column="rsvPrice" />
-	</resultMap>
-	<parameterMap id="hotGiftListMap" class="java.util.Map">
-		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
-			jdbcType="VARCHAR" />
-		<parameter property="giftList" mode="OUT" jdbcType="ORACLECURSOR"
-			javaType="java.sql.ResultSet" resultMap="Gift" />
-	</parameterMap>
-
-	<procedure id="getHotGiftList" parameterMap="hotGiftListMap">
-		{call
-		p_getHotGiftList(?,?)}
-	</procedure>
-	
 	<!-- 获得某类别车型数-->
 	<select id ="getCountByCategory" parameterClass="java.lang.Integer" resultClass="java.lang.Integer">
 		select count(*) from car_info where category = #category#
@@ -54,17 +32,6 @@
 				(select carid,name,photo,icon,iflimit,hassold from car_info where category = #category# order by carid desc
 				) ta where <![CDATA[rownum<=#endIndex#]]>
 			) where rn > #startIndex#
-	</select>
-	
-	<!-- 获得车辆是否为限量和剩余数量信息-->
-	<resultMap id="limitMap" class="com.melot.kktv.domain.CarInfo">
-		<result property="total" column="iflimit"
-			javaType="java.lang.Integer" jdbcType="Integer"/> 
-		<result property="remain" column="remain"
-		    javaType="java.lang.Integer" jdbcType="Integer"/> 
-    </resultMap>
-	<select id ="getCarRemain" parameterClass="java.lang.Integer"  resultMap="limitMap">
-	    select iflimit,iflimit-hassold as remain from car_info where carid = #id#
 	</select>
 	
 	<!-- 获取用户送阳光中奖详细明细信息 -->
