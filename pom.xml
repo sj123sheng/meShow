@@ -354,7 +354,7 @@
 		<dependency> 
 			<groupId>com.melot.module</groupId> 
 			<artifactId>blacklist-module-api</artifactId> 
-			<version>1.0.0</version> 
+			<version>1.0.5</version> 
 		</dependency>
 		<dependency>
   			<groupId>com.melot</groupId>

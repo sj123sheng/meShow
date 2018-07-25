@@ -13,7 +13,6 @@
 	/>
 	
 	<sqlMap resource="com/melot/kktv/sqlmap/slave/Index.xml" />
-	<sqlMap resource="com/melot/kktv/sqlmap/slave/Payment.xml" />
 	<sqlMap resource="com/melot/kktv/sqlmap/Mobile.xml" />
 	
 	<!-- melot-api-common -->
