@@ -1569,12 +1569,6 @@
 		<constructor-arg name="methodName" value="getUserGuardList" />
 	</bean>
 	
-	<!-- 手机客户端专用的接口类 -->
-	<!-- 废弃 -->
-	<!-- <bean id="10007004" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="mobileFunction" />
-		<constructor-arg name="methodName" value="addCrashInfo" />
-	</bean> -->
 	<!-- 游客登录 -->
 	<bean id="10007006" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="mobileFunction" />
