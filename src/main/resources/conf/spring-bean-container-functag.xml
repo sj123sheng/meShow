@@ -1072,6 +1072,11 @@
 		<constructor-arg name="t" ref="newsV2Function" />
 		<constructor-arg name="methodName" value="checkAudioWhiteUser" />
 	</bean>
+
+	<bean id="51100108" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="newsV2Function" />
+		<constructor-arg name="methodName" value="getHallTopicList" />
+	</bean>
 	
 	<!-- 其他接口类 -->
 	<!-- 发送小喇叭: 唱响20000002，直播10007000 -->

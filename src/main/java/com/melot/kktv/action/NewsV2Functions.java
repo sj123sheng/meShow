@@ -12,6 +12,8 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 
 import com.melot.kkcore.user.api.UserRegistry;
+import com.melot.news.model.NewsTopic;
+import com.sun.org.apache.bcel.internal.generic.NEW;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
@@ -701,6 +703,32 @@ public class NewsV2Functions {
         else{
             result.addProperty("TagCode", functag + "02");
         }
+        return result;
+    }
+
+    /**
+     * 获取大厅推荐话题列表（51100108）
+     * @param jsonObject
+     * @param checkTag
+     * @return
+     */
+    public JsonObject getHallTopicList(JsonObject jsonObject, boolean checkTag) {
+        JsonObject result = new JsonObject();
+        // 定义所需参数
+        int appId;
+        // 解析参数
+        try {
+            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, TagCodeEnum.APPID_MISSING, 1, Integer.MAX_VALUE);
+        } catch (ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+        List<NewsTopic> topicList = NewsService.getTopicHall(appId,0,Integer.MAX_VALUE);
+        result.addProperty("topicList", new Gson().toJson(topicList));
+        result.addProperty("pathPrefix", ConfigHelper.getHttpdir()); // 图片前缀
+        result.addProperty("mediaPathPrefix", ConfigHelper.getMediahttpdir()); // 多媒体前缀
+        result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());// 七牛前缀
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
 
@@ -2304,6 +2332,7 @@ public class NewsV2Functions {
         result.add("topicList", topicArray);
         return result;
     }
+
 
     public String getRegexAdmin(String str) {
         return Pattern.compile("\\{|\\}|^,*").matcher(str).replaceAll("");
