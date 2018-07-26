@@ -703,4 +703,18 @@ public class NewsService {
 		}
 		return null;
 	}
+
+	public static List<NewsInfo> getNewsListsByTopicId(int topicId, int start, int offset) {
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
+		if (newsService != null) {
+			Result<List<NewsInfo>> result = newsService.getNewsListsByTopicId(topicId,start,offset);
+			if(result != null && result.getCode() != null && result.getCode().equals(CommonStateCode.SUCCESS)){
+				return result.getData();
+			}
+			else {
+				logger.error("【获取话题关联视频失败】topicId="+topicId+",start="+start+"，offset="+offset);
+			}
+		}
+		return null;
+	}
 }

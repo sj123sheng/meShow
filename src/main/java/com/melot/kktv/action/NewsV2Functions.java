@@ -724,7 +724,36 @@ public class NewsV2Functions {
             return result;
         }
         List<NewsTopic> topicList = NewsService.getTopicHall(appId,0,Integer.MAX_VALUE);
-        result.addProperty("topicList", new Gson().toJson(topicList));
+        JsonArray jsonArray = new JsonArray();
+        for(NewsTopic newsTopic:topicList){
+            JsonObject topic = new JsonObject();
+            topic.addProperty("topicId",newsTopic.getTopicId());
+            topic.addProperty("content",newsTopic.getContent());
+            List<NewsInfo> newsList = NewsService.getNewsListsByTopicId(newsTopic.getTopicId(),0,4);
+            JsonArray newsJsonArray = new JsonArray();
+            for(NewsInfo newsInfo:newsList){
+                JsonObject news = new JsonObject();
+                news.addProperty("newsId",newsInfo.getNewsId());
+                news.addProperty("userId",newsInfo.getUserId());
+                news.addProperty("praiseNum",newsInfo.getNewsPraise());
+                RoomInfo actorInfo = RoomService.getRoomInfo(newsInfo.getUserId());
+                if (actorInfo != null) {
+                    news.addProperty("nickname", actorInfo.getNickname());
+                }
+                if(newsInfo.getRefVideo()!=null){
+                    int resId = Integer.valueOf(Pattern.compile("\\{|\\}").matcher(newsInfo.getRefVideo()).replaceAll(""));
+                    Resource resVideo = resourceNewService.getResourceById(resId).getData();
+                    if(resVideo != null){
+                        news.addProperty("imageUrl", resVideo.getImageUrl());
+                        news.addProperty("mediaUrl", resVideo.getSpecificUrl());
+                    }
+                }
+                newsJsonArray.add(news);
+            }
+            topic.add("newsList",newsJsonArray);
+            jsonArray.add(topic);
+        }
+        result.add("topicList", jsonArray);
         result.addProperty("pathPrefix", ConfigHelper.getHttpdir()); // 图片前缀
         result.addProperty("mediaPathPrefix", ConfigHelper.getMediahttpdir()); // 多媒体前缀
         result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());// 七牛前缀
