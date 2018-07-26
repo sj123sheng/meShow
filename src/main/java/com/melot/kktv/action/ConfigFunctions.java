@@ -7,6 +7,7 @@ import com.melot.kk.config.api.domain.AgoraInfo;
 import com.melot.kk.config.api.domain.ConfSystemInfo;
 import com.melot.kk.config.api.domain.ConfigInfo;
 import com.melot.kk.config.api.service.ConfigInfoService;
+import com.melot.kk.config.api.service.PlaybackActorService;
 import com.melot.kkcx.transform.FriendEmoticonTF;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
@@ -520,6 +521,43 @@ public class ConfigFunctions {
         //添加其他的返回信息
         result.addProperty("key", confSystemInfo.getcKey());
         result.addProperty("value", confSystemInfo.getcValue());
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+
+    /**
+     * 50001113
+     * 判断主播是否是回放主播
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject isPlaybackActor(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        int actorId;
+        try {
+            actorId = CommonUtil.getJsonParamInt(jsonObject, "actorId", 1, TagCodeEnum.PARAMETER_PARSE_ERROR, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        // 调用模块，判断是否是回放主播
+        boolean isPlaybackActor;
+        try {
+            PlaybackActorService playbackActorService = (PlaybackActorService) MelotBeanFactory.getBean("playbackActorService");
+            isPlaybackActor = playbackActorService.isPlaybackActor(actorId);
+        } catch (Exception e) {
+            logger.error(String.format("Module Error: playbackActorService.isPlaybackActor(actorId=%s)", actorId), e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+        result.addProperty("isPlaybackActor", isPlaybackActor);
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }

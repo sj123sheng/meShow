@@ -2191,6 +2191,12 @@
 		<constructor-arg name="methodName" value="getSystemConfigInfoByKey" />
 	</bean>
 
+	<!-- 根据KEY获取系统相关配置信息 -->
+	<bean id="50001113" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="configFunctions" />
+		<constructor-arg name="methodName" value="isPlaybackActor" />
+	</bean>
+
     <!-- 获取主播代言团列表 -->
     <bean id="51020101" class="com.melot.sdk.core.function.GenericFunction">
         <constructor-arg name="t" ref="actorKKTVFunction" />
