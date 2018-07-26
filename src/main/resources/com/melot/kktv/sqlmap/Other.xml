@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap
+        PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Other">
+
+    <!-- 点歌扣券插点歌信息 -->
+    <parameterMap class="java.util.Map" id="selectSongMap">
+        <parameter property="roomId" mode="IN" javaType="java.lang.Integer" jdbcType="INTEGER"/>
+        <parameter property="userId" mode="IN" javaType="java.lang.Integer" jdbcType="INTEGER"/>
+        <parameter property="songId" mode="IN" javaType="java.lang.Integer" jdbcType="INTEGER"/>
+        <parameter property="ticketId" mode="IN" javaType="java.lang.Integer" jdbcType="INTEGER"/>
+        <parameter property="xmanid" mode="IN" javaType="java.lang.Integer" jdbcType="INTEGER"/>
+        <parameter property="dtime" mode="IN" javaType="java.util.Date" jdbcType="TIMESTAMP"/>
+
+        <parameter property="TagCode" mode="OUT" javaType="java.lang.String" jdbcType="VARCHAR"/>
+    </parameterMap>
+    <procedure id="selectSong" parameterMap="selectSongMap" resultClass="java.lang.String">
+        { call pack_room_consume.p_songTicket(?,?,?,?,?,?,?) }
+    </procedure>
+
+</sqlMap>

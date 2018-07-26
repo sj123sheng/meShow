@@ -1309,6 +1309,12 @@
 		<constructor-arg name="t" ref="gameApiAction" />
 		<constructor-arg name="methodName" value="getRoomExtraIntroduceInfo" />
 	</bean>
+	<!-- 用户点歌扣券 -->
+	<bean id="10006061" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="resourceFunction" />
+		<constructor-arg name="methodName" value="selectSong" />
+	</bean>
+
 	<!-- 游戏直播获取聊天热词 -->
 	<bean id="20020062" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="gameApiAction" />
