@@ -283,7 +283,12 @@ public class HallFunctions {
 						if (!Objects.equals(cityId, roomList.get(i).getRegisterCity())) {
 							break;
 						}
-						dist = (5 + start + i ) * 100 + RandomUtils.nextInt(100);
+						dist = configService.getNearbyStartDistance() + (start + i) * configService.getNearbyDistanceBeforeInterval();
+						if (dist < configService.getNearbyMiddleDistance()) {
+							dist += RandomUtils.nextInt(configService.getNearbyDistanceBeforeInterval());
+						} else {
+							dist += RandomUtils.nextInt(configService.getNearbyDistanceAfterInterval());
+						}
 						// 随机添加距离
 						json.addProperty("distance", dist);
 						i++;

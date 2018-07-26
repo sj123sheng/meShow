@@ -131,6 +131,46 @@ public class ConfigService {
      */
     private String xmanPortrait;
 
+    /**
+     * 区域化附近栏目同城距离起始值，单位米
+     */
+    private int nearbyStartDistance;
+
+    /**
+     * 区域化附近栏目中间距离，单位米
+     */
+    private int nearbyMiddleDistance;
+
+    /**
+     * 小于nearbyMiddleDistance，距离间隔值，单位米
+     */
+    private int nearbyDistanceBeforeInterval;
+
+    /**
+     * 大于nearbyMiddleDistance，距离间隔值，单位米
+     */
+    private int nearbyDistanceAfterInterval;
+
+    @DisconfFileItem(name = "nearbyStartDistance", associateField = "nearbyStartDistance")
+    public int getNearbyStartDistance() {
+        return nearbyStartDistance;
+    }
+
+    @DisconfFileItem(name = "nearbyMiddleDistance", associateField = "nearbyMiddleDistance")
+    public int getNearbyMiddleDistance() {
+        return nearbyMiddleDistance;
+    }
+
+    @DisconfFileItem(name = "nearbyDistanceBeforeInterval", associateField = "nearbyDistanceBeforeInterval")
+    public int getNearbyDistanceBeforeInterval() {
+        return nearbyDistanceBeforeInterval;
+    }
+
+    @DisconfFileItem(name = "nearbyDistanceAfterInterval", associateField = "nearbyDistanceAfterInterval")
+    public int getNearbyDistanceAfterInterval() {
+        return nearbyDistanceAfterInterval; 
+    }
+
     @DisconfFileItem(name = "world.cup.partId", associateField = "worldCupPartId")
     public Integer getWorldCupPartId() {
         return worldCupPartId;
