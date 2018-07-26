@@ -481,7 +481,7 @@ public class ConfigFunctions {
 
     /**
      * 50001112
-     * 根据KEY获取系统相关配置信息，表conf_system_info
+     * 根据Key和AppId获取系统相关配置信息，表conf_system_info
      * @param jsonObject
      * @param checkTag
      * @param request
@@ -491,8 +491,10 @@ public class ConfigFunctions {
         JsonObject result = new JsonObject();
 
         String key;
+        int appId;
         try {
             key = CommonUtil.getJsonParamString(jsonObject, "key", null, TagCodeEnum.PARAMETER_PARSE_ERROR, 1, Integer.MAX_VALUE);
+            appId = CommonUtil.getJsonParamInt(jsonObject, "a", 1, TagCodeEnum.APPID_MISSING, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -505,7 +507,7 @@ public class ConfigFunctions {
         ConfSystemInfo confSystemInfo;
         try {
             ConfigInfoService configInfoService = (ConfigInfoService) MelotBeanFactory.getBean("configInfoService");
-            confSystemInfo = configInfoService.getConfSystemInfoByKey(key);
+            confSystemInfo = configInfoService.getConfSystemInfoByKeyAndAppID(key, appId);
             if (confSystemInfo == null) {
                 result.addProperty("TagCode", TagCodeEnum.CONFIG_KEY_NOT_EXIST);
                 return result;
