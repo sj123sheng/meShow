@@ -12,6 +12,10 @@ import java.util.Set;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import com.melot.kk.showmoney.api.dto.PageGameMoneyHistory;
+import com.melot.kk.showmoney.api.dto.PageShowMoneyHistory;
+import com.melot.kk.showmoney.api.dto.ShowMoneyHistory;
+import com.melot.kk.showmoney.api.service.ShowMoneyService;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -95,10 +99,7 @@ import com.melot.room.live.record.domain.ReturnResult;
 import com.melot.room.live.record.dto.HistActorLiveDTO;
 import com.melot.room.live.record.service.LiveRecordService;
 import com.melot.sdk.core.util.MelotBeanFactory;
-import com.melot.showmoney.driver.domain.PageGameMoneyHistory;
-import com.melot.showmoney.driver.domain.PageShowMoneyHistory;
-import com.melot.showmoney.driver.domain.ShowMoneyHistory;
-import com.melot.showmoney.driver.service.ShowMoneyService;
+
 
 public class ProfileFunctions {
 	
