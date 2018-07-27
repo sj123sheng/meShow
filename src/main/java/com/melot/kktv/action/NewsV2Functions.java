@@ -13,7 +13,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.melot.kkcore.user.api.UserRegistry;
 import com.melot.news.model.NewsTopic;
-import com.sun.org.apache.bcel.internal.generic.NEW;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
@@ -2034,9 +2033,6 @@ public class NewsV2Functions {
         // 解析参数
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 0, Integer.MAX_VALUE);
-            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.WEB, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
-            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
-            countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", Constant.return_news_count, null, 0, Integer.MAX_VALUE);
             v = CommonUtil.getJsonParamInt(jsonObject, "v", 0, null, 0, Integer.MAX_VALUE);
         } catch (ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
