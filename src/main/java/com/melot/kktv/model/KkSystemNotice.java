@@ -11,7 +11,7 @@ import com.google.gson.JsonObject;
 public class KkSystemNotice {
 	
 	private Integer userId;
-	private Integer id;
+	private Long id;
 	private String title;
 	private String describe;
 	private Date msgtime;
@@ -79,11 +79,11 @@ public class KkSystemNotice {
 		this.title = title;
 	}
 
-	public Integer getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(Integer id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
