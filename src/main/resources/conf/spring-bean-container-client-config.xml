@@ -46,7 +46,7 @@
 	<kkrpc:reference id="familyDefineActivityService" interface="com.melot.kk.activity.service.FamilyDefineActivityService" version="1.0.18"></kkrpc:reference>
 	<kkrpc:reference id="giftHistoryBoardService" interface="com.melot.kk.activity.service.GiftHistoryBoardService" version="1.0.18"></kkrpc:reference>
 	<kkrpc:reference id="liveStreamConfigService" interface="com.melot.stream.driver.service.LiveStreamConfigService" version="1.0.0"></kkrpc:reference>
-	<kkrpc:reference id="videoService" interface="com.melot.kk.opus.api.service.VideoService" version="1.0.1"></kkrpc:reference>
+	<kkrpc:reference id="videoService" interface="com.melot.kk.opus.api.service.VideoService" version="1.0.2"></kkrpc:reference>
 	<!-- 商城模块 -->
 	<kkrpc:reference id="carService" interface="com.melot.module.packagegift.driver.service.CarService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="histPackageDealService" interface="com.melot.module.packagegift.driver.service.HistPackageDealService" version="1.0.0"></kkrpc:reference>
@@ -59,11 +59,12 @@
 	<kkrpc:reference id="mallService" interface="com.melot.module.packagegift.driver.service.MallService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="storehouseService" interface="com.melot.storehouse.service.StorehouseService" version="1.0.2"></kkrpc:reference>
 	<!-- 家族模块 -->
-	<kkrpc:reference id="newFamilyInfoService" interface="com.melot.family.driver.service.FamilyInfoService" version="1.0.0"></kkrpc:reference>
-	<kkrpc:reference id="familyAdminService" interface="com.melot.family.driver.service.FamilyAdminService" version="1.0.0"></kkrpc:reference>
-	<kkrpc:reference id="familyOperatorService" interface="com.melot.family.driver.service.FamilyOperatorService" version="1.0.0"></kkrpc:reference>
-	<kkrpc:reference id="familyAdminNewService" interface="com.melot.family.driver.service.FamilyAdminNewService" version="1.0.0" timeout="16000"></kkrpc:reference>
+	<kkrpc:reference id="newFamilyInfoService" interface="com.melot.family.driver.service.FamilyInfoService" version="2.0.0"></kkrpc:reference>
+	<kkrpc:reference id="familyAdminService" interface="com.melot.family.driver.service.FamilyAdminService" version="2.0.0"></kkrpc:reference>
+	<kkrpc:reference id="familyOperatorService" interface="com.melot.family.driver.service.FamilyOperatorService" version="2.0.0"></kkrpc:reference>
+	<kkrpc:reference id="familyAdminNewService" interface="com.melot.family.driver.service.FamilyAdminNewService" version="2.0.0" timeout="16000"></kkrpc:reference>
 	<kkrpc:reference id="familyTopConfService" interface="com.melot.family.driver.service.FamilyTopConfService" version="1.0.0"></kkrpc:reference>
+	<kkrpc:reference id="familyUserService" interface="com.melot.family.driver.service.FamilyUserService" version="1.0.0"></kkrpc:reference>
 
 	<kkrpc:reference id="operatorService" interface="com.melot.cms.admin.api.service.OperatorService" version="1.0.0"></kkrpc:reference>
 
@@ -215,4 +216,7 @@
 
     <!-- 用户官方信息模块 -->
     <kkrpc:reference id="adminDataService" interface="com.melot.cms.admin.api.service.AdminDataService" version="1.0.0"></kkrpc:reference>
+	
+	<kkrpc:reference id="recommendedMsgService" interface="com.melot.kk.message.api.service.RecommendedMsgService" version="1.0.0"/>
+	<kkrpc:reference id="messageService" interface="com.melot.common.driver.service.MessageService" version="1.0.1"/>
 </beans>

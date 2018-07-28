@@ -12,7 +12,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import com.melot.family.driver.domain.FamilyApplicantMeshow;
-import com.melot.family.driver.service.FamilyAdminNewService;
+import com.melot.family.driver.service.*;
 import org.apache.log4j.Logger;
 
 import com.google.gson.Gson;
@@ -24,9 +24,6 @@ import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.api.menu.sdk.service.RoomInfoService;
 import com.melot.family.driver.domain.FamilyInfo;
 import com.melot.family.driver.domain.RespMsg;
-import com.melot.family.driver.service.FamilyAdminService;
-import com.melot.family.driver.service.FamilyInfoService;
-import com.melot.family.driver.service.FamilyOperatorService;
 import com.melot.kkcx.transform.RoomTF;
 import com.melot.kktv.domain.Honour;
 import com.melot.kktv.model.Family;
@@ -54,7 +51,7 @@ import com.melot.sdk.core.util.MelotBeanFactory;
 public class FamilyService {
 	
 	private static Logger logger = Logger.getLogger(FamilyService.class);
-	
+
 	/**
 	 * 获取分类下家族总数
 	 * @param basicDBObject
@@ -216,17 +213,19 @@ public class FamilyService {
 					}
 					break;
 				case PlatformEnum.ANDROID:
-					// 返回 174*116px
+					// 返回 222*148px
 					if (familyPoster.getPath_original() != null) {
 						familyPosterJson = new JsonObject();
-						familyPosterJson.addProperty("path_174", familyPoster.getPath_174());
+						familyPosterJson.addProperty("path_222", familyPoster.getPath_222());
 					}
+					break;
 				case PlatformEnum.IPHONE:
 					// 返回 222*148px
 					if (familyPoster.getPath_original() != null) {
 						familyPosterJson = new JsonObject();
 						familyPosterJson.addProperty("path_222", familyPoster.getPath_222());
 					}
+					break;
 				case PlatformEnum.IPAD:
 					// 返回 222*148px
 					if (familyPoster.getPath_original() != null) {
@@ -263,17 +262,19 @@ public class FamilyService {
 					}
 					break;
 				case PlatformEnum.ANDROID:
-					// 返回 174*116px
+					// 返回 222*148px
 					if (familyPoster.getPath_original() != null) {
 						familyPosterJson = new JsonObject();
-						familyPosterJson.addProperty("path_174", familyPoster.getPath_174());
+						familyPosterJson.addProperty("path_222", familyPoster.getPath_222());
 					}
+					break;
 				case PlatformEnum.IPHONE:
 					// 返回 222*148px
 					if (familyPoster.getPath_original() != null) {
 						familyPosterJson = new JsonObject();
 						familyPosterJson.addProperty("path_222", familyPoster.getPath_222());
 					}
+					break;
 				case PlatformEnum.IPAD:
 					// 返回 222*148px
 					if (familyPoster.getPath_original() != null) {
@@ -465,8 +466,16 @@ public class FamilyService {
 		String familyId = FamilySource.getMemberFamily(String.valueOf(userId));
 		if (familyId != null) {
 			return Integer.parseInt(familyId);
+		}else{
+			FamilyInfoService familyInfoService = (FamilyInfoService) MelotBeanFactory.getBean("newFamilyInfoService");
+			FamilyInfo familyInfo = familyInfoService.getFamilyInfoByUserId(userId,1);
+			if(familyInfo!=null){
+				FamilySource.setFamilyMember(familyInfo.getFamilyId().toString(),String.valueOf(userId));
+				return familyInfo.getFamilyId();
+			}else{
+				return 0;
+			}
 		}
-		return 0;
 	}
 	
 	/**
@@ -532,12 +541,12 @@ public class FamilyService {
 	 * @param actorCount
 	 */
 	private static void updateFamilyMemberCount(int familyId, int memberCount) {		
-	    FamilyAdminService familyAdminService = (FamilyAdminService) MelotBeanFactory.getBean("familyAdminService");
-	    if (familyAdminService != null) {
+	    FamilyInfoService familyInfoService = (FamilyInfoService) MelotBeanFactory.getBean("newFamilyInfoService");
+	    if (familyInfoService != null) {
 	        FamilyInfo familyInfo = new FamilyInfo();
 	        familyInfo.setFamilyId(familyId);
 	        familyInfo.setMemberCount(memberCount);
-	        familyAdminService.updateFamilyInfo(familyInfo);
+			familyInfoService.updateFamilyInfo(familyInfo);
 	    }
 	}
 	
@@ -743,23 +752,14 @@ public class FamilyService {
 	 * TagCode:返回码
 	 */
 	public static Map<String, Object> updateFamilyMemberGrade(int familyId, int userId, int memberId, int memberGrade) {
-		
-		Map<String, Object> resMap = new HashMap<String, Object>();
-		
 		try {
-			Map<Object, Object> map = new HashMap<Object, Object>();
-			map.put("familyId", familyId);
-			map.put("userId", userId);
-			map.put("memberId", memberId);
-			map.put("memberGrade", memberGrade);
-			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Family.updateMemberGrade", map);
-			String TagCode = (String) map.get("TagCode");
-			resMap.put("TagCode", TagCode);
-		} catch (SQLException e) {
+			FamilyAdminNewService familyAdminNewService =
+					(FamilyAdminNewService)MelotBeanFactory.getBean("familyAdminNewService");
+			return familyAdminNewService.updateFamilyMemberGrade(familyId,userId,memberId,memberGrade);
+		} catch (Exception e) {
 			logger.error("fail to call updateMemberGrade!", e);
 		}
-		
-		return resMap;
+		return null;
 	}
 	
 	/**
@@ -911,7 +911,7 @@ public class FamilyService {
             }
             return familyInfoService.getNewFamilyInfoByFamilyId(familyId, appId);
         } catch (Exception e) {
-            logger.error("FamilyService.getFamilyInfoByFamilyId exception, familyId : " + familyId);
+            logger.error("FamilyService.getFamilyInfoByFamilyId exception, familyId : " + familyId, e);
             return null;
         }
     }
@@ -1130,13 +1130,19 @@ public class FamilyService {
 	
 	public static int getFamilyByFamilyLeader(int leaderId) {
 	    try {
-            return (Integer) SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Family.getFamilyByFamilyLeader", leaderId);
-        } catch (SQLException e) {
+			FamilyAdminNewService familyAdminNewService =
+					(FamilyAdminNewService)MelotBeanFactory.getBean("familyAdminNewService");
+			return familyAdminNewService.getFamilyByFamilyLeader(leaderId);
+        } catch (Exception e) {
             logger.error("FamilyService.getFamilyByFamilyLeader exception, leaderId :" + leaderId, e);
         }
 	    return 0;
 	}
-	
+
+	public static int  getFrozenFamilyUserById(int userId){
+		FamilyUserService familyUserService = (FamilyUserService)MelotBeanFactory.getBean("familyUserService");
+		return familyUserService.getFrozenFamilyUserById(userId);
+	}
 }
 
 /** 用户申请Id同步到redis */
@@ -1154,7 +1160,8 @@ class ApplyFamilyUsersToRedis extends Thread {
     @Override
     public synchronized void start() {
         try {
-            List<Integer> applyUserList = (List<Integer>) SqlMapClientHelper.getInstance(DB.MASTER).queryForList("Family.getFamilyApplyerIdList", familyId);
+            FamilyInfoService familyInfoService = (FamilyInfoService) MelotBeanFactory.getBean("newFamilyInfoService");
+            List<Integer> applyUserList = familyInfoService.getFamilyApplyerIdList(familyId);
         
             if (applyUserList != null && applyUserList.size() > 0) {
                 
@@ -1166,7 +1173,7 @@ class ApplyFamilyUsersToRedis extends Thread {
                 }
             }
             
-        } catch (SQLException e) {
+        } catch (Exception e) {
             logger.error("Family.getFamilyApplyList", e);
         }
     }
