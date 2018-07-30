@@ -218,5 +218,5 @@
     <kkrpc:reference id="adminDataService" interface="com.melot.cms.admin.api.service.AdminDataService" version="1.0.0"></kkrpc:reference>
 	
 	<kkrpc:reference id="recommendedMsgService" interface="com.melot.kk.message.api.service.RecommendedMsgService" version="1.0.0"/>
-	<kkrpc:reference id="messageService" interface="com.melot.common.driver.service.MessageService" version="1.0.1"/>
+	<kkrpc:reference id="messageService" interface="com.melot.common.driver.service.MessageService" version="1.0.0"/>
 </beans>

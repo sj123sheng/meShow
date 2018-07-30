@@ -151,7 +151,7 @@ public class AlbumFunctions {
 				jObject.addProperty("description", "");
 				jObject.addProperty("photoURL", ConfigHelper.getHttpdir() + photo.getPhoto_path_original());
 				jObject.addProperty("webthumburl", ConfigHelper.getHttpdir() + photo.getPhoto_path_original()+"!272");
-				jObject.addProperty("mobilethumburl", ConfigHelper.getHttpdir() + photo.getPhoto_path_original()+"!128");
+				jObject.addProperty("mobilethumburl", ConfigHelper.getHttpdir() + photo.getPhoto_path_original()+"!128x96");
 				jPhotoList.add(jObject);
 			}
 		}
