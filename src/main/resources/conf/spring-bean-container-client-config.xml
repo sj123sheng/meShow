@@ -35,7 +35,7 @@
 	<kkrpc:reference id="kkAccountService" interface="com.melot.kkcore.account.service.AccountService" version="1.0.8"></kkrpc:reference>
 	<kkrpc:reference id="kkUserRelationService" interface="com.melot.kkcore.relation.service.UserRelationService" version="1.0.1"></kkrpc:reference>
 	<kkrpc:reference id="kkActorRelationService" interface="com.melot.kkcore.relation.service.ActorRelationService" version="1.0.1"></kkrpc:reference>
-	<kkrpc:reference id="showMoneyService" interface="com.melot.kk.showmoney.api.service.ShowMoneyService" version="1.0.0"></kkrpc:reference>
+	<kkrpc:reference id="showMoneyService" interface="com.melot.kk.showmoney.api.service.ShowMoneyService" version="1.0.3"></kkrpc:reference>
 	<kkrpc:reference id="guardService" interface="com.melot.module.guard.driver.service.GuardService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="noticeService" interface="com.melot.notice.driver.service.NoticeService" version="1.0.4"></kkrpc:reference>
 	<kkrpc:reference id="securityService" interface="com.melot.security.driver.service.SecurityService" version="1.0.0"></kkrpc:reference>
