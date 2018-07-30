@@ -2026,7 +2026,7 @@ public class NewsV2Functions {
         // 定义使用的参数
         @SuppressWarnings("unused")
         int userId = 0, pageIndex = 0, totalCount = 0, platform = PlatformEnum.WEB, countPerPage = Constant.return_news_count
-                , v = 0;
+                , v = 0,appId= 0;
         // 定义返回结果
         JsonObject result = new JsonObject();
 
@@ -2034,10 +2034,15 @@ public class NewsV2Functions {
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 0, Integer.MAX_VALUE);
             v = CommonUtil.getJsonParamInt(jsonObject, "v", 0, null, 0, Integer.MAX_VALUE);
+            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, TagCodeEnum.APPID_MISSING, 1, Integer.MAX_VALUE);
         } catch (ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
         }
+
+
+
+
 
         // 获取热门话题,返回8条
         Set<String> hotTopic = NewsV2Source.getHotTopic(0, -1);
