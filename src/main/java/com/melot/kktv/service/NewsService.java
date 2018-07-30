@@ -717,4 +717,20 @@ public class NewsService {
 		}
 		return null;
 	}
+
+	public static List<NewsTopic> getHotTopicList(int appId, int start, int offset) {
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
+		if (newsService != null) {
+			Result<List<NewsTopic>> result = newsService.getHotTopicListForApp(appId,start,offset);
+			if(result != null && result.getCode() != null && result.getCode().equals(CommonStateCode.SUCCESS)){
+				return result.getData();
+			}
+			else {
+				logger.error("【分页获取热门话题失败】appId="+appId+",start="+start+"，offset="+offset);
+			}
+		}
+		return null;
+	}
+
+
 }

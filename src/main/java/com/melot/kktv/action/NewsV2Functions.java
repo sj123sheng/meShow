@@ -1492,9 +1492,7 @@ public class NewsV2Functions {
         String newsIds;
         // 解析参数
         try {
-            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 0, Integer.MAX_VALUE);
             newsIds = CommonUtil.getJsonParamString(jsonObject, "newsIds", null, "06250001", 1, Integer.MAX_VALUE);
-            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
         } catch (ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -2040,10 +2038,16 @@ public class NewsV2Functions {
             return result;
         }
 
-
-
-
-
+        //区域化版本通过这个接口拿热门话题
+        if(appId != 1){
+            List<NewsTopic> hotTopics = NewsService.getHotTopicList(appId,0,8);
+            result.add("hotTopicList", new Gson().toJsonTree(hotTopics));
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir()); // 图片前缀
+            result.addProperty("mediaPathPrefix", ConfigHelper.getMediahttpdir()); // 多媒体前缀
+            result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());// 七牛前缀
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        }
         // 获取热门话题,返回8条
         Set<String> hotTopic = NewsV2Source.getHotTopic(0, -1);
         if (hotTopic != null && hotTopic.size() > 0) {
@@ -2325,17 +2329,29 @@ public class NewsV2Functions {
         JsonObject result = new JsonObject();
         int start;
         int offset;
-        int v;
+        int v,appId;
         try {
             start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, null, 0, Integer.MAX_VALUE);
             offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 1, null, 1, Integer.MAX_VALUE);
             v = CommonUtil.getJsonParamInt(jsonObject, "v", 1, null, 1, Integer.MAX_VALUE);
+            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, TagCodeEnum.APPID_MISSING, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
         } catch (Exception e) {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
+        }
+        if(appId !=1){
+            if(appId != 1){
+                List<NewsTopic> hotTopics = NewsService.getHotTopicList(appId,start,offset);
+                result.add("hotTopicList", new Gson().toJsonTree(hotTopics));
+                result.addProperty("pathPrefix", ConfigHelper.getHttpdir()); // 图片前缀
+                result.addProperty("mediaPathPrefix", ConfigHelper.getMediahttpdir()); // 多媒体前缀
+                result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());// 七牛前缀
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                return result;
+            }
         }
 
         Set<String> topicList = NewsService.getPopularTopic(start, offset);
