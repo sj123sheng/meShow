@@ -18,17 +18,6 @@ import java.util.regex.Pattern;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
-import com.melot.kk.hall.api.domain.FirstPageConfDTO;
-import com.melot.kk.hall.api.domain.HallPartConfDTO;
-import com.melot.kk.hall.api.domain.HallRoomInfoDTO;
-import com.melot.kk.hall.api.service.HallRoomService;
-import com.melot.kk.hall.api.service.HomeService;
-import com.melot.kk.hall.api.service.SysMenuService;
-import com.melot.kkcx.transform.HallRoomTF;
-import com.melot.kktv.base.Page;
-import com.melot.kktv.base.Result;
-import com.melot.kktv.constant.RoomPosterConstant;
-import com.melot.kktv.util.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 
@@ -41,31 +30,40 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.common.driver.domain.AreaNewActors;
+import com.melot.common.driver.domain.WeekStarGift;
 import com.melot.common.driver.service.AreaNewActorsService;
+import com.melot.common.driver.service.RoomExtendConfService;
 import com.melot.content.config.domain.LiveAlbum;
 import com.melot.content.config.domain.LiveVideo;
 import com.melot.content.config.live.service.LiveAlbumService;
 import com.melot.content.config.live.service.LiveVideoService;
 import com.melot.content.config.live.upload.impl.QiniuService;
+import com.melot.kk.hall.api.domain.FirstPageConfDTO;
+import com.melot.kk.hall.api.domain.HallPartConfDTO;
+import com.melot.kk.hall.api.domain.HallRoomInfoDTO;
+import com.melot.kk.hall.api.service.HallRoomService;
+import com.melot.kk.hall.api.service.HomeService;
+import com.melot.kk.hall.api.service.SysMenuService;
 import com.melot.kkactivity.driver.domain.ActInfo;
 import com.melot.kkactivity.driver.domain.KkActivity;
 import com.melot.kkactivity.driver.service.KkActivityService;
 import com.melot.kkcore.user.api.LastLoginInfo;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.service.KkUserService;
-import com.melot.kkcx.service.ActorGiftService;
 import com.melot.kkcx.service.GeneralService;
 import com.melot.kkcx.service.UserAssetServices;
 import com.melot.kkcx.service.UserService;
+import com.melot.kkcx.transform.HallRoomTF;
 import com.melot.kkcx.transform.LiveShowTF;
 import com.melot.kkcx.transform.RoomTF;
+import com.melot.kktv.base.Page;
+import com.melot.kktv.base.Result;
+import com.melot.kktv.constant.RoomPosterConstant;
 import com.melot.kktv.model.Activity;
 import com.melot.kktv.model.HotActivity;
 import com.melot.kktv.model.MedalInfo;
-import com.melot.kktv.model.Notice;
 import com.melot.kktv.model.PreviewAct;
 import com.melot.kktv.model.RankUser;
-import com.melot.kktv.model.WeekStarGift;
 import com.melot.kktv.redis.GiftRecordSource;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.NewsSource;
@@ -73,7 +71,19 @@ import com.melot.kktv.redis.SearchWordsSource;
 import com.melot.kktv.redis.WeekGiftSource;
 import com.melot.kktv.service.NewsService;
 import com.melot.kktv.service.RoomService;
+import com.melot.kktv.util.AppChannelEnum;
+import com.melot.kktv.util.AppIdEnum;
+import com.melot.kktv.util.CityUtil;
+import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
+import com.melot.kktv.util.ConfigHelper;
+import com.melot.kktv.util.Constant;
+import com.melot.kktv.util.ConstantEnum;
+import com.melot.kktv.util.DateUtil;
+import com.melot.kktv.util.PlatformEnum;
+import com.melot.kktv.util.RankingEnum;
+import com.melot.kktv.util.StringUtil;
+import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.confdynamic.GiftInfoConfig;
 import com.melot.kktv.util.confdynamic.MedalConfig;
 import com.melot.kktv.util.db.DB;
@@ -1040,7 +1050,8 @@ public class IndexFunctions {
 		JsonArray arr = new JsonArray();
 		Map<Integer, JsonObject> allJsonMap = new HashMap<>();
 		Map<Integer, JsonObject> liveJsonMap = new HashMap<>();
-		List<WeekStarGift> weekStarGiftList = ActorGiftService.getWeekStarGiftList(new Date(DateUtil.getWeekBeginTime(System.currentTimeMillis() + RankingEnum.THIS_WEEK_GIFT_RANKING*7*24*3600*1000)));
+		RoomExtendConfService roomExtendConfService = (RoomExtendConfService) MelotBeanFactory.getBean("roomExtendConfService");
+		List<WeekStarGift> weekStarGiftList = roomExtendConfService.getWeekStarGiftList(RankingEnum.THIS_WEEK_GIFT_RANKING);
 		if (weekStarGiftList != null && !weekStarGiftList.isEmpty()) {
 			int userId;
 			JsonObject weeklyGiftJson = null;
@@ -1179,7 +1190,8 @@ public class IndexFunctions {
         }
 		
 		JsonArray jUserGiftRankingList = new JsonArray();
-		List<WeekStarGift> weekStarGiftList = ActorGiftService.getWeekStarGiftList(new Date(DateUtil.getWeekBeginTime(System.currentTimeMillis() + RankingEnum.THIS_WEEK_GIFT_RANKING*7*24*3600*1000)));
+		RoomExtendConfService roomExtendConfService = (RoomExtendConfService) MelotBeanFactory.getBean("roomExtendConfService");
+        List<WeekStarGift> weekStarGiftList = roomExtendConfService.getWeekStarGiftList(RankingEnum.THIS_WEEK_GIFT_RANKING);
 		if (weekStarGiftList != null && !weekStarGiftList.isEmpty()) {
 		    Integer giftId, relationGiftId;
 		    String giftName;
@@ -1293,7 +1305,8 @@ public class IndexFunctions {
 		JsonArray rankList = new JsonArray();
 		Map<Integer, JsonObject> giftMap = new HashMap<>();
 		Map<Integer, JsonObject> allGiftMap = new HashMap<>();
-		List<WeekStarGift> weekStarGiftList = ActorGiftService.getWeekStarGiftList(new Date(DateUtil.getWeekBeginTime(System.currentTimeMillis() + RankingEnum.THIS_WEEK_GIFT_RANKING*7*24*3600*1000)));
+		RoomExtendConfService roomExtendConfService = (RoomExtendConfService) MelotBeanFactory.getBean("roomExtendConfService");
+        List<WeekStarGift> weekStarGiftList = roomExtendConfService.getWeekStarGiftList(RankingEnum.THIS_WEEK_GIFT_RANKING);
 		if (weekStarGiftList != null && !weekStarGiftList.isEmpty()) {
 		    Integer giftId, singlePrice, relationGiftId;
 		    Long weekTime, tempValue;
@@ -1418,7 +1431,8 @@ public class IndexFunctions {
 		type = type == 1 ? 0 : -1;
 		int count = (int) WeekGiftSource.getWeekGiftRankListCount(type);
 		if (count <= 0) {
-		    List<WeekStarGift> weekStarGiftList = ActorGiftService.getWeekStarGiftList(new Date(DateUtil.getWeekBeginTime(System.currentTimeMillis() + type*7*24*3600*1000)));
+		    RoomExtendConfService roomExtendConfService = (RoomExtendConfService) MelotBeanFactory.getBean("roomExtendConfService");
+	        List<WeekStarGift> weekStarGiftList = roomExtendConfService.getWeekStarGiftList(Math.abs(type));
 			if (weekStarGiftList != null && !weekStarGiftList.isEmpty()) {
 			    Integer giftId, relationGiftId, singlePrice;
 			    String giftName;

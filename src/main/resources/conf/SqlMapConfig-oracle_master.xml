@@ -16,7 +16,6 @@
 	<sqlMap resource="com/melot/kktv/sqlmap/Other.xml" />
 	<sqlMap resource="com/melot/kktv/sqlmap/User.xml" />
 	<sqlMap resource="com/melot/kktv/sqlmap/UserMessage.xml" />
-	<sqlMap resource="com/melot/kktv/sqlmap/ActorGift.xml" />
 	
 	<sqlMap resource="com/melot/kktv/sqlmap/Index.xml" />
 	<sqlMap resource="com/melot/kktv/sqlmap/Profile.xml" />
