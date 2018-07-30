@@ -1204,6 +1204,8 @@ public class NewsV2Functions {
         return result;
     }
 
+
+
     /**
      * 获取热门动态(20006022)
      *
@@ -1261,7 +1263,6 @@ public class NewsV2Functions {
             if (hotTopicSize != null) {
                 topicSize = hotTopicSize.size();
             }
-
         }
 
         if(type == 0){
@@ -1326,7 +1327,7 @@ public class NewsV2Functions {
         JsonObject result = new JsonObject();
 
         // 定义所需参数
-        int topicId, userId, start, offset, sortType, platform, v;
+        int topicId, userId, start, offset, sortType, platform, v,appId;
         // 解析参数
         try {
             sortType = CommonUtil.getJsonParamInt(jsonObject, "sortType", 0, null, 0, Integer.MAX_VALUE);
@@ -1336,6 +1337,7 @@ public class NewsV2Functions {
             offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 10, null, 0, Integer.MAX_VALUE);
             platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
             v = CommonUtil.getJsonParamInt(jsonObject, "v", 0, null, 0, Integer.MAX_VALUE);
+            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, TagCodeEnum.APPID_MISSING, 1, Integer.MAX_VALUE);
         } catch (ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -1347,31 +1349,45 @@ public class NewsV2Functions {
             return result;
         }
 
-        // 若是推荐话题则返回图片和简介
-        Set<String> hotTopic = NewsService.getPopularTopic(0, -1);
-        if (hotTopic != null && hotTopic.size() > 0) {
-            for (String str : hotTopic) {
-                try {
-                    JsonObject json = new JsonParser().parse(str).getAsJsonObject();
-                    if (json.get("topicId").getAsInt() == topicId) {
-                        if (json.has("imageUrl")) {
-                            String imageUrl = json.get("imageUrl").getAsString();
-                            imageUrl = imageUrl.replaceFirst(ConfigHelper.getHttpdirUp(), ConfigHelper.getHttpdir());
-                            if (v > 130) {
-                                imageUrl = imageUrl.replaceFirst(ConfigHelper.getHttpdirUp(), "");
-                                imageUrl = imageUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
-                            }
-                            result.addProperty("imageUrl", imageUrl + "!400");
-                        }
-                        result.addProperty("introduction", json.get("introduction").getAsString());
-                        break;
-                    }
-                } catch (Exception e) {
-                    logger.error("NewsV2Functions.getTopicPage(" + "jsonObject:" + jsonObject + "checkTag:" + checkTag + "request:" + request + ") execute exception.", e);
+        if(appId != 1){
+            NewsTopic newsTopic = NewsService.getTopicByTopicId(topicId);
+            if(newsTopic!= null){
+                result.addProperty("imageUrl",newsTopic.getImageUrl()+"!400");
+                result.addProperty("introduction", newsTopic.getDescribe());
+                if(newsTopic.getForAdmin()!=null && newsTopic.getForAdmin()==0){
+                    result.addProperty("canDiscuss",true);
+                }
+                else {
+                    result.addProperty("canDiscuss",false);
                 }
             }
         }
-
+        else {
+            // 若是推荐话题则返回图片和简介
+            Set<String> hotTopic = NewsService.getPopularTopic(0, -1);
+            if (hotTopic != null && hotTopic.size() > 0) {
+                for (String str : hotTopic) {
+                    try {
+                        JsonObject json = new JsonParser().parse(str).getAsJsonObject();
+                        if (json.get("topicId").getAsInt() == topicId) {
+                            if (json.has("imageUrl")) {
+                                String imageUrl = json.get("imageUrl").getAsString();
+                                imageUrl = imageUrl.replaceFirst(ConfigHelper.getHttpdirUp(), ConfigHelper.getHttpdir());
+                                if (v > 130) {
+                                    imageUrl = imageUrl.replaceFirst(ConfigHelper.getHttpdirUp(), "");
+                                    imageUrl = imageUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
+                                }
+                                result.addProperty("imageUrl", imageUrl + "!400");
+                            }
+                            result.addProperty("introduction", json.get("introduction").getAsString());
+                            break;
+                        }
+                    } catch (Exception e) {
+                        logger.error("NewsV2Functions.getTopicPage(" + "jsonObject:" + jsonObject + "checkTag:" + checkTag + "request:" + request + ") execute exception.", e);
+                    }
+                }
+            }
+        }
         if (count > 0) {
             List<NewsInfo> newsList = NewsService.getNewsListByTopicId(topicId, sortType, start, offset, checkTag ? userId : 0);
             if (newsList != null && newsList.size() > 0) {

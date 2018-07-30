@@ -732,5 +732,19 @@ public class NewsService {
 		return null;
 	}
 
+	public static NewsTopic getTopicByTopicId(int topicId) {
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
+		if (newsService != null) {
+			Result<NewsTopic> result = newsService.getNewsTopicById(topicId);
+			if(result != null && result.getCode() != null && result.getCode().equals(CommonStateCode.SUCCESS)){
+				return result.getData();
+			}
+			else {
+				logger.error("【获取话题信息失败】topicId="+topicId);
+			}
+		}
+		return null;
+	}
+
 
 }
