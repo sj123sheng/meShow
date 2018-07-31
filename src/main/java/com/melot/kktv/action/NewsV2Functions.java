@@ -724,8 +724,8 @@ public class NewsV2Functions {
         boolean flag = true;
         if(!StringUtil.strIsNull(topicString)){
             NewsTopic topic = NewsService.getTopicByContent(appId,topicString);
-            if(topic!=null){
-                if(topic.getForAdmin() == 1){
+            if(topic!=null&&topic.getForAdmin()!=null){
+                if(topic.getForAdmin()== 1){
                     flag = false;
                 }
             }
