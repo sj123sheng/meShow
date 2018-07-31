@@ -279,12 +279,20 @@ public class NodeFunctions {
 			com.melot.kkcore.actor.api.RoomInfo roomInfo = actorService.getRoomInfoById(userId);
 			ActorInfo actorInfo = actorService.getActorInfoById(userId);
 			if (roomInfo != null) {
-				result.addProperty("noticeContent", roomInfo.getNoticeContent());
-				result.addProperty("noticeHref", roomInfo.getNoticeHref());
+				if (!StringUtil.strIsNull(roomInfo.getNoticeContent())){
+					result.addProperty("noticeContent", roomInfo.getNoticeContent());
+				}
+				if (!StringUtil.strIsNull(roomInfo.getNoticeHref())) {
+					result.addProperty("noticeHref", roomInfo.getNoticeHref());
+				}
 			}
 			if (actorInfo != null){
-				result.addProperty("welcomeMsg", actorInfo.getGreetMsg());
-				result.addProperty("welcomeMsgHref", actorInfo.getGreetMsgHref());
+				if (!StringUtil.strIsNull(actorInfo.getGreetMsg())) {
+					result.addProperty("welcomeMsg", actorInfo.getGreetMsg());
+				}
+				if (!StringUtil.strIsNull(actorInfo.getGreetMsgHref())) {
+					result.addProperty("welcomeMsgHref", actorInfo.getGreetMsgHref());
+				}
 			}
 
             // 更新redis的更新时间 过期时间7天
