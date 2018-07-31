@@ -412,5 +412,86 @@ public class ResourceFunctions {
         
         return result;
 	}
-	
+
+	/**
+	 * 用户点歌扣券(10006061)
+	 * @param jsonObject
+	 * @param checkTag
+	 * @return
+	 */
+	public JsonObject selectSong(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+		// 该接口需要验证token,未验证的返回错误码
+		JsonObject result = new JsonObject();
+		if (!checkTag) {
+			result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+			return result;
+		}
+
+		int roomId, userId, songId, ticketId, xmanid = 0;
+		try {
+			roomId = CommonUtil.getJsonParamInt(jsonObject, "roomId", 0, TagCodeEnum.ROOMID_MISSING, 1, Integer.MAX_VALUE);
+			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+			songId = CommonUtil.getJsonParamInt(jsonObject, "songId", 0, "60610001", 1, Integer.MAX_VALUE);
+			ticketId = CommonUtil.getJsonParamInt(jsonObject, "ticketId", 0, "60610002", 1, Integer.MAX_VALUE);
+			xmanid = CommonUtil.getJsonParamInt(jsonObject, "xmanid", 0, null, 1, Integer.MAX_VALUE);
+		} catch (CommonUtil.ErrorGetParameterException e) {
+			result.addProperty("TagCode", e.getErrCode());
+			return result;
+		} catch (Exception e) {
+			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+			return result;
+		}
+
+		TicketService ticketService = (TicketService) MelotBeanFactory.getBean("ticketService");
+
+		//扣除用户的券ID对应的数量1
+		boolean flag = ticketService.insertUseTicket(userId, ticketId, GiftPackageEnum.TICKET_USE, 1, "用户" + userId + "使用点歌券" + ticketId);
+		if (!flag) {
+			//扣券操作失败
+			result.addProperty("TagCode", "60610003");
+			return result;
+		}
+
+		//调用存储过程来完成插表记录
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("roomId", roomId);
+		map.put("userId", userId);
+		map.put("songId", songId);
+		map.put("ticketId", ticketId);
+		if (xmanid != 0) {
+			map.put("xmanid", xmanid);
+		}
+		map.put("dtime", new Date());
+		boolean ret = false;
+		try {
+			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Other.selectSong", map);
+			String tagCode = (String) map.get("TagCode");
+			if ("01".equals(tagCode)) {
+				//点歌存储过程失败，将扣除的券加1
+				ret = ticketService.insertSendTicket(userId, ticketId, GiftPackageEnum.TICKET_SEND, 1, "用户" + userId + "点歌操作失败退回已扣除点歌券", 0);
+				if (!ret) {
+					logger.error("用户:" + userId + "，点歌失败，券" + ticketId + "，已扣除1张，退回失败");
+				}
+				// 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
+				logger.error("调用存储过程(Other.selectSong)未的到正常结果,TagCode:" + tagCode + ",jsonObject:"
+						+ jsonObject.toString());
+				result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
+			} else {
+				//点歌存储过程成功
+				result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+			}
+		} catch (SQLException e) {
+			//点歌存储过程执行异常，将扣除的券加1
+			ret = ticketService.insertSendTicket(userId, ticketId, GiftPackageEnum.TICKET_SEND, 1, "用户" + userId + "点歌操作异常退回已扣除点歌券", 0);
+			if (!ret) {
+				logger.error("用户:" + userId + "，点歌异常，券" + ticketId + "，已扣除1张，退回失败");
+			}
+			logger.error("未能正常调用存储过程", e);
+			result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
+		}
+
+		return result;
+	}
+
+
 }
