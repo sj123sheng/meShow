@@ -1073,6 +1073,11 @@
 		<constructor-arg name="methodName" value="checkAudioWhiteUser" />
 	</bean>
 
+	<bean id="51100107" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="newsV2Function" />
+		<constructor-arg name="methodName" value="checkTopicWhiteUser" />
+	</bean>
+
 	<bean id="51100108" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="newsV2Function" />
 		<constructor-arg name="methodName" value="getHallTopicList" />
