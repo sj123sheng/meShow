@@ -705,6 +705,36 @@ public class NewsV2Functions {
         return result;
     }
 
+    public JsonObject checkTopicWhiteUser(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+        JsonObject result = new JsonObject();
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        String topicString;
+        int appId;
+        try {
+            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, TagCodeEnum.APPID_MISSING, 1, Integer.MAX_VALUE);
+            topicString = CommonUtil.getJsonParamString(jsonObject, "topicString", null, null, 1, 10);
+        } catch (ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+        boolean flag = true;
+        if(!StringUtil.strIsNull(topicString)){
+            NewsTopic topic = NewsService.getTopicByContent(appId,topicString);
+            if(topic!=null){
+                if(topic.getForAdmin() == 1){
+                    flag = false;
+                }
+            }
+        }
+        result.addProperty("isWhiteUser",flag);
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+
     /**
      * 获取大厅推荐话题列表（51100108）
      * @param jsonObject
