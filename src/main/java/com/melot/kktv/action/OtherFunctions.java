@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.melot.kktv.base.Page;
 import com.melot.kktv.util.*;
+import com.melot.video.driver.domain.SearchVideoParams;
 import com.melot.video.driver.domain.VideoInfo;
 import com.melot.video.driver.service.VideoInfoServiceNew;
 import org.apache.commons.collections.CollectionUtils;
@@ -1634,7 +1635,13 @@ public class OtherFunctions {
 			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
 			return result;
 		}
-		Page<VideoInfo> page = videoInfoServiceNew.getPublishVideoList(actorId, start, num);
+		SearchVideoParams params = new SearchVideoParams();
+		params.setActorId(actorId);
+		params.setStart(start);
+		params.setNum(num);
+		params.setLowerDuration(configService.getReplayVedioLowerDuration());
+		params.setDaysLimit(configService.getReplayVedioLowerDuration());
+		Page<VideoInfo> page = videoInfoServiceNew.getPublishVideoList(params);
 		JsonArray videoListArray = new JsonArray();
 		if (page != null) {
 			long count = page.getCount();
