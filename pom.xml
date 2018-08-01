@@ -713,6 +713,13 @@
 			<artifactId>kk-showmoney-api</artifactId>
 			<version>1.0.0</version>
 		</dependency>
+
+		<!-- 微信直播小程序API-->
+		<dependency>
+			<groupId>com.melot.kk</groupId>
+			<artifactId>kk-liveproject-api</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>
     </dependencies>
  	
 </project>

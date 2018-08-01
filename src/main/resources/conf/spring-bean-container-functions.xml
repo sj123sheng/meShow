@@ -209,4 +209,7 @@
     
     <!-- 财富等级升级接口 -->
     <bean id="userLevelFunctions" class="com.melot.kkcx.functions.UserLevelFunctions" />
+
+	<!-- 微信直播小程序接口 -->
+	<bean id="kKLiveProjectFunctions" class="com.melot.kkcx.functions.KKLiveProjectFunctions" />
 </beans>
