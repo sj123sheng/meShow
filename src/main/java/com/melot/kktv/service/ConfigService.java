@@ -151,6 +151,16 @@ public class ConfigService {
      */
     private int nearbyDistanceAfterInterval;
 
+    /**
+     * 区域化获取回放视频的时长下限,单位秒
+     */
+    private int replayVedioLowerDuration;
+
+    /**
+     * 区域化获取回放视频的时间限制,单位天
+     */
+    private int replayVedioLimitDay;
+
     @DisconfFileItem(name = "nearbyStartDistance", associateField = "nearbyStartDistance")
     public int getNearbyStartDistance() {
         return nearbyStartDistance;
@@ -378,4 +388,13 @@ public class ConfigService {
         this.xmanPortrait = xmanPortrait;
     }
 
+    @DisconfFileItem(name = "replayVedioLowerDuration", associateField = "replayVedioLowerDuration")
+    public int getReplayVedioLowerDuration() {
+        return replayVedioLowerDuration;
+    }
+
+    @DisconfFileItem(name = "replayVedioLimitDay", associateField = "replayVedioLimitDay")
+    public int getReplayVedioLimitDay() {
+        return replayVedioLimitDay;
+    }
 }

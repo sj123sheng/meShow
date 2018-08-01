@@ -695,6 +695,7 @@
 			<version>1.0.1</version>
 		</dependency>
 
+		<!-- 回放视频回放 -->
 		<dependency>
 			<groupId>com.melot.kk</groupId>
 			<artifactId>kk-gamevideostore-api</artifactId>
