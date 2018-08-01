@@ -887,61 +887,6 @@ public class UserAssetAction {
 		return result;
 	}
 
-	/**
-	 * 兑换礼物 10005054
-	 * @param jsonObject
-	 * @return
-	 */
-    public JsonObject exchangeGift(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-    	// 该接口需要验证token,未验证的返回错误码
-		if (!checkTag) {
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-			return result;
-		}
-    	int userId = 0;
-    	int expId = 0;
-    	JsonObject result = new JsonObject();
-    	try{
-			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-			expId = CommonUtil.getJsonParamInt(jsonObject, "expId", 0, TagCodeEnum.EXPID_NOT_EXIST, 1, Integer.MAX_VALUE);
-		} catch(CommonUtil.ErrorGetParameterException e) {
-			result.addProperty("TagCode", e.getErrCode());
-			return result;
-		} catch(Exception e) {
-			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-			return result;
-		}
-    	//获得表达示配置
-    	ExpConfInfo expConfInfo = ActivityExchangeService.getExpConfInfo(expId);	
-    	if(expConfInfo == null){
-    		result.addProperty("TagCode", "10010307");
-			return result;
-    	}
-    	
-    	// 对限制兑换次数进行控制
-    	if (ActivityExchangeService.checkNoRepeatExchange(userId, expId)) {
-    	    result.addProperty("TagCode", TagCodeEnum.EXCHANGE_FORBID_REPEAT);
-            return result;
-        }
-    	
-    	//增加对限量车的兑换判断
-    	if(!ActivityExchangeService.isGiftRemain(expConfInfo)) {
-    		result.addProperty("TagCode", TagCodeEnum.CAR_LACK);
-			return result;
-    	}
-    	if(!ActivityExchangeService.isSatisfy(userId, expConfInfo)){
-    		result.addProperty("TagCode", TagCodeEnum.STOREHOUSE_LACK);
-			return result;
-    	}
-    	if(!ActivityExchangeService.activityExchange(userId, expConfInfo)){
-    		result.addProperty("TagCode",TagCodeEnum.EXCHANGE_FAIL);
-    		return result;
-    	}
-		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-    	return result;
-    }
-
     /**
      * 根据虚拟号类型随机获取虚拟号列表(10005060)
      * @param jsonObject

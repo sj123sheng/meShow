@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.melot.blacklist.service.BlacklistService;
 import com.melot.cms.admin.api.bean.OfficialIdInfo;
 import com.melot.cms.admin.api.constant.AdminApiTagCodes;
 import com.melot.cms.admin.api.constant.OperatorInfoEnum;
@@ -16,6 +17,8 @@ import com.melot.cms.admin.api.service.AdminDataService;
 import com.melot.cms.admin.api.service.OperatorService;
 import com.melot.cms.api.base.Result;
 import com.melot.kk.otherlogin.api.service.OtherLoginService;
+import com.melot.kkcore.actor.api.ActorInfo;
+import com.melot.kkcore.actor.service.ActorService;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.log4j.Logger;
 
@@ -737,9 +740,19 @@ public class UserService {
     	try {
     		UserInfoDetail userInfoDetail = getUserInfoDetail(userId);
 			if (userInfoDetail != null) {
-				UserInfo userInfo = (UserInfo) SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("User.getUserInfo", userId);
-				if (userInfo == null) {
-					userInfo = new UserInfo();
+				ActorService actorService = (ActorService) MelotBeanFactory.getBean("actorService");
+				com.melot.kkcore.actor.api.RoomInfo roomInfo = actorService.getRoomInfoById(userId);
+				ActorInfo actorInfo = actorService.getActorInfoById(userId);
+				UserInfo userInfo = new UserInfo();
+				if (roomInfo != null) {
+					userInfo.setUserId(roomInfo.getRoomId());
+					userInfo.setRoomTheme(roomInfo.getRoomTheme());
+					userInfo.setNoticeContent(roomInfo.getNoticeContent());
+					userInfo.setNoticeHref(roomInfo.getNoticeHref());
+				}
+				if (actorInfo != null){
+					userInfo.setGreetMsg(actorInfo.getGreetMsg());
+					userInfo.setGreetMsgHref(actorInfo.getGreetMsgHref());
 				}
 				if (userInfoDetail.getProfile() != null ) {
 					UserProfile userProfile = userInfoDetail.getProfile();
@@ -848,7 +861,8 @@ public class UserService {
     public static int canInvite(String deviceUId) {
     	if (deviceUId != null) {
     		try {
-        		return (Integer) SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("User.getCanInvite", deviceUId);
+    			KkUserService kkUserService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
+        		return kkUserService.isInvited(deviceUId) ? 1 : 0;
         	} catch (Exception e) {
         		logger.error("UserService.canInvite( " + deviceUId + ") execute exeception", e);
         	}
@@ -929,20 +943,6 @@ public class UserService {
         return result;
     }
     
-    public static void insertKbiHist(int userId, int exchangeAmount) {
-        try {
-            Map<String, Object> map = new HashMap<String, Object>();
-            map.put("userId", userId);
-            map.put("kbi", exchangeAmount);
-            map.put("toUser", userId);
-            map.put("note", "主播K豆兑换");
-            map.put("appId", AppIdEnum.AMUSEMENT);
-            SqlMapClientHelper.getInstance(DB.MASTER).insert("User.insertHist", map);
-        } catch(Exception e) {
-            logger.error("User.insertHist(userId:" + userId + "kbi:" + exchangeAmount + ") return exception.", e);
-        }
-    }
-	
 	/**
 	 * 是否为黑名单用户 (illeagle user)
 	 * @param userId
@@ -950,8 +950,9 @@ public class UserService {
 	 */
 	public static boolean blackListUser(int userId) {
         try {
-            return (Integer) SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("User.isInUserBlackList", userId) > 0;
-        } catch (SQLException e) {
+			BlacklistService blacklistService = (BlacklistService) MelotBeanFactory.getBean("blacklistService");
+            return blacklistService.isLoginBlackUser(userId);
+        } catch (Exception e) {
             logger.error("UserService.blackListUser( " + userId + ") execute exeception", e);
         }
         

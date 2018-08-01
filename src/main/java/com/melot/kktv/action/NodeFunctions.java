@@ -17,6 +17,8 @@ import com.melot.family.driver.domain.FamilyInfo;
 import com.melot.family.driver.service.UserApplyActorService;
 import com.melot.kk.config.api.domain.ConfSystemInfo;
 import com.melot.kk.config.api.service.ConfigInfoService;
+import com.melot.kkcore.actor.api.ActorInfo;
+import com.melot.kkcore.actor.service.ActorService;
 import com.melot.kkcore.user.api.UserInfoDetail;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.service.KkUserService;
@@ -272,19 +274,27 @@ public class NodeFunctions {
 		}
 		if (bValidHotData) {
 			result.addProperty("userId", userId);
-			if (hotData.containsKey("noticeContent")) {
-				result.addProperty("noticeContent", hotData.get("noticeContent"));
+
+			ActorService actorService = (ActorService) MelotBeanFactory.getBean("actorService");
+			com.melot.kkcore.actor.api.RoomInfo roomInfo = actorService.getRoomInfoById(userId);
+			ActorInfo actorInfo = actorService.getActorInfoById(userId);
+			if (roomInfo != null) {
+				if (!StringUtil.strIsNull(roomInfo.getNoticeContent())){
+					result.addProperty("noticeContent", roomInfo.getNoticeContent());
+				}
+				if (!StringUtil.strIsNull(roomInfo.getNoticeHref())) {
+					result.addProperty("noticeHref", roomInfo.getNoticeHref());
+				}
 			}
-			if (hotData.containsKey("noticeHref")) {
-				result.addProperty("noticeHref", hotData.get("noticeHref"));
+			if (actorInfo != null){
+				if (!StringUtil.strIsNull(actorInfo.getGreetMsg())) {
+					result.addProperty("welcomeMsg", actorInfo.getGreetMsg());
+				}
+				if (!StringUtil.strIsNull(actorInfo.getGreetMsgHref())) {
+					result.addProperty("welcomeMsgHref", actorInfo.getGreetMsgHref());
+				}
 			}
-			if (hotData.containsKey("welcomeMsg")) {
-				result.addProperty("welcomeMsg", hotData.get("welcomeMsg"));
-			}
-			if (hotData.containsKey("welcomeMsgHref")) {
-				result.addProperty("welcomeMsgHref", hotData.get("welcomeMsgHref"));
-			}
-			
+
             // 更新redis的更新时间 过期时间7天
 			Map<String, String> newTime = new HashMap<String, String>();
 			newTime.put("time", String.valueOf(System.currentTimeMillis()));
@@ -947,19 +957,27 @@ public class NodeFunctions {
 		}
 		if (bValidHotData) {
 			result.addProperty("userId", userId);
-			if (hotData.containsKey("noticeContent")) {
-				result.addProperty("noticeContent", hotData.get("noticeContent"));
+
+			ActorService actorService = (ActorService) MelotBeanFactory.getBean("actorService");
+			com.melot.kkcore.actor.api.RoomInfo roomInfo = actorService.getRoomInfoById(userId);
+			ActorInfo actorInfo = actorService.getActorInfoById(userId);
+			if (roomInfo != null) {
+				if (!StringUtil.strIsNull(roomInfo.getNoticeContent())){
+					result.addProperty("noticeContent", roomInfo.getNoticeContent());
+				}
+				if (!StringUtil.strIsNull(roomInfo.getNoticeHref())) {
+					result.addProperty("noticeHref", roomInfo.getNoticeHref());
+				}
 			}
-			if (hotData.containsKey("noticeHref")) {
-				result.addProperty("noticeHref", hotData.get("noticeHref"));
+			if (actorInfo != null){
+				if (!StringUtil.strIsNull(actorInfo.getGreetMsg())) {
+					result.addProperty("welcomeMsg", actorInfo.getGreetMsg());
+				}
+				if (!StringUtil.strIsNull(actorInfo.getGreetMsgHref())) {
+					result.addProperty("welcomeMsgHref", actorInfo.getGreetMsgHref());
+				}
 			}
-			if (hotData.containsKey("welcomeMsg")) {
-				result.addProperty("welcomeMsg", hotData.get("welcomeMsg"));
-			}
-			if (hotData.containsKey("welcomeMsgHref")) {
-				result.addProperty("welcomeMsgHref", hotData.get("welcomeMsgHref"));
-			}
-			
+
             // 更新redis的更新时间 过期时间7天
 			Map<String, String> newTime = new HashMap<String, String>();
 			newTime.put("time", String.valueOf(System.currentTimeMillis()));

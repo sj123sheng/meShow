@@ -32,24 +32,4 @@
 		{call p_getUserNewsComentLM_V2(?,?,?,?,?,?,?,?)}
 	</procedure>
 	
-	<parameterMap id="addSystemMessageMap" class="java.util.Map">
-		<parameter property="userId" mode="IN" javaType="java.lang.Integer" 
-			jdbcType="INTEGER"/>
-		<parameter property="desc" mode="IN" javaType="java.lang.String"
-			jdbcType="VARCHAR" />
-		<parameter property="title" mode="IN" javaType="java.lang.String"
-			jdbcType="VARCHAR" />
-		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
-			jdbcType="VARCHAR" />
-	</parameterMap>
-	<procedure id="addSystemMessage" parameterMap="addSystemMessageMap"
-		resultClass="java.util.Map">
-		{call p_addSystemMessage(?,?,?,?)}
-	</procedure>
-	
-	<insert id="insertSystemMessageMsg" parameterClass="java.util.Map">
-		insert into systemmessage (id, type, refid1, refid2, time,describe,title) 
-        values( SEQ_SYSTEMMESSAGE_ID.nextval, #type#, #refId#, #userId#, sysdate, #desc#, #title#)
-	</insert>
-
 </sqlMap>

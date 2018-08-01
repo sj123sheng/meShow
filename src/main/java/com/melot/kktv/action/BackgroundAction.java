@@ -1,21 +1,20 @@
 package com.melot.kktv.action;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.melot.kk.module.report.service.FeedbackInfoService;
+import com.melot.kk.otherlogin.api.dto.InstallPack;
+import com.melot.kk.otherlogin.api.dto.MobileDevice;
+import com.melot.kk.otherlogin.api.service.OtherLoginService;
+import com.melot.kktv.util.*;
+import com.melot.sdk.core.util.MelotBeanFactory;
+import org.apache.log4j.Logger;
+
+import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.melot.kk.module.report.service.FeedbackInfoService;
-import com.melot.kktv.redis.AppStatsSource;
-import com.melot.kktv.util.AppChannelEnum;
-import com.melot.kktv.util.AppIdEnum;
-import com.melot.kktv.util.CommonUtil;
-import com.melot.kktv.util.HadoopLogger;
-import com.melot.kktv.util.TagCodeEnum;
-import com.melot.sdk.core.util.MelotBeanFactory;
 
 
 /**
@@ -24,7 +23,10 @@ import com.melot.sdk.core.util.MelotBeanFactory;
  *
  */
 public class BackgroundAction {
-    
+
+	/** 日志记录对象 */
+	private static Logger logger = Logger.getLogger(BackgroundAction.class);
+	
 	/**
 	 * 用户反馈接口(10007001)
 	 * 
@@ -144,6 +146,8 @@ public class BackgroundAction {
 		JsonElement macje = jsonObject.get("mac");
 		JsonElement appIdje = jsonObject.get("a");
 		JsonElement deviceUIdje = jsonObject.get("deviceUId");
+
+		OtherLoginService otherLoginService = (OtherLoginService) MelotBeanFactory.getBean("otherLoginService");
 		
 		JsonObject mobileDeviceJsonObj = new JsonObject();
 		JsonObject installPackJsonObj = new JsonObject();
@@ -261,11 +265,11 @@ public class BackgroundAction {
 		Date currentDate = new Date();
 		mobileDeviceJsonObj.addProperty("dtime", currentDate.getTime());
 		installPackJsonObj.addProperty("dtime", currentDate.getTime());
-		
-		AppStatsSource.addInstallPack(installPackJsonObj.toString());
+
+		otherLoginService.addInstallPack(toInstallPack(installPackJsonObj.toString()));
 		
 		if (mobileDeviceFlag) {
-		    AppStatsSource.addMobileDevice(mobileDeviceJsonObj.toString());
+		    otherLoginService.addMobileDevice(toMobileDevice(mobileDeviceJsonObj.toString()));
         }
 		
 		// 安装包安装日志
@@ -279,5 +283,78 @@ public class BackgroundAction {
 		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 		return result;
 	}
+
+	private MobileDevice toMobileDevice(String json) {
+		MobileDevice mobileDevice = null;
+		try {
+			if (new JsonParser().parse(json).isJsonObject()) {
+				JsonObject jsonObj = new JsonParser().parse(json).getAsJsonObject();
+				mobileDevice = new MobileDevice();
+				if (jsonObj.has("userId")) {
+					mobileDevice.setUserId(jsonObj.get("userId").getAsInt());
+				}
+				if (jsonObj.has("imei")) {
+					mobileDevice.setImei(jsonObj.get("imei").getAsString());
+				}
+				if (jsonObj.has("mac")) {
+					mobileDevice.setMac(jsonObj.get("mac").getAsString());
+				}
+				if (jsonObj.has("model")) {
+					mobileDevice.setModel(jsonObj.get("model").getAsString());
+				}
+				if (jsonObj.has("osRelease")) {
+					mobileDevice.setOsRelease(jsonObj.get("osRelease").getAsString());
+				}
+				if (jsonObj.has("osType")) {
+					mobileDevice.setOsType(jsonObj.get("osType").getAsInt());
+				}
+				if (jsonObj.has("screenHeight")) {
+					mobileDevice.setScreenHeight(jsonObj.get("screenHeight").getAsString());
+				}
+				if (jsonObj.has("screenWidth")) {
+					mobileDevice.setScreenWidth(jsonObj.get("screenWidth").getAsString());
+				}
+				if (jsonObj.has("dtime")) {
+					mobileDevice.setDtime(new Date(jsonObj.get("dtime").getAsLong()));
+				}
+				if (jsonObj.has("deviceUId")) {
+					mobileDevice.setDeviceUId(jsonObj.get("deviceUId").getAsString());
+				}
+			}
+		} catch (Exception e) {
+			logger.error("BackgroundAction.toMobileDevice(" + "json:" + json + ") execute exception.", e);
+		}
+		return mobileDevice;
+	}
+
+	private InstallPack toInstallPack(String json) {
+		InstallPack installPack = null;
+		try {
+			if (new JsonParser().parse(json).isJsonObject()) {
+				JsonObject jsonObj = new JsonParser().parse(json).getAsJsonObject();
+				installPack = new InstallPack();
+				if (jsonObj.has("userId")) {
+					installPack.setUserId(jsonObj.get("userId").getAsInt());
+				}
+				if (jsonObj.has("ipChannel")) {
+					installPack.setIpChannel(jsonObj.get("ipChannel").getAsInt());
+				}
+				if (jsonObj.has("ipVersion")) {
+					installPack.setIpVersion(jsonObj.get("ipVersion").getAsInt());
+				}
+				if (jsonObj.has("platform")) {
+					installPack.setPlatform(jsonObj.get("platform").getAsInt());
+				}
+				if (jsonObj.has("dtime")) {
+					installPack.setDtime(jsonObj.get("dtime").getAsLong());
+				}
+			}
+		} catch (Exception e) {
+			logger.error("BackgroundAction.toInstallPack(" + "json:" + json + ") execute exception.", e);
+		}
+		return installPack;
+	}
+
+
 
 }

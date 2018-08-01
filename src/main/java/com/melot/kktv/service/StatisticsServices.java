@@ -23,38 +23,5 @@ public class StatisticsServices {
     
     private static Logger logger = Logger.getLogger(StatisticsServices.class);
     
-    /**
-     * 获取指定礼物指定时间区间内送礼总秀币值
-     * @param giftId 礼物ID
-     * @param startTime 开始时间，不能为空
-     * @param endTime 结束时间
-     * @return 送礼总秀币值
-     */
-    public static long getConsumGiftPool(int giftId, Date startTime, Date endTime) {
-        if (startTime == null) {
-            startTime = new Date();
-        }
-        
-        String value = HotDataSource.getHotFieldValue("StatisticsServices.getConsumGiftPool", String.valueOf(giftId));
-        if (!StringUtil.strIsNull(value)) {
-            return StringUtil.parseFromStr(value, 0l);
-        }
-        
-        Map<String, Object> map = new HashMap<String, Object>();
-        
-        map.put("giftId", giftId);
-        map.put("startTime", startTime);
-        map.put("endTime", endTime);
-        
-        try {
-            Long result = (Long) SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Profile.getConsumGiftPool", map);
-            if (result != null) {
-                HotDataSource.setHotFieldValue("StatisticsServices.getConsumGiftPool", String.valueOf(giftId), String.valueOf(result), 5 * 30);
-                return result;
-            }
-        } catch (SQLException e) {
-            logger.error("StatisticsServices.getConsumGiftPool(" + giftId + ", " + startTime + ", " + endTime + ") exception", e);
-        }
-        return 0;
-    }
+
 }

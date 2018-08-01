@@ -238,48 +238,6 @@ public class ResourceFunctions {
 	}
 
 	/**
-	 * 获取礼物列表
-	 * 
-	 * @param jsonObject 请求对象
-	 * @return 结果字符串
-	 */
-	public static Object getGiftList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-		// 调用存储过程得到结果
-		Map<Object, Object> map = new HashMap<Object, Object>();
-		try {
-			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Resource.getGiftList", map);
-		} catch (SQLException e) {
-			logger.error("未能正常调用存储过程", e);
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
-			return result;
-		}
-		String TagCode = (String) map.get("TagCode");
-		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-			// 取出列表
-			@SuppressWarnings("unchecked")
-			List<Object> giftList = (ArrayList<Object>) map.get("giftList");
-
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", TagCode);
-			JsonArray jGiftList = new JsonArray();
-			for (Object object : giftList) {
-				jGiftList.add(((Gift) object).toJsonObject());
-			}
-			result.add("giftList", jGiftList);
-
-			// 返回结果
-			return result;
-		} else {
-			// 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
-			logger.error("调用存储过程(Resource.getGiftList)未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
-			return result;
-		}
-	}
-
-	/**
 	 * 获取道具价格列表
 	 * sql Resource.getPropPriceList 可删 
 	 * @param jsonObject 请求对象
@@ -320,106 +278,6 @@ public class ResourceFunctions {
         return result;
 	}
 
-	/**
-	 * 获取热门礼物列表
-	 * 
-	 * @param jsonObject 请求对象
-	 * @return 结果字符串
-	 */
-	public JsonObject getHotGiftList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
-		// 调用存储过程得到结果
-		Map<Object, Object> map = new HashMap<Object, Object>();
-		try {
-			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Resource.getHotGiftList", map);
-		} catch (SQLException e) {
-			logger.error("未能正常调用存储过程", e);
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
-			return result;
-		}
-		String TagCode = (String) map.get("TagCode");
-		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-			// 取出列表
-			@SuppressWarnings("unchecked")
-			List<Object> giftList = (ArrayList<Object>) map.get("giftList");
-
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", TagCode);
-			JsonArray jGiftList = new JsonArray();
-			for (Object object : giftList) {
-				jGiftList.add(((Gift) object).toJsonObject());
-			}
-			result.add("giftList", jGiftList);
-
-			// 返回结果
-			return result;
-		} else {
-			// 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
-			logger.error("调用存储过程(Resource.getHotGiftList)未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
-			return result;
-		}
-	}
-	
-    /**
-     * 获取指定类别的座驾信息接口(10005056)
-     * @param jsonObject
-     * @return
-     * @throws Exception
-     */
-	public JsonObject getCarListByCategory(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
-		int category = 3, pageIndex = 0, countPerPage = Constant.return_car_count;
-		JsonObject result = new JsonObject();
-		try {
-			category = CommonUtil.getJsonParamInt(jsonObject, "category", 0, TagCodeEnum.CATEGORY_MISSING, Integer.MIN_VALUE, Integer.MAX_VALUE);
-			pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
-			countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", Constant.return_car_count, null, Integer.MIN_VALUE, Integer.MAX_VALUE);		
-		} catch(CommonUtil.ErrorGetParameterException e) {
-			result.addProperty("TagCode", e.getErrCode());
-			return result;
-		} catch(Exception e) {
-			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-			return result;
-		}
-		//从缓存中查找车辆结果信息
-		pageIndex = pageIndex == 0 ? 1 : pageIndex;
-		String key = "CarListTemp." + category + "." + pageIndex + "." + countPerPage;
-		String carInfoStr = HotDataSource.getTempDataString(key);
-		if(carInfoStr != null) {
-			result = new JsonParser().parse(carInfoStr).getAsJsonObject();
-			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-			return result;
-		}
-		//若缓存中无,从oracle中查出pageTotal,若pageTotal>0,则查找对应的车量列表信息,并缓存30s
-		try {
-			int pageTotal = (Integer) SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Resource.getCountByCategory",category);
-			pageTotal = (pageTotal / countPerPage) + (pageTotal % countPerPage == 0 ? 0 : 1);
-			result.addProperty("pageTotal", pageTotal);
-			if(pageTotal > 0) {
-				Map<String,Object> map = new HashMap<String,Object>();
-				int start = (pageIndex - 1) * countPerPage;
-				int end = pageIndex * countPerPage;
-				map.put("category", category);
-				map.put("startIndex", start);
-				map.put("endIndex", end);
-				@SuppressWarnings("unchecked")
-                List<CarInfo> carList = SqlMapClientHelper.getInstance(DB.MASTER).queryForList("Resource.getCarList",map);
-				if(carList !=null && carList.size() > 0) {
-					result.add("carList", new Gson().toJsonTree(carList).getAsJsonArray());
-					if(!HotDataSource.setTempDataString(key,result.toString(), 30)) {
-//						logger.error("Fail to execute HotDataSource.setTempDataString");
-					}
-				}
-			}
-			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-		} catch (Exception e) {
-			logger.error("Resource.getCountByCategory or getCarList execute Exception", e);
-			result.addProperty("TagCode", TagCodeEnum.GET_CATEGORY_CARINFO_FAIL);
-		}
-		return result;
-	}
-	
 	/**
 	 * 获取年度盛典结果信息接口（10009011）
 	 * @param paramJsonObject
@@ -508,81 +366,6 @@ public class ResourceFunctions {
 	    return result;
 	}
 
-    /**
-     * 获取用户送阳光中奖类别和详细明细信息接口（10009012）
-     * @param paramJsonObject
-     * @return
-     */
-    @SuppressWarnings("unchecked")
-    public JsonObject getSendSunshineInfo(JsonObject paramJsonObject, boolean checkTag, HttpServletRequest request) {
-        JsonObject result = new JsonObject();
-        
-        int count;
-        try {
-            count = CommonUtil.getJsonParamInt(paramJsonObject, "count", 10, null, 1, Integer.MAX_VALUE);       
-        } catch(CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
-            return result;
-        } catch(Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-            return result;
-        }
-        
-        String key = "Temp.getSendSunshineInfo.";
-        // 查看缓存
-        String value = HotDataSource.getTempDataString(key + count);
-        if (!StringUtil.strIsNull(value)) {
-            return new JsonParser().parse(value).getAsJsonObject();
-        }
-        
-        
-        List<Map<String, Object>> list = null;
-        try {
-            list = SqlMapClientHelper.getInstance(DB.MASTER).queryForList("Resource.getSendSunshineInfo", count);
-        } catch (Exception e) {
-            logger.error("Resource.getSendSunshineInfo execute Exception", e);
-        }
-        
-        JsonArray prizeDetailInfo = new JsonArray();
-        if (list != null && list.size() > 0) {
-            JsonObject jsonObject;
-            Integer showMoney;
-            String dTime;
-            String currentYear = DateUtil.formatDate(new Date(), "yyyy");
-            for (Map<String, Object> map : list) {
-                jsonObject = new JsonObject();
-                Integer userId = (Integer) map.get("userid");
-                if (userId != null) {
-                    jsonObject.addProperty("nickname", UserService.getUserInfoNew(userId).getNickName());
-                }
-                showMoney = (Integer) map.get("showmoney");
-                if (showMoney != null && showMoney > 0) {
-                    jsonObject.addProperty("prize", showMoney + "秀币");
-                } else {
-                    jsonObject.addProperty("prize", ((Integer) map.get("gcnt")) + ((String) map.get("unit")) + ((String) map.get("giftname")));
-                }
-
-                dTime = (String) map.get("dtime");
-                if (currentYear.equals(dTime.substring(0, 4))) {
-                    jsonObject.addProperty("timeStr", dTime.substring(6));
-                } else {
-                    jsonObject.addProperty("timeStr", dTime.substring(0, 10));
-                }
-                
-                prizeDetailInfo.add(jsonObject);
-            }
-        }
-        
-        result.add("prizeDetailInfo", prizeDetailInfo);
-        result.addProperty("prizeTypeInfo", ConfigHelper.getSendSunshinePrizeType());
-        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        
-        // 缓存结果
-        HotDataSource.setTempDataString(key + count, result.toString(), 30);
-        
-        return result;
-    }
-    
 	/**
 	 * 获取用户剩余券数量(10006060)
 	 * @param jsonObject
@@ -629,7 +412,7 @@ public class ResourceFunctions {
         
         return result;
 	}
-	
+
 	/**
 	 * 用户点歌扣券(10006061)
 	 * @param jsonObject
@@ -637,50 +420,50 @@ public class ResourceFunctions {
 	 * @return
 	 */
 	public JsonObject selectSong(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-	    // 该接口需要验证token,未验证的返回错误码
-        JsonObject result = new JsonObject();
-        if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-            return result;
-        }
-        
-        int roomId, userId, songId, ticketId, xmanid = 0;
-        try {
-        	roomId = CommonUtil.getJsonParamInt(jsonObject, "roomId", 0, TagCodeEnum.ROOMID_MISSING, 1, Integer.MAX_VALUE);
-            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-            songId = CommonUtil.getJsonParamInt(jsonObject, "songId", 0, "60610001", 1, Integer.MAX_VALUE);
-            ticketId = CommonUtil.getJsonParamInt(jsonObject, "ticketId", 0, "60610002", 1, Integer.MAX_VALUE);
-            xmanid = CommonUtil.getJsonParamInt(jsonObject, "xmanid", 0, null, 1, Integer.MAX_VALUE);
-        } catch (CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
-            return result;
-        } catch (Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-            return result;
-        }
-        
-        TicketService ticketService = (TicketService) MelotBeanFactory.getBean("ticketService");
-        
-        //扣除用户的券ID对应的数量1
-        boolean flag = ticketService.insertUseTicket(userId, ticketId, GiftPackageEnum.TICKET_USE, 1, "用户" + userId + "使用点歌券" + ticketId);
-        if (!flag) {
-        	//扣券操作失败
-        	result.addProperty("TagCode", "60610003");
-        	return result;
+		// 该接口需要验证token,未验证的返回错误码
+		JsonObject result = new JsonObject();
+		if (!checkTag) {
+			result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+			return result;
 		}
-        
-        //调用存储过程来完成插表记录
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put("roomId", roomId);
-        map.put("userId", userId);
-        map.put("songId", songId);
-        map.put("ticketId", ticketId);
-        if (xmanid != 0) {
-        	map.put("xmanid", xmanid);
+
+		int roomId, userId, songId, ticketId, xmanid = 0;
+		try {
+			roomId = CommonUtil.getJsonParamInt(jsonObject, "roomId", 0, TagCodeEnum.ROOMID_MISSING, 1, Integer.MAX_VALUE);
+			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+			songId = CommonUtil.getJsonParamInt(jsonObject, "songId", 0, "60610001", 1, Integer.MAX_VALUE);
+			ticketId = CommonUtil.getJsonParamInt(jsonObject, "ticketId", 0, "60610002", 1, Integer.MAX_VALUE);
+			xmanid = CommonUtil.getJsonParamInt(jsonObject, "xmanid", 0, null, 1, Integer.MAX_VALUE);
+		} catch (CommonUtil.ErrorGetParameterException e) {
+			result.addProperty("TagCode", e.getErrCode());
+			return result;
+		} catch (Exception e) {
+			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+			return result;
 		}
-        map.put("dtime", new Date());
-        boolean ret = false;
-        try {
+
+		TicketService ticketService = (TicketService) MelotBeanFactory.getBean("ticketService");
+
+		//扣除用户的券ID对应的数量1
+		boolean flag = ticketService.insertUseTicket(userId, ticketId, GiftPackageEnum.TICKET_USE, 1, "用户" + userId + "使用点歌券" + ticketId);
+		if (!flag) {
+			//扣券操作失败
+			result.addProperty("TagCode", "60610003");
+			return result;
+		}
+
+		//调用存储过程来完成插表记录
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("roomId", roomId);
+		map.put("userId", userId);
+		map.put("songId", songId);
+		map.put("ticketId", ticketId);
+		if (xmanid != 0) {
+			map.put("xmanid", xmanid);
+		}
+		map.put("dtime", new Date());
+		boolean ret = false;
+		try {
 			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Other.selectSong", map);
 			String tagCode = (String) map.get("TagCode");
 			if ("01".equals(tagCode)) {
@@ -706,8 +489,9 @@ public class ResourceFunctions {
 			logger.error("未能正常调用存储过程", e);
 			result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
 		}
-		
-        return result;
+
+		return result;
 	}
-	
+
+
 }

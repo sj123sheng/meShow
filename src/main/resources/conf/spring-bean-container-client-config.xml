@@ -35,7 +35,7 @@
 	<kkrpc:reference id="kkAccountService" interface="com.melot.kkcore.account.service.AccountService" version="1.0.8"></kkrpc:reference>
 	<kkrpc:reference id="kkUserRelationService" interface="com.melot.kkcore.relation.service.UserRelationService" version="1.0.1"></kkrpc:reference>
 	<kkrpc:reference id="kkActorRelationService" interface="com.melot.kkcore.relation.service.ActorRelationService" version="1.0.1"></kkrpc:reference>
-	<kkrpc:reference id="showMoneyService" interface="com.melot.showmoney.driver.service.ShowMoneyService" version="1.0.2"></kkrpc:reference>
+	<kkrpc:reference id="showMoneyService" interface="com.melot.kk.showmoney.api.service.ShowMoneyService" version="1.0.3"></kkrpc:reference>
 	<kkrpc:reference id="guardService" interface="com.melot.module.guard.driver.service.GuardService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="noticeService" interface="com.melot.notice.driver.service.NoticeService" version="1.0.4"></kkrpc:reference>
 	<kkrpc:reference id="securityService" interface="com.melot.security.driver.service.SecurityService" version="1.0.0"></kkrpc:reference>
@@ -47,6 +47,7 @@
 	<kkrpc:reference id="giftHistoryBoardService" interface="com.melot.kk.activity.service.GiftHistoryBoardService" version="1.0.18"></kkrpc:reference>
 	<kkrpc:reference id="liveStreamConfigService" interface="com.melot.stream.driver.service.LiveStreamConfigService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="videoService" interface="com.melot.kk.opus.api.service.VideoService" version="1.0.2"></kkrpc:reference>
+	<kkrpc:reference id="giftHistoryService" interface="com.melot.common.driver.service.GiftHistoryService" version="1.0.0"></kkrpc:reference>
 	<!-- 商城模块 -->
 	<kkrpc:reference id="carService" interface="com.melot.module.packagegift.driver.service.CarService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="histPackageDealService" interface="com.melot.module.packagegift.driver.service.HistPackageDealService" version="1.0.0"></kkrpc:reference>
@@ -95,6 +96,7 @@
 
     <!-- 礼物配置信息 -->
 	<kkrpc:reference id="giftListService" interface="com.melot.room.gift.service.GiftListService" version="1.0.9"></kkrpc:reference>
+    <kkrpc:reference id="roomGiftService" interface="com.melot.room.gift.service.RoomGiftService" version="1.0.9"></kkrpc:reference>
 	<!-- 主播心愿礼物 -->
 	<kkrpc:reference id="actorPersonalizedGiftService" interface="com.melot.room.gift.service.ActorPersonalizedGiftService" version="1.0.9"></kkrpc:reference>
 	

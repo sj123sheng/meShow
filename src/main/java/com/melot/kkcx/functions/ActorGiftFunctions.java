@@ -9,6 +9,9 @@ import java.util.Map;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import com.melot.common.driver.domain.ActorGift;
+import com.melot.common.driver.service.RoomExtendConfService;
+import com.melot.sdk.core.util.MelotBeanFactory;
 import org.apache.log4j.Logger;
 
 import com.google.gson.Gson;
@@ -68,16 +71,14 @@ public class ActorGiftFunctions {
         }
         
         try {
-            ReturnResult<List<ActorGiftDTO>> resp = actorPersonalizedGiftService.getActorPersonalizedGiftList(userId);
-            if (resp != null && ReturnResultCode.SUCCESS.getCode().equals(resp.getCode())) {
-                List<ActorGiftDTO> actorGiftList = resp.getData();
-                if (actorGiftList != null && !actorGiftList.isEmpty()) {
-                    ArrayList<Integer> giftList = new ArrayList<Integer>();
-                    for (ActorGiftDTO actorGift : actorGiftList) {
-                      giftList.add(actorGift.getGiftId());
-                    }
-                    result.add("actorGiftList", new Gson().toJsonTree(giftList).getAsJsonArray());
+            RoomExtendConfService roomExtendConfService = (RoomExtendConfService) MelotBeanFactory.getBean("roomExtendConfService");
+            List<ActorGift> giftList = roomExtendConfService.getActorPersonalizedGiftList(userId);
+            if (giftList != null){
+                List<Integer> giftIds = new ArrayList<>();
+                for (ActorGift actorGift : giftList){
+                    giftIds.add(actorGift.getGiftId());
                 }
+                result.add("actorGiftList", new Gson().toJsonTree(giftIds).getAsJsonArray());
             }
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         } catch (Exception e) {
@@ -121,7 +122,8 @@ public class ActorGiftFunctions {
             for (String giftId : giftIdStr) {
                 giftIdList.add(Integer.valueOf(giftId));
             }
-            actorPersonalizedGiftService.addActorPersonalizedGift(userId, giftIdList);
+            RoomExtendConfService roomExtendConfService = (RoomExtendConfService) MelotBeanFactory.getBean("roomExtendConfService");
+            roomExtendConfService.addActorPersonalizedGift(userId, giftIdList);
         } catch (Exception e) {
             result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             return result;
@@ -160,7 +162,8 @@ public class ActorGiftFunctions {
         }
         
         try {
-            actorPersonalizedGiftService.deleteActorPersonalizedGift(userId, giftId);
+            RoomExtendConfService roomExtendConfService = (RoomExtendConfService) MelotBeanFactory.getBean("roomExtendConfService");
+            roomExtendConfService.deleteActorPersonalizedGift(userId, giftId);
         } catch (Exception e) {
             result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             return result;
@@ -193,7 +196,8 @@ public class ActorGiftFunctions {
         }
         
         try {
-            actorPersonalizedGiftService.deleteActorPersonalizedGiftByGiftId(giftId);
+            RoomExtendConfService roomExtendConfService = (RoomExtendConfService) MelotBeanFactory.getBean("roomExtendConfService");
+            roomExtendConfService.deleteActorPersonalizedGiftByGiftId(giftId);
         } catch (Exception e) {
             result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             return result;
@@ -279,57 +283,4 @@ public class ActorGiftFunctions {
         return result;
     }
     
-    /**
-     * 获取房间礼物特效接口（50001014）
-     * 
-     * @param jsonObject 请求对象
-     * @param request 请求对象
-     * @return 
-     */
-    @SuppressWarnings("unchecked")
-    public JsonObject getNewAnimations(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-        JsonObject result = new JsonObject();
-        
-        int platform;
-        
-        try {
-            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.ANDROID, null, PlatformEnum.ANDROID, PlatformEnum.IPHONE);
-        } catch(CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
-            return result;
-        } catch(Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-            return result;
-        }
-        
-        JsonArray animations = new JsonArray();
-        List<Integer> giftIdList = new ArrayList<Integer>();
-        Map<Object, Object> map = new HashMap<Object, Object>();
-        map.put("invideo", 1);
-        map.put("appid", 1);
-        try {
-            giftIdList = (List<Integer>) SqlMapClientHelper.getInstance(DB.MASTER).queryForList("ActorGift.getAnimationGifts", map);
-        } catch (SQLException e) {
-            logger.error("获取特效礼物失败" , e);
-            result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
-            return result;
-        }
-        for (int giftId : giftIdList) {
-            JsonObject itemJson = new JsonObject();
-            itemJson.addProperty("giftId", giftId);
-            itemJson.addProperty("animationPackName", String.valueOf(giftId));
-            itemJson.addProperty("animationPackVersion", 1);
-            if (platform == PlatformEnum.ANDROID) {
-                itemJson.addProperty("animationPackUrl", ConfigHelper.getKkDomain() + "/icon/android/gift/zip/" + giftId + ".zip");
-            } else {
-                itemJson.addProperty("animationPackUrl", ConfigHelper.getKkDomain() + "/icon/iphone/gift/zip/" + giftId + ".zip");
-            }
-            animations.add(itemJson);
-        }
-        result.add("animations", animations);
-        
-        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        return result;
-    }
-
 }

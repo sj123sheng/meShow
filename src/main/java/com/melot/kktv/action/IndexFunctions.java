@@ -18,17 +18,6 @@ import java.util.regex.Pattern;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
-import com.melot.kk.hall.api.domain.FirstPageConfDTO;
-import com.melot.kk.hall.api.domain.HallPartConfDTO;
-import com.melot.kk.hall.api.domain.HallRoomInfoDTO;
-import com.melot.kk.hall.api.service.HallRoomService;
-import com.melot.kk.hall.api.service.HomeService;
-import com.melot.kk.hall.api.service.SysMenuService;
-import com.melot.kkcx.transform.HallRoomTF;
-import com.melot.kktv.base.Page;
-import com.melot.kktv.base.Result;
-import com.melot.kktv.constant.RoomPosterConstant;
-import com.melot.kktv.util.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 
@@ -41,31 +30,40 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.common.driver.domain.AreaNewActors;
+import com.melot.common.driver.domain.WeekStarGift;
 import com.melot.common.driver.service.AreaNewActorsService;
+import com.melot.common.driver.service.RoomExtendConfService;
 import com.melot.content.config.domain.LiveAlbum;
 import com.melot.content.config.domain.LiveVideo;
 import com.melot.content.config.live.service.LiveAlbumService;
 import com.melot.content.config.live.service.LiveVideoService;
 import com.melot.content.config.live.upload.impl.QiniuService;
+import com.melot.kk.hall.api.domain.FirstPageConfDTO;
+import com.melot.kk.hall.api.domain.HallPartConfDTO;
+import com.melot.kk.hall.api.domain.HallRoomInfoDTO;
+import com.melot.kk.hall.api.service.HallRoomService;
+import com.melot.kk.hall.api.service.HomeService;
+import com.melot.kk.hall.api.service.SysMenuService;
 import com.melot.kkactivity.driver.domain.ActInfo;
 import com.melot.kkactivity.driver.domain.KkActivity;
 import com.melot.kkactivity.driver.service.KkActivityService;
 import com.melot.kkcore.user.api.LastLoginInfo;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.service.KkUserService;
-import com.melot.kkcx.service.ActorGiftService;
 import com.melot.kkcx.service.GeneralService;
 import com.melot.kkcx.service.UserAssetServices;
 import com.melot.kkcx.service.UserService;
+import com.melot.kkcx.transform.HallRoomTF;
 import com.melot.kkcx.transform.LiveShowTF;
 import com.melot.kkcx.transform.RoomTF;
+import com.melot.kktv.base.Page;
+import com.melot.kktv.base.Result;
+import com.melot.kktv.constant.RoomPosterConstant;
 import com.melot.kktv.model.Activity;
 import com.melot.kktv.model.HotActivity;
 import com.melot.kktv.model.MedalInfo;
-import com.melot.kktv.model.Notice;
 import com.melot.kktv.model.PreviewAct;
 import com.melot.kktv.model.RankUser;
-import com.melot.kktv.model.WeekStarGift;
 import com.melot.kktv.redis.GiftRecordSource;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.NewsSource;
@@ -73,7 +71,19 @@ import com.melot.kktv.redis.SearchWordsSource;
 import com.melot.kktv.redis.WeekGiftSource;
 import com.melot.kktv.service.NewsService;
 import com.melot.kktv.service.RoomService;
+import com.melot.kktv.util.AppChannelEnum;
+import com.melot.kktv.util.AppIdEnum;
+import com.melot.kktv.util.CityUtil;
+import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
+import com.melot.kktv.util.ConfigHelper;
+import com.melot.kktv.util.Constant;
+import com.melot.kktv.util.ConstantEnum;
+import com.melot.kktv.util.DateUtil;
+import com.melot.kktv.util.PlatformEnum;
+import com.melot.kktv.util.RankingEnum;
+import com.melot.kktv.util.StringUtil;
+import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.confdynamic.GiftInfoConfig;
 import com.melot.kktv.util.confdynamic.MedalConfig;
 import com.melot.kktv.util.db.DB;
@@ -814,74 +824,6 @@ public class IndexFunctions {
     }
     
 	/**
-	 * 获取通告列表(10002007)
-	 * 
-	 * @param jsonObject 请求对象
-	 * @return 结果字符串
-	 */
-	@SuppressWarnings("unchecked")
-    public JsonObject getNoticeList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
-		
-		// define usable parameters
-		int platform, appId, channel, start, offset;
-		// parse the parameters
-		JsonObject result = new JsonObject();
-		try {
-			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.WEB, null, 1, Integer.MAX_VALUE);
-			appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 1, Integer.MAX_VALUE);
-			channel = CommonUtil.getJsonParamInt(jsonObject, "c", AppChannelEnum.KK, null, 1, Integer.MAX_VALUE);
-			start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, null, 0, Integer.MAX_VALUE);
-			offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 20, null, 0, Integer.MAX_VALUE);
-		} catch(CommonUtil.ErrorGetParameterException e) {
-			result.addProperty("TagCode", e.getErrCode());
-			return result;
-		} catch(Exception e) {
-			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-			return result;
-		}
-        
-		try {
-		    // 调用存储过程得到结果
-		    Map<Object, Object> map = new HashMap<Object, Object>();
-		    map.put("platform", platform);
-		    map.put("appId", appId);
-		    map.put("channel", usePrivateChannel(channel) ? channel : 100);
-		    map.put("start", start);
-		    map.put("offset", offset);
-		    SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Index.getNoticeList", map);
-		    
-			String TagCode = (String) map.get("TagCode");
-			if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-				JsonArray jNoticeList = new JsonArray();
-				Integer noticeTotal = (Integer) map.get("noticeTotal");
-				if (noticeTotal != null && noticeTotal.intValue() > 0) {
-					result.addProperty("noticeTotal", noticeTotal);
-					// 取出列表
-					List<Object> noticeList = (ArrayList<Object>) map.get("noticeList");
-					for (Object object : noticeList) {
-						jNoticeList.add(((Notice) object).toJsonObject());
-					}
-				} else {
-					result.addProperty("noticeTotal", 0);
-				}
-				result.add("noticeList", jNoticeList);
-				
-				result.addProperty("TagCode", TagCode);
-				
-			} else {
-				// 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
-				logger.error("调用存储过程(Index.getNoticeList)未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
-				result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
-			}
-		} catch (SQLException e) {
-			logger.error("未能正常调用存储过程", e);
-			result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
-		}
-		
-		return result;
-	}
-
-	/**
 	 * 关键词搜索房间(接口10002008)
 	 * 
 	 * @param jsonObject 请求对象
@@ -1015,126 +957,6 @@ public class IndexFunctions {
 	}
 	
 	/**
-	 * 获取公告详细(10002012)
-	 * 
-	 * @param paramJsonObject
-	 * @return
-	 */
-	public JsonObject getNoticeDetail(JsonObject paramJsonObject, boolean checkTag, HttpServletRequest request) {
-		
-		int noticeId = 0;
-		JsonElement noticeIdje = paramJsonObject.get("noticeId");
-		if (noticeIdje != null) {
-			try {
-				noticeId = Integer.parseInt(noticeIdje.getAsString());
-			} catch (Exception e) {
-				JsonObject result = new JsonObject();
-				result.addProperty("TagCode", "02130002");
-				return result;
-			}
-		} else {
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", "02130001");
-			return result;
-		}
-		
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("noticeId", noticeId);
-		try {
-			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Index.getNoticeDetail", map);
-		} catch (Exception e) {
-			logger.error("未能正常调用存储过程", e);
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
-			return result;
-		}
-
-		String tagCode = map.get("TagCode").toString();
-		if (tagCode.equals(TagCodeEnum.SUCCESS)) {
-			String title = map.get("title") == null ? "" : map.get("title").toString();
-			String noticeUrl = map.get("noticeURL") == null ? "" : map.get("noticeURL").toString();
-			String content = map.get("content") == null ? "" : map.get("content").toString();
-
-			Notice notice = new Notice();
-			notice.setNoticeId(noticeId);
-			notice.setTitle(title);
-			notice.setNoticeURL(noticeUrl);
-			notice.setDtime((Date) map.get("dtime"));
-			notice.setContent(content);
-			JsonObject result = notice.toJsonObject();
-			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-			return result;
-		} else {
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", "021301" + tagCode);
-			return result;
-		}
-	}
-
-	/**
-	 * 获取活动详细(10002013)
-	 * @param jsonObject
-	 * @param checkTag
-	 * @param request
-	 * @return
-	 */
-	public JsonObject getActivityDetail(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-		int activityid = 0;
-		JsonElement activityIdje = jsonObject.get("activityId");
-		if (activityIdje != null) {
-			try {
-				activityid = Integer.parseInt(activityIdje.getAsString());
-			} catch (Exception e) {
-				JsonObject result = new JsonObject();
-				result.addProperty("TagCode", "02120002");
-				return result;
-			}
-		} else {
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", "02120001");
-			return result;
-		}
-		
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("activityId", activityid);
-		try {
-			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Index.getActivityDetail", map);
-		} catch (Exception e) {
-			logger.error("未能正常调用存储过程", e);
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
-			return result;
-		}
-
-		String tagCode = map.get("TagCode").toString();
-		if (tagCode.equals(TagCodeEnum.SUCCESS)) {
-			String imgUrl = map.get("imgURL") == null ? "" : map.get("imgURL").toString();
-			String activityUrl = map.get("activityURL") == null ? "" : map.get("activityURL").toString();
-			String content = map.get("content") == null ? "" : map.get("content").toString();
-			String topUrl = map.get("topURL") == null ? "" : map.get("topURL").toString();
-			String topMobileUrl = map.get("topMobileURL") == null ? "" : map.get("topMobileURL").toString();
-			String topMobileUrlIOS = map.get("topMobileURLIOS") == null ? "" : map.get("topMobileURLIOS").toString();
-
-			Activity activity = new Activity();
-			activity.setActivityId(activityid);
-			activity.setImgURL(imgUrl);
-			activity.setActivityURL(activityUrl);
-			activity.setDtime((Date) map.get("dtime"));
-			activity.setContent(content);
-			activity.setTopURL(topUrl);
-			activity.setTopMobileURL(topMobileUrl);
-			activity.setTopMobileURLIOS(topMobileUrlIOS);
-			JsonObject result = activity.toJsonObject(1); // 返回详细内容,无需图片
-			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-			return result;
-		} else {
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", "021201" + tagCode);
-			return result;
-		}
-	}
-
-	/**
 	 * 获取推荐的直播房间列表(10002014)
 	 * 
 	 * @return 结果字符串
@@ -1228,7 +1050,8 @@ public class IndexFunctions {
 		JsonArray arr = new JsonArray();
 		Map<Integer, JsonObject> allJsonMap = new HashMap<>();
 		Map<Integer, JsonObject> liveJsonMap = new HashMap<>();
-		List<WeekStarGift> weekStarGiftList = ActorGiftService.getWeekStarGiftList(new Date(DateUtil.getWeekBeginTime(System.currentTimeMillis() + RankingEnum.THIS_WEEK_GIFT_RANKING*7*24*3600*1000)));
+		RoomExtendConfService roomExtendConfService = (RoomExtendConfService) MelotBeanFactory.getBean("roomExtendConfService");
+		List<WeekStarGift> weekStarGiftList = roomExtendConfService.getWeekStarGiftList(RankingEnum.THIS_WEEK_GIFT_RANKING);
 		if (weekStarGiftList != null && !weekStarGiftList.isEmpty()) {
 			int userId;
 			JsonObject weeklyGiftJson = null;
@@ -1367,7 +1190,8 @@ public class IndexFunctions {
         }
 		
 		JsonArray jUserGiftRankingList = new JsonArray();
-		List<WeekStarGift> weekStarGiftList = ActorGiftService.getWeekStarGiftList(new Date(DateUtil.getWeekBeginTime(System.currentTimeMillis() + RankingEnum.THIS_WEEK_GIFT_RANKING*7*24*3600*1000)));
+		RoomExtendConfService roomExtendConfService = (RoomExtendConfService) MelotBeanFactory.getBean("roomExtendConfService");
+        List<WeekStarGift> weekStarGiftList = roomExtendConfService.getWeekStarGiftList(RankingEnum.THIS_WEEK_GIFT_RANKING);
 		if (weekStarGiftList != null && !weekStarGiftList.isEmpty()) {
 		    Integer giftId, relationGiftId;
 		    String giftName;
@@ -1481,7 +1305,8 @@ public class IndexFunctions {
 		JsonArray rankList = new JsonArray();
 		Map<Integer, JsonObject> giftMap = new HashMap<>();
 		Map<Integer, JsonObject> allGiftMap = new HashMap<>();
-		List<WeekStarGift> weekStarGiftList = ActorGiftService.getWeekStarGiftList(new Date(DateUtil.getWeekBeginTime(System.currentTimeMillis() + RankingEnum.THIS_WEEK_GIFT_RANKING*7*24*3600*1000)));
+		RoomExtendConfService roomExtendConfService = (RoomExtendConfService) MelotBeanFactory.getBean("roomExtendConfService");
+        List<WeekStarGift> weekStarGiftList = roomExtendConfService.getWeekStarGiftList(RankingEnum.THIS_WEEK_GIFT_RANKING);
 		if (weekStarGiftList != null && !weekStarGiftList.isEmpty()) {
 		    Integer giftId, singlePrice, relationGiftId;
 		    Long weekTime, tempValue;
@@ -1606,7 +1431,8 @@ public class IndexFunctions {
 		type = type == 1 ? 0 : -1;
 		int count = (int) WeekGiftSource.getWeekGiftRankListCount(type);
 		if (count <= 0) {
-		    List<WeekStarGift> weekStarGiftList = ActorGiftService.getWeekStarGiftList(new Date(DateUtil.getWeekBeginTime(System.currentTimeMillis() + type*7*24*3600*1000)));
+		    RoomExtendConfService roomExtendConfService = (RoomExtendConfService) MelotBeanFactory.getBean("roomExtendConfService");
+	        List<WeekStarGift> weekStarGiftList = roomExtendConfService.getWeekStarGiftList(Math.abs(type));
 			if (weekStarGiftList != null && !weekStarGiftList.isEmpty()) {
 			    Integer giftId, relationGiftId, singlePrice;
 			    String giftName;
@@ -2114,170 +1940,6 @@ public class IndexFunctions {
 		return result;
 	}
 
-	/**
-	 * 获取用户一定时间内收到礼物个数(10002041)
-	 * @param jsonObject
-	 * @return
-	 */
-	public JsonObject getPeriodUserGiftReceiveCount(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-
-		JsonElement startTimeje = jsonObject.get("startTime");
-		JsonElement endTimeje = jsonObject.get("endTime");
-		JsonElement giftIdje = jsonObject.get("giftId");
-		JsonElement userIdje = jsonObject.get("userId");
-		
-		long startTime = 0;
-		long endTime = 0;
-		int giftId = 0;
-		int userId = 0;
-		
-		if (startTimeje != null && !startTimeje.isJsonNull() && !startTimeje.getAsString().isEmpty()) {
-			try {
-				startTime = startTimeje.getAsLong();
-			} catch (Exception e) {
-				JsonObject result = new JsonObject();
-				result.addProperty("TagCode", "02410002");
-				return result;
-			}
-		} else {
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", "02410001");
-			return result;
-		}
-		if (endTimeje != null && !endTimeje.isJsonNull() && !endTimeje.getAsString().isEmpty()) {
-			try {
-				endTime = endTimeje.getAsLong();
-			} catch (Exception e) {
-				JsonObject result = new JsonObject();
-				result.addProperty("TagCode", "02410004");
-				return result;
-			}
-		} else {
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", "02410003");
-			return result;
-		}
-		if (giftIdje != null && !giftIdje.isJsonNull() && !giftIdje.getAsString().isEmpty()) {
-			try {
-				giftId = giftIdje.getAsInt();
-			} catch (Exception e) {
-				JsonObject result = new JsonObject();
-				result.addProperty("TagCode", "02410005");
-				return result;
-			}
-		} else {
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", "02410006");
-			return result;
-		}
-		if (userIdje != null && !userIdje.isJsonNull() && !userIdje.getAsString().isEmpty()) {
-			try {
-				userId = userIdje.getAsInt();
-			} catch (Exception e) {
-				JsonObject result = new JsonObject();
-				result.addProperty("TagCode", "02410007");
-				return result;
-			}
-		}
-		
-		long recvCnt = 0;
-		
-		String hotDataKey = "userGiftRecvCnt_"+userId+giftId+startTime+endTime;
-		String value = HotDataSource.getHotFieldValue(hotDataKey, "recvCnt");
-		if (value != null) {
-			recvCnt = Long.parseLong(value);
-		} else {
-			try {
-				Map<String, Object> map = new HashMap<String, Object>();
-				map.put("startTime", new Date(startTime));
-				map.put("endTime", new Date(endTime));
-				map.put("userId", userId);
-				map.put("giftId", giftId);
-				Long count = (Long) SqlMapClientHelper.getInstance(DB.MASTER)
-						.queryForObject("Index.getPeriodUserGiftReceiveCount", map);
-				if (count != null) {
-					recvCnt = count;
-					HotDataSource.setHotFieldValue(hotDataKey, "recvCnt", count.toString(), 10);
-				}
-			} catch (SQLException e) {
-				logger.error("未能正常执行数据库语句", e);
-			}
-		}
-		
-		JsonObject result = new JsonObject();
-		result.addProperty("recvCnt",recvCnt);
-		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-		return result;
-	}
-	
-	/**
-	 * 获取一定时间内礼物送出总数、打折总数和用户总数(10002042)
-	 * @param paramJsonObject
-	 * @return
-	 */
-	public JsonObject getPeriodGiftTotal(JsonObject paramJsonObject, boolean checkTag, HttpServletRequest request) {
-	    JsonObject result = new JsonObject();
-		
-		String giftIds;
-		int discount;
-		long startTime, endTime;
-		try {
-		    giftIds = CommonUtil.getJsonParamString(paramJsonObject, "giftIds", null, "02420001", 1, Integer.MAX_VALUE);
-		    discount = CommonUtil.getJsonParamInt(paramJsonObject, "discount", 0, null, 1, Integer.MAX_VALUE);
-		    startTime = CommonUtil.getJsonParamLong(paramJsonObject, "startTime", System.currentTimeMillis()/1000, null, 1l, Long.MAX_VALUE);
-		    endTime = CommonUtil.getJsonParamLong(paramJsonObject, "endTime", 0, null, 1l, Long.MAX_VALUE);
-        } catch (CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
-            return result;
-        } catch (Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-            return result;
-        }
-		
-		long totalGift = 0, discountGift = 0, totalAmount = 0, discountAmount = 0, totalUser = 0;
-		String hotDataKey = "giftUserTotal_" + giftIds + startTime + endTime;
-		Map<String, String> hotData = HotDataSource.getHotData(hotDataKey);
-		if (hotData != null && hotData.containsKey("totalGift") && hotData.containsKey("totalUser") && hotData.containsKey("totalAmount")) {
-			totalGift = Long.parseLong(hotData.get("totalGift"));
-			discountGift = totalGift * discount / 100;
-			totalAmount = Long.parseLong(hotData.get("totalAmount"));
-			discountAmount = totalAmount * discount / 100;
-			totalUser = Long.parseLong(hotData.get("totalUser"));
-		} else {
-			try {
-				Map<String, Object> map = new HashMap<String, Object>();
-				map.put("startTime", DateUtil.formatDateTime(new Date(startTime * 1000), "yyyy-MM-dd HH:mm:ss"));
-				if (endTime > 0) {
-				    map.put("endTime", DateUtil.formatDateTime(new Date(endTime * 1000), "yyyy-MM-dd HH:mm:ss"));
-                }
-				map.put("giftIds", giftIds);
-				SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Index.getPeriodGiftTotal", map, map);
-				if (map.containsKey("totalGift") && map.containsKey("totalUser")) {
-					totalGift = (Long) map.get("totalGift");
-					discountGift = totalGift * discount / 100;
-					totalAmount = (Long) map.get("totalAmount");
-					discountAmount = totalAmount * discount / 100;
-					totalUser = (Long) map.get("totalUser");
-					hotData = new HashMap<String, String>();
-					hotData.put("totalGift", String.valueOf(totalGift));
-                    hotData.put("totalAmount", String.valueOf(totalAmount));
-					hotData.put("totalUser", String.valueOf(totalUser));
-					HotDataSource.setHotData(hotDataKey, hotData, 10);
-				}
-			} catch (SQLException e) {
-				logger.error("未能正常执行数据库语句", e);
-			}
-		}
-		
-		result.addProperty("totalGift", totalGift);
-        result.addProperty("discountGift", discountGift);
-        result.addProperty("totalAmount", totalAmount);
-        result.addProperty("discountAmount", discountAmount);
-		result.addProperty("totalUser", totalUser);
-		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-		return result;
-	}
-	
 	/**
 	 * 获取半小时上头条排行榜(10002043)
 	 * @param jsonObject

@@ -11,31 +11,22 @@
 		enhancementEnabled="true"
 		useStatementNamespaces="true" 
 	/>
-	
+
 	<sqlMap resource="com/melot/kktv/sqlmap/Mobile.xml" />
 	<sqlMap resource="com/melot/kktv/sqlmap/Other.xml" />
 	<sqlMap resource="com/melot/kktv/sqlmap/User.xml" />
-	<sqlMap resource="com/melot/kktv/sqlmap/UserRelation.xml" />
 	<sqlMap resource="com/melot/kktv/sqlmap/UserMessage.xml" />
-	<sqlMap resource="com/melot/kktv/sqlmap/ActorGift.xml" />
 	
 	<sqlMap resource="com/melot/kktv/sqlmap/Index.xml" />
 	<sqlMap resource="com/melot/kktv/sqlmap/Profile.xml" />
-	<sqlMap resource="com/melot/kktv/sqlmap/Resource.xml" />
 	<sqlMap resource="com/melot/kktv/sqlmap/Family.xml" />
 	<sqlMap resource="com/melot/kktv/sqlmap/EffectiveActivities.xml" />
 	<sqlMap resource="com/melot/kktv/sqlmap/KkAssistor.xml" />
 	<sqlMap resource="com/melot/kktv/sqlmap/UserPrize.xml" />
-	<sqlMap resource="com/melot/kktv/sqlmap/Guess.xml" />
 	<sqlMap resource="com/melot/kktv/sqlmap/Tag.xml" />
-	<sqlMap resource="com/melot/kktv/sqlmap/Exchange.xml" />
-	<sqlMap resource="com/melot/kktv/sqlmap/Temp.xml" />
 	
 	<!-- api-menu-sdk jar -->
 	<sqlMap resource="com/melot/api/menu/sdk/sqlmap/oracle/userFollowInfoDao.xml" />
 	
-	<!-- melot api common -->
-	<sqlMap resource="com/melot/common/kktv/sqlmap/Mobile.xml" />
-	<sqlMap resource="com/melot/common/kktv/sqlmap/Version.xml" />
 
 </sqlMapConfig>

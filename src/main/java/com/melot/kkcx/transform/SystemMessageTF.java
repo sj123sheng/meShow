@@ -30,7 +30,7 @@ public class SystemMessageTF {
             return null;
         }
         KkSystemNotice kkSystemNotice = new KkSystemNotice();
-        kkSystemNotice.setId(systemMessage.getId());
+        kkSystemNotice.setId((long)systemMessage.getId());
         kkSystemNotice.setDescribe(systemMessage.getDescribe());
         kkSystemNotice.setMsgtime(systemMessage.getTime());
         kkSystemNotice.setTitle(systemMessage.getTitle());
