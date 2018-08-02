@@ -30,10 +30,8 @@ public class KKLiveProjectFunctions {
 
     private static Logger log = Logger.getLogger(UserLevelFunctions.class);
 
-
     @Resource
     LiveProjectService liveProjectService;
-
 
     /**
      * 51050701
@@ -99,6 +97,7 @@ public class KKLiveProjectFunctions {
                     }
                 }
                 json.add("helpUserIds", helpUserIds);
+                array.add(json);
             }
             result.add("photoList", array);
         }
@@ -134,6 +133,8 @@ public class KKLiveProjectFunctions {
             log.info("start check, adminOrderNo=" + adminOrderNo);
             if (liveProjectService.checkUnlockAfterPay(adminOrderNo)) {
                 tagCode = TagCodeEnum.SUCCESS;
+            } else {
+                log.info("check fail: adminOrderNo=" + adminOrderNo);
             }
         } catch (Exception e) {
             log.error(String.format("Error:checkUnlockAfterPay(adminOrderNo=%s)", adminOrderNo), e);
@@ -172,9 +173,13 @@ public class KKLiveProjectFunctions {
             return result;
         }
 
-        String tagCode = "5105070202";
+        String tagCode = "5105070302";
         try {
-            liveProjectService.shareUnlockPrivatePhoto(histId, userId);
+            if (liveProjectService.shareUnlockPrivatePhoto(histId, userId)) {
+                tagCode = TagCodeEnum.SUCCESS;
+            } else {
+                log.info(String.format("Fail:shareUnlockPrivatePhoto(histId=%s, userId=%s)", histId, userId));
+            }
         } catch (MelotModuleException e) {
             log.info(String.format("Fail:shareUnlockPrivatePhoto(histId=%s, userId=%s)", histId, userId), e);
             if (e.getErrCode() == 101) {
