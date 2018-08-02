@@ -566,7 +566,7 @@
         <dependency>
             <groupId>com.melot.module</groupId>
             <artifactId>kk-hall-module-api</artifactId>
-            <version>1.0.6</version>
+            <version>1.0.11-SNAPSHOT</version>
         </dependency>
         
         <!-- 贵族模块 -->
