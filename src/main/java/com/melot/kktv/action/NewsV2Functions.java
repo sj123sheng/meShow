@@ -2389,15 +2389,24 @@ public class NewsV2Functions {
             return result;
         }
         if(appId !=1){
-            if(appId != 1){
-                List<NewsTopic> hotTopics = NewsService.getHotTopicList(appId,start,offset);
-                result.add("hotTopicList", new Gson().toJsonTree(hotTopics));
-                result.addProperty("pathPrefix", ConfigHelper.getHttpdir()); // 图片前缀
-                result.addProperty("mediaPathPrefix", ConfigHelper.getMediahttpdir()); // 多媒体前缀
-                result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());// 七牛前缀
-                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-                return result;
+            List<NewsTopic> hotTopics = NewsService.getHotTopicList(appId,start,offset);
+            JsonArray jsonArray = new JsonArray();
+            for(NewsTopic newsTopic:hotTopics) {
+                JsonObject topic = new JsonObject();
+                topic.addProperty("topicId", newsTopic.getTopicId());
+                topic.addProperty("content", newsTopic.getContent());
+                topic.addProperty("imageUrl",newsTopic.getImageUrl());
+                topic.addProperty("introduction",newsTopic.getDescribe());
+                topic.addProperty("newsCount",newsTopic.getRefNewsCount());
+                topic.addProperty("position",newsTopic.getHotOrder());
+                jsonArray.add(topic);
             }
+            result.add("topicList", jsonArray);
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir()); // 图片前缀
+            result.addProperty("mediaPathPrefix", ConfigHelper.getMediahttpdir()); // 多媒体前缀
+            result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());// 七牛前缀
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
         }
 
         Set<String> topicList = NewsService.getPopularTopic(start, offset);
