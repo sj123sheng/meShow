@@ -273,7 +273,7 @@
 		<dependency>
 			<groupId>com.melot</groupId>
 			<artifactId>news-module-api</artifactId>
-			<version>1.3.0-SNAPSHOT</version>
+			<version>1.3.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.melot.module</groupId>
@@ -566,7 +566,7 @@
         <dependency>
             <groupId>com.melot.module</groupId>
             <artifactId>kk-hall-module-api</artifactId>
-            <version>1.0.6</version>
+            <version>1.0.11-SNAPSHOT</version>
         </dependency>
         
         <!-- 贵族模块 -->
@@ -658,15 +658,15 @@
 
 		<!-- 登录相关模块 -->
 		<dependency>
-			<groupId>com.melot.kk</groupId>
-			<artifactId>kk-otherlogin-api</artifactId>
-			<version>1.0.1</version>
+		<groupId>com.melot.kk</groupId>
+		<artifactId>kk-otherlogin-api</artifactId>
+		<version>1.0.2</version>
 		</dependency>
 
 		<dependency>
   		 	<groupId>com.melot.module</groupId>
   			<artifactId>room-live-record-module-api</artifactId>
-  			<version>1.0.2-SNAPSHOT</version>
+  			<version>1.0.2</version>
 		</dependency>
 
 		<dependency>
@@ -695,6 +695,7 @@
 			<version>1.0.1</version>
 		</dependency>
 
+		<!-- 回放视频回放 -->
 		<dependency>
 			<groupId>com.melot.kk</groupId>
 			<artifactId>kk-gamevideostore-api</artifactId>

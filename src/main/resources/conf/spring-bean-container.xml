@@ -16,17 +16,7 @@
 			<ref bean="dataSource_master" />
 		</property>
 	</bean>
-	
-	<!-- oracle master database -->
-	<bean id="sqlMapClient_oracle_backup" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean" lazy-init="true">
-		<property name="configLocation">
-			<value>conf/SqlMapConfig-oracle_backup.xml</value>
-		</property>
-		<property name="dataSource">
-			<ref bean="dataSource_backup" />
-		</property>
-	</bean>
-	
+
 	<!-- postgresql database -->
 	<bean id="sqlMapClient_pg_master" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean">
 		<property name="configLocation">

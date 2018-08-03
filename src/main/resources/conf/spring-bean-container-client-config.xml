@@ -46,7 +46,7 @@
 	<kkrpc:reference id="familyDefineActivityService" interface="com.melot.kk.activity.service.FamilyDefineActivityService" version="1.0.18"></kkrpc:reference>
 	<kkrpc:reference id="giftHistoryBoardService" interface="com.melot.kk.activity.service.GiftHistoryBoardService" version="1.0.18"></kkrpc:reference>
 	<kkrpc:reference id="liveStreamConfigService" interface="com.melot.stream.driver.service.LiveStreamConfigService" version="1.0.0"></kkrpc:reference>
-	<kkrpc:reference id="videoService" interface="com.melot.kk.opus.api.service.VideoService" version="1.0.1"></kkrpc:reference>
+	<kkrpc:reference id="videoService" interface="com.melot.kk.opus.api.service.VideoService" version="1.0.2"></kkrpc:reference>
 	<kkrpc:reference id="giftHistoryService" interface="com.melot.common.driver.service.GiftHistoryService" version="1.0.0"></kkrpc:reference>
 	<!-- 商城模块 -->
 	<kkrpc:reference id="carService" interface="com.melot.module.packagegift.driver.service.CarService" version="1.0.0"></kkrpc:reference>
@@ -103,8 +103,6 @@
 	
 	<!-- 动态模块 -->
 	<kkrpc:reference id="newsCenter" interface="com.melot.news.service.NewsService" version="1.2.3"></kkrpc:reference>
-	<!-- 资源模块 -->
-	<kkrpc:reference id="resourceCenter" interface="com.melot.resource.service.ResourceService" version="1.0.0"/>
 	<!-- 1v1视频聊天服务 -->
 	<kkrpc:reference id="singleChatService" interface="com.melot.singlechat.driver.service.SingleChatService" version="1.0.0"/>
  	<kkrpc:reference id="singleChatServerService" interface="com.melot.singlechat.driver.service.SingleChatServerService" version="1.0.1"/>
@@ -156,7 +154,7 @@
     <kkrpc:reference id="histActorLadderMatchService" interface="com.melot.kk.nationalPK.api.service.HistActorLadderMatchService" version="1.0.0"></kkrpc:reference>
 
 	<!-- WEB大厅皮肤服务 -->
-	<kkrpc:reference id="webSkinConfService" interface="com.melot.kk.hall.api.service.WebSkinConfService" version="1.0.0"/>
+	<kkrpc:reference id="webSkinConfService" interface="com.melot.kk.hall.api.service.WebSkinConfService" version="1.0.1"/>
 	<!-- 答题比赛模块 -->
 	<kkrpc:reference id="quizActivityService" interface="com.melot.kk.quiz.api.service.QuizActivityService" version="1.0.0"/>
 	

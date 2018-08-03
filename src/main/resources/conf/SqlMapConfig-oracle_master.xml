@@ -12,14 +12,12 @@
 		useStatementNamespaces="true" 
 	/>
 
-	<sqlMap resource="com/melot/kktv/sqlmap/Mobile.xml" />
 	<sqlMap resource="com/melot/kktv/sqlmap/Other.xml" />
 	<sqlMap resource="com/melot/kktv/sqlmap/User.xml" />
 	<sqlMap resource="com/melot/kktv/sqlmap/UserMessage.xml" />
 	
 	<sqlMap resource="com/melot/kktv/sqlmap/Index.xml" />
 	<sqlMap resource="com/melot/kktv/sqlmap/Profile.xml" />
-	<sqlMap resource="com/melot/kktv/sqlmap/Family.xml" />
 	<sqlMap resource="com/melot/kktv/sqlmap/EffectiveActivities.xml" />
 	<sqlMap resource="com/melot/kktv/sqlmap/KkAssistor.xml" />
 	<sqlMap resource="com/melot/kktv/sqlmap/UserPrize.xml" />

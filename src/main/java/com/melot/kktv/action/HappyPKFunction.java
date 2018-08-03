@@ -9,15 +9,16 @@ import com.melot.kk.nationalPK.api.service.HistActorLadderMatchService;
 import com.melot.kk.nationalPK.api.service.ResActorLadderMatchService;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.service.KkUserService;
+import com.melot.kkcx.service.ProfileServices;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
-import com.melot.kktv.service.ConfigService;
+import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
+import com.melot.kktv.util.confdynamic.SystemConfig;
+
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -51,11 +52,6 @@ public class HappyPKFunction {
     @Resource
     private KkUserService kkUserService;
     
-    @Autowired
-    private ConfigService configService;
-
-    private static final String REGEX = ",";
-
     /**
      * 获取天梯赛当前赛季信息【51060401】
      */
@@ -496,10 +492,16 @@ public class HappyPKFunction {
         return userProfile.getPortrait() == null ? null : userProfile.getPortrait() + "!128";
     }
 
+    /**
+     * 51060406
+     * 校验是否有欢乐PK主持人权限，使用的是room_source=21的相关配置
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
     public JsonObject isCompere(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-
         JsonObject result = new JsonObject();
-
         int userId;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
@@ -511,30 +513,48 @@ public class HappyPKFunction {
             return result;
         }
 
-        String pkCompereIds = configService.getPkCompereIds().trim();
-
-        // 默认是不通过
-        result.addProperty("isCompere", 0);
-
-        // 配置文件设置为0 或者不设置 所有用户都通过
-        if (StringUtil.strIsNull(pkCompereIds) || "0".equals(pkCompereIds)) {
-            result.addProperty("isCompere", 1);
-            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-            return result;
+        // 三人PK主持人白名单对应的roomSource是21
+        int isBroadcast = isBroadcastByType("21", userId);
+        if (isBroadcast < 0) {
+            result.addProperty("isCompere", isBroadcastBySource(userId, 21));
+        } else {
+            result.addProperty("isCompere", isBroadcast);
         }
 
-        // 设置了白名单并且在白名单列表中，允许为主持人
-        String[] pkCompereIdList = pkCompereIds.split(REGEX);
-        if (pkCompereIdList != null && pkCompereIdList.length > 0) {
-            for (String string : pkCompereIdList) {
-                if (Integer.valueOf(string).equals(userId)) {
-                    result.addProperty("isCompere", 1);
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+    
+    private int isBroadcastBySource(int roomId, int roomSource) {
+        int result = 0;
+        String roomSourceActorStr = ProfileServices.getRoomSourceActor(roomSource);
+        if (roomSourceActorStr != null) {
+            String[] roomSourceActors = roomSourceActorStr.split(",");
+            for (String ractorId : roomSourceActors) {
+                if (roomId == Integer.valueOf(ractorId)) {
+                    result = 1;
                     break;
                 }
             }
         }
-
-        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+    
+    private int isBroadcastByType(String broadcastType, int userId) {
+        int result = 0;
+        String broadcastTypeStr = SystemConfig.getValue(String.format("broadcastAuthority_%s", broadcastType), AppIdEnum.AMUSEMENT);
+        if (broadcastTypeStr != null) {
+            String[] broadcastTypeList = broadcastTypeStr.split(",");
+            for (String type : broadcastTypeList) {
+                if (Integer.valueOf(type) == -1) {
+                    result = -1;
+                    break;
+                } else if (ProfileServices.getRoomType(userId) == Integer.valueOf(type)) {
+                    result = 1;
+                    break;
+                }
+            }
+        }
         return result;
     }
 }

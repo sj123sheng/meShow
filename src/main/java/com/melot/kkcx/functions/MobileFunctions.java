@@ -7,6 +7,8 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.melot.kk.otherlogin.api.service.OtherLoginService;
+import com.melot.sdk.core.util.MelotBeanFactory;
 import org.apache.log4j.Logger;
 
 import com.google.gson.Gson;
@@ -81,21 +83,11 @@ public class MobileFunctions {
 //		sb.append(curTime);
 //		statsLogger.info(sb.toString());
 		
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("userId", userId);
-		map.put("appId", appId);
-		map.put("platform", platform);
-		map.put("channel", channel);
-		map.put("ipaddr", clientIp);
-		map.put("dtime", new Date());
 		try {
-            SqlMapClientHelper.getInstance(DB.BACKUP).queryForObject("Mobile.addGuestLoginInfo", map);
-            String TagCode = (String) map.get("TagCode");
-            if (!TagCode.equals(TagCodeEnum.SUCCESS)) {
-                logger.error("调用存储过程(Mobile.addGuestLoginInfo(" + new Gson().toJson(map) + "))未得到正常结果,TagCode:" + TagCode);
-            }
+			OtherLoginService otherLoginService = (OtherLoginService) MelotBeanFactory.getBean("otherLoginService");
+			otherLoginService.addGuestLoginInfo(userId, platform, appId, channel, clientIp, new Date());
         } catch (Exception e) {
-            logger.error("Mobile.addGuestLoginInfo(" + new Gson().toJson(map) + ") execute exception.", e);
+			logger.error("OtherLoginServiceImpl.addGuestLoginInfo(" + "userId:" + userId + "platform:" + platform + "appId:" + appId + "channelId:" + channel + "ipAddr:" + clientIp + "dtime:" + new Date() + ") execute exception.", e);
         }
 		
 		HadoopLogger.loginLog(userId, curDate, platform, clientIp, 0, appId, SecurityFunctions.decodeED(jsonObject));

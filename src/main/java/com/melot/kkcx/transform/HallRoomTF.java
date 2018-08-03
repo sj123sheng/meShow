@@ -1,6 +1,10 @@
 package com.melot.kkcx.transform;
 
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
@@ -18,8 +22,10 @@ import com.melot.kktv.util.ConstantEnum;
 import com.melot.kktv.util.DateUtil;
 import com.melot.kktv.util.PlatformEnum;
 import com.melot.kktv.util.StringUtil;
+import com.melot.kktv.util.cache.EhCache;
 import com.melot.kktv.util.confdynamic.SystemConfig;
 import com.melot.sdk.core.util.MelotBeanFactory;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 
 public class HallRoomTF {
@@ -28,21 +34,27 @@ public class HallRoomTF {
 
     private static PlaybackActorService playbackActorService;
 
+    public static final String PLATBACK_ACTORS_CACHE = "platback_actors_cache";
+
     static {
         playbackActorService = (PlaybackActorService) MelotBeanFactory.getBean("playbackActorService");
     }
 
     public static JsonObject roomInfoWithPlaybackToJson(HallRoomInfoDTO roomInfo, int platform) {
-        JsonObject res = roomInfoToJson(roomInfo, platform);
-        boolean isPlaybackActor = false;
+        Set<String> playbackIds = new HashSet<>();
         try {
-            if (roomInfo.getActorId() != null) {
-                isPlaybackActor = playbackActorService.isPlaybackActor(roomInfo.getActorId());
+            // 查询缓存
+            playbackIds = (Set<String>) EhCache.getFromCache(PLATBACK_ACTORS_CACHE);
+            // 缓存若不存在，查询服务
+            if (CollectionUtils.isEmpty(playbackIds)) {
+                playbackIds = playbackActorService.getPlaybackActorIds();
+                EhCache.putInCacheByLive(PLATBACK_ACTORS_CACHE, playbackIds, 60);
             }
         } catch (Exception e) {
             logger.error(String.format("module error：playbackActorService.isPlaybackActor(actorId=%s)", roomInfo.getActorId()), e);
         }
-        res.addProperty("isPlaybackActor", isPlaybackActor);
+        JsonObject res = roomInfoToJson(roomInfo, platform);
+        res.addProperty("isPlaybackActor", playbackIds.contains(String.valueOf(roomInfo.getActorId())));
         return res;
     }
 

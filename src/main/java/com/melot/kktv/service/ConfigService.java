@@ -1,8 +1,9 @@
 package com.melot.kktv.service;
 
+import org.springframework.stereotype.Service;
+
 import com.baidu.disconf.client.common.annotations.DisconfFile;
 import com.baidu.disconf.client.common.annotations.DisconfFileItem;
-import org.springframework.stereotype.Service;
 
 /**
  * @description: ConfigService
@@ -150,6 +151,21 @@ public class ConfigService {
      * 大于nearbyMiddleDistance，距离间隔值，单位米
      */
     private int nearbyDistanceAfterInterval;
+
+    /**
+     * 区域化获取回放视频的时长下限,单位秒
+     */
+    private int replayVedioLowerDuration;
+
+    /**
+     * 区域化获取回放视频的时间限制,单位天
+     */
+    private int replayVedioLimitDay;
+    
+    /**
+     * 首冲banner配置
+     */
+    private String chargeBanner;
 
     @DisconfFileItem(name = "nearbyStartDistance", associateField = "nearbyStartDistance")
     public int getNearbyStartDistance() {
@@ -378,4 +394,18 @@ public class ConfigService {
         this.xmanPortrait = xmanPortrait;
     }
 
+    @DisconfFileItem(name = "replayVedioLowerDuration", associateField = "replayVedioLowerDuration")
+    public int getReplayVedioLowerDuration() {
+        return replayVedioLowerDuration;
+    }
+
+    @DisconfFileItem(name = "replayVedioLimitDay", associateField = "replayVedioLimitDay")
+    public int getReplayVedioLimitDay() {
+        return replayVedioLimitDay;
+    }
+    
+    @DisconfFileItem(name = "chargeBanner", associateField = "chargeBanner")
+    public String getChargeBanner() {
+        return chargeBanner;
+    }
 }
