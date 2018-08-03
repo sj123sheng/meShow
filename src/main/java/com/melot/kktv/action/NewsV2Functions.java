@@ -783,8 +783,6 @@ public class NewsV2Functions {
             jsonArray.add(topic);
         }
         result.add("topicList", jsonArray);
-        result.addProperty("pathPrefix", ConfigHelper.getHttpdir()); // 图片前缀
-        result.addProperty("mediaPathPrefix", ConfigHelper.getMediahttpdir()); // 多媒体前缀
         result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());// 七牛前缀
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
