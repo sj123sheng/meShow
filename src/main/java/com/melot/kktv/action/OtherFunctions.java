@@ -10,11 +10,6 @@ import java.util.Map;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
-import com.melot.kktv.base.Page;
-import com.melot.kktv.util.*;
-import com.melot.video.driver.domain.SearchVideoParams;
-import com.melot.video.driver.domain.VideoInfo;
-import com.melot.video.driver.service.VideoInfoServiceNew;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,17 +57,35 @@ import com.melot.kkcx.service.FamilyService;
 import com.melot.kkcx.service.ProfileServices;
 import com.melot.kkcx.service.RoomService;
 import com.melot.kkgame.redis.ActorInfoSource;
+import com.melot.kktv.base.Page;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.UserService;
+import com.melot.kktv.util.AppChannelEnum;
+import com.melot.kktv.util.AppIdEnum;
+import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.ConfigHelper;
+import com.melot.kktv.util.Constant;
+import com.melot.kktv.util.DBEnum;
+import com.melot.kktv.util.DateUtil;
+import com.melot.kktv.util.ParameterKeys;
+import com.melot.kktv.util.PlatformEnum;
+import com.melot.kktv.util.SecretKeyUtil;
+import com.melot.kktv.util.StringUtil;
+import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.confdynamic.SystemConfig;
 import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.module.packagegift.driver.domain.LoudSpeakerHistory;
+import com.melot.module.packagegift.driver.domain.RechargePackage;
 import com.melot.module.packagegift.driver.service.MallService;
+import com.melot.module.packagegift.driver.service.PackageInfoService;
 import com.melot.module.packagegift.driver.service.TicketService;
 import com.melot.module.packagegift.driver.service.VipService;
 import com.melot.module.packagegift.util.GiftPackageEnum;
 import com.melot.sdk.core.util.MelotBeanFactory;
+import com.melot.video.driver.domain.SearchVideoParams;
+import com.melot.video.driver.domain.VideoInfo;
+import com.melot.video.driver.service.VideoInfoServiceNew;
 
 /**
  * 其他相关的接口类
@@ -106,7 +119,9 @@ public class OtherFunctions {
 
     @Resource
 	VideoInfoServiceNew videoInfoServiceNew;
-
+    
+    @Resource
+    PackageInfoService packageInfoService;
 
     @SuppressWarnings("unused")
     private ActorInfoSource actorInfoSource;
@@ -1610,6 +1625,52 @@ public class OtherFunctions {
             }
         }
         result.addProperty("lotteryContent", configService.getLotteryContent());
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+    
+    /**
+     * 获取充值活动banner(51090304)
+     * 
+     * @param jsonObject 请求对象
+     * @return 标记信息
+     */
+    public JsonObject getChargeBanner(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        int userId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        boolean isComplete = false;
+        if (userId > 0) {
+            int count = 0;
+            List<RechargePackage> userRechargePackage = packageInfoService.getUserRechargePackageList(userId, AppIdEnum.AMUSEMENT);
+            if (!CollectionUtils.isEmpty(userRechargePackage)) {
+                for (RechargePackage rechargePackage : userRechargePackage) {
+                    if (rechargePackage.getStatus() > 0) {
+                        count ++;
+                    }
+                }
+                if (count == 4) {
+                    isComplete = true;
+                }
+            }
+        }
+        
+        if (!isComplete) {
+            String chargeBanner = configService.getChargeBanner();
+            result = new JsonParser().parse(chargeBanner).getAsJsonObject();
+        }
+        result.addProperty("isComplete", isComplete ? 1 : 0);
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
