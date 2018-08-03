@@ -209,4 +209,7 @@
     
     <!-- 财富等级升级接口 -->
     <bean id="userLevelFunctions" class="com.melot.kkcx.functions.UserLevelFunctions" />
+
+    <!-- 位置坐标相关接口 -->
+    <bean id="locationFunctions" class="com.melot.kktv.action.LocationFunctions" />
 </beans>

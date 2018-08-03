@@ -2952,4 +2952,14 @@
 		<constructor-arg name="methodName" value="getLaunchedVideoList" />
 	</bean>
 
+    <!-- 位置坐标接口 -->
+    <bean id="51120101" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="locationFunctions" />
+        <constructor-arg name="methodName" value="getAddressComponent" />
+    </bean>
+    <bean id="51120102" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="locationFunctions" />
+        <constructor-arg name="methodName" value="getNextAreaCodeList" />
+    </bean>
+
 </beans>
