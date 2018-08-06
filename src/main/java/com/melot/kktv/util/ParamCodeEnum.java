@@ -35,7 +35,10 @@ public enum ParamCodeEnum {
     PLATFORM("platform", "53000010"),
     UNIONID("unionid", "53000011"),
     ACTOR_ID("actorId", "53000012"),
-    SEASON_TYPE("seasonType", "53000013");
+    SEASON_TYPE("seasonType", "53000013"),
+    LAT("lat", "53000014"),
+    LNG("lng", "53000015"),
+    AREA_CODE("areaCode", "53000016");
 
 
     private String id;

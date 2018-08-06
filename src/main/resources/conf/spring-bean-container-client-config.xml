@@ -223,4 +223,8 @@
 	
 	<kkrpc:reference id="recommendedMsgService" interface="com.melot.kk.message.api.service.RecommendedMsgService" version="1.0.0"/>
 	<kkrpc:reference id="messageService" interface="com.melot.common.driver.service.MessageService" version="1.0.1"/>
+
+    <!-- 位置坐标模块 -->
+    <kkrpc:reference id="locationService" interface="com.melot.kk.location.api.service.LocationService" version="1.0.0" />
+
 </beans>
