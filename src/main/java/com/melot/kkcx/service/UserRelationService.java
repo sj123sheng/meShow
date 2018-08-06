@@ -173,7 +173,15 @@ public class UserRelationService {
 		jObject.addProperty("userId", roomInfo.getActorId());
 		// 轮播房添加roomId，非轮播房正在直播的主播等于actorId
 		jObject.addProperty("roomId", roomInfo.getRoomId() != null ? roomInfo.getRoomId() : roomInfo.getActorId());
-		jObject.addProperty("nickname", GeneralService.replaceSensitiveWords(roomInfo.getActorId(), roomInfo.getNickname()));
+		
+		String nickname = roomInfo.getNickname();
+		//非官方号需昵称过滤
+        Integer adminType = ProfileServices.getUserAdminType(roomInfo.getActorId());
+        if (adminType == null || adminType == -1) {
+            nickname = GeneralService.replaceSensitiveWords(roomInfo.getActorId(), nickname);
+        }
+		
+		jObject.addProperty("nickname", nickname);
 		if (roomInfo.getGender() != null) {
 			jObject.addProperty("gender", roomInfo.getGender());
 	    } else {
