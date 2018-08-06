@@ -1,7 +1,6 @@
 package com.melot.kkcx.functions;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.melot.kk.liveproject.api.dto.LiveProjectTaskDTO;
 import com.melot.kk.liveproject.api.dto.ResPrivatePhotoDTO;
@@ -34,7 +33,7 @@ public class KKLiveProjectFunctions {
     LiveProjectService liveProjectService;
 
     /**
-     * 51050701
+     * 51120201
      * 获取主播私密照
      * @param jsonObject
      * @param checkTag
@@ -84,16 +83,20 @@ public class KKLiveProjectFunctions {
                 json.addProperty("unlockPrice", resPrivatePhotoDTO.getUnlockPrice());
                 json.addProperty("unlockShareNum", resPrivatePhotoDTO.getUnlockShareNum());
                 json.addProperty("photoUrl", resPrivatePhotoDTO.getPhotoPath());
-                if (resPrivatePhotoDTO.getCurrentUnlockNum() != null) {
-                    json.addProperty("currentUnlockNum", resPrivatePhotoDTO.getCurrentUnlockNum());
-                }
-                if (resPrivatePhotoDTO.getUnlockState() != null) {
-                    json.addProperty("isUnlock", resPrivatePhotoDTO.getUnlockState() > 0);
-                }
+
                 helpUserIds = new JsonArray();
-                if (resPrivatePhotoDTO.getHelpUnlockUserIds() != null) {
-                    for (Integer helpUserId : resPrivatePhotoDTO.getHelpUnlockUserIds()) {
-                        helpUserIds.add(helpUserId);
+                // 游客不显示以下信息
+                if (userId != 0) {
+                    if (resPrivatePhotoDTO.getCurrentUnlockNum() != null) {
+                        json.addProperty("currentUnlockNum", resPrivatePhotoDTO.getCurrentUnlockNum());
+                    }
+                    if (resPrivatePhotoDTO.getUnlockState() != null) {
+                        json.addProperty("isUnlock", resPrivatePhotoDTO.getUnlockState() > 0);
+                    }
+                    if (resPrivatePhotoDTO.getHelpUnlockUserIds() != null) {
+                        for (Integer helpUserId : resPrivatePhotoDTO.getHelpUnlockUserIds()) {
+                            helpUserIds.add(helpUserId);
+                        }
                     }
                 }
                 json.add("helpUserIds", helpUserIds);
@@ -107,7 +110,7 @@ public class KKLiveProjectFunctions {
 
 
     /**
-     * 51050702
+     * 51120202
      * 检验是否支付解锁成功
      * @param jsonObject
      * @param checkTag
@@ -119,7 +122,7 @@ public class KKLiveProjectFunctions {
 
         String adminOrderNo;
         try {
-            adminOrderNo = CommonUtil.getJsonParamString(jsonObject, "adminOrderNo", null, "5105070201", 1, 100);
+            adminOrderNo = CommonUtil.getJsonParamString(jsonObject, "adminOrderNo", null, "5112020201", 1, 100);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
             return result;
@@ -128,7 +131,7 @@ public class KKLiveProjectFunctions {
             return result;
         }
 
-        String tagCode = "5105070202";
+        String tagCode = "5112020202";
         try {
             log.info("start check, adminOrderNo=" + adminOrderNo);
             if (liveProjectService.checkUnlockAfterPay(adminOrderNo)) {
@@ -146,7 +149,7 @@ public class KKLiveProjectFunctions {
 
 
     /**
-     * 51050703
+     * 51120203
      * 分享解锁私密照
      * @param jsonObject
      * @param checkTag
@@ -173,7 +176,7 @@ public class KKLiveProjectFunctions {
             return result;
         }
 
-        String tagCode = "5105070302";
+        String tagCode = "5112020302";
         try {
             if (liveProjectService.shareUnlockPrivatePhoto(histId, userId)) {
                 tagCode = TagCodeEnum.SUCCESS;
@@ -183,11 +186,11 @@ public class KKLiveProjectFunctions {
         } catch (MelotModuleException e) {
             log.info(String.format("Fail:shareUnlockPrivatePhoto(histId=%s, userId=%s)", histId, userId), e);
             if (e.getErrCode() == 101) {
-                tagCode = "5105070301";
+                tagCode = "5112020301";
             } else if (e.getErrCode() == 102) {
                 tagCode = TagCodeEnum.INVALID_PARAMETERS;
             } else if (e.getErrCode() == 103) {
-                tagCode = "5105070302";
+                tagCode = "5112020302";
             }
         } catch (Exception e) {
             log.error(String.format("Error:shareUnlockPrivatePhoto(histId=%s, userId=%s)", histId, userId), e);
@@ -198,7 +201,7 @@ public class KKLiveProjectFunctions {
     }
 
     /**
-     * 51050704
+     * 51120204
      * 生成分享解锁流水
      * @param jsonObject
      * @param checkTag
@@ -239,7 +242,7 @@ public class KKLiveProjectFunctions {
             if (e.getErrCode() == 101) {
                 tagCode = TagCodeEnum.INVALID_PARAMETERS;
             } else if (e.getErrCode() == 102) {
-                tagCode = "5105070401";
+                tagCode = "5112020401";
             }
         } catch (Exception e) {
             log.error(String.format("Error:addShareUnlockHist(userId=%s, actorId=%s, photoId=%s)", userId, actorId, photoId), e);
@@ -250,7 +253,7 @@ public class KKLiveProjectFunctions {
     }
 
     /**
-     * 51050705
+     * 51120205
      * 获取微信小程序的任务配置
      * @param jsonObject
      * @param checkTag
@@ -262,7 +265,7 @@ public class KKLiveProjectFunctions {
 
         int userId;
         try {
-            userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, TagCodeEnum.PARAMETER_PARSE_ERROR, 1, Integer.MAX_VALUE);
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
             return result;
@@ -280,11 +283,11 @@ public class KKLiveProjectFunctions {
         String tagCode = TagCodeEnum.MODULE_UNKNOWN_RESPCODE;
         List<LiveProjectTaskDTO> taskConfiguration = null;
         try {
-            taskConfiguration = liveProjectService.getTaskConfiguration();
+            taskConfiguration = liveProjectService.getTaskConfiguration(userId == 0 ? null : userId);
         } catch (MelotModuleException e) {
             log.info("Fail:getTaskConfiguration()", e);
             if (e.getErrCode() == 101) {
-                tagCode = "5105070501";
+                tagCode = "5112020501";
             }
         } catch (Exception e) {
             log.error("Error:getTaskConfiguration()", e);
@@ -298,6 +301,9 @@ public class KKLiveProjectFunctions {
                 json.addProperty("taskId", liveProjectTaskDTO.getTaskId());
                 json.addProperty("taskName", liveProjectTaskDTO.getTaskName());
                 json.addProperty("rewardGiftId", liveProjectTaskDTO.getRewardGiftId());
+                if (liveProjectTaskDTO.getFinish() != null) {
+                    json.addProperty("isFinish", liveProjectTaskDTO.getFinish());
+                }
                 array.add(json);
             }
             result.add("taskList", array);
@@ -307,8 +313,8 @@ public class KKLiveProjectFunctions {
     }
 
     /**
-     * 51050706
-     * 获取微信小程序的任务配置
+     * 51120206
+     * 完成任务
      * @param jsonObject
      * @param checkTag
      * @param request
@@ -336,7 +342,7 @@ public class KKLiveProjectFunctions {
             return result;
         }
 
-        String tagCode = "5105070603";
+        String tagCode = "5112020603";
         try {
             if (liveProjectService.finishTask(userId, taskId)) {
                 tagCode = TagCodeEnum.SUCCESS;
@@ -344,9 +350,9 @@ public class KKLiveProjectFunctions {
         } catch (MelotModuleException e) {
             log.info(String.format("Fail:finishTask(userId=%s, taskId=%s)", userId, taskId), e);
             if (e.getErrCode() == 101) {
-                tagCode = "5105070501";
+                tagCode = "5112020501";
             } else if (e.getErrCode() == 102) {
-                tagCode = "5105070502";
+                tagCode = "5112020502";
             }
         } catch (Exception e) {
             log.error("Error:getTaskConfiguration()", e);

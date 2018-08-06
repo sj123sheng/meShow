@@ -2953,32 +2953,32 @@
 	</bean>
 
 	<!-- 微信直播小程序API -->
-	<bean id="51050701" class="com.melot.sdk.core.function.GenericFunction">
+	<bean id="51120201" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="kKLiveProjectFunctions" />
 		<constructor-arg name="methodName" value="getActorPrivatePhoto" />
 	</bean>
 
-	<bean id="51050702" class="com.melot.sdk.core.function.GenericFunction">
+	<bean id="51120202" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="kKLiveProjectFunctions" />
 		<constructor-arg name="methodName" value="checkUnlockAfterPay" />
 	</bean>
 
-	<bean id="51050703" class="com.melot.sdk.core.function.GenericFunction">
+	<bean id="51120203" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="kKLiveProjectFunctions" />
 		<constructor-arg name="methodName" value="shareUnlockActorPrivatePhoto" />
 	</bean>
 
-	<bean id="51050704" class="com.melot.sdk.core.function.GenericFunction">
+	<bean id="51120204" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="kKLiveProjectFunctions" />
 		<constructor-arg name="methodName" value="addShareUnlockHist" />
 	</bean>
 
-	<bean id="51050705" class="com.melot.sdk.core.function.GenericFunction">
+	<bean id="51120205" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="kKLiveProjectFunctions" />
 		<constructor-arg name="methodName" value="getTaskConf" />
 	</bean>
 
-	<bean id="51050706" class="com.melot.sdk.core.function.GenericFunction">
+	<bean id="51120206" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="kKLiveProjectFunctions" />
 		<constructor-arg name="methodName" value="finishTask" />
 	</bean>
