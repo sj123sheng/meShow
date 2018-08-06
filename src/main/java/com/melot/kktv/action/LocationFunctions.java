@@ -58,17 +58,11 @@ public class LocationFunctions {
     }
 
     /**
-     * 根据行政区划编码获取下一级的行政区划列表【51050602】
+     * 根据行政区划编码获取下一级的行政区划列表【51120102】
      */
     public JsonObject getNextAreaCodeList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 
         JsonObject result = new JsonObject();
-
-        // 该接口需要验证token,未验证的返回错误码
-        if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-            return result;
-        }
 
         String areaCode;
         try {
