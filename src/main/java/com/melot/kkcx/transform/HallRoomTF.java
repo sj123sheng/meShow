@@ -321,6 +321,12 @@ public class HallRoomTF {
 
         if (roomInfo.getRegisterCity() != null) {
             roomObject.addProperty("cityId", Math.abs(roomInfo.getRegisterCity()));
+            // 直播小程序增加省份id和name
+            Integer provinceId = CityUtil.getParentCityIdNoDefault(roomInfo.getRegisterCity());
+            if (provinceId != null) {
+                roomObject.addProperty("provinceId", provinceId);
+                roomObject.addProperty("provinceName", CityUtil.getCityName(provinceId));
+            }
         }
     }
 

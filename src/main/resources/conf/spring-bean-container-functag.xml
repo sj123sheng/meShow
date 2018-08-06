@@ -2957,6 +2957,7 @@
 		<constructor-arg name="methodName" value="getLaunchedVideoList" />
 	</bean>
 
+
     <!-- 位置坐标接口 -->
     <bean id="51120101" class="com.melot.sdk.core.function.GenericFunction">
         <constructor-arg name="t" ref="locationFunctions" />
@@ -2968,5 +2969,37 @@
         <constructor-arg name="cacheType" value="864000" />
         <constructor-arg name="cacheKeyExcluedUserId" value="1" />
     </bean>
+
+
+	<!-- 微信直播小程序API -->
+	<bean id="51120201" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kKLiveProjectFunctions" />
+		<constructor-arg name="methodName" value="getActorPrivatePhoto" />
+	</bean>
+
+	<bean id="51120202" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kKLiveProjectFunctions" />
+		<constructor-arg name="methodName" value="checkUnlockAfterPay" />
+	</bean>
+
+	<bean id="51120203" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kKLiveProjectFunctions" />
+		<constructor-arg name="methodName" value="shareUnlockActorPrivatePhoto" />
+	</bean>
+
+	<bean id="51120204" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kKLiveProjectFunctions" />
+		<constructor-arg name="methodName" value="addShareUnlockHist" />
+	</bean>
+
+	<bean id="51120205" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kKLiveProjectFunctions" />
+		<constructor-arg name="methodName" value="getTaskConf" />
+	</bean>
+
+	<bean id="51120206" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kKLiveProjectFunctions" />
+		<constructor-arg name="methodName" value="finishTask" />
+	</bean>
 
 </beans>
