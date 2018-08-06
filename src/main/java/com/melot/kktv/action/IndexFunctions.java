@@ -1432,7 +1432,7 @@ public class IndexFunctions {
 		int count = (int) WeekGiftSource.getWeekGiftRankListCount(type);
 		if (count <= 0) {
 		    RoomExtendConfService roomExtendConfService = (RoomExtendConfService) MelotBeanFactory.getBean("roomExtendConfService");
-	        List<WeekStarGift> weekStarGiftList = roomExtendConfService.getWeekStarGiftList(Math.abs(type));
+	        List<WeekStarGift> weekStarGiftList = roomExtendConfService.getWeekStarGiftList(type);
 			if (weekStarGiftList != null && !weekStarGiftList.isEmpty()) {
 			    Integer giftId, relationGiftId, singlePrice;
 			    String giftName;
