@@ -1134,7 +1134,9 @@ public class LiveShopFunctions {
                     JsonObject json = new JsonObject();
                     json.addProperty("userId", userProfile.getUserId());
                     json.addProperty("nickname", userProfile.getNickName());
-                    json.addProperty("portrait", ConfigHelper.getHttpdir() + userProfile.getPortrait());
+                    if (!StringUtil.strIsNull(userProfile.getPortrait())) {
+                        json.addProperty("portrait", ConfigHelper.getHttpdir() + userProfile.getPortrait());
+                    }
                     json.addProperty("richLevel", userProfile.getUserLevel());
                     
                     subShopInfos.add(json);
