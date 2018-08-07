@@ -351,7 +351,7 @@ public class NodeFunctions {
 		        if (adminType == null || adminType == -1) {
 		            nickname = GeneralService.replaceSensitiveWords(userId, nickname);
 		        }
-				result.addProperty("nickname", GeneralService.replaceSensitiveWords(userId, userInfoDetail.getProfile().getNickName()));
+				result.addProperty("nickname", nickname);
 			}
 			if (userInfoDetail.getProfile().getIdentifyPhone() != null) {
 				result.addProperty("identifyPhone", userInfoDetail.getProfile().getIdentifyPhone());
