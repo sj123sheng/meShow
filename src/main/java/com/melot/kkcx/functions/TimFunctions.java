@@ -82,8 +82,14 @@ public class TimFunctions {
             return result;
         }
 
+        String nickname = userProfile.getNickName();
+        //非官方号需昵称过滤
+        Integer adminType = ProfileServices.getUserAdminType(userId);
+        if (adminType == null || adminType == -1) {
+            nickname = GeneralService.replaceSensitiveWords(userId, nickname);
+        }
         // 腾讯云IM账号注册
-        boolean ret = TimService.registerTim(userId + "", GeneralService.replaceSensitiveWords(userProfile.getUserId(), userProfile.getNickName()));
+        boolean ret = TimService.registerTim(userId + "", nickname);
         if (ret) {
             // 获取腾讯云IM接口调用签名
             String sig = TimService.getTimSig(userId);
@@ -166,7 +172,6 @@ public class TimFunctions {
                 if (userInfoDetail.getProfile() != null && userIdElement.equals(userInfoDetail.getProfile().getUserId())) {
                     JsonObject jsonObj = new JsonObject();
                     jsonObj.addProperty("userId", userInfoDetail.getProfile().getUserId());
-                    jsonObj.addProperty("nickName", GeneralService.replaceSensitiveWords(userInfoDetail.getProfile().getUserId(), userInfoDetail.getProfile().getNickName()));
                     jsonObj.addProperty("gender", userInfoDetail.getProfile().getGender());
                     jsonObj.addProperty("isActor", userInfoDetail.getProfile().getIsActor());
                     jsonObj.addProperty("portrait", userInfoDetail.getProfile().getPortrait());
@@ -182,13 +187,17 @@ public class TimFunctions {
                         jsonObj.addProperty("richMin", richLevel.getMinValue());
                         jsonObj.addProperty("richMax", richLevel.getMaxValue());
                     }
-                    
+                    String nickname = userInfoDetail.getProfile().getNickName();
                     Integer adminType = ProfileServices.getUserAdminType(userInfoDetail.getProfile().getUserId());
                     if (adminType != null && adminType != -1) {
                     	jsonObj.addProperty("siteAdmin", adminType);
+                    } else {
+                        //非官方号需过滤昵称
+                        nickname = GeneralService.replaceSensitiveWords(userInfoDetail.getProfile().getUserId(), nickname);
                     }
+                    jsonObj.addProperty("nickName", nickname);
                     
-                    TimService.registerTim(userInfoDetail.getProfile().getUserId() + "", GeneralService.replaceSensitiveWords(userInfoDetail.getProfile().getUserId(), userInfoDetail.getProfile().getNickName()));
+                    TimService.registerTim(userInfoDetail.getProfile().getUserId() + "", nickname);
                     jsonArray.add(jsonObj);
                     break;
                 }

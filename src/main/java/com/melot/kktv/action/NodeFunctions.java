@@ -345,7 +345,13 @@ public class NodeFunctions {
 				result.addProperty("portrait", userInfoDetail.getProfile().getPortrait());
 			}
 			if (userInfoDetail.getProfile().getNickName() != null) {
-				result.addProperty("nickname", GeneralService.replaceSensitiveWords(userId, userInfoDetail.getProfile().getNickName()));
+			    String nickname = userInfoDetail.getProfile().getNickName();
+			    //非官方号需昵称过滤
+		        Integer adminType = ProfileServices.getUserAdminType(userId);
+		        if (adminType == null || adminType == -1) {
+		            nickname = GeneralService.replaceSensitiveWords(userId, nickname);
+		        }
+				result.addProperty("nickname", nickname);
 			}
 			if (userInfoDetail.getProfile().getIdentifyPhone() != null) {
 				result.addProperty("identifyPhone", userInfoDetail.getProfile().getIdentifyPhone());

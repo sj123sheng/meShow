@@ -179,7 +179,8 @@
 	<!-- 用户收货地址信息 -->
 	<kkrpc:reference id="userAddressService" interface="com.melot.kk.logistics.api.service.UserAddressService" version="1.0.0"/>
 	
-	<kkrpc:reference id="liveShopService" interface="com.melot.kk.liveshop.api.service.LiveShopService" version="1.0.1"/>
+	<!-- 直播购服务 -->
+	<kkrpc:reference id="liveShopService" interface="com.melot.kk.liveshop.api.service.LiveShopService" version="1.0.2"/>
 	
 	<kkrpc:reference id="rechargeService" interface="com.melot.kk.recharge.api.service.RechargeService" version="1.0.1"/>
 
@@ -224,7 +225,11 @@
 	<kkrpc:reference id="recommendedMsgService" interface="com.melot.kk.message.api.service.RecommendedMsgService" version="1.0.0"/>
 	<kkrpc:reference id="messageService" interface="com.melot.common.driver.service.MessageService" version="1.0.1"/>
 
+
     <!-- 位置坐标模块 -->
     <kkrpc:reference id="locationService" interface="com.melot.kk.location.api.service.LocationService" version="1.0.0" />
+
+	<!-- 微信直播小程序服务 -->
+	<kkrpc:reference id="liveProjectService" interface="com.melot.kk.liveproject.api.service.LiveProjectService" version="1.0.0"/>
 
 </beans>
