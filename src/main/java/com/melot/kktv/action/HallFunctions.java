@@ -280,7 +280,7 @@ public class HallFunctions {
 					while (i < roomList.size()) {
 						roomInfo = roomList.get(i);
 						json = HallRoomTF.roomInfoWithPlaybackToJson(roomInfo, platform);
-						if (!Objects.equals(cityId, roomList.get(i).getRegisterCity())) {
+						if (!Objects.equals(cityId, Math.abs(roomList.get(i).getRegisterCity()))) {
 							break;
 						}
 						dist = configService.getNearbyStartDistance() + (start + i) * configService.getNearbyDistanceBeforeInterval();
