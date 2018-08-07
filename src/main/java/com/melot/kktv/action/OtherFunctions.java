@@ -1696,13 +1696,21 @@ public class OtherFunctions {
 			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
 			return result;
 		}
+		// 设置查询参数
 		SearchVideoParams params = new SearchVideoParams();
 		params.setActorId(actorId);
 		params.setStart(start);
 		params.setNum(num);
 		params.setLowerDuration(configService.getReplayVedioLowerDuration());
 		params.setDaysLimit(configService.getReplayVedioLowerDuration());
-		Page<VideoInfo> page = videoInfoServiceNew.getPublishVideoList(params);
+		Page<VideoInfo> page = null;
+		try {
+			page = videoInfoServiceNew.getPublishVideoList(params);
+		} catch (Exception e) {
+			logger.error(String.format("Error:getLaunchedVideoList(jsonObject=%s, checkTag=%s, request=%s)", jsonObject, checkTag, request), e);
+			result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+			return result;
+		}
 		JsonArray videoListArray = new JsonArray();
 		if (page != null) {
 			long count = page.getCount();
