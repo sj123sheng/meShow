@@ -13,11 +13,6 @@
 		<result property="roomSource" column="roomSource" />
 	</resultMap>
 	
-	<!-- 更新快牙用户手机号信息 -->
-	<update id="updateKuaiyaUserPhoneNum" parameterClass="java.util.Map">
-		update user_account_kuaiya set phonenum = #phoneNum# where userid = #userId# and uuid = #uuid#
-	</update>
-	
 	<select id="getWeeklyFansRanking" resultMap="fansRankingItem" parameterClass="java.util.Map">
 		select t3.userId, t3.contribution, 1 as roomSource 
 		  	from (select t2.userId, t2.contribution
@@ -65,10 +60,5 @@
 				                 order by 2 desc) t1 where rownum <![CDATA[<]]> 21) t2)t3
 			   order by 2 desc
 	</select>
-
-	<!-- 插入用户临时密码表 -->
-	<insert id="insertUserTempPassword" parameterClass="java.util.Map">
-		insert into temp_user_password(userid, origin_password, record_time) values(#userId#, #password#, #dtime#)
-	</insert>
 	
 </sqlMap>

@@ -1,6 +1,5 @@
 package com.melot.kktv.action;
 
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -59,8 +58,6 @@ import com.melot.kkcx.transform.RoomTF;
 import com.melot.kktv.base.Page;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.constant.RoomPosterConstant;
-import com.melot.kktv.model.Activity;
-import com.melot.kktv.model.HotActivity;
 import com.melot.kktv.model.MedalInfo;
 import com.melot.kktv.model.PreviewAct;
 import com.melot.kktv.model.RankUser;
@@ -86,8 +83,6 @@ import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.confdynamic.GiftInfoConfig;
 import com.melot.kktv.util.confdynamic.MedalConfig;
-import com.melot.kktv.util.db.DB;
-import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.module.medal.driver.domain.ConfMedal;
 import com.melot.module.medal.driver.domain.GsonMedalObj;
 import com.melot.module.medal.driver.domain.UserActivityMedal;
@@ -666,75 +661,6 @@ public class IndexFunctions {
 			}
 		}
 		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-		return result;
-	}
-
-	/**
-	 * 获取活动列表(10002006)
-	 * 
-	 * @param jsonObject 请求对象
-	 * @return 结果字符串
-	 */
-	public JsonObject getActivityList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
-	    JsonObject result = new JsonObject();
-	    
-		int istop, platform, appId, channel;
-		try {
-            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.WEB, null, 1, Integer.MAX_VALUE);
-            istop = CommonUtil.getJsonParamInt(jsonObject, "isTop", 0, null, 0, Integer.MAX_VALUE);
-            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 0, Integer.MAX_VALUE);
-            channel = CommonUtil.getJsonParamInt(jsonObject, "c", AppChannelEnum.KK, null, 0, Integer.MAX_VALUE);
-        } catch (CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
-            return result;
-        } catch (Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-            return result;
-        }
-		
-		// 调用存储过程得到结果
-		Map<Object, Object> map = new HashMap<Object, Object>();
-		map.put("isTop", istop);
-		map.put("platform", platform);
-		map.put("appId", appId);
-		map.put("channel", usePrivateChannel(channel) ? channel : 100);
-		try {
-		    SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Index.getActivityList", map);
-		} catch (SQLException e) {
-		    logger.error("未能正常调用存储过程", e);
-		    result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
-		    return result;
-		}
-		String TagCode = (String) map.get("TagCode");
-		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-		    result.addProperty("TagCode", TagCode);
-		    
-			// 取出列表
-			@SuppressWarnings("unchecked")
-			List<Object> activityList = (ArrayList<Object>) map.get("activityList");
-			JsonArray jActivityList = new JsonArray();
-			if (activityList != null && activityList.size() > 0) {
-			    for (Object object : activityList) {
-			        jActivityList.add(((Activity) object).toJsonObject(platform));
-			    }
-            }
-			result.add("activityList", jActivityList);
-
-			@SuppressWarnings("unchecked")
-			List<HotActivity> hotActivityList = (ArrayList<HotActivity>) map.get("hotActivityList");
-			JsonArray jHotActivityList = new JsonArray();
-			if (hotActivityList != null && hotActivityList.size() > 0) {
-			    for (HotActivity ha : hotActivityList) {
-			        jHotActivityList.add(ha.toJsonObject(platform));
-			    }
-			}
-			result.add("hotActivityList", jHotActivityList);
-		} else {
-			// 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
-			logger.error("调用存储过程(Index.getActivityList)未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
-			result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
-		}
-		
 		return result;
 	}
 
