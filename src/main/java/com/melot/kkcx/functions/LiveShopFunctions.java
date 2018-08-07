@@ -7,6 +7,8 @@ import com.melot.kk.liveshop.api.constant.LiveShopErrorMsg;
 import com.melot.kk.liveshop.api.constant.LiveShopTransactionType;
 import com.melot.kk.liveshop.api.dto.*;
 import com.melot.kktv.util.*;
+import com.melot.module.api.exceptions.MelotModuleException;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 
@@ -1198,6 +1200,19 @@ public class LiveShopFunctions {
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
             } else {
                 result.addProperty(ParameterKeys.TAG_CODE, "5206052203");
+            }
+        } catch (MelotModuleException e) {
+            logger.info(String.format("Module Error：liveShopService.addSubShopId(userId=%s, subShopId=%s)", userId, subShopId), e);
+            int errCode = e.getErrCode();
+            if (errCode == 1) {
+                // 主播不是直播购主播
+                result.addProperty(ParameterKeys.TAG_CODE, "5206052204");
+            } else if (errCode == 3) {
+                // 客服号不合法
+                result.addProperty(ParameterKeys.TAG_CODE, "5206052205");
+            } else {
+                // 数据库处理异常
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             }
         } catch (Exception e) {
             logger.error(String.format("Module Error：liveShopService.addSubShopId(userId=%s, subShopId=%s)", userId, subShopId), e);
