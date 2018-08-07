@@ -2456,7 +2456,12 @@ public class UserFunctions {
         if (userInfoDetail.getProfile().getNickName() != null) {
             t = Cat.getProducer().newTransaction("MCall", "GeneralService.replaceSensitiveWords");
             try {
-                result.addProperty("nickname", GeneralService.replaceSensitiveWords(userId, userInfoDetail.getProfile().getNickName()));
+                String nickname = userInfoDetail.getProfile().getNickName();
+                Integer adminType = ProfileServices.getUserAdminType(userId);
+                if (adminType == null || adminType == -1) {
+                    nickname = GeneralService.replaceSensitiveWords(userId, nickname);
+                }
+                result.addProperty("nickname", nickname);
                 t.setStatus(Transaction.SUCCESS);
             } catch (Exception e) {
                 Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息

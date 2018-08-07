@@ -205,6 +205,9 @@ public class TagCodeEnum {
     
     /** 用户昵称待审 */
     public static final String NICKNAME_PENDINGAUDIT = "30001047";
+
+	/** 非法参数 */
+	public static final String INVALID_PARAMETERS = "30001048";
 	
 	/** 模块服务返回空数据 */
 	public static final String MODULE_RETURN_NULL = "10000000";

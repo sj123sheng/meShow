@@ -1159,6 +1159,11 @@
 		<constructor-arg name="t" ref="otherFunction" />
 		<constructor-arg name="methodName" value="getLotteryInfo" />
 	</bean>
+	<!-- 获取充值活动banner -->
+	<bean id="51090304" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="otherFunction" />
+		<constructor-arg name="methodName" value="getChargeBanner" />
+	</bean>
 	
 	<!-- 用户档案安全接口类 -->
 	<!-- 安全注册 -->

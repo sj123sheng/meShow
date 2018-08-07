@@ -1,7 +1,6 @@
 package com.melot.kkcx.transform;
 
 import java.util.Calendar;
-import java.util.Date;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -9,6 +8,7 @@ import com.google.gson.reflect.TypeToken;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.api.menu.sdk.dao.domain.RoomSideLabel;
 import com.melot.kkcx.service.GeneralService;
+import com.melot.kkcx.service.ProfileServices;
 import com.melot.kkcx.service.UserAssetServices;
 import com.melot.kkcx.service.UserService;
 import com.melot.kktv.util.AppIdEnum;
@@ -292,6 +292,12 @@ public class RoomTF {
 	    roomObject.addProperty("userId", roomInfo.getActorId());
 	    
 	    if (!StringUtil.strIsNull(roomInfo.getNickname())) {
+	        String nickname = roomInfo.getNickname();
+	        //非官方号需昵称过滤
+	        Integer adminType = ProfileServices.getUserAdminType(roomInfo.getActorId());
+	        if (adminType == null || adminType == -1) {
+	            nickname = GeneralService.replaceSensitiveWords(roomInfo.getActorId(), nickname);
+	        }
             roomObject.addProperty("nickname", GeneralService.replaceSensitiveWords(roomInfo.getActorId(), roomInfo.getNickname()));
         }
 	    

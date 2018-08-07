@@ -1081,6 +1081,14 @@ public class KKHallFunctions {
                 if (!StringUtil.strIsNull(webSkinConf.getNavigationBackBase())) {
                     result.addProperty("navigationBackBase", webSkinConf.getNavigationBackBase());
                 }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getNavigationBackRightSvga())) {
+                    result.addProperty("navigationBackRightSvga", webSkinConf.getNavigationBackRightSvga());
+                }
+                
+                if (!StringUtil.strIsNull(webSkinConf.getNavigationBackLeftSvga())) {
+                    result.addProperty("navigationBackLeftSvga", webSkinConf.getNavigationBackLeftSvga());
+                }
             }
             
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);

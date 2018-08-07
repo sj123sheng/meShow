@@ -130,6 +130,11 @@ public class ConfigService {
      * 神秘人默认头像[没有域名部分]
      */
     private String xmanPortrait;
+    
+    /**
+     * 首冲banner配置
+     */
+    private String chargeBanner;
 
     @DisconfFileItem(name = "world.cup.partId", associateField = "worldCupPartId")
     public Integer getWorldCupPartId() {
@@ -338,4 +343,8 @@ public class ConfigService {
         this.xmanPortrait = xmanPortrait;
     }
 
+    @DisconfFileItem(name = "chargeBanner", associateField = "chargeBanner")
+    public String getChargeBanner() {
+        return chargeBanner;
+    }
 }
