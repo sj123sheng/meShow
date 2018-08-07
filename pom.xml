@@ -626,14 +626,14 @@
 		<dependency>
 		  <groupId>com.melot.kk</groupId>
 		  <artifactId>kk-liveshop-api</artifactId>
-		  <version>1.0.3</version>
+		  <version>1.0.4-SNAPSHOT</version>
 		</dependency>
 		
 		<!-- 充值模块 -->
 		<dependency>
 		  <groupId>com.melot.kk</groupId>
 		  <artifactId>kk-recharge-api</artifactId>
-		  <version>1.0.3-SNAPSHOT</version>
+		  <version>1.0.3</version>
 		</dependency>
 		
 		<dependency>

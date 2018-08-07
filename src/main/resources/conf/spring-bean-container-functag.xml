@@ -2869,6 +2869,25 @@
 		<constructor-arg name="methodName" value="getSaleActorInfo" />
 	</bean>
 	
+	<bean id="51060520" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getSubShopIds" />
+	</bean>
+	
+	<bean id="51060521" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getSubShopInfos" />
+	</bean>
+	
+	<bean id="52060522" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="addSubShopInfo" />
+	</bean>
+	
+	<bean id="52060523" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="delSubShopInfo" />
+	</bean>
 	<!-- 获取积分礼物列表 -->
 	<bean id="51010406" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="nobilityFunctions" />
