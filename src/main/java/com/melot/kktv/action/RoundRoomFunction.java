@@ -1,5 +1,6 @@
 package com.melot.kktv.action;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -48,12 +49,13 @@ public class RoundRoomFunction {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-		String showDate = new java.text.SimpleDateFormat("yyyyMMdd").format(new Date());
-		java.text.SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("yyyyMMdd HH:mm:ss");
+		String dateString =new SimpleDateFormat("yyyy-MM-dd 04:00:00").format(new Date());
+		Date startTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(dateString);
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
     	Transaction t = Cat.getProducer().newTransaction("MCall", "RoundRoomService.getRoundRoomActList");
 		try {
 			RoundRoomService roundRoomService = MelotBeanFactory.getBean("roundRoomService", RoundRoomService.class);
-			RoundRoomActList roundRoomActList = roundRoomService.getRoundRoomActList(roomId, 0, showDate);
+			RoundRoomActList roundRoomActList = roundRoomService.getRoundRoomActListNew(roomId, 0, startTime,DateUtil.addOnField(startTime, Calendar.DATE, 1));
 			if (roundRoomActList !=null) {
 				if (roundRoomActList.getRoomActList() != null && roundRoomActList.getRoomActList().size() > 0) {
 					String cacheKey = null;
@@ -61,16 +63,16 @@ public class RoundRoomFunction {
 					Date endTime = null;
 					Date beginTime = null;
 					for (RoundRoomActInfo actInfo : roundRoomActList.getRoomActList()) {
-						beginTime = dateFormat.parse(showDate+" "+actInfo.getStartTime());
-						endTime = dateFormat.parse(showDate+" "+actInfo.getEndTime());
-						if (endTime.getTime() < beginTime.getTime()) {
-							endTime = DateUtil.addOnField(endTime, Calendar.DATE, 1);
-						}
+						beginTime = dateFormat.parse(actInfo.getStartTime());
+						endTime = dateFormat.parse(actInfo.getEndTime());
+//						if (endTime.getTime() < beginTime.getTime()) {
+//							endTime = DateUtil.addOnField(endTime, Calendar.DATE, 1);
+//						}
 						systemTime = roundRoomActList.getSystemTime();
-						// 已完成不展示
-						if (systemTime >= endTime.getTime()) {
-							continue;
-						}
+						// 已完成也展示
+//						if (systemTime >= endTime.getTime()) {
+//							continue;
+//						}
 						RoomInfo roomInfo = RoomService.getRoomInfo(actInfo.getActorId());
 						if (roomInfo != null) {
 							// 去除因为缓存造成的数据替换
@@ -109,5 +111,7 @@ public class RoundRoomFunction {
 	    result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 		return result;
 	}
+
+
 
 }
