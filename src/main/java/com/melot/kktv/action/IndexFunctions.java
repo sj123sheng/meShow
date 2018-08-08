@@ -1376,20 +1376,25 @@ public class IndexFunctions {
 					wholeJson.addProperty("giftName", giftName);
 					wholeJson.addProperty("giftPrice", singlePrice);
 					wholeJson.addProperty("giftPic", ConfigHelper.getKkDomain() + "/icon/android/gift/icon/" + giftId + ".png");
-					actorGiftRankMap = WeekGiftSource.getWeekGiftRank(String.valueOf(weekTime), relationGiftId != null && relationGiftId > 0 ? giftId + "_" + relationGiftId : String.valueOf(giftId), 3);
+					actorGiftRankMap = WeekGiftSource.getWeekGiftRank(String.valueOf(weekTime), relationGiftId != null && relationGiftId > 0 ? giftId + "_" + relationGiftId : String.valueOf(giftId), 10);
 					if (actorGiftRankMap != null && !actorGiftRankMap.isEmpty()) {
 						JsonArray actorArray = new JsonArray();
 						JsonObject actorJson;
 						for (Entry<Integer, Long> entry : actorGiftRankMap.entrySet()) {
 							actorJson = new JsonObject();
-							if (!topActorMap.containsKey(giftId) && topActorMap.get(giftId) == null) {
-								topActorMap.put(giftId, entry.getValue() * singlePrice);
-							}
 							RoomInfo roomInfo = RoomService.getRoomInfo(entry.getKey());
 							if (roomInfo != null) {
 								actorJson = RoomTF.roomInfoToJson(roomInfo, platform, true);
 								actorJson.addProperty("giftCount", entry.getValue());
 								actorArray.add(actorJson);
+								
+								if (!topActorMap.containsKey(giftId) && topActorMap.get(giftId) == null) {
+	                                topActorMap.put(giftId, entry.getValue() * singlePrice);
+	                            }
+								
+								if (actorArray.size() >= 3) {
+								    break;
+								}
 							}
 						}
 						if (actorArray.size() > 0) {
