@@ -96,7 +96,7 @@ public class ThirdVerifyUtil {
             t.setStatus(Transaction.SUCCESS);
             return new JsonParser().parse(tempStr.toString()).getAsJsonObject();
 		} catch (Exception e) {
-			logger.error(desc + "服务端验证用户请求异常", e);
+			logger.error(desc + "服务端验证用户请求异常 serverUrl=" + serverUrl + ", param=" + param, e);
 			t.setStatus(e);
 		} finally {
             if (url_con != null) {
