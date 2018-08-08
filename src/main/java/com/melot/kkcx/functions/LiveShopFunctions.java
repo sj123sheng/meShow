@@ -12,6 +12,7 @@ import com.melot.module.api.exceptions.MelotModuleException;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 
+import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.melot.kk.liveshop.api.service.LiveShopService;
@@ -156,8 +157,17 @@ public class LiveShopFunctions {
                 return result;
             }
             LiveShopOrderDTO orderDTO = moduleResult.getData();
+            // 获取主播客服ID
+            List<Integer> subShopIds = Lists.newArrayList();
+            try {
+                subShopIds = liveShopService.getSubShopIds(orderDTO.getActorId());
+            } catch (Exception e) {
+                logger.error("liveShopService.getSubShopIds(" + orderDTO.getActorId() + ")", e);
+                subShopIds = Lists.newArrayList();
+            }
             if (!orderDTO.getActorId().equals(userId)
-                    && !orderDTO.getUserId().equals(userId)) {
+                    && !orderDTO.getUserId().equals(userId)
+                    && (subShopIds.isEmpty() || !subShopIds.contains(userId))) {
                 result.addProperty(ParameterKeys.TAG_CODE, "5106050303");
                 return result;
             }
