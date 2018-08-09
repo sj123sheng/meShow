@@ -1155,6 +1155,7 @@ public class LiveShopFunctions {
                     if (!StringUtil.strIsNull(userProfile.getPortrait())) {
                         json.addProperty("portrait", ConfigHelper.getHttpdir() + userProfile.getPortrait());
                     }
+                    json.addProperty("gender", userProfile.getGender());
                     json.addProperty("richLevel", userProfile.getUserLevel());
                     
                     subShopInfos.add(json);
