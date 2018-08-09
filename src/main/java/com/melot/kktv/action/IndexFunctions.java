@@ -492,7 +492,22 @@ public class IndexFunctions {
 	        JsonArray roomList = new JsonArray();
 			KkUserService userService = MelotBeanFactory.getBean("kkUserService", KkUserService.class);
 			UserMedalService userMedalService = (UserMedalService) MelotBeanFactory.getBean("userMedalService");
-			Map<String, Double> sortMap = HotDataSource.getRevRangeWithScore(collectionName);
+			Map<String, Double> sortMap = null;
+			//金币明星、金币富豪榜接入榜单中心
+			if (rankType == 6 || rankType == 7) {
+			    String normName = null;
+			    String normTimeType = "total";
+			    String rankUrl = slotType == RankingEnum.RANKING_THIS_WEEK ? ConfigHelper.getRankUrl() : ConfigHelper.getLastRankUrl();
+			    int sum = 20;
+			    if (rankType == 6) {
+			        normName = "hotWealthyWeekRanklist";
+			    } else if (rankType == 7) {
+			        normName = "hotStarWeekRanklist";
+			    }
+			    sortMap = GeneralService.getRankList(rankUrl, normName, normTimeType, sum);
+			} else {
+			    sortMap = HotDataSource.getRevRangeWithScore(collectionName);
+			}
 			if (sortMap != null && sortMap.size() > 0) {
 				List<RankUser> rankUserList = new ArrayList<RankUser>();
 				for (Entry<String, Double> entry : sortMap.entrySet()) {
@@ -731,24 +746,6 @@ public class IndexFunctions {
         return result;		
 	}
 	
-	/**
-     *  60135: KK体育
-     *  60138: KK女神计划 
-     */
-    private static int[]channels = new int[]{60135, 60138, 60149};
-
-    /**
-     *  选择公告, 活动是否启用针对渠道号私有 
-     */
-    private static boolean usePrivateChannel(int channel){
-        for (int chan : channels) {
-            if(channel == chan){
-                return true;
-            }
-        }
-        return false;
-    }
-    
 	/**
 	 * 关键词搜索房间(接口10002008)
 	 * 
