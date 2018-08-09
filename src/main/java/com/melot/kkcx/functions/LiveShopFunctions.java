@@ -1055,7 +1055,7 @@ public class LiveShopFunctions {
             return result;
         }
         try {
-            Result<LiveShopInfoDTO> shopInfoResult = liveShopService.getShopInfoByAdmin(userId, type);
+            Result<LiveShopInfoDTO> shopInfoResult = liveShopService.getShopInfo(userId, type);
             if (shopInfoResult == null) {
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
                 return result;
