@@ -111,12 +111,10 @@ public class ConfigContextListener implements ServletContextListener {
 	private void initSqlMapClientConnections() {
 		
 		SqlMapClient masterSqlMapClient = (SqlMapClient) MelotBeanFactory.getBean("sqlMapClient_oracle_master");
-		SqlMapClient backupSqlMapClient = (SqlMapClient) MelotBeanFactory.getBean("sqlMapClient_oracle_backup");
 		SqlMapClient kkgameSqlMapClient = (SqlMapClient) MelotBeanFactory.getBean("sqlMapClient_pg_kkgame");
 		SqlMapClient kkcxSqlMapClient = (SqlMapClient) MelotBeanFactory.getBean("sqlMapClient_pg_kkcx");
 		
 		SqlMapClientHelper.initSqlMapClient(DB.MASTER, masterSqlMapClient);
-		SqlMapClientHelper.initSqlMapClient(DB.BACKUP, backupSqlMapClient);
 		SqlMapClientHelper.initSqlMapClient(com.melot.kktv.util.DBEnum.KKGAME_PG, kkgameSqlMapClient);
 		SqlMapClientHelper.initSqlMapClient(DB.MASTER_PG, MelotBeanFactory.getBean("sqlMapClient_pg_master", SqlMapClient.class));
 		SqlMapClientHelper.initSqlMapClient(DB.SLAVE_PG, MelotBeanFactory.getBean("sqlMapClient_pg_slave", SqlMapClient.class));

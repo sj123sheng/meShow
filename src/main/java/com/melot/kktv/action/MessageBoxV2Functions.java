@@ -1,7 +1,26 @@
 package com.melot.kktv.action;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.google.common.collect.Lists;
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.melot.common.driver.service.MessageService;
 import com.melot.kk.message.api.dto.RecommendedMsg;
 import com.melot.kk.message.api.dto.SystemMessage;
@@ -12,25 +31,24 @@ import com.melot.kkcx.service.UserService;
 import com.melot.kkcx.transform.RecommendedMessageTF;
 import com.melot.kkcx.transform.SystemMessageTF;
 import com.melot.kktv.base.Page;
-import com.melot.kktv.model.*;
+import com.melot.kktv.model.KkSystemNotice;
+import com.melot.kktv.model.NewsComment;
+import com.melot.kktv.model.NewsPraise;
+import com.melot.kktv.model.RecommendedMessage;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.UserMessageSource;
 import com.melot.kktv.service.ConfigService;
-import com.melot.kktv.util.*;
-import com.melot.kktv.util.db.DB;
+import com.melot.kktv.util.AppIdEnum;
+import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.ConfigHelper;
+import com.melot.kktv.util.DBEnum;
+import com.melot.kktv.util.PlatformEnum;
+import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.kktv.util.message.Message;
 import com.melot.sdk.core.util.MelotBeanFactory;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import redis.clients.jedis.Jedis;
-
-import javax.servlet.http.HttpServletRequest;
-import java.sql.SQLException;
-import java.util.*;
 
 public class MessageBoxV2Functions {
 
@@ -1126,88 +1144,6 @@ public class MessageBoxV2Functions {
                     }
                 }
             }
-         }
-
-        //fetch activity message
-        public JsonObject fetchMessage(int userId, int platform, int perPageCount, int curPage, long startTime, long lastReadTime) {
-            
-            //SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            Date dateStartTime = new Date(startTime);
-
-            Map<String, Object> map = new HashMap<String, Object>();
-            map.put("startDate", dateStartTime);
-            map.put("start", (curPage - 1) * perPageCount);
-            map.put("offset", perPageCount);
-            try {
-                SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("EffectiveActivities.getEffectiveActivities", map);
-            } catch (SQLException e) {
-                logger.error("未能正常调用存储过程", e);
-                JsonObject result = new JsonObject();
-                result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
-                return result;
-            }
-            
-            String TagCode = (String) map.get("TagCode");
-            if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-                
-                // 取出列表
-                @SuppressWarnings("unchecked")
-                List<EffectiveActivity> recordList = (ArrayList<EffectiveActivity>) map.get("actList");
-
-                long currentTime = new Date().getTime();
-                String idReadList = new String();
-                
-                JsonObject result = new JsonObject();
-                result.addProperty("TagCode", TagCode);
-                result.addProperty("total", (Integer) map.get("actTotal"));
-                //result.addProperty("actPageTotal", recordList.size());
-                JsonArray jRecordList = new JsonArray();
-                for (EffectiveActivity object : recordList) {
-                     jRecordList.add(object.toJsonObject(lastReadTime, currentTime, platform));
-                     if (object.isEffective(currentTime)) {
-                         idReadList += object.getActivityId() + ":";
-                     }
-                }
-                result.add("messageList", jRecordList);
-                
-                //update the read-ed message id list in the redis
-                Jedis jedis = null;
-                try {
-                     jedis = UserMessageSource.getInstance();
-                    
-                     String[] idListArray = getEffectiveActivityIds(jedis);
-                     if (idListArray != null && idListArray.length > 0) {
-                         for (int i=0; i<idListArray.length; i++) {
-                             if (idReadList.contains(idListArray[i])) {
-                                 continue;
-                             }
-                             idReadList += idListArray[i] + ":";
-                         }
-                     }
-                     jedis.set(String.format(REDISKEY_EFFACTREADIDS, userId), idReadList);
-                 } catch (Exception e) {
-                     logger.error("fetchMessage failed when operate redis", e);
-                 } finally {
-                     if (jedis != null) {
-                         UserMessageSource.freeInstance(jedis);
-                     }
-                 }
-                 return result;
-              } else if (TagCode.equals("02") || TagCode.equals("03")) {
-                  /* '02';分页超出范围 */
-                  JsonObject result = new JsonObject();
-                  result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-                  result.addProperty("total", (Integer) map.get("actTotal"));
-                  result.addProperty("actPageTotal", 0);
-                  result.add("actList", new JsonArray());
-                  return result;
-              } else {
-                  // 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
-                  logger.error("调用存储过程(EffectiveActivities.getEffectiveActivities)未的到正常结果,TagCode:" + TagCode + ",map:" + map.toString());
-                  JsonObject result = new JsonObject();
-                  result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
-                  return result;
-              }
          }
         
     }

@@ -1,6 +1,5 @@
 package com.melot.kktv.action;
 
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -59,8 +58,6 @@ import com.melot.kkcx.transform.RoomTF;
 import com.melot.kktv.base.Page;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.constant.RoomPosterConstant;
-import com.melot.kktv.model.Activity;
-import com.melot.kktv.model.HotActivity;
 import com.melot.kktv.model.MedalInfo;
 import com.melot.kktv.model.PreviewAct;
 import com.melot.kktv.model.RankUser;
@@ -86,8 +83,6 @@ import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.confdynamic.GiftInfoConfig;
 import com.melot.kktv.util.confdynamic.MedalConfig;
-import com.melot.kktv.util.db.DB;
-import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.module.medal.driver.domain.ConfMedal;
 import com.melot.module.medal.driver.domain.GsonMedalObj;
 import com.melot.module.medal.driver.domain.UserActivityMedal;
@@ -497,7 +492,22 @@ public class IndexFunctions {
 	        JsonArray roomList = new JsonArray();
 			KkUserService userService = MelotBeanFactory.getBean("kkUserService", KkUserService.class);
 			UserMedalService userMedalService = (UserMedalService) MelotBeanFactory.getBean("userMedalService");
-			Map<String, Double> sortMap = HotDataSource.getRevRangeWithScore(collectionName);
+			Map<String, Double> sortMap = null;
+			//金币明星、金币富豪榜接入榜单中心
+			if (rankType == 6 || rankType == 7) {
+			    String normName = null;
+			    String normTimeType = "total";
+			    String rankUrl = slotType == RankingEnum.RANKING_THIS_WEEK ? ConfigHelper.getRankUrl() : ConfigHelper.getLastRankUrl();
+			    int sum = 20;
+			    if (rankType == 6) {
+			        normName = "hotWealthyWeekRanklist";
+			    } else if (rankType == 7) {
+			        normName = "hotStarWeekRanklist";
+			    }
+			    sortMap = GeneralService.getRankList(rankUrl, normName, normTimeType, sum);
+			} else {
+			    sortMap = HotDataSource.getRevRangeWithScore(collectionName);
+			}
 			if (sortMap != null && sortMap.size() > 0) {
 				List<RankUser> rankUserList = new ArrayList<RankUser>();
 				for (Entry<String, Double> entry : sortMap.entrySet()) {
@@ -670,75 +680,6 @@ public class IndexFunctions {
 	}
 
 	/**
-	 * 获取活动列表(10002006)
-	 * 
-	 * @param jsonObject 请求对象
-	 * @return 结果字符串
-	 */
-	public JsonObject getActivityList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
-	    JsonObject result = new JsonObject();
-	    
-		int istop, platform, appId, channel;
-		try {
-            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.WEB, null, 1, Integer.MAX_VALUE);
-            istop = CommonUtil.getJsonParamInt(jsonObject, "isTop", 0, null, 0, Integer.MAX_VALUE);
-            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 0, Integer.MAX_VALUE);
-            channel = CommonUtil.getJsonParamInt(jsonObject, "c", AppChannelEnum.KK, null, 0, Integer.MAX_VALUE);
-        } catch (CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
-            return result;
-        } catch (Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-            return result;
-        }
-		
-		// 调用存储过程得到结果
-		Map<Object, Object> map = new HashMap<Object, Object>();
-		map.put("isTop", istop);
-		map.put("platform", platform);
-		map.put("appId", appId);
-		map.put("channel", usePrivateChannel(channel) ? channel : 100);
-		try {
-		    SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Index.getActivityList", map);
-		} catch (SQLException e) {
-		    logger.error("未能正常调用存储过程", e);
-		    result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
-		    return result;
-		}
-		String TagCode = (String) map.get("TagCode");
-		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-		    result.addProperty("TagCode", TagCode);
-		    
-			// 取出列表
-			@SuppressWarnings("unchecked")
-			List<Object> activityList = (ArrayList<Object>) map.get("activityList");
-			JsonArray jActivityList = new JsonArray();
-			if (activityList != null && activityList.size() > 0) {
-			    for (Object object : activityList) {
-			        jActivityList.add(((Activity) object).toJsonObject(platform));
-			    }
-            }
-			result.add("activityList", jActivityList);
-
-			@SuppressWarnings("unchecked")
-			List<HotActivity> hotActivityList = (ArrayList<HotActivity>) map.get("hotActivityList");
-			JsonArray jHotActivityList = new JsonArray();
-			if (hotActivityList != null && hotActivityList.size() > 0) {
-			    for (HotActivity ha : hotActivityList) {
-			        jHotActivityList.add(ha.toJsonObject(platform));
-			    }
-			}
-			result.add("hotActivityList", jHotActivityList);
-		} else {
-			// 调用存储过程未的到正常结果,TagCode:"+TagCode+",记录到日志了.
-			logger.error("调用存储过程(Index.getActivityList)未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
-			result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
-		}
-		
-		return result;
-	}
-
-	/**
 	 * 获取全部活动列表(10002038)
 	 * 
 	 * @param jsonObject
@@ -805,24 +746,6 @@ public class IndexFunctions {
         return result;		
 	}
 	
-	/**
-     *  60135: KK体育
-     *  60138: KK女神计划 
-     */
-    private static int[]channels = new int[]{60135, 60138, 60149};
-
-    /**
-     *  选择公告, 活动是否启用针对渠道号私有 
-     */
-    private static boolean usePrivateChannel(int channel){
-        for (int chan : channels) {
-            if(channel == chan){
-                return true;
-            }
-        }
-        return false;
-    }
-    
 	/**
 	 * 关键词搜索房间(接口10002008)
 	 * 
@@ -1450,20 +1373,25 @@ public class IndexFunctions {
 					wholeJson.addProperty("giftName", giftName);
 					wholeJson.addProperty("giftPrice", singlePrice);
 					wholeJson.addProperty("giftPic", ConfigHelper.getKkDomain() + "/icon/android/gift/icon/" + giftId + ".png");
-					actorGiftRankMap = WeekGiftSource.getWeekGiftRank(String.valueOf(weekTime), relationGiftId != null && relationGiftId > 0 ? giftId + "_" + relationGiftId : String.valueOf(giftId), 3);
+					actorGiftRankMap = WeekGiftSource.getWeekGiftRank(String.valueOf(weekTime), relationGiftId != null && relationGiftId > 0 ? giftId + "_" + relationGiftId : String.valueOf(giftId), 10);
 					if (actorGiftRankMap != null && !actorGiftRankMap.isEmpty()) {
 						JsonArray actorArray = new JsonArray();
 						JsonObject actorJson;
 						for (Entry<Integer, Long> entry : actorGiftRankMap.entrySet()) {
 							actorJson = new JsonObject();
-							if (!topActorMap.containsKey(giftId) && topActorMap.get(giftId) == null) {
-								topActorMap.put(giftId, entry.getValue() * singlePrice);
-							}
 							RoomInfo roomInfo = RoomService.getRoomInfo(entry.getKey());
 							if (roomInfo != null) {
 								actorJson = RoomTF.roomInfoToJson(roomInfo, platform, true);
 								actorJson.addProperty("giftCount", entry.getValue());
 								actorArray.add(actorJson);
+								
+								if (!topActorMap.containsKey(giftId) && topActorMap.get(giftId) == null) {
+	                                topActorMap.put(giftId, entry.getValue() * singlePrice);
+	                            }
+								
+								if (actorArray.size() >= 3) {
+								    break;
+								}
 							}
 						}
 						if (actorArray.size() > 0) {

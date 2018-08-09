@@ -1,9 +1,20 @@
 package com.melot.kkcx.service;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.api.menu.sdk.service.RoomInfoService;
@@ -14,19 +25,12 @@ import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kktv.model.FansRankingItem;
 import com.melot.kktv.redis.GiftRecordSource;
 import com.melot.kktv.redis.MatchSource;
+import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.DateUtil;
+import com.melot.kktv.util.HttpClient;
 import com.melot.kktv.util.RankingEnum;
 import com.melot.kktv.util.StringUtil;
-import com.melot.kktv.util.db.DB;
-import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.sdk.core.util.MelotBeanFactory;
-import org.apache.log4j.Logger;
-
-import java.sql.SQLException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * 类说明：
@@ -45,10 +49,9 @@ public class RoomService {
      * @param slotType 榜单类型
      * @return
      */
-    @SuppressWarnings("unchecked")
 	public static List<FansRankingItem> getRoomFansRankList(int roomId, int slotType) {
     	
-    	List<FansRankingItem> fansList = null;
+    	List<FansRankingItem> fansList = new ArrayList<>();;
     	
     	//交友房需统计送礼给用户
         int roomSource = 0;
@@ -59,19 +62,47 @@ public class RoomService {
     	String data = MatchSource.getRoomFansRankCache(String.valueOf(slotType), String.valueOf(roomId), String.valueOf(roomSource));
     	if (data == null) {
     		try {
-    		    Map<String, Object> map = new HashMap<>();
-    		    map.put("roomId", roomId);
-    		    map.put("roomSource", roomSource);
-				if (slotType == RankingEnum.RANKING_WEEKLY) {
-					fansList = (List<FansRankingItem>) SqlMapClientHelper.getInstance(DB.MASTER)
-							.queryForList("User.getWeeklyFansRanking", map);
+    		    Map<String, String> paramMap = new HashMap<>();
+				if (slotType == RankingEnum.RANKING_WEEKLY || slotType == RankingEnum.RANKING_MONTHLY) {
+				    //交友房房间粉丝榜与普通房间计算方式不同
+				    if (slotType == RankingEnum.RANKING_WEEKLY) {
+				        if (roomSource == 14) {
+	                        paramMap.put("normName", "roomWealthy7DaysRanklist");
+	                    } else {
+	                        paramMap.put("normName", "fansContribution7DaysRanklist");
+	                    }
+				    } else if (slotType == RankingEnum.RANKING_MONTHLY) {
+                        paramMap.put("normName", "fansContribution30DaysRanklist");
+                    }
+				    
+                    paramMap.put("normTag", String.valueOf(roomId));
+                    paramMap.put("normTimeType", "daily");
+                    paramMap.put("count", "20");
+                    String fansRankStr = HttpClient.doGet(ConfigHelper.getRankUrl(), paramMap);
+                    if (StringUtil.strIsNull(fansRankStr)) {
+                        //榜单中心凌晨计算延迟，取前一日数据
+                        fansRankStr = HttpClient.doGet(ConfigHelper.getLastRankUrl(), paramMap);
+                    }
+                    if (!StringUtil.strIsNull(fansRankStr)) {
+                        JsonElement jsonElement = new JsonParser().parse(fansRankStr).getAsJsonObject().get("userScores");
+                        if (jsonElement != null && !jsonElement.isJsonNull()) {
+                            JsonArray jsonArray = jsonElement.getAsJsonArray();
+                            if (!jsonArray.isJsonNull()) {
+                                for (int i = 0; i < jsonArray.size(); i++) {
+                                    JsonObject rankJson = (JsonObject) jsonArray.get(i);
+                                    int userId = rankJson.get("userId").getAsInt();
+                                    long contribution = rankJson.get("score").getAsLong();
+                                    FansRankingItem fansRankingItem = new FansRankingItem();
+                                    fansRankingItem.setUserId(userId);
+                                    fansRankingItem.setContribution(contribution);
+                                    fansList.add(fansRankingItem);
+                                }
+                            }
+                        }
+                    }
 				}
-				if (slotType == RankingEnum.RANKING_MONTHLY) {
-					fansList = (List<FansRankingItem>) SqlMapClientHelper.getInstance(DB.MASTER)
-							.queryForList("User.getMonthlyFansRanking", map);
-				}
-			} catch (SQLException e) {
-				logger.error("未能正常调用SQL语句", e);	
+			} catch (Exception e) {
+				logger.error("榜单中心获取异常", e);	
 			}
 			if (fansList != null && fansList.size() > 0) {
 

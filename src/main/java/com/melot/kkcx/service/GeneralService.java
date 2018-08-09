@@ -14,7 +14,9 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.BeanUtils;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.melot.chat.domain.PrivateLetter;
 import com.melot.chat.service.ChatAnalyzerService;
 import com.melot.content.config.domain.ReportFlowRecord;
@@ -24,6 +26,7 @@ import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CityUtil;
 import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.Constant;
+import com.melot.kktv.util.HttpClient;
 import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
@@ -470,4 +473,38 @@ public class GeneralService {
 		}
 		return CityUtil.isValidCity(Math.abs(cityId));
 	}
+	
+	/**
+	 * 获取榜单
+	 * 
+	 * @param normName 榜单名称
+	 * @param normTimeType 榜单类型
+	 * @param count 榜单数量
+	 * @return
+	 */
+	public static Map<String, Double> getRankList(String rankUrl, String normName, String normTimeType, int count) {
+	    Map<String, Double> result = new HashMap<>();
+	    try {
+	        Map<String, String> paramMap = new HashMap<>();
+	        paramMap.put("normName", normName);
+	        paramMap.put("normTimeType", normTimeType);
+	        paramMap.put("count", String.valueOf(count));
+	        String rankStr = HttpClient.doGet(rankUrl, paramMap);
+	        if (!StringUtil.strIsNull(rankStr)) {
+	            JsonElement jsonElement = new JsonParser().parse(rankStr).getAsJsonObject().get("userScores");
+                if (jsonElement != null && !jsonElement.isJsonNull()) {
+                    JsonArray jsonArray = jsonElement.getAsJsonArray();
+                    if (!jsonArray.isJsonNull()) {
+                        for (int i = 0; i < jsonArray.size(); i++) {
+                            JsonObject rankJson = (JsonObject) jsonArray.get(i);
+                            result.put(rankJson.get("userId").getAsString(), rankJson.get("score").getAsDouble());
+                        }
+                    }
+                }
+            }
+	    } catch (Exception e) {
+	        logger.error("GeneralService.getRankList execute exception, normName: " + normName + ", normTimeType: " + normTimeType, e);   
+	    }
+        return result;
+    }
 }
