@@ -3,11 +3,15 @@ package com.melot.kkcx.functions;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import com.melot.asset.driver.domain.ConfVirtualId;
+import com.melot.asset.driver.service.VirtualIdService;
 import com.melot.kk.liveshop.api.constant.LiveShopErrorMsg;
 import com.melot.kk.liveshop.api.constant.LiveShopTransactionType;
 import com.melot.kk.liveshop.api.dto.*;
 import com.melot.kktv.util.*;
 import com.melot.module.api.exceptions.MelotModuleException;
+import com.melot.module.packagegift.driver.service.XmanService;
+import com.melot.sdk.core.util.MelotBeanFactory;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
@@ -20,6 +24,8 @@ import com.melot.kk.logistics.api.domain.UserAddressDO;
 import com.melot.kk.logistics.api.service.UserAddressService;
 import com.melot.kk.recharge.api.dto.ConfPaymentInfoDto;
 import com.melot.kk.recharge.api.service.RechargeService;
+import com.melot.kkcore.account.service.AccountSecurityService;
+import com.melot.kkcore.account.service.AccountService;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.transform.LiveShopTF;
@@ -1204,6 +1210,44 @@ public class LiveShopFunctions {
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
+        
+        // 客服号不能是神秘人
+        try {
+            XmanService xmanService = (XmanService)MelotBeanFactory.getBean("xmanService");
+            if (subShopId <= 1127828 
+                    && subShopId >= 1000578 
+                    && xmanService.getXmanConf(subShopId) != null) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5206052205");
+                return result;
+            }
+        } catch (Exception e) {
+            logger.error("xmanService.getXmanConf(" + subShopId + ")", e);
+        }
+        
+        // 客服号不能是靓号
+        try {
+            VirtualIdService virtualIdService = (VirtualIdService)MelotBeanFactory.getBean("virtualIdService");
+            ConfVirtualId confVirtualId = virtualIdService.getConfVirtualIdById(subShopId);
+            if (confVirtualId != null) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5206052205");
+                return result;
+            }
+        } catch (Exception e) {
+            logger.error("virtualIdService.getConfVirtualIdById(" + subShopId + ")", e);
+        }
+        
+        // 客服号不能被封号
+        try {
+            AccountSecurityService accountSecurityService = (AccountSecurityService) MelotBeanFactory.getBean("accountSecurityService");
+            boolean lock = accountSecurityService.isLock(subShopId);
+            if (lock) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5206052205");
+                return result;
+            }
+        } catch (Exception e) {
+            logger.error("accountSecurityService.isLock(" + subShopId + ")", e);
+        }
+        
         try {
             boolean isSuccess = liveShopService.addSubShopId(userId, Arrays.asList(subShopId));
             if (isSuccess) {
