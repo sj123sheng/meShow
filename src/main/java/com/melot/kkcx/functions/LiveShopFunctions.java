@@ -32,6 +32,7 @@ import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Page;
 import com.melot.kktv.base.Result;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -262,10 +263,33 @@ public class LiveShopFunctions {
                 // 移除不必要的字段
                 orderDTOJson.remove("refundInfo");
                 orderDTOJson.remove("expressInfo");
-                
-                int relationId = liveShopOrderDTO.getUserId().equals(userId) 
-                        ? liveShopOrderDTO.getActorId() : liveShopOrderDTO.getUserId();
-                UserProfile userProfile = kkUserService.getUserProfile(relationId);
+                List<Integer> subShopIds = new ArrayList<>();
+                int relationId;
+                UserProfile userProfile;
+                // 我是买家，联系人为商家
+                if (liveShopOrderDTO.getUserId().equals(userId)) {
+                    relationId = liveShopOrderDTO.getActorId();
+                    userProfile = kkUserService.getUserProfile(relationId);
+                    
+                    // 商家的有客服号，这个使用客服号替换联系人ID
+                    try {
+                        subShopIds = liveShopService.getSubShopIds(liveShopOrderDTO.getActorId());
+                    } catch (Exception e) {
+                        logger.error("liveShopService.getSubShopIds(" + liveShopOrderDTO.getActorId() + ");", e);
+                    }                    
+                    JsonArray subShopIdArray = new JsonArray();
+                    if (CollectionUtils.isNotEmpty(subShopIds)) {
+                        for (Integer subShopId : subShopIds) {
+                            subShopIdArray.add(subShopId);
+                        }
+                        orderDTOJson.add("subShopIds", subShopIdArray);
+                        relationId = subShopIds.get(0);
+                        orderDTOJson.addProperty("sellerId", relationId);// 覆盖掉sellerId，为安卓做兼容
+                    }
+                } else {
+                    relationId = liveShopOrderDTO.getUserId();
+                    userProfile = kkUserService.getUserProfile(relationId);
+                }
                 orderDTOJson.addProperty("relationId", relationId);
                 orderDTOJson.addProperty("nickname", userProfile.getNickName());
                 
