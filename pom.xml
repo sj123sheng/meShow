@@ -688,6 +688,13 @@
             <artifactId>cms-admin-api</artifactId>
             <version>1.0.0</version>
         </dependency>
+        
+        <!-- 回放视频回放 -->
+		<dependency>
+			<groupId>com.melot.kk</groupId>
+			<artifactId>kk-gamevideostore-api</artifactId>
+			<version>1.0.0</version>
+		</dependency>
 		
 		<dependency>
 		  <groupId>com.melot.kk</groupId>
