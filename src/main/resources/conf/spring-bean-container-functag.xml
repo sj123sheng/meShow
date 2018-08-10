@@ -880,11 +880,6 @@
 	</bean>
 	
 	<!-- 个人资产接口类 -->
-	<!-- 获取汽车列表 -->
-	<bean id="20010101" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="assetFunction" />
-		<constructor-arg name="methodName" value="getCarList" />
-	</bean>
 	<!-- 获取汽车月价格区间 -->
 	<bean id="20010103" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="assetFunction" />

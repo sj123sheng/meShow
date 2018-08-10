@@ -79,12 +79,13 @@ public class RoomService {
                     paramMap.put("normTimeType", "daily");
                     paramMap.put("count", "20");
                     String fansRankStr = HttpClient.doGet(ConfigHelper.getRankUrl(), paramMap);
-                    if (StringUtil.strIsNull(fansRankStr)) {
-                        //榜单中心凌晨计算延迟，取前一日数据
-                        fansRankStr = HttpClient.doGet(ConfigHelper.getLastRankUrl(), paramMap);
-                    }
                     if (!StringUtil.strIsNull(fansRankStr)) {
                         JsonElement jsonElement = new JsonParser().parse(fansRankStr).getAsJsonObject().get("userScores");
+                        if (jsonElement == null || jsonElement.isJsonNull()) {
+                            //榜单中心凌晨计算延迟，取前一日数据
+                            fansRankStr = HttpClient.doGet(ConfigHelper.getLastRankUrl(), paramMap);
+                            jsonElement = new JsonParser().parse(fansRankStr).getAsJsonObject().get("userScores");
+                        } 
                         if (jsonElement != null && !jsonElement.isJsonNull()) {
                             JsonArray jsonArray = jsonElement.getAsJsonArray();
                             if (!jsonArray.isJsonNull()) {
