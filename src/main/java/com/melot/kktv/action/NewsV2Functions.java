@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 
 import com.melot.kkcore.user.api.UserRegistry;
+import com.melot.news.model.NewsTopic;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
@@ -704,6 +705,89 @@ public class NewsV2Functions {
         return result;
     }
 
+    public JsonObject checkTopicWhiteUser(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+        JsonObject result = new JsonObject();
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        String topicString;
+        int appId;
+        try {
+            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, TagCodeEnum.APPID_MISSING, 1, Integer.MAX_VALUE);
+            topicString = CommonUtil.getJsonParamString(jsonObject, "topicString", null, null, 1, 10);
+        } catch (ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+        boolean flag = true;
+        if(!StringUtil.strIsNull(topicString)){
+            NewsTopic topic = NewsService.getTopicByContent(appId,topicString);
+            if(topic!=null&&topic.getForAdmin()!=null){
+                if(topic.getForAdmin()== 1){
+                    flag = false;
+                }
+            }
+        }
+        result.addProperty("isWhiteUser",flag);
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+
+    /**
+     * 获取大厅推荐话题列表（51100108）
+     * @param jsonObject
+     * @param checkTag
+     * @return
+     */
+    public JsonObject getHallTopicList(JsonObject jsonObject, boolean checkTag) {
+        JsonObject result = new JsonObject();
+        // 定义所需参数
+        int appId;
+        // 解析参数
+        try {
+            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, TagCodeEnum.APPID_MISSING, 1, Integer.MAX_VALUE);
+        } catch (ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+        List<NewsTopic> topicList = NewsService.getTopicHall(appId,0,Integer.MAX_VALUE);
+        JsonArray jsonArray = new JsonArray();
+        for(NewsTopic newsTopic:topicList){
+            JsonObject topic = new JsonObject();
+            topic.addProperty("topicId",newsTopic.getTopicId());
+            topic.addProperty("content",newsTopic.getContent());
+            List<NewsInfo> newsList = NewsService.getNewsListsByTopicId(newsTopic.getTopicId(),0,4);
+            JsonArray newsJsonArray = new JsonArray();
+            for(NewsInfo newsInfo:newsList){
+                JsonObject news = new JsonObject();
+                news.addProperty("newsId",newsInfo.getNewsId());
+                news.addProperty("userId",newsInfo.getUserId());
+                news.addProperty("praiseNum",newsInfo.getNewsPraise());
+                RoomInfo actorInfo = RoomService.getRoomInfo(newsInfo.getUserId());
+                if (actorInfo != null) {
+                    news.addProperty("nickname", actorInfo.getNickname());
+                }
+                if(newsInfo.getRefVideo()!=null){
+                    int resId = Integer.valueOf(Pattern.compile("\\{|\\}").matcher(newsInfo.getRefVideo()).replaceAll(""));
+                    Resource resVideo = resourceNewService.getResourceById(resId).getData();
+                    if(resVideo != null){
+                        news.addProperty("imageUrl", resVideo.getImageUrl());
+                        news.addProperty("mediaUrl", resVideo.getSpecificUrl());
+                    }
+                }
+                newsJsonArray.add(news);
+            }
+            topic.add("newsList",newsJsonArray);
+            jsonArray.add(topic);
+        }
+        result.add("topicList", jsonArray);
+        result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());// 七牛前缀
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+
     public JsonObject checkAudioWhiteUser(JsonObject jsonObject, boolean checkTag) throws Exception {
         String functag = "51100106";
         JsonObject result = new JsonObject();
@@ -1148,6 +1232,8 @@ public class NewsV2Functions {
         return result;
     }
 
+
+
     /**
      * 获取热门动态(20006022)
      *
@@ -1205,7 +1291,6 @@ public class NewsV2Functions {
             if (hotTopicSize != null) {
                 topicSize = hotTopicSize.size();
             }
-
         }
 
         if(type == 0){
@@ -1270,7 +1355,7 @@ public class NewsV2Functions {
         JsonObject result = new JsonObject();
 
         // 定义所需参数
-        int topicId, userId, start, offset, sortType, platform, v;
+        int topicId, userId, start, offset, sortType, platform, v,appId;
         // 解析参数
         try {
             sortType = CommonUtil.getJsonParamInt(jsonObject, "sortType", 0, null, 0, Integer.MAX_VALUE);
@@ -1280,6 +1365,7 @@ public class NewsV2Functions {
             offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 10, null, 0, Integer.MAX_VALUE);
             platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
             v = CommonUtil.getJsonParamInt(jsonObject, "v", 0, null, 0, Integer.MAX_VALUE);
+            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, TagCodeEnum.APPID_MISSING, 1, Integer.MAX_VALUE);
         } catch (ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -1291,31 +1377,45 @@ public class NewsV2Functions {
             return result;
         }
 
-        // 若是推荐话题则返回图片和简介
-        Set<String> hotTopic = NewsService.getPopularTopic(0, -1);
-        if (hotTopic != null && hotTopic.size() > 0) {
-            for (String str : hotTopic) {
-                try {
-                    JsonObject json = new JsonParser().parse(str).getAsJsonObject();
-                    if (json.get("topicId").getAsInt() == topicId) {
-                        if (json.has("imageUrl")) {
-                            String imageUrl = json.get("imageUrl").getAsString();
-                            imageUrl = imageUrl.replaceFirst(ConfigHelper.getHttpdirUp(), ConfigHelper.getHttpdir());
-                            if (v > 130) {
-                                imageUrl = imageUrl.replaceFirst(ConfigHelper.getHttpdirUp(), "");
-                                imageUrl = imageUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
-                            }
-                            result.addProperty("imageUrl", imageUrl + "!400");
-                        }
-                        result.addProperty("introduction", json.get("introduction").getAsString());
-                        break;
-                    }
-                } catch (Exception e) {
-                    logger.error("NewsV2Functions.getTopicPage(" + "jsonObject:" + jsonObject + "checkTag:" + checkTag + "request:" + request + ") execute exception.", e);
+        if(appId != 1){
+            NewsTopic newsTopic = NewsService.getTopicByTopicId(topicId);
+            if(newsTopic!= null){
+                result.addProperty("imageUrl",newsTopic.getImageUrl()+"!400");
+                result.addProperty("introduction", newsTopic.getDescribe());
+                if(newsTopic.getForAdmin()!=null && newsTopic.getForAdmin()==0){
+                    result.addProperty("canDiscuss",true);
+                }
+                else {
+                    result.addProperty("canDiscuss",false);
                 }
             }
         }
-
+        else {
+            // 若是推荐话题则返回图片和简介
+            Set<String> hotTopic = NewsService.getPopularTopic(0, -1);
+            if (hotTopic != null && hotTopic.size() > 0) {
+                for (String str : hotTopic) {
+                    try {
+                        JsonObject json = new JsonParser().parse(str).getAsJsonObject();
+                        if (json.get("topicId").getAsInt() == topicId) {
+                            if (json.has("imageUrl")) {
+                                String imageUrl = json.get("imageUrl").getAsString();
+                                imageUrl = imageUrl.replaceFirst(ConfigHelper.getHttpdirUp(), ConfigHelper.getHttpdir());
+                                if (v > 130) {
+                                    imageUrl = imageUrl.replaceFirst(ConfigHelper.getHttpdirUp(), "");
+                                    imageUrl = imageUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
+                                }
+                                result.addProperty("imageUrl", imageUrl + "!400");
+                            }
+                            result.addProperty("introduction", json.get("introduction").getAsString());
+                            break;
+                        }
+                    } catch (Exception e) {
+                        logger.error("NewsV2Functions.getTopicPage(" + "jsonObject:" + jsonObject + "checkTag:" + checkTag + "request:" + request + ") execute exception.", e);
+                    }
+                }
+            }
+        }
         if (count > 0) {
             List<NewsInfo> newsList = NewsService.getNewsListByTopicId(topicId, sortType, start, offset, checkTag ? userId : 0);
             if (newsList != null && newsList.size() > 0) {
@@ -1436,9 +1536,7 @@ public class NewsV2Functions {
         String newsIds;
         // 解析参数
         try {
-            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 0, Integer.MAX_VALUE);
             newsIds = CommonUtil.getJsonParamString(jsonObject, "newsIds", null, "06250001", 1, Integer.MAX_VALUE);
-            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
         } catch (ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -1970,22 +2068,30 @@ public class NewsV2Functions {
         // 定义使用的参数
         @SuppressWarnings("unused")
         int userId = 0, pageIndex = 0, totalCount = 0, platform = PlatformEnum.WEB, countPerPage = Constant.return_news_count
-                , v = 0;
+                , v = 0,appId= 0;
         // 定义返回结果
         JsonObject result = new JsonObject();
 
         // 解析参数
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 0, Integer.MAX_VALUE);
-            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.WEB, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
-            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
-            countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", Constant.return_news_count, null, 0, Integer.MAX_VALUE);
             v = CommonUtil.getJsonParamInt(jsonObject, "v", 0, null, 0, Integer.MAX_VALUE);
+            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, TagCodeEnum.APPID_MISSING, 1, Integer.MAX_VALUE);
         } catch (ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
         }
 
+        //区域化版本通过这个接口拿热门话题
+        if(appId != 1){
+            List<NewsTopic> hotTopics = NewsService.getHotTopicList(appId,0,8);
+            result.add("hotTopicList", new Gson().toJsonTree(hotTopics));
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir()); // 图片前缀
+            result.addProperty("mediaPathPrefix", ConfigHelper.getMediahttpdir()); // 多媒体前缀
+            result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());// 七牛前缀
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        }
         // 获取热门话题,返回8条
         Set<String> hotTopic = NewsV2Source.getHotTopic(0, -1);
         if (hotTopic != null && hotTopic.size() > 0) {
@@ -2267,16 +2373,37 @@ public class NewsV2Functions {
         JsonObject result = new JsonObject();
         int start;
         int offset;
-        int v;
+        int v,appId;
         try {
             start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, null, 0, Integer.MAX_VALUE);
             offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 1, null, 1, Integer.MAX_VALUE);
             v = CommonUtil.getJsonParamInt(jsonObject, "v", 1, null, 1, Integer.MAX_VALUE);
+            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, TagCodeEnum.APPID_MISSING, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
         } catch (Exception e) {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        if(appId !=1){
+            List<NewsTopic> hotTopics = NewsService.getHotTopicList(appId,start,offset);
+            JsonArray jsonArray = new JsonArray();
+            for(NewsTopic newsTopic:hotTopics) {
+                JsonObject topic = new JsonObject();
+                topic.addProperty("topicId", newsTopic.getTopicId());
+                topic.addProperty("content", newsTopic.getContent());
+                topic.addProperty("imageUrl",newsTopic.getImageUrl());
+                topic.addProperty("introduction",newsTopic.getDescribe());
+                topic.addProperty("newsCount",newsTopic.getRefNewsCount());
+                topic.addProperty("position",newsTopic.getHotOrder());
+                jsonArray.add(topic);
+            }
+            result.add("topicList", jsonArray);
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir()); // 图片前缀
+            result.addProperty("mediaPathPrefix", ConfigHelper.getMediahttpdir()); // 多媒体前缀
+            result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());// 七牛前缀
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
         }
 
@@ -2304,6 +2431,7 @@ public class NewsV2Functions {
         result.add("topicList", topicArray);
         return result;
     }
+
 
     public String getRegexAdmin(String str) {
         return Pattern.compile("\\{|\\}|^,*").matcher(str).replaceAll("");

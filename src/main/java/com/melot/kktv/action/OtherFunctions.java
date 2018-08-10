@@ -83,6 +83,9 @@ import com.melot.module.packagegift.driver.service.TicketService;
 import com.melot.module.packagegift.driver.service.VipService;
 import com.melot.module.packagegift.util.GiftPackageEnum;
 import com.melot.sdk.core.util.MelotBeanFactory;
+import com.melot.video.driver.domain.SearchVideoParams;
+import com.melot.video.driver.domain.VideoInfo;
+import com.melot.video.driver.service.VideoInfoServiceNew;
 
 /**
  * 其他相关的接口类
@@ -113,6 +116,9 @@ public class OtherFunctions {
     
     @Resource
     MallService mallService;
+
+    @Resource
+	VideoInfoServiceNew videoInfoServiceNew;
     
     @Resource
     PackageInfoService packageInfoService;
@@ -1669,4 +1675,89 @@ public class OtherFunctions {
         return result;
     }
 
+	/**
+	 * 获取主播已发布视频列表(for用户)
+	 * 86010001
+	 */
+	public JsonObject getLaunchedVideoList(JsonObject jsonObject,boolean checkTag, HttpServletRequest request){
+		JsonObject result = new JsonObject();
+		int actorId = 0;
+		int start;
+		int num;
+		//校验token
+		try {
+			actorId = CommonUtil.getJsonParamInt(jsonObject, "actorId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+			start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, null, 1, Integer.MAX_VALUE);
+			num = CommonUtil.getJsonParamInt(jsonObject, "num", 10, null, 1, Integer.MAX_VALUE);
+		} catch (CommonUtil.ErrorGetParameterException e) {
+			result.addProperty("TagCode", e.getErrCode());
+			return result;
+		} catch (Exception e) {
+			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+			return result;
+		}
+		// 设置查询参数
+		SearchVideoParams params = new SearchVideoParams();
+		params.setActorId(actorId);
+		params.setStart(start);
+		params.setNum(num);
+		params.setLowerDuration(configService.getReplayVedioLowerDuration());
+		params.setDaysLimit(configService.getReplayVedioLowerDuration());
+		Page<VideoInfo> page = null;
+		try {
+			page = videoInfoServiceNew.getPublishVideoList(params);
+		} catch (Exception e) {
+			logger.error(String.format("Error:getLaunchedVideoList(jsonObject=%s, checkTag=%s, request=%s)", jsonObject, checkTag, request), e);
+			result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+			return result;
+		}
+		JsonArray videoListArray = new JsonArray();
+		if (page != null) {
+			long count = page.getCount();
+			if (CollectionUtils.isNotEmpty(page.getList())) {
+				for (VideoInfo videoInfo : page.getList()) {
+					videoListArray.add(videoInfos2Json(videoInfo));
+				}
+			}
+			result.add("videoInfoList", videoListArray);
+			result.addProperty("count", count);
+		}
+		result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+		return result;
+	}
+
+	private JsonObject videoInfos2Json(VideoInfo video){
+		JsonObject json = new JsonObject();
+		if(video.getActorId() != null){
+			json.addProperty("actorId", video.getActorId());
+		}
+		if(video.getCdnType() != null){
+			json.addProperty("cdnType", video.getCdnType());
+		}
+		json.addProperty("duration", video.getDuration());
+		if(video.getFileName() != null){
+			json.addProperty("fileName", video.getFileName());
+		}
+		if( video.getFileUrl() != null){
+			json.addProperty("fileUrl", video.getFileUrl());
+		}
+		if( video.getStartTime() != null){
+			json.addProperty("startTime", video.getStartTime().getTime());
+		}
+		if( video.getEndTime() != null){
+			json.addProperty("endTime", video.getEndTime().getTime());
+		}
+
+		if( video.getTitle() != null){
+			json.addProperty("title", video.getTitle());
+		}
+		if( video.getPoster() != null){
+			json.addProperty("poster", video.getPoster());
+		}
+		json.addProperty("likeCount", video.getLikeCount());
+		json.addProperty("hateCount", video.getHateCount());
+		json.addProperty("shareTime", video.getShareTime());
+
+		return json;
+	}
 }

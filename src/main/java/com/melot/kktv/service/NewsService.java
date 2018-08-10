@@ -17,6 +17,7 @@ import com.melot.kktv.util.NewsMediaTypeEnum;
 import com.melot.kktv.util.PlatformEnum;
 import com.melot.news.domain.NewsCommentHist;
 import com.melot.news.model.NewsInfo;
+import com.melot.news.model.NewsTopic;
 import com.melot.news.model.WhiteUser;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import org.apache.log4j.Logger;
@@ -39,9 +40,6 @@ public class NewsService {
 	public static int getUnReadNewsNum(int userId, long lastNewsTime) {
 		return 0;
 	}
-
-
-
 
 	public static int addNews(NewsInfo newsInfo, String topic) {
 		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
@@ -686,9 +684,81 @@ public class NewsService {
 				return result.getData();
 			}
 			else {
-				logger.error("【分页获取热门音频动态失败】appId="+appId+",start="+start+"，offset="+offset);
+				logger.error("【分页获取视频大厅失败】appId="+appId+",start="+start+"，offset="+offset);
 			}
 		}
 		return null;
 	}
+
+	public static List<NewsTopic> getTopicHall(int appId, int start, int offset) {
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
+		if (newsService != null) {
+			Result<List<NewsTopic>> result = newsService.getHallTopicListForApp(appId,start,offset);
+			if(result != null && result.getCode() != null && result.getCode().equals(CommonStateCode.SUCCESS)){
+				return result.getData();
+			}
+			else {
+				logger.error("【分页获取话题大厅失败】appId="+appId+",start="+start+"，offset="+offset);
+			}
+		}
+		return null;
+	}
+
+	public static List<NewsInfo> getNewsListsByTopicId(int topicId, int start, int offset) {
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
+		if (newsService != null) {
+			Result<List<NewsInfo>> result = newsService.getNewsListsByTopicId(topicId,start,offset);
+			if(result != null && result.getCode() != null && result.getCode().equals(CommonStateCode.SUCCESS)){
+				return result.getData();
+			}
+			else {
+				logger.error("【获取话题关联视频失败】topicId="+topicId+",start="+start+"，offset="+offset);
+			}
+		}
+		return null;
+	}
+
+	public static List<NewsTopic> getHotTopicList(int appId, int start, int offset) {
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
+		if (newsService != null) {
+			Result<List<NewsTopic>> result = newsService.getHotTopicListForApp(appId,start,offset);
+			if(result != null && result.getCode() != null && result.getCode().equals(CommonStateCode.SUCCESS)){
+				return result.getData();
+			}
+			else {
+				logger.error("【分页获取热门话题失败】appId="+appId+",start="+start+"，offset="+offset);
+			}
+		}
+		return null;
+	}
+
+	public static NewsTopic getTopicByTopicId(int topicId) {
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
+		if (newsService != null) {
+			Result<NewsTopic> result = newsService.getNewsTopicById(topicId);
+			if(result != null && result.getCode() != null && result.getCode().equals(CommonStateCode.SUCCESS)){
+				return result.getData();
+			}
+			else {
+				logger.error("【获取话题信息失败】topicId="+topicId);
+			}
+		}
+		return null;
+	}
+
+	public static NewsTopic getTopicByContent(int appId,String content) {
+		com.melot.news.service.NewsService newsService = (com.melot.news.service.NewsService) MelotBeanFactory.getBean("newsCenter");
+		if (newsService != null) {
+			Result<NewsTopic> result = newsService.getTopicByAppIdAndContent(appId,content);
+			if(result != null && result.getCode() != null && result.getCode().equals(CommonStateCode.SUCCESS)){
+				return result.getData();
+			}
+			else {
+				logger.error("【获取话题信息失败】appId="+appId+",content="+content);
+			}
+		}
+		return null;
+	}
+
+
 }

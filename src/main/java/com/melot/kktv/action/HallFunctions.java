@@ -269,10 +269,39 @@ public class HallFunctions {
 			result.addProperty("roomTotal", roomTotal);
 			
 			JsonArray roomArray = new JsonArray();
+			JsonObject json;
 			List<HallRoomInfoDTO> roomList = sysMenu.getRooms();
+			HallRoomInfoDTO roomInfo;
 			if (roomList != null) {
-				for (HallRoomInfoDTO roomInfo : roomList) {
-					roomArray.add(HallRoomTF.roomInfoToJson(roomInfo, platform));
+				int i = 0;
+				if (sysMenu.getDataSourceType() != null && sysMenu.getDataSourceType() == 16) {
+					// 如果是聚合栏目，需要判断同城，添加距离
+					int dist;
+					while (i < roomList.size()) {
+						roomInfo = roomList.get(i);
+						json = HallRoomTF.roomInfoWithPlaybackToJson(roomInfo, platform);
+						if (!Objects.equals(cityId, Math.abs(roomList.get(i).getRegisterCity()))) {
+							break;
+						}
+						dist = configService.getNearbyStartDistance() + (start + i) * configService.getNearbyDistanceBeforeInterval();
+						if (dist < configService.getNearbyMiddleDistance()) {
+							dist += RandomUtils.nextInt(configService.getNearbyDistanceBeforeInterval());
+						} else {
+							dist += RandomUtils.nextInt(configService.getNearbyDistanceAfterInterval());
+						}
+						// 随机添加距离
+						json.addProperty("distance", dist);
+						i++;
+						roomArray.add(json);
+					}
+				}
+				while (i < roomList.size()) {
+					roomInfo = roomList.get(i++);
+					json = HallRoomTF.roomInfoWithPlaybackToJson(roomInfo, platform);
+					if (sysMenu.getDataSourceType() != null && sysMenu.getDataSourceType() == 16) {
+						json.addProperty("distance", 0);
+					}
+					roomArray.add(json);
 				}
 			}
 			
@@ -706,7 +735,7 @@ public class HallFunctions {
                         List<HallRoomInfoDTO> roomList = temp.getRooms();
                         if (roomList != null) {
                             for (HallRoomInfoDTO roomInfo : roomList) {
-                                roomArray.add(HallRoomTF.roomInfoToJson(roomInfo, platform));
+                                roomArray.add(HallRoomTF.roomInfoWithPlaybackToJson(roomInfo, platform));
                             }
                         }
                         json.add("result", roomArray);

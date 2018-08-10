@@ -26,27 +26,6 @@
 		<property name="filters" value="${spring.ds.oracle.filters}" />
 	</bean>
 
-	<bean id="dataSource_backup" class="com.alibaba.druid.pool.DruidDataSource" destroy-method="close" lazy-init="true">
-		<property name="driverClassName" value="${spring.ds.oracle.slave.driverClassName}"/>
-		<property name="url" value="${spring.ds.oracle.slave.url}" />
-		<property name="username" value="${spring.ds.oracle.slave.username}"/>
-		<property name="password" value="${spring.ds.oracle.slave.password}"/>
-		<property name="validationQuery" value="${spring.ds.oracle.slave.validationQuery}" />
-
-		<property name="poolPreparedStatements" value="${spring.ds.oracle.slave.poolPreparedStatements}"/>
-		<property name="initialSize" value="${spring.ds.oracle.slave.initialSize}"/>
-		<property name="maxActive" value="${spring.ds.oracle.slave.maxActive}"/>
-		<property name="maxIdle" value="${spring.ds.oracle.slave.maxIdle}"/>
-		<property name="maxWait" value="${spring.ds.oracle.slave.maxWait}" />
-		<property name="minIdle" value="${spring.ds.oracle.slave.minIdle}"/>
-		<property name="numTestsPerEvictionRun" value="${spring.ds.oracle.slave.numTestsPerEvictionRun}" />
-		<property name="testWhileIdle" value="${spring.ds.oracle.slave.testWhileIdle}" />
-		<property name="testOnBorrow" value="${spring.ds.oracle.slave.testOnBorrow}" />
-		<property name="defaultAutoCommit" value="${spring.ds.oracle.slave.defaultAutoCommit}" />
-		<property name="timeBetweenLogStatsMillis" value="${spring.ds.oracle.slave.timeBetweenLogStatsMillis}"/>
-		<property name="filters" value="${spring.ds.oracle.slave.filters}" />
-	</bean>
-
 	<bean id="dataSource_pg_master" class="com.alibaba.druid.pool.DruidDataSource" lazy-init="true">
 		<property name="driverClassName" value="${spring.ds.pg.driverClassName}" />
 		<property name="url" value="${spring.ds.pg.url}" />
