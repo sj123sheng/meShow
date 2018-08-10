@@ -1702,7 +1702,7 @@ public class OtherFunctions {
 		params.setStart(start);
 		params.setNum(num);
 		params.setLowerDuration(configService.getReplayVedioLowerDuration());
-		params.setDaysLimit(configService.getReplayVedioLowerDuration());
+		params.setDaysLimit(configService.getReplayVedioLimitDay());
 		Page<VideoInfo> page = null;
 		try {
 			page = videoInfoServiceNew.getPublishVideoList(params);
