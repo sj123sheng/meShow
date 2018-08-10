@@ -1379,10 +1379,10 @@ public class LiveShopFunctions {
         }
         try {
             boolean canAddSubShop = liveShopService.canAddSubShop(userId);
-            result.addProperty("isSaleActor", canAddSubShop);
+            result.addProperty("canAddSubShop", canAddSubShop);
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
         } catch (Exception e) {
-            logger.error(String.format("Module Error：liveShopService.isSaleActor(userId=%s)", userId), e);
+            logger.error(String.format("Module Error：liveShopService.canAddSubShop(userId=%s)", userId), e);
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
         }
         return result;
