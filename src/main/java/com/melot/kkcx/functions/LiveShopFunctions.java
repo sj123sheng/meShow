@@ -182,7 +182,7 @@ public class LiveShopFunctions {
                 addressDO = addressResult.getData();
             }
             
-            LiveShopTF.orderInfo2Json(result, orderDTO, addressDO);
+            LiveShopTF.orderInfo2Json(result, orderDTO, addressDO, subShopIds);
             
             // 支付方式
             if (orderDTO.getPaymentMode() != null && orderDTO.getPaymentMode() > 0) {
