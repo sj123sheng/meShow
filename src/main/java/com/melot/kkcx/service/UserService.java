@@ -1006,20 +1006,6 @@ public class UserService {
 		}
 	}
 	
-	public static boolean insertTempUserPassword(int userId, String password) {
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("userId", userId);
-		map.put("password", password);
-		map.put("dtime", new Date());
-		try {
-			SqlMapClientHelper.getInstance(DB.MASTER).insert("User.insertUserTempPassword", map);
-		} catch (SQLException e) {
-			logger.error("UserService.insertTempUserPassword (userId : " + userId + ", password : " + password + " ) execute exception", e);
-			return false;
-		}
-		return true;
-	}
-	
 	public static boolean getGuestFirstRecord(int userId) {
 		try {
 			OtherLoginService otherLoginService = (OtherLoginService) MelotBeanFactory.getBean("otherLoginService");

@@ -298,7 +298,7 @@ public class RoomTF {
 	        if (adminType == null || adminType == -1) {
 	            nickname = GeneralService.replaceSensitiveWords(roomInfo.getActorId(), nickname);
 	        }
-            roomObject.addProperty("nickname", GeneralService.replaceSensitiveWords(roomInfo.getActorId(), roomInfo.getNickname()));
+            roomObject.addProperty("nickname", nickname);
         }
 	    
 	    if (roomInfo.getActorLevel() != null) {

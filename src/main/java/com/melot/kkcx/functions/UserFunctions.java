@@ -202,14 +202,11 @@ public class UserFunctions {
 				if (resRegister.getUserId() != null) {
 					int userId = resRegister.getUserId();
 					
-					com.melot.kkcx.service.UserService.insertTempUserPassword(userId, psword);
-					
 					result.addProperty("userId", userId);
 					Long showMoney = 0l;
 					if (resRegister.getShowMoney() != null) {
 						showMoney = (Long) resRegister.getShowMoney();
 					}
-					// 更新mongodb.
 					registerUserAssets(userId, showMoney);
 					// 赠送道具
 					/*if (channelId != 0) {
@@ -390,8 +387,6 @@ public class UserFunctions {
 		String TagCode = AccountService.changePassword(userId, oldpwd, com.melot.kkcx.service.UserService.getMD5Password(newpwd), platform, 
 				com.melot.kktv.service.GeneralService.getIpAddr(request, AppIdEnum.AMUSEMENT, platform, null), level);
 		if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-			com.melot.kkcx.service.UserService.insertTempUserPassword(userId, newpwd);
-			
 			if (funcTag == 40000008) {// 安全修改密码接口
 				result.addProperty("u", username);
 			}
@@ -860,14 +855,6 @@ public class UserFunctions {
 						showMoney = (Long) resRegister.getShowMoney();
 					}
 					
-					if (openPlatform == LoginTypeEnum.KUAIYA && phoneNum != null) {
-						Map<Object, Object> upMap = new HashMap<Object, Object>();
-						upMap.put("phoneNum", phoneNum);
-						upMap.put("userId", RuserId);
-						upMap.put("uuid", uuid);
-						SqlMapClientHelper.getInstance(DB.MASTER).update("User.updateKuaiyaUserPhoneNum", upMap);
-					}
-					
 					if (openPlatform == LoginTypeEnum.MALA && phoneNum != null) {
 					    ProfileServices.identifyPhone(RuserId, phoneNum);
 					}
@@ -1050,8 +1037,6 @@ public class UserFunctions {
        if (resRegister != null && resRegister.getTagCode() != null) {
            String TagCode = (String) resRegister.getTagCode();
            if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-        	   com.melot.kkcx.service.UserService.insertTempUserPassword(userId, password);
-        	   
                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
                if (resRegister.getUserId() != null) {
                    userId = resRegister.getUserId();
@@ -2065,7 +2050,6 @@ public class UserFunctions {
 					com.melot.kktv.service.GeneralService.getIpAddr(request, AppIdEnum.AMUSEMENT, platform, null), level);
 			String TagCode = resetPassword.getTagCode();
 			if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-				com.melot.kkcx.service.UserService.insertTempUserPassword(userId, psword);
 				result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 			} else if (TagCode.equals("02")) {
 				// 未找到该用户

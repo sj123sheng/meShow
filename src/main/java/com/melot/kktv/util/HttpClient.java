@@ -308,7 +308,7 @@ public abstract class HttpClient {
         conn.setRequestMethod(method);
         conn.setDoInput(true);
         conn.setDoOutput(true);
-        conn.setRequestProperty("Accept", "text/xml,text/javascript");
+        conn.setRequestProperty("Accept", "*/*");
         conn.setRequestProperty("User-Agent", "melot-recordServer-java");
         conn.setRequestProperty("Content-Type", ctype);
         if (headerMap != null) {

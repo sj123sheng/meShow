@@ -1,7 +1,6 @@
 package com.melot.kktv.action;
 
 import java.net.URLDecoder;
-import java.util.Date;
 import java.util.List;
 
 import javax.annotation.Resource;
@@ -16,16 +15,13 @@ import com.melot.blacklist.service.BlacklistService;
 import com.melot.common.melot_utils.StringUtils;
 import com.melot.kk.module.resource.domain.QiNiuTokenConf;
 import com.melot.kk.module.resource.service.ResourceNewService;
-import com.melot.kk.recharge.api.dto.RecharingRecordDto;
 import com.melot.kk.recharge.api.service.RechargeService;
 import com.melot.kk.userSecurity.api.domain.DO.UserVerifyDO;
 import com.melot.kk.userSecurity.api.service.UserVerifyService;
 import com.melot.kkcore.account.api.ResResetPassword;
 import com.melot.kkcore.account.api.ResUserBoundAccount;
 import com.melot.kkcore.user.api.UserProfile;
-import com.melot.kkcore.user.api.UserRegistry;
 import com.melot.kkcore.user.service.KkUserService;
-import com.melot.kkcx.functions.ProfileFunctions;
 import com.melot.kkcx.functions.UserFunctions;
 import com.melot.kkcx.service.GeneralService;
 import com.melot.kkcx.service.ProfileServices;
@@ -1305,7 +1301,6 @@ public class ProfileSecurityFunctions {
                             com.melot.kktv.service.GeneralService.getIpAddr(request, AppIdEnum.AMUSEMENT, platform, null), level);
                     String TagCode = resetPassword.getTagCode();
                     if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-                        com.melot.kkcx.service.UserService.insertTempUserPassword(userId, psword);
                         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
                         HotDataSource.delTempData(String.format(RETRIEVEPW_DPHONE_KEY, phoneNum));
                         HotDataSource.delTempData(String.format(RETRIEVEPW_DPHONE_KEY, phoneNum));

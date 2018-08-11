@@ -13,8 +13,7 @@
 	
 	<bean id="hallFunction" class="com.melot.kktv.action.HallFunctions"/>	
 	<bean id="indexFunction" class="com.melot.kktv.action.IndexFunctions"/>	
-	<bean id="familyFunction" class="com.melot.kktv.action.FamilyAction"/>	
-	<bean id="messageBoxFunction" class="com.melot.kktv.action.MessageBoxFunctions" />
+	<bean id="familyFunction" class="com.melot.kktv.action.FamilyAction"/>
 	<bean id="messageBoxV2Function" class="com.melot.kktv.action.MessageBoxV2Functions" />
 	<bean id="userAssetFunction" class="com.melot.kktv.action.UserAssetAction" />
 	<bean id="assetFunction" class="com.melot.kktv.action.AssetFunctions" />
@@ -36,7 +35,6 @@
 	
 	<bean id="profileSecurityFunction" class="com.melot.kktv.action.ProfileSecurityFunctions" />
 	<bean id="resourceFunction" class="com.melot.kktv.action.ResourceFunctions" />
-	<bean id="tagFunction" class="com.melot.kktv.action.TagFunctions" />
 	<bean id="tempFunction" class="com.melot.kktv.action.TempFunctions" />
 	<bean id="userLotteryPrizeFunction" class="com.melot.kktv.action.UserLotteryPrizeFunctions" />
 	<bean id="guardFunction" class="com.melot.kktv.action.GuardFunctions" />

@@ -106,13 +106,6 @@
 		<constructor-arg name="cacheType" value="60" />
 		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
 	</bean>
-	<!-- 获取活动列表 -->
-	<bean id="10002006" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="indexFunction" />
-		<constructor-arg name="methodName" value="getActivityList" />
-		<constructor-arg name="cacheType" value="60" />
-		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
-	</bean>
 	<!-- 获取全部活动列表 -->
 	<bean id="10002038" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="indexFunction" />
@@ -887,11 +880,6 @@
 	</bean>
 	
 	<!-- 个人资产接口类 -->
-	<!-- 获取汽车列表 -->
-	<bean id="20010101" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="assetFunction" />
-		<constructor-arg name="methodName" value="getCarList" />
-	</bean>
 	<!-- 获取汽车月价格区间 -->
 	<bean id="20010103" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="assetFunction" />
@@ -1455,38 +1443,6 @@
 	<bean id="10007003" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="backgroundFunction" />
 		<constructor-arg name="methodName" value="addUserDeviceInfo" />
-	</bean>
-	
-	<!-- 消息盒子接口类 -->
-	<!-- 获取用户消息列表 -->
-	<bean id="10006101" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="messageBoxFunction" />
-		<constructor-arg name="methodName" value="getUserMessageList" />
-	</bean>
-	<!-- 客户端定时刷新用户消息总数 -->
-	<bean id="10006102" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="messageBoxFunction" />
-		<constructor-arg name="methodName" value="refreshToGetMsgTotal" />
-	</bean>
-	<!-- 删除消息，包括单一删除和全部删除 -->
-	<bean id="10006103" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="messageBoxFunction" />
-		<constructor-arg name="methodName" value="deleteMsg" />
-	</bean>
-	<!-- 遍历消息 -->
-	<bean id="10006104" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="messageBoxFunction" />
-		<constructor-arg name="methodName" value="fetchMessage" />
-	</bean>
-	<!-- 获取消息推送开关设置 -->
-	<bean id="10006105" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="messageBoxFunction" />
-		<constructor-arg name="methodName" value="getMessageSwitchSet" />
-	</bean>
-	<!-- 设置消息推送开关 -->
-	<bean id="10006106" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="messageBoxFunction" />
-		<constructor-arg name="methodName" value="setMessageSwitch" />
 	</bean>
 	
 	<!-- 新版消息盒子接口类 -->
@@ -2130,6 +2086,11 @@
 	<bean id="50001013" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="roundRoomFunction" />
 		<constructor-arg name="methodName" value="getRoundRoomActList" />
+	</bean>
+
+	<bean id="51001013" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="roundRoomFunction" />
+		<constructor-arg name="methodName" value="getRoundRoomActListNew" />
 	</bean>
 	
 	<!-- 根据KEY获取配置信息 -->
@@ -2888,6 +2849,12 @@
 		<constructor-arg name="t" ref="liveShopFunctions" />
 		<constructor-arg name="methodName" value="delSubShopInfo" />
 	</bean>
+	
+	<bean id="51060524" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="canAddSubShop" />
+	</bean>
+	
 	<!-- 获取积分礼物列表 -->
 	<bean id="51010406" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="nobilityFunctions" />

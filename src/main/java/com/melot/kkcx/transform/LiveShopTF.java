@@ -139,4 +139,16 @@ public class LiveShopTF {
             result.add("productDetailUrls", productDetailUrls);
         }
     }
+
+    public static void orderInfo2Json(JsonObject result, LiveShopOrderDTO orderDTO, UserAddressDO addressDO, List<Integer> subShopIds) {
+        orderInfo2Json(result, orderDTO, addressDO);
+        JsonArray subShopArray = new JsonArray();
+        if (CollectionUtils.isNotEmpty(subShopIds)) {
+            for (Integer subShopId : subShopIds) {
+                subShopArray.add(subShopId);
+            }
+            result.addProperty("sellerId", subShopIds.get(0));
+        }
+        result.add("subShopIds", subShopArray);
+    }
 }

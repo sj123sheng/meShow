@@ -3,13 +3,20 @@ package com.melot.kkcx.functions;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import com.melot.asset.driver.domain.ConfVirtualId;
+import com.melot.asset.driver.service.VirtualIdService;
 import com.melot.kk.liveshop.api.constant.LiveShopErrorMsg;
 import com.melot.kk.liveshop.api.constant.LiveShopTransactionType;
 import com.melot.kk.liveshop.api.dto.*;
 import com.melot.kktv.util.*;
+import com.melot.module.api.exceptions.MelotModuleException;
+import com.melot.module.packagegift.driver.service.XmanService;
+import com.melot.sdk.core.util.MelotBeanFactory;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 
+import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.melot.kk.liveshop.api.service.LiveShopService;
@@ -17,6 +24,7 @@ import com.melot.kk.logistics.api.domain.UserAddressDO;
 import com.melot.kk.logistics.api.service.UserAddressService;
 import com.melot.kk.recharge.api.dto.ConfPaymentInfoDto;
 import com.melot.kk.recharge.api.service.RechargeService;
+import com.melot.kkcore.account.service.AccountSecurityService;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.transform.LiveShopTF;
@@ -24,6 +32,7 @@ import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Page;
 import com.melot.kktv.base.Result;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -154,8 +163,17 @@ public class LiveShopFunctions {
                 return result;
             }
             LiveShopOrderDTO orderDTO = moduleResult.getData();
+            // 获取主播客服ID
+            List<Integer> subShopIds = Lists.newArrayList();
+            try {
+                subShopIds = liveShopService.getSubShopIds(orderDTO.getActorId());
+            } catch (Exception e) {
+                logger.error("liveShopService.getSubShopIds(" + orderDTO.getActorId() + ")", e);
+                subShopIds = Lists.newArrayList();
+            }
             if (!orderDTO.getActorId().equals(userId)
-                    && !orderDTO.getUserId().equals(userId)) {
+                    && !orderDTO.getUserId().equals(userId)
+                    && (subShopIds.isEmpty() || !subShopIds.contains(userId))) {
                 result.addProperty(ParameterKeys.TAG_CODE, "5106050303");
                 return result;
             }
@@ -165,7 +183,7 @@ public class LiveShopFunctions {
                 addressDO = addressResult.getData();
             }
             
-            LiveShopTF.orderInfo2Json(result, orderDTO, addressDO);
+            LiveShopTF.orderInfo2Json(result, orderDTO, addressDO, subShopIds);
             
             // 支付方式
             if (orderDTO.getPaymentMode() != null && orderDTO.getPaymentMode() > 0) {
@@ -245,10 +263,33 @@ public class LiveShopFunctions {
                 // 移除不必要的字段
                 orderDTOJson.remove("refundInfo");
                 orderDTOJson.remove("expressInfo");
-                
-                int relationId = liveShopOrderDTO.getUserId().equals(userId) 
-                        ? liveShopOrderDTO.getActorId() : liveShopOrderDTO.getUserId();
-                UserProfile userProfile = kkUserService.getUserProfile(relationId);
+                List<Integer> subShopIds = new ArrayList<>();
+                int relationId;
+                UserProfile userProfile;
+                // 我是买家，联系人为商家
+                if (liveShopOrderDTO.getUserId().equals(userId)) {
+                    relationId = liveShopOrderDTO.getActorId();
+                    userProfile = kkUserService.getUserProfile(relationId);
+                    
+                    // 商家的有客服号，这个使用客服号替换联系人ID
+                    try {
+                        subShopIds = liveShopService.getSubShopIds(liveShopOrderDTO.getActorId());
+                    } catch (Exception e) {
+                        logger.error("liveShopService.getSubShopIds(" + liveShopOrderDTO.getActorId() + ");", e);
+                    }                    
+                    JsonArray subShopIdArray = new JsonArray();
+                    if (CollectionUtils.isNotEmpty(subShopIds)) {
+                        for (Integer subShopId : subShopIds) {
+                            subShopIdArray.add(subShopId);
+                        }
+                        orderDTOJson.add("subShopIds", subShopIdArray);
+                        relationId = subShopIds.get(0);
+                        orderDTOJson.addProperty("sellerId", relationId);// 覆盖掉sellerId，为安卓做兼容
+                    }
+                } else {
+                    relationId = liveShopOrderDTO.getUserId();
+                    userProfile = kkUserService.getUserProfile(relationId);
+                }
                 orderDTOJson.addProperty("relationId", relationId);
                 orderDTOJson.addProperty("nickname", userProfile.getNickName());
                 
@@ -1038,7 +1079,7 @@ public class LiveShopFunctions {
             return result;
         }
         try {
-            Result<LiveShopInfoDTO> shopInfoResult = liveShopService.getShopInfoByAdmin(userId, type);
+            Result<LiveShopInfoDTO> shopInfoResult = liveShopService.getShopInfo(userId, type);
             if (shopInfoResult == null) {
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
                 return result;
@@ -1137,6 +1178,7 @@ public class LiveShopFunctions {
                     if (!StringUtil.strIsNull(userProfile.getPortrait())) {
                         json.addProperty("portrait", ConfigHelper.getHttpdir() + userProfile.getPortrait());
                     }
+                    json.addProperty("gender", userProfile.getGender());
                     json.addProperty("richLevel", userProfile.getUserLevel());
                     
                     subShopInfos.add(json);
@@ -1192,12 +1234,63 @@ public class LiveShopFunctions {
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
+        
+        // 客服号不能是神秘人
+        try {
+            XmanService xmanService = (XmanService)MelotBeanFactory.getBean("xmanService");
+            if (subShopId <= 1127828 
+                    && subShopId >= 1000578 
+                    && xmanService.getXmanConf(subShopId) != null) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5206052205");
+                return result;
+            }
+        } catch (Exception e) {
+            logger.error("xmanService.getXmanConf(" + subShopId + ")", e);
+        }
+        
+        // 客服号不能是靓号
+        try {
+            VirtualIdService virtualIdService = (VirtualIdService)MelotBeanFactory.getBean("virtualIdService");
+            ConfVirtualId confVirtualId = virtualIdService.getConfVirtualIdById(subShopId);
+            if (confVirtualId != null) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5206052205");
+                return result;
+            }
+        } catch (Exception e) {
+            logger.error("virtualIdService.getConfVirtualIdById(" + subShopId + ")", e);
+        }
+        
+        // 客服号不能被封号
+        try {
+            AccountSecurityService accountSecurityService = (AccountSecurityService) MelotBeanFactory.getBean("accountSecurityService");
+            boolean lock = accountSecurityService.isLock(subShopId);
+            if (lock) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5206052205");
+                return result;
+            }
+        } catch (Exception e) {
+            logger.error("accountSecurityService.isLock(" + subShopId + ")", e);
+        }
+        
         try {
             boolean isSuccess = liveShopService.addSubShopId(userId, Arrays.asList(subShopId));
             if (isSuccess) {
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
             } else {
                 result.addProperty(ParameterKeys.TAG_CODE, "5206052203");
+            }
+        } catch (MelotModuleException e) {
+            logger.info(String.format("Module Error：liveShopService.addSubShopId(userId=%s, subShopId=%s)", userId, subShopId), e);
+            int errCode = e.getErrCode();
+            if (errCode == 1) {
+                // 主播不是直播购主播
+                result.addProperty(ParameterKeys.TAG_CODE, "5206052204");
+            } else if (errCode == 3) {
+                // 客服号不合法
+                result.addProperty(ParameterKeys.TAG_CODE, "5206052205");
+            } else {
+                // 数据库处理异常
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             }
         } catch (Exception e) {
             logger.error(String.format("Module Error：liveShopService.addSubShopId(userId=%s, subShopId=%s)", userId, subShopId), e);
@@ -1255,6 +1348,41 @@ public class LiveShopFunctions {
             }
         } catch (Exception e) {
             logger.error(String.format("Module Error：liveShopService.deleteSubShopId(userId=%s, subShopId=%s)", userId, subShopId), e);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+        }
+        return result;
+    }
+
+    /**
+     * 判断是否允许添加客服[51060524]
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject canAddSubShop(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        // 检验token
+        if (!checkTag) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_INCORRECT);
+            return result;
+        }
+        int userId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, "5106052401", 0, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        try {
+            boolean canAddSubShop = liveShopService.canAddSubShop(userId);
+            result.addProperty("canAddSubShop", canAddSubShop);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+        } catch (Exception e) {
+            logger.error(String.format("Module Error：liveShopService.canAddSubShop(userId=%s)", userId), e);
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
         }
         return result;

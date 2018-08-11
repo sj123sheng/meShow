@@ -155,6 +155,12 @@ public class ConfigHelper {
 	// 房间跑道地址
 	private static String runwayUrl;
 	
+	// 榜单中心地址
+    private static String rankUrl;
+    
+    // 榜单中心地址(前一日)
+    private static String lastRankUrl;
+	
 	// 用户送阳光中奖类别
 	private static String sendSunshinePrizeType;
 	
@@ -356,6 +362,10 @@ public class ConfigHelper {
             annualFamily = root.getChildText("annualFamily");
             
             runwayUrl = root.getChildText("runwayUrl");
+            
+            rankUrl = root.getChildText("rankUrl");
+            
+            lastRankUrl = root.getChildText("lastRankUrl");
             
             sendSunshinePrizeType = root.getChildText("sendSunshinePrizeType");
 			
@@ -1057,6 +1067,14 @@ public class ConfigHelper {
         return runwayUrl;
     }
 
+    public static String getRankUrl() {
+        return rankUrl;
+    }
+    
+    public static String getLastRankUrl() {
+        return lastRankUrl;
+    }
+    
     public static String getSendSunshinePrizeType() {
         return sendSunshinePrizeType;
     }

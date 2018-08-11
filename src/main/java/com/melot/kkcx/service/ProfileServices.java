@@ -9,13 +9,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import com.melot.kk.otherlogin.api.service.OtherLoginService;
 import org.apache.log4j.Logger;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import com.melot.blacklist.service.BlacklistService;
+import com.melot.kk.otherlogin.api.service.OtherLoginService;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.model.CommonDevice;
@@ -23,7 +23,6 @@ import com.melot.kktv.domain.UserInfo;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.QQVipSource;
 import com.melot.kktv.service.AccountService;
-import com.melot.kktv.service.TagService;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.DateUtil;
@@ -157,16 +156,6 @@ public class ProfileServices {
 					newHotData.put("welcomeMsgHref", userInfo.getGreetMsgHref());
 				}
 				newHotData.put("time", String.valueOf(System.currentTimeMillis()));
-				
-				// 获取用户标签
-				try {
-				    String tags = TagService.getUserTags(userId);
-				    if (!StringUtil.strIsNull(tags)) {
-				        newHotData.put("tags", tags);
-				    }
-                } catch (Exception e) {
-                    logger.error("TagService.getUserTags(" + userId + ") execute exception.", e);
-                }
 				
 				newHotData.put("loadTime", String.valueOf(System.currentTimeMillis()));
 				HotDataSource.setHotData(String.valueOf(userId), newHotData, ConfigHelper.getRedisUserDataExpireTime());
