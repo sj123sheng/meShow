@@ -132,7 +132,7 @@ public class RoundRoomFunction {
     	Transaction t = Cat.getProducer().newTransaction("MCall", "RoundRoomService.getRoundRoomActList");
 		try {
 			RoundRoomService roundRoomService = MelotBeanFactory.getBean("roundRoomService", RoundRoomService.class);
-			RoundRoomActList roundRoomActList = roundRoomService.getRoundRoomActListNew(roomId, 0,DateUtil.addOnField(startTime, Calendar.DATE, -1), startTime);
+			RoundRoomActList roundRoomActList = roundRoomService.getRoundRoomActListNew(roomId, 0, startTime,DateUtil.addOnField(startTime, Calendar.DATE, 1));
 			if (roundRoomActList !=null) {
 				if (roundRoomActList.getRoomActList() != null && roundRoomActList.getRoomActList().size() > 0) {
 					String cacheKey = null;
