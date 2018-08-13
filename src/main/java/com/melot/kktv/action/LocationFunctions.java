@@ -55,7 +55,7 @@ public class LocationFunctions {
                 if(userId > 0) {
                     TownUserInfoParam userInfoParam = new TownUserInfoParam();
                     userInfoParam.setUserId(userId);
-                    userInfoParam.setLastAreaCode(addressComponentDTO.getTown());
+                    userInfoParam.setLastAreaCode(addressComponentDTO.getTownAreaCode());
                     townUserService.saveUserInfo(userInfoParam);
                 }
                 result.addProperty("town", addressComponentDTO.getTown());
