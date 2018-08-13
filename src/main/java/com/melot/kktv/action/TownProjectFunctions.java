@@ -728,7 +728,7 @@ public class TownProjectFunctions {
 
     private String getResourceIds(int workType, int userId, int mediaDur, String workUrl) {
 
-        String resIds = null;
+        String resIds = "";
         if (workType == WorkTypeEnum.VIDEO) {
             com.melot.kk.module.resource.domain.Resource resource = new com.melot.kk.module.resource.domain.Resource();
             resource.setState(ResourceStateConstant.uncheck);
@@ -751,7 +751,7 @@ public class TownProjectFunctions {
                 workUrl = workUrl.replaceFirst("/kktv", "");
             }
             resource.seteCloudType(ECloudTypeConstant.qiniu);
-            resource.setImageUrl(workUrl != null ? workUrl : Pattern.compile("mp4$").matcher(workUrl).replaceAll("jpg"));
+            resource.setImageUrl(workUrl.substring(0, workUrl.lastIndexOf(".")) + ".jpg");
             Result<Integer> resIdResult = resourceNewService.addResource(resource);
             if(resIdResult != null && resIdResult.getCode() != null && resIdResult.getCode().equals(CommonStateCode.SUCCESS)){
                 Integer resId = resIdResult.getData();
