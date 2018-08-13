@@ -1688,7 +1688,7 @@ public class OtherFunctions {
 		try {
 			actorId = CommonUtil.getJsonParamInt(jsonObject, "actorId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
 			start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, null, 1, Integer.MAX_VALUE);
-			num = CommonUtil.getJsonParamInt(jsonObject, "num", 10, null, 1, Integer.MAX_VALUE);
+			num = CommonUtil.getJsonParamInt(jsonObject, "offset", 10, null, 1, Integer.MAX_VALUE);
 		} catch (CommonUtil.ErrorGetParameterException e) {
 			result.addProperty("TagCode", e.getErrCode());
 			return result;
@@ -1702,7 +1702,7 @@ public class OtherFunctions {
 		params.setStart(start);
 		params.setNum(num);
 		params.setLowerDuration(configService.getReplayVedioLowerDuration());
-		params.setDaysLimit(configService.getReplayVedioLowerDuration());
+		params.setDaysLimit(configService.getReplayVedioLimitDay());
 		Page<VideoInfo> page = null;
 		try {
 			page = videoInfoServiceNew.getPublishVideoList(params);
