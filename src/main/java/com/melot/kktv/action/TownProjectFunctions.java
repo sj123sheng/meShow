@@ -298,23 +298,16 @@ public class TownProjectFunctions {
      * @return
      */
     public JsonObject getStarList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-
         JsonObject result = new JsonObject();
 
         int userId, pageIndex, countPerPage;
         String areaCode;
         try {
-            userId = CommonUtil.getJsonParamInt(jsonObject, USER_ID.getId(), 0, USER_ID.getErrorCode(), 1, Integer.MAX_VALUE);
             pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
             countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 10, null, 1, Integer.MAX_VALUE);
             areaCode =  CommonUtil.getJsonParamString(jsonObject, "areaCode", null, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
-            return result;
-        }
-        UserProfile userProfile  =  kkUserService.getUserProfile(userId);
-        if(userProfile == null){
-            result.addProperty("TagCode",TagCodeEnum.USER_NOT_EXIST);
             return result;
         }
         JsonArray jsonArray = new JsonArray();
@@ -326,22 +319,25 @@ public class TownProjectFunctions {
             }
             Map<Integer,List<UserTagRelationDTO>> tagMap = tagService.getAllUserTagMap(userIdList);
             for(TownUserRoleDTO item : list){
-                JsonObject json = new JsonObject();
-                json.addProperty("userId",item.getUserId());
-                json.addProperty("nickname",userProfile.getNickName());
-                if(userProfile.getPortrait()!=null){
-                    json.addProperty("portrait",userProfile.getPortrait());
-                }
-                if(tagMap!=null && tagMap.containsKey(item.getUserId())){
-                    List<UserTagRelationDTO> tagList = tagMap.get(item.getUserId());
-                    if(!CollectionUtils.isEmpty(tagList)){
-                        JsonArray tagArray  =  new JsonArray();
-                        for(UserTagRelationDTO tag : tagList){
-                            JsonObject tagJson = new JsonObject();
-                            tagJson.addProperty("tag",tag.getTagName());
-                            tagArray.add(tagJson);
+                UserProfile userProfile = kkUserService.getUserProfile(item.getUserId());
+                if(userProfile!=null){
+                    JsonObject json = new JsonObject();
+                    json.addProperty("userId",item.getUserId());
+                    json.addProperty("nickname",userProfile.getNickName());
+                    if(userProfile.getPortrait()!=null){
+                        json.addProperty("portrait",userProfile.getPortrait());
+                    }
+                    if(tagMap!=null && tagMap.containsKey(item.getUserId())){
+                        List<UserTagRelationDTO> tagList = tagMap.get(item.getUserId());
+                        if(!CollectionUtils.isEmpty(tagList)){
+                            JsonArray tagArray  =  new JsonArray();
+                            for(UserTagRelationDTO tag : tagList){
+                                JsonObject tagJson = new JsonObject();
+                                tagJson.addProperty("tag",tag.getTagName());
+                                tagArray.add(tagJson);
+                            }
+                            json.add("tag",tagArray);
                         }
-                        json.add("tag",tagArray);
                     }
                 }
             }
