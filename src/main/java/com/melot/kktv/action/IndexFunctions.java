@@ -1309,8 +1309,11 @@ public class IndexFunctions {
 				for (Map.Entry<Integer, JsonObject> entry : allActorSortList) {
 					finalJson = entry.getValue();
 					if (!filterGiftList.contains(finalJson.get("giftId").getAsInt())) {
-						finalJson.add("actor", RoomTF.roomInfoToJson(RoomService.getRoomInfo(entry.getKey()), platform, true));
-						rankList.add(finalJson);
+					    RoomInfo roomInfo = RoomService.getRoomInfo(entry.getKey());
+					    if (roomInfo != null) {
+					        finalJson.add("actor", RoomTF.roomInfoToJson(roomInfo, platform, true));
+	                        rankList.add(finalJson);
+					    }
 						if (rankList.size() >= 6) {
 							break;
 						}
