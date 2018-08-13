@@ -2988,4 +2988,10 @@
 		<constructor-arg name="methodName" value="finishTask" />
 	</bean>
 
+	<bean id="51120207" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kKLiveProjectFunctions" />
+		<constructor-arg name="methodName" value="getGiftConf" />
+		<constructor-arg name="cacheType" value="60" />
+	</bean>
+
 </beans>

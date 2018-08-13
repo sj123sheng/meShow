@@ -9,6 +9,12 @@ import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ParameterKeys;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.module.api.exceptions.MelotModuleException;
+import com.melot.room.gift.domain.ReturnResult;
+import com.melot.room.gift.dto.CatalogGiftDTO;
+import com.melot.room.gift.dto.GiftDTO;
+import com.melot.room.gift.dto.RoomGiftDTO;
+import com.melot.room.gift.service.RoomGiftService;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 
 import javax.annotation.Resource;
@@ -31,6 +37,9 @@ public class KKLiveProjectFunctions {
 
     @Resource
     LiveProjectService liveProjectService;
+
+    @Resource
+    RoomGiftService roomGiftService;
 
     /**
      * 51120201
@@ -357,6 +366,58 @@ public class KKLiveProjectFunctions {
         } catch (Exception e) {
             log.error("Error:getTaskConfiguration()", e);
             tagCode = TagCodeEnum.MODULE_UNKNOWN_RESPCODE;
+        }
+        result.addProperty(ParameterKeys.TAG_CODE, tagCode);
+        return result;
+    }
+
+    /**
+     * 51120207
+     * 获取微信小程序礼物配置
+     * 微信小程序礼物的roomSource设置为22，根据roomSource查找对应的栏目（配置只配一个栏目），该栏目配置其微信小程序的礼物列表
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getGiftConf(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        // 微信小程序的roomSource，以此获取礼物配置
+        int roomSource = 22;
+        String tagCode = TagCodeEnum.MODULE_UNKNOWN_RESPCODE;
+        JsonArray jsonArray = new JsonArray();
+        try {
+            ReturnResult<RoomGiftDTO> giftResult = roomGiftService.getRoomGiftDTOByActorIdAndRoomSourceId(0, roomSource);
+            if (giftResult == null) {
+                result.addProperty(ParameterKeys.TAG_CODE, tagCode);
+                return result;
+            }
+
+            RoomGiftDTO roomGiftDTO = giftResult.getData();
+            if (roomGiftDTO == null || CollectionUtils.isEmpty(roomGiftDTO.getCatalogGiftDTOList())) {
+                result.addProperty(ParameterKeys.TAG_CODE, tagCode);
+                return result;
+            }
+            // 获取礼物配置的栏目，栏目取第一个
+            CatalogGiftDTO catalogGiftDTO = roomGiftDTO.getCatalogGiftDTOList().get(0);
+            if (catalogGiftDTO == null) {
+                result.addProperty(ParameterKeys.TAG_CODE, tagCode);
+                return result;
+            }
+            // 设置礼物配置
+            if (CollectionUtils.isNotEmpty(catalogGiftDTO.getGiftDTOList())) {
+                JsonObject json;
+                for (GiftDTO giftDTO : catalogGiftDTO.getGiftDTOList()) {
+                    json = new JsonObject();
+                    json.addProperty("giftId", giftDTO.getGiftId());
+                    jsonArray.add(json);
+                }
+            }
+            result.add("giftArray", jsonArray);
+            tagCode = TagCodeEnum.SUCCESS;
+        } catch (Exception e) {
+            log.error(String.format("Error:getGiftConf(jsonObject=%s, checkTag=%s, request=%s)", jsonObject, checkTag, request), e);
         }
         result.addProperty(ParameterKeys.TAG_CODE, tagCode);
         return result;
