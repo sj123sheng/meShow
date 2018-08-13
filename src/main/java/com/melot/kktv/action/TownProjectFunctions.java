@@ -5,7 +5,6 @@ import com.google.gson.JsonObject;
 import com.melot.common.melot_utils.StringUtils;
 import com.melot.kk.module.resource.constant.ECloudTypeConstant;
 import com.melot.kk.module.resource.constant.FileTypeConstant;
-import com.melot.kk.module.resource.constant.ResTypeConstant;
 import com.melot.kk.module.resource.constant.ResourceStateConstant;
 import com.melot.kk.module.resource.service.ResourceNewService;
 import com.melot.kk.town.api.constant.UserRoleTypeEnum;
@@ -737,7 +736,7 @@ public class TownProjectFunctions {
             resource.setSpecificUrl(workUrl);
             resource.setUserId(userId);
             resource.setDuration(Long.valueOf(mediaDur));
-            resource.setResType(ResTypeConstant.resource);
+            resource.setResType(14);
             // 获取分辨率,添加分辨率信息
             WorkVideoInfo videoInfo = WorkService.getVideoInfoByHttp(workUrl);
             if (videoInfo != null) {
@@ -769,7 +768,7 @@ public class TownProjectFunctions {
                     com.melot.kk.module.resource.domain.Resource resource = new com.melot.kk.module.resource.domain.Resource();
                     resource.setState(ResourceStateConstant.uncheck);
                     resource.setMimeType(FileTypeConstant.image);
-                    resource.setResType(ResTypeConstant.resource);
+                    resource.setResType(14);
                     resource.seteCloudType(ECloudTypeConstant.aliyun);
                     resource.setUserId(userId);
                     if (!StringUtil.strIsNull(tempUrl)) {
