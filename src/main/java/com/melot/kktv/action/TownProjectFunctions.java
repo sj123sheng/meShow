@@ -1,14 +1,17 @@
 package com.melot.kktv.action;
 
+import com.alibaba.fastjson.support.odps.udf.JSONArrayAdd;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.melot.common.melot_utils.StringUtils;
+import com.melot.kk.town.api.constant.UserRoleTypeEnum;
 import com.melot.kk.town.api.constant.WorkCheckStatusEnum;
 import com.melot.kk.town.api.constant.WorkTypeEnum;
-import com.melot.kk.town.api.dto.ResTownTopicDTO;
-import com.melot.kk.town.api.dto.ResTownWorkDTO;
+import com.melot.kk.town.api.dto.*;
 import com.melot.kk.town.api.param.TownUserInfoParam;
 import com.melot.kk.town.api.param.TownWorkParam;
+import com.melot.kk.town.api.service.TagService;
+import com.melot.kk.town.api.service.TownUserRoleService;
 import com.melot.kk.town.api.service.TownUserService;
 import com.melot.kk.town.api.service.TownWorkService;
 import com.melot.kkcore.user.api.UserProfile;
@@ -21,10 +24,13 @@ import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.TagCodeEnum;
 import org.apache.log4j.Logger;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static com.melot.kktv.util.ParamCodeEnum.*;
 
@@ -40,6 +46,12 @@ public class TownProjectFunctions {
 
     @Resource
     KkUserService kkUserService;
+
+    @Resource
+    private TownUserRoleService townUserRoleService;
+
+    @Resource
+    private TagService tagService;
 
     /**
      * 	获取本地新鲜的(作品、话题、直播间)列表【51120103】
@@ -276,6 +288,69 @@ public class TownProjectFunctions {
             result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             return result;
         }
+    }
+
+    /**
+     * 本地红人
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getStarList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        int userId, pageIndex, countPerPage;
+        String areaCode;
+        String token;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, USER_ID.getId(), 0, USER_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
+            countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 10, null, 1, Integer.MAX_VALUE);
+            token = CommonUtil.getJsonParamString(jsonObject, "token", null, null, 1, Integer.MAX_VALUE);
+            areaCode =  CommonUtil.getJsonParamString(jsonObject, "areaCode", null, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+        UserProfile userProfile  =  kkUserService.getUserProfile(userId);
+        if(userProfile == null){
+            result.addProperty("TagCode",TagCodeEnum.USER_NOT_EXIST);
+            return result;
+        }
+        JsonArray jsonArray = new JsonArray();
+        List<TownUserRoleDTO> list = townUserRoleService.getUserRoleList(pageIndex,countPerPage,areaCode, UserRoleTypeEnum.STAR);
+        if(!CollectionUtils.isEmpty(list)){
+            List<Integer> userIdList = new ArrayList<>(list.size());
+            for(TownUserRoleDTO item : list){
+                userIdList.add(item.getUserId());
+            }
+            Map<Integer,List<UserTagRelationDTO>> tagMap = tagService.getAllUserTagMap(userIdList);
+            for(TownUserRoleDTO item : list){
+                JsonObject json = new JsonObject();
+                json.addProperty("userId",item.getUserId());
+                json.addProperty("nickname",userProfile.getNickName());
+                if(userProfile.getPortrait()!=null){
+                    json.addProperty("portrait",userProfile.getPortrait());
+                }
+                if(tagMap!=null && tagMap.containsKey(item.getUserId())){
+                    List<UserTagRelationDTO> tagList = tagMap.get(item.getUserId());
+                    if(!CollectionUtils.isEmpty(tagList)){
+                        JsonArray tagArray  =  new JsonArray();
+                        for(UserTagRelationDTO tag : tagList){
+                            JsonObject tagJson = new JsonObject();
+                            tagJson.addProperty("tag",tag.getTagName());
+                            tagArray.add(tagJson);
+                        }
+                        json.add("tag",tagArray);
+                    }
+                }
+            }
+        }
+        result.add("list",jsonArray);
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
     }
 
     /**
