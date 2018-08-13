@@ -44,7 +44,10 @@ public enum ParamCodeEnum {
     TOPIC_NAME("topicName", "53000019"),
     WORK_DESC("workDesc", "53000020"),
     TOPIC_ID("topicId", "53000021"),
-    WORK_ID("workId", "53000022");
+    WORK_ID("workId", "53000022"),
+    COVER_URL("coverUrl", "53000022"),
+    RESOURCE_IDS("resourceIds", "53000023"),
+    WORK_SORT("workSort", "53000024");
 
 
     private String id;
