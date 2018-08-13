@@ -38,7 +38,16 @@ public enum ParamCodeEnum {
     SEASON_TYPE("seasonType", "53000013"),
     LAT("lat", "53000014"),
     LNG("lng", "53000015"),
-    AREA_CODE("areaCode", "53000016");
+    AREA_CODE("areaCode", "53000016"),
+    WORK_URL("workUrl", "53000017"),
+    WORK_TYPE("workType", "53000018"),
+    TOPIC_NAME("topicName", "53000019"),
+    WORK_DESC("workDesc", "53000020"),
+    TOPIC_ID("topicId", "53000021"),
+    WORK_ID("workId", "53000022"),
+    COVER_URL("coverUrl", "53000022"),
+    RESOURCE_IDS("resourceIds", "53000023"),
+    WORK_SORT("workSort", "53000024");
 
 
     private String id;
