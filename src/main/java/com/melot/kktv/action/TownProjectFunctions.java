@@ -146,7 +146,7 @@ public class TownProjectFunctions {
             }
             townWorkParam.setTopicName(topicName);
             String coverUrl;
-            if(workType == WorkTypeEnum.image) {
+            if(workType == WorkTypeEnum.IMAGE) {
                 coverUrl = workUrl.split(",")[0];
                 townWorkParam.setImageUrls(workUrl);
             }else {
@@ -730,7 +730,7 @@ public class TownProjectFunctions {
     private String getResourceIds(int workType, int userId, int mediaDur, String workUrl) {
 
         String resIds = null;
-        if (workType == WorkTypeEnum.video) {
+        if (workType == WorkTypeEnum.VIDEO) {
             com.melot.kk.module.resource.domain.Resource resource = new com.melot.kk.module.resource.domain.Resource();
             resource.setState(ResourceStateConstant.uncheck);
             resource.setMimeType(FileTypeConstant.video);
@@ -760,7 +760,7 @@ public class TownProjectFunctions {
                     resIds = String.valueOf(resId);
                 }
             }
-        } else if(workType == WorkTypeEnum.image) {
+        } else if(workType == WorkTypeEnum.IMAGE) {
             String[] imageList = workUrl.split(",");
             List<com.melot.kk.module.resource.domain.Resource> resourceList = new ArrayList<>();
             for (int i = 0; i < imageList.length; i++) {
