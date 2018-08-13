@@ -42,7 +42,7 @@ public enum ParamCodeEnum {
     WORK_URL("workUrl", "53000017"),
     WORK_TYPE("workType", "53000018"),
     TOPIC_NAME("topicName", "53000019"),
-    desc("desc", "53000020"),
+    WORK_DESC("workDesc", "53000020"),
     TOPIC_ID("topicId", "53000021"),
     WORK_ID("workId", "53000022");
 

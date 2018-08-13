@@ -6,7 +6,6 @@ import com.melot.common.melot_utils.StringUtils;
 import com.melot.kk.location.api.dto.AddressComponentDTO;
 import com.melot.kk.location.api.dto.AreaCodeDTO;
 import com.melot.kk.location.api.service.LocationService;
-import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.TagCodeEnum;
 import org.apache.log4j.Logger;
@@ -92,10 +91,6 @@ public class LocationFunctions {
             result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             return result;
         }
-    }
-
-    private String getPortrait(UserProfile userProfile) {
-        return userProfile.getPortrait() == null ? null : userProfile.getPortrait() + "!128";
     }
 
 }
