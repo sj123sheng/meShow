@@ -6,6 +6,8 @@ import com.melot.common.melot_utils.StringUtils;
 import com.melot.kk.location.api.dto.AddressComponentDTO;
 import com.melot.kk.location.api.dto.AreaCodeDTO;
 import com.melot.kk.location.api.service.LocationService;
+import com.melot.kk.town.api.param.TownUserInfoParam;
+import com.melot.kk.town.api.service.TownUserService;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.TagCodeEnum;
 import org.apache.log4j.Logger;
@@ -23,6 +25,9 @@ public class LocationFunctions {
     @Resource
     LocationService locationService;
 
+    @Resource
+    TownUserService townUserService;
+
     /**
      * 	根据gps经纬度获取对应的地理位置信息【51120101】
      */
@@ -30,8 +35,10 @@ public class LocationFunctions {
 
         JsonObject result = new JsonObject();
 
+        int userId;
         String lat,lng;
         try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, USER_ID.getId(), 0, null, 1, Integer.MAX_VALUE);
             lat = CommonUtil.getJsonParamString(jsonObject, LAT.getId(), null, LAT.getErrorCode(), 1, Integer.MAX_VALUE);
             lng = CommonUtil.getJsonParamString(jsonObject, LNG.getId(), null, LNG.getErrorCode(), 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
@@ -44,6 +51,13 @@ public class LocationFunctions {
             AddressComponentDTO addressComponentDTO =  locationService.getAddressComponentByCoordinate(lat, lng);
             if(addressComponentDTO != null && StringUtils.isNotEmpty(addressComponentDTO.getTown())
                     && StringUtils.isNotEmpty(addressComponentDTO.getTownAreaCode())){
+
+                if(userId > 0) {
+                    TownUserInfoParam userInfoParam = new TownUserInfoParam();
+                    userInfoParam.setUserId(userId);
+                    userInfoParam.setLastAreaCode(addressComponentDTO.getTown());
+                    townUserService.saveUserInfo(userInfoParam);
+                }
                 result.addProperty("town", addressComponentDTO.getTown());
                 result.addProperty("townAreaCode", addressComponentDTO.getTownAreaCode());
             }

@@ -1,13 +1,20 @@
 package com.melot.kktv.action;
 
-import com.alibaba.fastjson.support.odps.udf.JSONArrayAdd;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.melot.common.melot_utils.StringUtils;
+import com.melot.kk.module.resource.constant.ECloudTypeConstant;
+import com.melot.kk.module.resource.constant.FileTypeConstant;
+import com.melot.kk.module.resource.constant.ResTypeConstant;
+import com.melot.kk.module.resource.constant.ResourceStateConstant;
+import com.melot.kk.module.resource.service.ResourceNewService;
 import com.melot.kk.town.api.constant.UserRoleTypeEnum;
 import com.melot.kk.town.api.constant.WorkCheckStatusEnum;
 import com.melot.kk.town.api.constant.WorkTypeEnum;
-import com.melot.kk.town.api.dto.*;
+import com.melot.kk.town.api.dto.ResTownTopicDTO;
+import com.melot.kk.town.api.dto.ResTownWorkDTO;
+import com.melot.kk.town.api.dto.TownUserRoleDTO;
+import com.melot.kk.town.api.dto.UserTagRelationDTO;
 import com.melot.kk.town.api.param.TownUserInfoParam;
 import com.melot.kk.town.api.param.TownWorkParam;
 import com.melot.kk.town.api.service.TagService;
@@ -19,9 +26,12 @@ import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Page;
 import com.melot.kktv.base.Result;
+import com.melot.kktv.domain.WorkVideoInfo;
 import com.melot.kktv.service.UserRelationService;
+import com.melot.kktv.service.WorkService;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConfigHelper;
+import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
 import org.apache.log4j.Logger;
 import org.springframework.util.CollectionUtils;
@@ -31,6 +41,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import static com.melot.kktv.util.ParamCodeEnum.*;
 
@@ -45,6 +56,9 @@ public class TownProjectFunctions {
     TownUserService townUserService;
 
     @Resource
+    ResourceNewService resourceNewService;
+
+    @Resource
     KkUserService kkUserService;
 
     @Resource
@@ -52,6 +66,8 @@ public class TownProjectFunctions {
 
     @Resource
     private TagService tagService;
+
+    private static String SEPARATOR = "/";
 
     /**
      * 	获取本地新鲜的(作品、话题、直播间)列表【51120103】
@@ -95,23 +111,30 @@ public class TownProjectFunctions {
             return result;
         }
 
-        String areaCode, workUrl, topicName, workDesc, resourceIds;
-        int userId, workType, topicId;
+        String areaCode, workUrl, topicName, workDesc;
+        int userId, workType, topicId, mediaDur;
         try {
             areaCode = CommonUtil.getJsonParamString(jsonObject, AREA_CODE.getId(), null, AREA_CODE.getErrorCode(), 1, Integer.MAX_VALUE);
             workUrl = CommonUtil.getJsonParamString(jsonObject, WORK_URL.getId(), null, WORK_URL.getErrorCode(), 1, Integer.MAX_VALUE);
             topicName = CommonUtil.getJsonParamString(jsonObject, TOPIC_NAME.getId(), null, null, 1, Integer.MAX_VALUE);
             workDesc = CommonUtil.getJsonParamString(jsonObject, WORK_DESC.getId(), null, null, 1, Integer.MAX_VALUE);
-            resourceIds = CommonUtil.getJsonParamString(jsonObject, RESOURCE_IDS.getId(), null, RESOURCE_IDS.getErrorCode(), 1, Integer.MAX_VALUE);
             userId = CommonUtil.getJsonParamInt(jsonObject, USER_ID.getId(), 0, USER_ID.getErrorCode(), 1, Integer.MAX_VALUE);
             workType = CommonUtil.getJsonParamInt(jsonObject, WORK_TYPE.getId(), 2, WORK_TYPE.getErrorCode(), 1, Integer.MAX_VALUE);
             topicId = CommonUtil.getJsonParamInt(jsonObject, TOPIC_ID.getId(), 0, null, 1, Integer.MAX_VALUE);
+            mediaDur = CommonUtil.getJsonParamInt(jsonObject, "mediaDur", 0, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
         }
 
         try {
+
+            String resIds = getResourceIds(workType, userId, mediaDur, workUrl);
+            if(StringUtils.isEmpty(resIds)) {
+                // 插入资源失败
+                result.addProperty("TagCode", "06020009");
+                return result;
+            }
 
             TownWorkParam townWorkParam = new TownWorkParam();
             townWorkParam.setUserId(userId);
@@ -131,7 +154,7 @@ public class TownProjectFunctions {
                 townWorkParam.setVideoUrl(workUrl);
             }
             townWorkParam.setCoverUrl(coverUrl);
-            townWorkParam.setResourceIds(resourceIds);
+            townWorkParam.setResourceIds(resIds);
 
             Result<Boolean> publishResult = townWorkService.publishWork(townWorkParam);
 
@@ -702,6 +725,73 @@ public class TownProjectFunctions {
             result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             return result;
         }
+    }
+
+    private String getResourceIds(int workType, int userId, int mediaDur, String workUrl) {
+
+        String resIds = null;
+        if (workType == WorkTypeEnum.video) {
+            com.melot.kk.module.resource.domain.Resource resource = new com.melot.kk.module.resource.domain.Resource();
+            resource.setState(ResourceStateConstant.uncheck);
+            resource.setMimeType(FileTypeConstant.video);
+            resource.setSpecificUrl(workUrl);
+            resource.setUserId(userId);
+            resource.setDuration(Long.valueOf(mediaDur));
+            resource.setResType(ResTypeConstant.resource);
+            // 获取分辨率,添加分辨率信息
+            WorkVideoInfo videoInfo = WorkService.getVideoInfoByHttp(workUrl);
+            if (videoInfo != null) {
+                resource.setFileHeight(videoInfo.getHeight());
+                resource.setFileWidth(videoInfo.getWidth());
+            }
+            if (!StringUtil.strIsNull(workUrl)) {
+                workUrl = workUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
+                if(!workUrl.startsWith(SEPARATOR)) {
+                    workUrl = SEPARATOR + workUrl;
+                }
+                workUrl = workUrl.replaceFirst("/kktv", "");
+            }
+            resource.seteCloudType(ECloudTypeConstant.qiniu);
+            resource.setImageUrl(workUrl != null ? workUrl : Pattern.compile("mp4$").matcher(workUrl).replaceAll("jpg"));
+            Result<Integer> resIdResult = resourceNewService.addResource(resource);
+            if(resIdResult != null && resIdResult.getCode() != null && resIdResult.getCode().equals(CommonStateCode.SUCCESS)){
+                Integer resId = resIdResult.getData();
+                if (resId > 0) {
+                    resIds = String.valueOf(resId);
+                }
+            }
+        } else if(workType == WorkTypeEnum.image) {
+            String[] imageList = workUrl.split(",");
+            List<com.melot.kk.module.resource.domain.Resource> resourceList = new ArrayList<>();
+            for (int i = 0; i < imageList.length; i++) {
+                String tempUrl = imageList[i];
+                if (!StringUtil.strIsNull(tempUrl)) {
+                    com.melot.kk.module.resource.domain.Resource resource = new com.melot.kk.module.resource.domain.Resource();
+                    resource.setState(ResourceStateConstant.uncheck);
+                    resource.setMimeType(FileTypeConstant.image);
+                    resource.setResType(ResTypeConstant.resource);
+                    resource.seteCloudType(ECloudTypeConstant.aliyun);
+                    resource.setUserId(userId);
+                    if (!StringUtil.strIsNull(tempUrl)) {
+                        tempUrl = tempUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
+                        if (!workUrl.startsWith(SEPARATOR)) {
+                            tempUrl = SEPARATOR + tempUrl;
+                        }
+                        tempUrl = tempUrl.replaceFirst("/kktv", "");
+                    }
+                    resource.setImageUrl(tempUrl);
+                    resourceList.add(resource);
+                }
+            }
+            Result<List<Integer>> resIdsResult = resourceNewService.addResources(resourceList);
+            if (resIdsResult != null && resIdsResult.getCode() != null && resIdsResult.getCode().equals(CommonStateCode.SUCCESS)) {
+                for (Integer i : resIdsResult.getData()) {
+                    resIds = resIds + "," + i;
+                }
+                resIds = Pattern.compile("^,*").matcher(resIds).replaceAll("");
+            }
+        }
+        return resIds;
     }
 
     private String getPortrait(UserProfile userProfile) {
