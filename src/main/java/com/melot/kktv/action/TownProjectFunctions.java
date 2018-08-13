@@ -300,7 +300,7 @@ public class TownProjectFunctions {
     public JsonObject getStarList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
 
-        int userId, pageIndex, countPerPage;
+        int pageIndex, countPerPage;
         String areaCode;
         try {
             pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
