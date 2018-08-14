@@ -20,16 +20,16 @@ import com.melot.kk.town.api.service.TownUserService;
 import com.melot.kk.town.api.service.TownWorkService;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.service.KkUserService;
+import com.melot.kkcx.service.UserService;
+import com.melot.kkcx.transform.RoomTF;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Page;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.domain.WorkVideoInfo;
+import com.melot.kktv.model.Room;
 import com.melot.kktv.service.UserRelationService;
 import com.melot.kktv.service.WorkService;
-import com.melot.kktv.util.CommonUtil;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.StringUtil;
-import com.melot.kktv.util.TagCodeEnum;
+import com.melot.kktv.util.*;
 import org.apache.log4j.Logger;
 import org.springframework.util.CollectionUtils;
 
@@ -398,6 +398,118 @@ public class TownProjectFunctions {
         result.add("roomList", jRoomList);
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
+    }
+
+    /**
+     * 用户粉丝列表(51120111)
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getUserFansList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        // 该接口toke可选
+        int selfTag = 0;
+        if (checkTag) {
+            selfTag = 1;
+        }
+
+        int userId = 0;
+        int pageIndex = 1;
+        int countPerPage = 20;
+        int platform = 0;
+
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "03040002", 1, Integer.MAX_VALUE);
+            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
+            countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 20, null, 1, Integer.MAX_VALUE);
+            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, 1, Integer.MAX_VALUE);
+        } catch(CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch(Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        int start = (pageIndex - 1) * countPerPage;
+        int end = pageIndex * countPerPage - 1;
+        int pageTotal = 0;
+
+        int totalCount = UserRelationService.getFansCount(userId);
+        if (totalCount > 0) {
+            if (totalCount % countPerPage == 0) {
+                pageTotal = (int) totalCount / countPerPage;
+            } else {
+                pageTotal = (int) (totalCount / countPerPage) + 1;
+            }
+        }
+        result.addProperty("fansCount", totalCount);
+
+        //不是自己查看仅返回粉丝数
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        }
+
+        JsonArray jRoomList = new JsonArray();
+
+        String fanIdsStr = UserRelationService.getFanIdsString(userId, start, end);
+        if (fanIdsStr != null) {
+            List<Room> roomList = getFansRoomList(fanIdsStr);
+            if (roomList != null && roomList.size() > 0) {
+                List<Integer> userIdList = new ArrayList<>(roomList.size());
+                for (Room room : roomList) {
+                    userIdList.add(room.getUserId());
+                }
+
+                Map<Integer,List<UserTagRelationDTO>> tagMap = tagService.getAllUserTagMap(userIdList);
+                for (Room room : roomList) {
+                    int roomId = room.getUserId();
+                    JsonObject roomJson = new JsonObject();
+                    roomJson.addProperty("userId",roomId);
+                    roomJson.addProperty("nickname",room.getNickname());
+                    roomJson.addProperty("gender",room.getGender());
+                    roomJson.addProperty("portrait_path_256",ConfigHelper.getHttpdir() + room.getPortrait_path_256());
+
+                    if(tagMap!=null && tagMap.containsKey(room.getUserId())){
+                        List<UserTagRelationDTO> tagList = tagMap.get(room.getUserId());
+                        if(!CollectionUtils.isEmpty(tagList)){
+                            StringBuilder tag = new StringBuilder();
+                            for(UserTagRelationDTO item : tagList){
+                                tag.append(item.getTagName()).append(",");
+                            }
+                            roomJson.addProperty("tag",tag.toString().substring(0,tag.length()-1));
+                        }
+                    }
+
+                    jRoomList.add(roomJson);
+                }
+            }
+        }
+
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        result.addProperty("pageTotal", pageTotal);
+        result.add("roomList", jRoomList);
+
+        return result;
+    }
+
+    private static List<Room> getFansRoomList(String fanIdsStr) {
+        List<Room> roomList = new ArrayList<>();
+        if (fanIdsStr != null) {
+            String[] fanIdsArr = fanIdsStr.split(",");
+            for (String fanId : fanIdsArr) {
+                Room room = new Room();
+                room.setUserId(Integer.valueOf(fanId));
+                room.setMaxCount(0);
+                room.setEnterConditionType("0");
+                roomList.add(room);
+            }
+        }
+        return roomList;
     }
 
     /**
