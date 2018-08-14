@@ -329,8 +329,10 @@ public class TownProjectFunctions {
     public JsonObject getUserProfile(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
         int userId;
+        String areaCode;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            areaCode =  CommonUtil.getJsonParamString(jsonObject, "areaCode", null, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -350,6 +352,15 @@ public class TownProjectFunctions {
         result.addProperty("followCount",followsCount);
         int fansCount = UserRelationService.getFansCount(userId);
         result.addProperty("fansCount",fansCount);
+
+        if(!StringUtils.isEmpty(areaCode)){
+            TownUserRoleDTO townUserRoleDTO = townUserRoleService.getUserAreaRole(userId,areaCode,UserRoleTypeEnum.OWER);
+            if(townUserRoleDTO != null){
+                result.addProperty("isOwer",1);
+            }else{
+                result.addProperty("isOwer",0);
+            }
+        }
 
         TownUserInfoDTO townUserInfoDTO =  townUserService.getUserInfo(userId);
         if(townUserInfoDTO != null){
@@ -902,6 +913,7 @@ public class TownProjectFunctions {
                     result.addProperty("workStatus", 3);
                 }
                 result.addProperty("workType", townWorkDTO.getWorkType());
+                result.addProperty("isRecommend", townWorkDTO.getIsRecommend());
                 result.addProperty("videoUrl", townWorkDTO.getVideoUrl());
                 result.addProperty("imageUrls", townWorkDTO.getImageUrls());
                 result.addProperty("topicId", townWorkDTO.getTopicId());
