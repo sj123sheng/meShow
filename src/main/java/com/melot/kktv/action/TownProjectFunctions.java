@@ -893,7 +893,8 @@ public class TownProjectFunctions {
             ResTownWorkDTO townWorkDTO = townWorkService.getWorkInfo(workId);
             if(townWorkDTO != null) {
                 int checkStatus = townWorkDTO.getCheckStatus();
-                if(isOwner) {
+                boolean isOffShelf = townWorkDTO.getIsOffShelf();
+                if(isOwner || (checkStatus == WorkCheckStatusEnum.CHECK_PASS && !isOffShelf)) {
                     result.addProperty("workStatus", 1);
                 } else if(checkStatus == WorkCheckStatusEnum.WAIT_CHECK) {
                     result.addProperty("workStatus", 2);
