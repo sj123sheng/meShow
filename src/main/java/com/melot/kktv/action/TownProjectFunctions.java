@@ -17,8 +17,6 @@ import com.melot.kk.town.api.param.TownWorkParam;
 import com.melot.kk.town.api.service.*;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.service.KkUserService;
-import com.melot.kkcx.service.UserService;
-import com.melot.kkcx.transform.RoomTF;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Page;
 import com.melot.kktv.base.Result;
@@ -189,6 +187,8 @@ public class TownProjectFunctions {
             ResTownTopicDTO townTopicDTO = townWorkService.getTopicInfo(topicId);
             if(townTopicDTO != null) {
                 result.addProperty("topicName", townTopicDTO.getTopicName());
+                result.addProperty("topicDesc", townTopicDTO.getTopicDesc());
+                result.addProperty("coverUrl", townTopicDTO.getCoverUrl());
                 Integer sponsorUserId = townTopicDTO.getSponsorUserId();
                 if(sponsorUserId != null) {
                     UserProfile userProfile = kkUserService.getUserProfile(sponsorUserId);
@@ -201,6 +201,17 @@ public class TownProjectFunctions {
                 }
                 result.addProperty("participantsNum", townTopicDTO.getParticipantsNum());
                 result.addProperty("workNum", townTopicDTO.getWorkNum());
+                Integer firstWorkId = townTopicDTO.getSponsorFirstWorkId();
+                if(firstWorkId != null) {
+                    ResTownWorkDTO townWorkDTO = townWorkService.getWorkInfo(firstWorkId);
+                    if(townWorkDTO != null) {
+                        JsonObject sponsorFirstWork = new JsonObject();
+                        sponsorFirstWork.addProperty("workId", townWorkDTO.getWorkId());
+                        sponsorFirstWork.addProperty("praiseNum", townWorkDTO.getPraiseNum());
+                        sponsorFirstWork.addProperty("coverUrl", townWorkDTO.getCoverUrl());
+                        result.add("sponsorFirstWork", sponsorFirstWork);
+                    }
+                }
             }
             result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
