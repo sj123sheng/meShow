@@ -204,7 +204,8 @@ public class TownProjectFunctions {
                 Integer firstWorkId = townTopicDTO.getSponsorFirstWorkId();
                 if(firstWorkId != null) {
                     ResTownWorkDTO townWorkDTO = townWorkService.getWorkInfo(firstWorkId);
-                    if(townWorkDTO != null) {
+                    if(townWorkDTO != null && townWorkDTO.getCheckStatus() == WorkCheckStatusEnum.CHECK_PASS
+                            && !townWorkDTO.getIsOffShelf()) {
                         JsonObject sponsorFirstWork = new JsonObject();
                         sponsorFirstWork.addProperty("workId", townWorkDTO.getWorkId());
                         sponsorFirstWork.addProperty("praiseNum", townWorkDTO.getPraiseNum());
@@ -1110,7 +1111,7 @@ public class TownProjectFunctions {
                     resource.setUserId(userId);
                     if (!StringUtil.strIsNull(tempUrl)) {
                         tempUrl = tempUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
-                        if (!workUrl.startsWith(SEPARATOR)) {
+                        if (!tempUrl.startsWith(SEPARATOR)) {
                             tempUrl = SEPARATOR + tempUrl;
                         }
                         tempUrl = tempUrl.replaceFirst("/kktv", "");
