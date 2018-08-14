@@ -315,6 +315,7 @@ public class KKLiveProjectFunctions {
                 }
                 array.add(json);
             }
+            tagCode = TagCodeEnum.SUCCESS;
             result.add("taskList", array);
         }
         result.addProperty(ParameterKeys.TAG_CODE, tagCode);
