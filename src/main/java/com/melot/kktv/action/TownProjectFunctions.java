@@ -311,6 +311,56 @@ public class TownProjectFunctions {
     }
 
     /**
+     * 获取用户信息(51120109)
+     */
+    public JsonObject getUserProfile(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        int userId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+        UserProfile userProfile = kkUserService.getUserProfile(userId);
+        if(userProfile == null){
+            result.addProperty("TagCode", TagCodeEnum.USER_NOT_EXIST);
+            return result;
+        }
+        result.addProperty("userId",userProfile.getUserId());
+        result.addProperty("nickname",userProfile.getNickName());
+        if(userProfile.getPortrait()!=null){
+            result.addProperty("portrait",ConfigHelper.getHttpdir() + userProfile.getPortrait());
+        }
+        result.addProperty("gender",userProfile.getGender());
+        int followsCount = UserRelationService.getFollowsCount(userId);
+        result.addProperty("followCount",followsCount);
+        int fansCount = UserRelationService.getFansCount(userId);
+        result.addProperty("fansCount",fansCount);
+
+        TownUserInfoDTO townUserInfoDTO =  townUserService.getUserInfo(userId);
+        if(townUserInfoDTO != null){
+            if(townUserInfoDTO.getIntroduction()!=null){
+                result.addProperty("introduction",townUserInfoDTO.getIntroduction());
+            }
+            if(townUserInfoDTO.getBirthday()!=null){
+                result.addProperty("birthday",townUserInfoDTO.getBirthday());
+            }
+            List<UserTagRelationDTO> list =  tagService.getUserTagList(userId);
+            if(!CollectionUtils.isEmpty(list)){
+                StringBuilder tag = new StringBuilder();
+                for(UserTagRelationDTO item : list){
+                    tag.append(item.getTagName()).append(",");
+                }
+                result.addProperty("tag",tag.toString().substring(0,tag.length()-1));
+            }
+        }
+
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+
+    /**
      * 用户关注列表(51120110)
      * @param jsonObject
      * @param checkTag
