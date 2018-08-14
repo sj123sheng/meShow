@@ -10,6 +10,9 @@ import java.util.Map;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import com.melot.kk.hall.api.service.SysMenuService;
+import com.melot.kkactivity.driver.domain.NewUserBootPageConf;
+import com.melot.kkactivity.driver.service.NewUserTaskService;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -122,6 +125,12 @@ public class OtherFunctions {
     
     @Resource
     PackageInfoService packageInfoService;
+
+	@Resource
+    NewUserTaskService newUserTaskService;
+
+	@Resource
+	SysMenuService hallPartService;
 
     @SuppressWarnings("unused")
     private ActorInfoSource actorInfoSource;
@@ -1759,5 +1768,26 @@ public class OtherFunctions {
 		json.addProperty("shareTime", video.getShareTime());
 
 		return json;
+	}
+
+	public JsonObject getNewUserBootpage(JsonObject jsonObject,boolean checkTag, HttpServletRequest request){
+        List<NewUserBootPageConf> newUserBootpageConfList = newUserTaskService.getNewUserBootPage();
+		JsonArray jsonArray = new JsonArray();
+        for(NewUserBootPageConf conf:newUserBootpageConfList){
+			if(hallPartService.getPartLiveCount(conf.getCataId())>=2){
+				JsonObject json = new JsonObject();
+				json.addProperty("title",conf.getTitle());
+				json.addProperty("desc",conf.getDesc());
+				json.addProperty("posterPath",conf.getAndroidPosterPath());
+				json.addProperty("position",conf.getPosition());
+				json.addProperty("type",conf.getType());
+				json.addProperty("cataId",conf.getCataId());
+				jsonArray.add(json);
+			}
+		}
+		JsonObject result = new JsonObject();
+		result.add("cataList",jsonArray);
+		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+		return result;
 	}
 }

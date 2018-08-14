@@ -2943,6 +2943,11 @@
 		<constructor-arg name="methodName" value="getLaunchedVideoList" />
 	</bean>
 
+	<bean id="51090305" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="otherFunction" />
+		<constructor-arg name="methodName" value="getNewUserBootpage" />
+	</bean>
+
 
     <!-- 位置坐标接口 -->
     <bean id="51120101" class="com.melot.sdk.core.function.GenericFunction">
