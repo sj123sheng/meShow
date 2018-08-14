@@ -2,6 +2,7 @@ package com.melot.kktv.action;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.common.melot_utils.StringUtils;
 import com.melot.kk.module.resource.constant.ECloudTypeConstant;
 import com.melot.kk.module.resource.constant.FileTypeConstant;
@@ -310,6 +311,96 @@ public class TownProjectFunctions {
     }
 
     /**
+     * 用户关注列表(51120110)
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getUserFollowedList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        int userId, pageIndex, countPerPage, platform;
+
+        //排序规则  默认:直播状态,1:关注时间
+        Integer sortType = 1;
+
+        // 获取参数
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
+            countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 20, null, 1, 30);
+            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, 1, Integer.MAX_VALUE);
+            sortType = CommonUtil.getJsonParamInt(jsonObject, "sortType", 1, null, 0, Integer.MAX_VALUE);
+        } catch(CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch(Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        }
+
+        int pageTotal = 0;
+
+        int followsCount = UserRelationService.getFollowsCount(userId);
+        if (followsCount > 0) {
+            pageTotal = (int) Math.ceil((double) followsCount / countPerPage);
+        }
+        result.addProperty("followsCount", followsCount);
+        result.addProperty("pageTotal", pageTotal);
+
+        if (pageTotal == 0 || pageIndex > pageTotal) {
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        }
+
+        JsonArray jRoomList = new JsonArray();
+
+        List<RoomInfo> roomList = null;
+
+        //查看1000以上的关注人页按关注时间排序,没有排序必要
+        if (pageIndex * countPerPage > 1000 || sortType == 1) {
+            roomList = com.melot.kkcx.service.UserRelationService.getFollowByTime(userId, countPerPage, pageIndex);
+        } else {
+            roomList = com.melot.kkcx.service.UserRelationService.getFollowByLiveState(userId, followsCount, pageIndex, pageTotal, countPerPage, platform);
+        }
+        if (roomList != null) {
+            List<Integer> userIdList = new ArrayList<>(roomList.size());
+            for (RoomInfo roomInfo : roomList) {
+                userIdList.add(roomInfo.getActorId());
+            }
+            Map<Integer,List<UserTagRelationDTO>> tagMap = tagService.getAllUserTagMap(userIdList);
+            for (RoomInfo roomInfo : roomList) {
+                JsonObject json = new JsonObject();
+                json.addProperty("userId",roomInfo.getActorId());
+                json.addProperty("nickname",roomInfo.getNickname());
+                json.addProperty("roomId", roomInfo.getRoomId() != null ? roomInfo.getRoomId() : roomInfo.getActorId());
+                json.addProperty("gender",roomInfo.getGender());
+                json.addProperty("portrait_path_256", ConfigHelper.getHttpdir() + roomInfo.getPortrait()  + "!256");
+
+                if(tagMap!=null && tagMap.containsKey(roomInfo.getActorId())){
+                    List<UserTagRelationDTO> tagList = tagMap.get(roomInfo.getActorId());
+                    if(!CollectionUtils.isEmpty(tagList)){
+                        StringBuilder tag = new StringBuilder();
+                        for(UserTagRelationDTO item : tagList){
+                            tag.append(item.getTagName()).append(",");
+                        }
+                        json.addProperty("tag",tag.toString().substring(0,tag.length()-1));
+                    }
+                }
+                jRoomList.add(json);
+            }
+        }
+        result.add("roomList", jRoomList);
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+
+    /**
      * 红人列表(51120108)
      * @param jsonObject
      * @param checkTag
@@ -345,7 +436,7 @@ public class TownProjectFunctions {
                     json.addProperty("userId",item.getUserId());
                     json.addProperty("nickname",userProfile.getNickName());
                     if(userProfile.getPortrait()!=null){
-                        json.addProperty("portrait",userProfile.getPortrait());
+                        json.addProperty("portrait",ConfigHelper.getHttpdir() + userProfile.getPortrait());
                     }
                     if(tagMap!=null && tagMap.containsKey(item.getUserId())){
                         List<UserTagRelationDTO> tagList = tagMap.get(item.getUserId());
@@ -822,7 +913,7 @@ public class TownProjectFunctions {
                     json.addProperty("userId",item.getUserId());
                     json.addProperty("nickname",userProfile.getNickName());
                     if(userProfile.getPortrait()!=null){
-                        json.addProperty("portrait",userProfile.getPortrait());
+                        json.addProperty("portrait",ConfigHelper.getHttpdir() + userProfile.getPortrait());
                     }
                     json.addProperty("tag",item.getTagName());
                     jsonArray.add(json);
