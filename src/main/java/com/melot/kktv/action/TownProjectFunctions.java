@@ -169,7 +169,7 @@ public class TownProjectFunctions {
     }
 
     /**
-     * 	获取话题信息(作品、话题、直播间)列表【51120105】
+     * 	获取话题信息【51120105】
      */
     public JsonObject getTopicInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 
@@ -233,7 +233,7 @@ public class TownProjectFunctions {
 
             Page<ResTownWorkDTO> page = townWorkService.getTopicWorkList(topicId, workSort, pageIndex, countPerPage);
             JsonArray workList = new JsonArray();
-            if(page != null && page.getCount() > 0) {
+            if(page != null && page.getList() != null && page.getList().size() > 0) {
                 List<ResTownWorkDTO> townWorkDTOS = page.getList();
                 for(ResTownWorkDTO townWorkDTO : townWorkDTOS) {
                     JsonObject townWork = new JsonObject();
@@ -288,7 +288,7 @@ public class TownProjectFunctions {
 
             Page<ResTownWorkDTO> page = townWorkService.getMyWorkList(userId, isOwner, pageIndex, countPerPage);
             JsonArray workList = new JsonArray();
-            if(page != null && page.getCount() > 0) {
+            if(page != null && page.getList() != null && page.getList().size() > 0) {
                 List<ResTownWorkDTO> townWorkDTOS = page.getList();
                 for(ResTownWorkDTO townWorkDTO : townWorkDTOS) {
                     JsonObject townWork = new JsonObject();
@@ -480,7 +480,7 @@ public class TownProjectFunctions {
 
             Page<ResTownWorkDTO> page = townWorkService.getMyPraiseWorkList(userId, pageIndex, countPerPage);
             JsonArray workList = new JsonArray();
-            if(page != null && page.getCount() > 0) {
+            if(page != null && page.getList() != null && page.getList().size() > 0) {
                 List<ResTownWorkDTO> townWorkDTOS = page.getList();
                 for(ResTownWorkDTO townWorkDTO : townWorkDTOS) {
                     JsonObject townWork = new JsonObject();
