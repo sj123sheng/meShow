@@ -33,6 +33,7 @@ import org.springframework.util.CollectionUtils;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -788,6 +789,7 @@ public class TownProjectFunctions {
         townStarApplyInfoDTO.setProfession(profession);
         townStarApplyInfoDTO.setExperience(experience);
         townStarApplyInfoDTO.setReason(reason);
+        townStarApplyInfoDTO.setCreateTime(new Date());
 
         Result<Boolean> applyResult = townStarApplyInfoService.addTownStarApplyInfo(townStarApplyInfoDTO);
         if(!CommonStateCode.SUCCESS.equals(applyResult.getCode())){
