@@ -333,7 +333,8 @@ public class TownProjectFunctions {
             return result;
         }
         JsonArray jsonArray = new JsonArray();
-        List<TownUserRoleDTO> list = townUserRoleService.getUserRoleList(pageIndex,countPerPage,areaCode, UserRoleTypeEnum.STAR);
+        List<TownUserRoleDTO> list = townUserRoleService.getUserRoleList(pageIndex,countPerPage,areaCode,
+                UserRoleTypeEnum.STAR);
         if(!CollectionUtils.isEmpty(list)){
             List<Integer> userIdList = new ArrayList<>(list.size());
             for(TownUserRoleDTO item : list){
@@ -361,6 +362,7 @@ public class TownProjectFunctions {
                             json.add("tag",tagArray);
                         }
                     }
+                    jsonArray.add(json);
                 }
             }
         }
