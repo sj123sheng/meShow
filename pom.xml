@@ -626,7 +626,7 @@
 		<dependency>
 		  <groupId>com.melot.kk</groupId>
 		  <artifactId>kk-liveshop-api</artifactId>
-		  <version>1.0.4-SNAPSHOT</version>
+		  <version>1.0.5-SNAPSHOT</version>
 		</dependency>
 		
 		<!-- 充值模块 -->

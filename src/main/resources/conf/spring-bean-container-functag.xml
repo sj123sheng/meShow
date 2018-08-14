@@ -2854,6 +2854,21 @@
 		<constructor-arg name="t" ref="liveShopFunctions" />
 		<constructor-arg name="methodName" value="canAddSubShop" />
 	</bean>
+
+	<bean id="51060525" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="registerSaleActorInfo" />
+	</bean>
+
+	<bean id="51060526" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getOrderCount" />
+	</bean>
+
+	<bean id="51060527" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getFirstWaitPayOrder" />
+	</bean>
 	
 	<!-- 获取积分礼物列表 -->
 	<bean id="51010406" class="com.melot.sdk.core.function.GenericFunction">
