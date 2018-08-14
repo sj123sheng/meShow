@@ -2943,6 +2943,11 @@
 		<constructor-arg name="methodName" value="getLaunchedVideoList" />
 	</bean>
 
+	<bean id="51090305" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="otherFunction" />
+		<constructor-arg name="methodName" value="getNewUserBootpage" />
+	</bean>
+
 
     <!-- 位置坐标接口 -->
     <bean id="51120101" class="com.melot.sdk.core.function.GenericFunction">
@@ -3072,6 +3077,12 @@
 	<bean id="51120206" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="kKLiveProjectFunctions" />
 		<constructor-arg name="methodName" value="finishTask" />
+	</bean>
+
+	<bean id="51120207" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kKLiveProjectFunctions" />
+		<constructor-arg name="methodName" value="getGiftConf" />
+		<constructor-arg name="cacheType" value="60" />
 	</bean>
 
 </beans>

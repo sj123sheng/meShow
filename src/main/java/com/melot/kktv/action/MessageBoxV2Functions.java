@@ -183,9 +183,7 @@ public class MessageBoxV2Functions {
         
         //根据推送提醒判断是否推送点赞及动态回复
         int msgCount = 0;
-        // 新鲜播报数量，在appId = 15时，减去
-        int recommendedMessagesCount = 0;
-        if (praiseState == 0 || comState == 0 || appId == 15) {
+        if (praiseState == 0 || comState == 0) {
             Jedis jedis = null;
             try {
                 jedis = UserMessageSource.getInstance();
@@ -208,14 +206,6 @@ public class MessageBoxV2Functions {
                            logger.error("get messageType failed", e);
                        }
                     }
-                    if (appId == 15 && msgtype == Message.MSGTYPE_RECOMMENDED) {
-                        try {
-                            Map<String, String> map = jedis.hgetAll(value);
-                            recommendedMessagesCount += Integer.parseInt(map.get("count"));
-                        } catch (Exception e) {
-                            logger.error("get recommended messageType failed", e);
-                        }
-                    }
                 }
             } catch (Exception e) {
                 logger.error("generatePraiseMessages or generateDynamicMessages failed when operate redis", e);
@@ -225,11 +215,11 @@ public class MessageBoxV2Functions {
                 }
             }
             
-            msgTotalCount = msgTotalCount - msgCount - recommendedMessagesCount;
+            msgTotalCount = msgTotalCount - msgCount;
         }
         
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        result.addProperty("msgTotalCount", Integer.valueOf(msgTotalCount));
+        result.addProperty("msgTotalCount", msgTotalCount);
         return result;
     }
 
