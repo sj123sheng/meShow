@@ -208,14 +208,6 @@ public class MessageBoxV2Functions {
                            logger.error("get messageType failed", e);
                        }
                     }
-                    if (appId == 15 && msgtype == Message.MSGTYPE_RECOMMENDED) {
-                        try {
-                            Map<String, String> map = jedis.hgetAll(value);
-                            recommendedMessagesCount += Integer.parseInt(map.get("count"));
-                        } catch (Exception e) {
-                            logger.error("get recommended messageType failed", e);
-                        }
-                    }
                 }
             } catch (Exception e) {
                 logger.error("generatePraiseMessages or generateDynamicMessages failed when operate redis", e);
