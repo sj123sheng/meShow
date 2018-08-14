@@ -47,7 +47,16 @@ public enum ParamCodeEnum {
     WORK_ID("workId", "53000022"),
     COVER_URL("coverUrl", "53000022"),
     RESOURCE_IDS("resourceIds", "53000023"),
-    WORK_SORT("workSort", "53000024");
+    WORK_SORT("workSort", "53000024"),
+    APPLY_TYPE("applyType","53000025"),
+    NAME("name","53000026"),
+    AGE("age","53000027"),
+    GENDER("gender","53000028"),
+    HOME("home","53000029"),
+    MOBILE_PHONE("mobilePhone","53000030"),
+    PROFESSION("profession","53000031"),
+    EXPERIENCE("experience","53000032"),
+    REASON("reason","53000033");
 
 
     private String id;

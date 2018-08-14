@@ -14,10 +14,7 @@ import com.melot.kk.town.api.constant.WorkTypeEnum;
 import com.melot.kk.town.api.dto.*;
 import com.melot.kk.town.api.param.TownUserInfoParam;
 import com.melot.kk.town.api.param.TownWorkParam;
-import com.melot.kk.town.api.service.TagService;
-import com.melot.kk.town.api.service.TownUserRoleService;
-import com.melot.kk.town.api.service.TownUserService;
-import com.melot.kk.town.api.service.TownWorkService;
+import com.melot.kk.town.api.service.*;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.service.UserService;
@@ -63,6 +60,9 @@ public class TownProjectFunctions {
 
     @Resource
     private TagService tagService;
+
+    @Resource
+    private TownStarApplyInfoService townStarApplyInfoService;
 
     private static String SEPARATOR = "/";
 
@@ -577,7 +577,7 @@ public class TownProjectFunctions {
         try {
             pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
             countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 10, null, 1, Integer.MAX_VALUE);
-            areaCode =  CommonUtil.getJsonParamString(jsonObject, "areaCode", null, null, 1, Integer.MAX_VALUE);
+            areaCode =  CommonUtil.getJsonParamString(jsonObject, "areaCode", null, AREA_CODE.getErrorCode(), 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -732,6 +732,80 @@ public class TownProjectFunctions {
             result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             return result;
         }
+    }
+
+    /**
+     * 申请红人(51120116)
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject starApply(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        String areaCode;
+        int userId;
+        int applyType;
+        String name;
+        int age;
+        int gender;
+        String home;
+        String mobilePhone;
+        String profession;
+        String experience;
+        String reason;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "03040002", 1, Integer.MAX_VALUE);
+            areaCode =  CommonUtil.getJsonParamString(jsonObject, "areaCode", null, AREA_CODE.getErrorCode(), 1, Integer.MAX_VALUE);
+            applyType = CommonUtil.getJsonParamInt(jsonObject, "applyType", 0, APPLY_TYPE.getErrorCode(), 1, 5);
+            name = CommonUtil.getJsonParamString(jsonObject, "name", null, NAME.getErrorCode(), 1, 200);
+            age = CommonUtil.getJsonParamInt(jsonObject, "age", 0, AGE.getErrorCode(), 1, 200);
+            gender = CommonUtil.getJsonParamInt(jsonObject, "gender", 0, GENDER.getErrorCode(), 0, 1);
+            home =  CommonUtil.getJsonParamString(jsonObject, "home", null, HOME.getErrorCode(), 1, 500);
+            mobilePhone = CommonUtil.getJsonParamString(jsonObject, "mobilePhone", null, MOBILE_PHONE.getErrorCode(), 11, 11);
+            profession = CommonUtil.getJsonParamString(jsonObject, "profession", null, PROFESSION.getErrorCode(), 1, 1000);
+            experience = CommonUtil.getJsonParamString(jsonObject, "experience", null, EXPERIENCE.getErrorCode(), 1, 1000);
+            reason = CommonUtil.getJsonParamString(jsonObject, "reason", null, REASON.getErrorCode(), 1, 1000);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        TownStarApplyInfoDTO townStarApplyInfoDTO = new TownStarApplyInfoDTO();
+        townStarApplyInfoDTO.setUserId(userId);
+        townStarApplyInfoDTO.setAreaCode(areaCode);
+        townStarApplyInfoDTO.setApplyType(applyType);
+        townStarApplyInfoDTO.setName(name);
+        townStarApplyInfoDTO.setAge(age);
+        townStarApplyInfoDTO.setGender(gender);
+        townStarApplyInfoDTO.setHome(home);
+        townStarApplyInfoDTO.setMobilePhone(mobilePhone);
+        townStarApplyInfoDTO.setProfession(profession);
+        townStarApplyInfoDTO.setExperience(experience);
+        townStarApplyInfoDTO.setReason(reason);
+
+        Result<Boolean> applyResult = townStarApplyInfoService.addTownStarApplyInfo(townStarApplyInfoDTO);
+        if(!CommonStateCode.SUCCESS.equals(applyResult.getCode())){
+            if("PARAMETER_ERROR".equals(applyResult.getCode())){
+                result.addProperty("TagCode",TagCodeEnum.PARAMETER_MISSING);
+                return result;
+            }
+            if("APPLY_DATA_IS_EXIST".equals(applyResult.getCode())){
+                result.addProperty("TagCode",TagCodeEnum.TOWN_APPLY_DATA_IS_EXIST);
+                return result;
+            }
+            if(CommonStateCode.FAIL.equals(applyResult.getCode())){
+                result.addProperty("TagCode",TagCodeEnum.EXECSQL_EXCEPTION);
+                return result;
+            }
+        }
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
     }
 
     /**
@@ -1058,7 +1132,7 @@ public class TownProjectFunctions {
         JsonObject result = new JsonObject();
         String areaCode;
         try {
-            areaCode =  CommonUtil.getJsonParamString(jsonObject, "areaCode", null, null, 1, Integer.MAX_VALUE);
+            areaCode =  CommonUtil.getJsonParamString(jsonObject, "areaCode", null, AREA_CODE.getErrorCode(), 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
