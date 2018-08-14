@@ -603,13 +603,11 @@ public class TownProjectFunctions {
                     if(tagMap!=null && tagMap.containsKey(item.getUserId())){
                         List<UserTagRelationDTO> tagList = tagMap.get(item.getUserId());
                         if(!CollectionUtils.isEmpty(tagList)){
-                            JsonArray tagArray  =  new JsonArray();
+                            StringBuilder tagString = new StringBuilder();
                             for(UserTagRelationDTO tag : tagList){
-                                JsonObject tagJson = new JsonObject();
-                                tagJson.addProperty("tag",tag.getTagName());
-                                tagArray.add(tagJson);
+                                tagString.append(tag.getTagName()).append(",");
                             }
-                            json.add("tag",tagArray);
+                            json.addProperty("tag",tagString.toString().substring(0,tagString.length()-1));
                         }
                     }
                     jsonArray.add(json);
