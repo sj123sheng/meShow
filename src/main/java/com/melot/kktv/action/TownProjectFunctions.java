@@ -1083,7 +1083,7 @@ public class TownProjectFunctions {
         if (workType == WorkTypeEnum.VIDEO) {
 
             if (!StringUtil.strIsNull(workUrl)) {
-                workUrl = workUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
+                workUrl = workUrl.replaceFirst(ConfigHelper.getVideoURL(), "");
                 if(!workUrl.startsWith(SEPARATOR)) {
                     workUrl = SEPARATOR + workUrl;
                 }
