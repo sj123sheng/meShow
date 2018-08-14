@@ -14,28 +14,24 @@ import com.melot.kk.town.api.constant.WorkTypeEnum;
 import com.melot.kk.town.api.dto.*;
 import com.melot.kk.town.api.param.TownUserInfoParam;
 import com.melot.kk.town.api.param.TownWorkParam;
-import com.melot.kk.town.api.service.TagService;
-import com.melot.kk.town.api.service.TownUserRoleService;
-import com.melot.kk.town.api.service.TownUserService;
-import com.melot.kk.town.api.service.TownWorkService;
+import com.melot.kk.town.api.service.*;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Page;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.domain.WorkVideoInfo;
+import com.melot.kktv.model.Room;
 import com.melot.kktv.service.UserRelationService;
 import com.melot.kktv.service.WorkService;
-import com.melot.kktv.util.CommonUtil;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.StringUtil;
-import com.melot.kktv.util.TagCodeEnum;
+import com.melot.kktv.util.*;
 import org.apache.log4j.Logger;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -63,6 +59,9 @@ public class TownProjectFunctions {
 
     @Resource
     private TagService tagService;
+
+    @Resource
+    private TownStarApplyInfoService townStarApplyInfoService;
 
     private static String SEPARATOR = "/";
 
@@ -188,6 +187,8 @@ public class TownProjectFunctions {
             ResTownTopicDTO townTopicDTO = townWorkService.getTopicInfo(topicId);
             if(townTopicDTO != null) {
                 result.addProperty("topicName", townTopicDTO.getTopicName());
+                result.addProperty("topicDesc", townTopicDTO.getTopicDesc());
+                result.addProperty("coverUrl", townTopicDTO.getCoverUrl());
                 Integer sponsorUserId = townTopicDTO.getSponsorUserId();
                 if(sponsorUserId != null) {
                     UserProfile userProfile = kkUserService.getUserProfile(sponsorUserId);
@@ -200,6 +201,17 @@ public class TownProjectFunctions {
                 }
                 result.addProperty("participantsNum", townTopicDTO.getParticipantsNum());
                 result.addProperty("workNum", townTopicDTO.getWorkNum());
+                Integer firstWorkId = townTopicDTO.getSponsorFirstWorkId();
+                if(firstWorkId != null) {
+                    ResTownWorkDTO townWorkDTO = townWorkService.getWorkInfo(firstWorkId);
+                    if(townWorkDTO != null) {
+                        JsonObject sponsorFirstWork = new JsonObject();
+                        sponsorFirstWork.addProperty("workId", townWorkDTO.getWorkId());
+                        sponsorFirstWork.addProperty("praiseNum", townWorkDTO.getPraiseNum());
+                        sponsorFirstWork.addProperty("coverUrl", townWorkDTO.getCoverUrl());
+                        result.add("sponsorFirstWork", sponsorFirstWork);
+                    }
+                }
             }
             result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
@@ -311,6 +323,56 @@ public class TownProjectFunctions {
     }
 
     /**
+     * 获取用户信息(51120109)
+     */
+    public JsonObject getUserProfile(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        int userId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+        UserProfile userProfile = kkUserService.getUserProfile(userId);
+        if(userProfile == null){
+            result.addProperty("TagCode", TagCodeEnum.USER_NOT_EXIST);
+            return result;
+        }
+        result.addProperty("userId",userProfile.getUserId());
+        result.addProperty("nickname",userProfile.getNickName());
+        if(userProfile.getPortrait()!=null){
+            result.addProperty("portrait",ConfigHelper.getHttpdir() + userProfile.getPortrait());
+        }
+        result.addProperty("gender",userProfile.getGender());
+        int followsCount = UserRelationService.getFollowsCount(userId);
+        result.addProperty("followCount",followsCount);
+        int fansCount = UserRelationService.getFansCount(userId);
+        result.addProperty("fansCount",fansCount);
+
+        TownUserInfoDTO townUserInfoDTO =  townUserService.getUserInfo(userId);
+        if(townUserInfoDTO != null){
+            if(townUserInfoDTO.getIntroduction()!=null){
+                result.addProperty("introduction",townUserInfoDTO.getIntroduction());
+            }
+            if(townUserInfoDTO.getBirthday()!=null){
+                result.addProperty("birthday",townUserInfoDTO.getBirthday());
+            }
+            List<UserTagRelationDTO> list =  tagService.getUserTagList(userId);
+            if(!CollectionUtils.isEmpty(list)){
+                StringBuilder tag = new StringBuilder();
+                for(UserTagRelationDTO item : list){
+                    tag.append(item.getTagName()).append(",");
+                }
+                result.addProperty("tag",tag.toString().substring(0,tag.length()-1));
+            }
+        }
+
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+
+    /**
      * 用户关注列表(51120110)
      * @param jsonObject
      * @param checkTag
@@ -401,6 +463,118 @@ public class TownProjectFunctions {
     }
 
     /**
+     * 用户粉丝列表(51120111)
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getUserFansList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        // 该接口toke可选
+        int selfTag = 0;
+        if (checkTag) {
+            selfTag = 1;
+        }
+
+        int userId = 0;
+        int pageIndex = 1;
+        int countPerPage = 20;
+        int platform = 0;
+
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "03040002", 1, Integer.MAX_VALUE);
+            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
+            countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 20, null, 1, Integer.MAX_VALUE);
+            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, 1, Integer.MAX_VALUE);
+        } catch(CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch(Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        int start = (pageIndex - 1) * countPerPage;
+        int end = pageIndex * countPerPage - 1;
+        int pageTotal = 0;
+
+        int totalCount = UserRelationService.getFansCount(userId);
+        if (totalCount > 0) {
+            if (totalCount % countPerPage == 0) {
+                pageTotal = (int) totalCount / countPerPage;
+            } else {
+                pageTotal = (int) (totalCount / countPerPage) + 1;
+            }
+        }
+        result.addProperty("fansCount", totalCount);
+
+        //不是自己查看仅返回粉丝数
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        }
+
+        JsonArray jRoomList = new JsonArray();
+
+        String fanIdsStr = UserRelationService.getFanIdsString(userId, start, end);
+        if (fanIdsStr != null) {
+            List<Room> roomList = getFansRoomList(fanIdsStr);
+            if (roomList != null && roomList.size() > 0) {
+                List<Integer> userIdList = new ArrayList<>(roomList.size());
+                for (Room room : roomList) {
+                    userIdList.add(room.getUserId());
+                }
+
+                Map<Integer,List<UserTagRelationDTO>> tagMap = tagService.getAllUserTagMap(userIdList);
+                for (Room room : roomList) {
+                    int roomId = room.getUserId();
+                    JsonObject roomJson = new JsonObject();
+                    roomJson.addProperty("userId",roomId);
+                    roomJson.addProperty("nickname",room.getNickname());
+                    roomJson.addProperty("gender",room.getGender());
+                    roomJson.addProperty("portrait_path_256",ConfigHelper.getHttpdir() + room.getPortrait_path_256());
+
+                    if(tagMap!=null && tagMap.containsKey(room.getUserId())){
+                        List<UserTagRelationDTO> tagList = tagMap.get(room.getUserId());
+                        if(!CollectionUtils.isEmpty(tagList)){
+                            StringBuilder tag = new StringBuilder();
+                            for(UserTagRelationDTO item : tagList){
+                                tag.append(item.getTagName()).append(",");
+                            }
+                            roomJson.addProperty("tag",tag.toString().substring(0,tag.length()-1));
+                        }
+                    }
+
+                    jRoomList.add(roomJson);
+                }
+            }
+        }
+
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        result.addProperty("pageTotal", pageTotal);
+        result.add("roomList", jRoomList);
+
+        return result;
+    }
+
+    private static List<Room> getFansRoomList(String fanIdsStr) {
+        List<Room> roomList = new ArrayList<>();
+        if (fanIdsStr != null) {
+            String[] fanIdsArr = fanIdsStr.split(",");
+            for (String fanId : fanIdsArr) {
+                Room room = new Room();
+                room.setUserId(Integer.valueOf(fanId));
+                room.setMaxCount(0);
+                room.setEnterConditionType("0");
+                roomList.add(room);
+            }
+        }
+        return roomList;
+    }
+
+    /**
      * 红人列表(51120108)
      * @param jsonObject
      * @param checkTag
@@ -415,7 +589,7 @@ public class TownProjectFunctions {
         try {
             pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
             countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 10, null, 1, Integer.MAX_VALUE);
-            areaCode =  CommonUtil.getJsonParamString(jsonObject, "areaCode", null, null, 1, Integer.MAX_VALUE);
+            areaCode =  CommonUtil.getJsonParamString(jsonObject, "areaCode", null, AREA_CODE.getErrorCode(), 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -441,13 +615,11 @@ public class TownProjectFunctions {
                     if(tagMap!=null && tagMap.containsKey(item.getUserId())){
                         List<UserTagRelationDTO> tagList = tagMap.get(item.getUserId());
                         if(!CollectionUtils.isEmpty(tagList)){
-                            JsonArray tagArray  =  new JsonArray();
+                            StringBuilder tagString = new StringBuilder();
                             for(UserTagRelationDTO tag : tagList){
-                                JsonObject tagJson = new JsonObject();
-                                tagJson.addProperty("tag",tag.getTagName());
-                                tagArray.add(tagJson);
+                                tagString.append(tag.getTagName()).append(",");
                             }
-                            json.add("tag",tagArray);
+                            json.addProperty("tag",tagString.toString().substring(0,tagString.length()-1));
                         }
                     }
                     jsonArray.add(json);
@@ -572,6 +744,81 @@ public class TownProjectFunctions {
             result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             return result;
         }
+    }
+
+    /**
+     * 申请红人(51120116)
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject starApply(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        String areaCode;
+        int userId;
+        int applyType;
+        String name;
+        int age;
+        int gender;
+        String home;
+        String mobilePhone;
+        String profession;
+        String experience;
+        String reason;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "03040002", 1, Integer.MAX_VALUE);
+            areaCode =  CommonUtil.getJsonParamString(jsonObject, "areaCode", null, AREA_CODE.getErrorCode(), 1, Integer.MAX_VALUE);
+            applyType = CommonUtil.getJsonParamInt(jsonObject, "applyType", 0, APPLY_TYPE.getErrorCode(), 1, 5);
+            name = CommonUtil.getJsonParamString(jsonObject, "name", null, NAME.getErrorCode(), 1, 200);
+            age = CommonUtil.getJsonParamInt(jsonObject, "age", 0, AGE.getErrorCode(), 1, 200);
+            gender = CommonUtil.getJsonParamInt(jsonObject, "gender", 0, GENDER.getErrorCode(), 0, 1);
+            home =  CommonUtil.getJsonParamString(jsonObject, "home", null, HOME.getErrorCode(), 1, 500);
+            mobilePhone = CommonUtil.getJsonParamString(jsonObject, "mobilePhone", null, MOBILE_PHONE.getErrorCode(), 11, 11);
+            profession = CommonUtil.getJsonParamString(jsonObject, "profession", null, PROFESSION.getErrorCode(), 1, 1000);
+            experience = CommonUtil.getJsonParamString(jsonObject, "experience", null, EXPERIENCE.getErrorCode(), 1, 1000);
+            reason = CommonUtil.getJsonParamString(jsonObject, "reason", null, REASON.getErrorCode(), 1, 1000);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        TownStarApplyInfoDTO townStarApplyInfoDTO = new TownStarApplyInfoDTO();
+        townStarApplyInfoDTO.setUserId(userId);
+        townStarApplyInfoDTO.setAreaCode(areaCode);
+        townStarApplyInfoDTO.setApplyType(applyType);
+        townStarApplyInfoDTO.setName(name);
+        townStarApplyInfoDTO.setAge(age);
+        townStarApplyInfoDTO.setGender(gender);
+        townStarApplyInfoDTO.setHome(home);
+        townStarApplyInfoDTO.setMobilePhone(mobilePhone);
+        townStarApplyInfoDTO.setProfession(profession);
+        townStarApplyInfoDTO.setExperience(experience);
+        townStarApplyInfoDTO.setReason(reason);
+        townStarApplyInfoDTO.setCreateTime(new Date());
+
+        Result<Boolean> applyResult = townStarApplyInfoService.addTownStarApplyInfo(townStarApplyInfoDTO);
+        if(!CommonStateCode.SUCCESS.equals(applyResult.getCode())){
+            if("PARAMETER_ERROR".equals(applyResult.getCode())){
+                result.addProperty("TagCode",TagCodeEnum.PARAMETER_MISSING);
+                return result;
+            }
+            if("APPLY_DATA_IS_EXIST".equals(applyResult.getCode())){
+                result.addProperty("TagCode",TagCodeEnum.TOWN_APPLY_DATA_IS_EXIST);
+                return result;
+            }
+            if(CommonStateCode.FAIL.equals(applyResult.getCode())){
+                result.addProperty("TagCode",TagCodeEnum.EXECSQL_EXCEPTION);
+                return result;
+            }
+        }
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
     }
 
     /**
@@ -898,7 +1145,7 @@ public class TownProjectFunctions {
         JsonObject result = new JsonObject();
         String areaCode;
         try {
-            areaCode =  CommonUtil.getJsonParamString(jsonObject, "areaCode", null, null, 1, Integer.MAX_VALUE);
+            areaCode =  CommonUtil.getJsonParamString(jsonObject, "areaCode", null, AREA_CODE.getErrorCode(), 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
