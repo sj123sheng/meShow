@@ -10,10 +10,7 @@ import com.melot.kk.module.resource.service.ResourceNewService;
 import com.melot.kk.town.api.constant.UserRoleTypeEnum;
 import com.melot.kk.town.api.constant.WorkCheckStatusEnum;
 import com.melot.kk.town.api.constant.WorkTypeEnum;
-import com.melot.kk.town.api.dto.ResTownTopicDTO;
-import com.melot.kk.town.api.dto.ResTownWorkDTO;
-import com.melot.kk.town.api.dto.TownUserRoleDTO;
-import com.melot.kk.town.api.dto.UserTagRelationDTO;
+import com.melot.kk.town.api.dto.*;
 import com.melot.kk.town.api.param.TownUserInfoParam;
 import com.melot.kk.town.api.param.TownWorkParam;
 import com.melot.kk.town.api.service.TagService;
@@ -313,7 +310,7 @@ public class TownProjectFunctions {
     }
 
     /**
-     * 本地红人
+     * 红人列表(51120108)
      * @param jsonObject
      * @param checkTag
      * @param request
@@ -799,4 +796,41 @@ public class TownProjectFunctions {
         return userProfile.getPortrait() == null ? null : userProfile.getPortrait() + "!128";
     }
 
+    /**
+     * 本地红人(51120123)
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject homePageStarList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        String areaCode;
+        try {
+            areaCode =  CommonUtil.getJsonParamString(jsonObject, "areaCode", null, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+        JsonArray jsonArray = new JsonArray();
+        List<TownStarDTO> list = townUserRoleService.getTownStarList(areaCode,9);
+        if(!CollectionUtils.isEmpty(list)){
+            for(TownStarDTO item : list){
+                UserProfile userProfile = kkUserService.getUserProfile(item.getUserId());
+                if(userProfile!=null){
+                    JsonObject json = new JsonObject();
+                    json.addProperty("userId",item.getUserId());
+                    json.addProperty("nickname",userProfile.getNickName());
+                    if(userProfile.getPortrait()!=null){
+                        json.addProperty("portrait",userProfile.getPortrait());
+                    }
+                    json.addProperty("tag",item.getTagName());
+                    jsonArray.add(json);
+                }
+            }
+        }
+        result.add("list",jsonArray);
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
 }
