@@ -913,6 +913,7 @@ public class TownProjectFunctions {
                     result.addProperty("workStatus", 3);
                 }
                 result.addProperty("workType", townWorkDTO.getWorkType());
+                result.addProperty("isRecommend", townWorkDTO.getIsRecommend());
                 result.addProperty("videoUrl", townWorkDTO.getVideoUrl());
                 result.addProperty("imageUrls", townWorkDTO.getImageUrls());
                 result.addProperty("topicId", townWorkDTO.getTopicId());
