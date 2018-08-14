@@ -1081,6 +1081,14 @@ public class TownProjectFunctions {
 
         String resIds = "";
         if (workType == WorkTypeEnum.VIDEO) {
+
+            if (!StringUtil.strIsNull(workUrl)) {
+                workUrl = workUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
+                if(!workUrl.startsWith(SEPARATOR)) {
+                    workUrl = SEPARATOR + workUrl;
+                }
+                workUrl = workUrl.replaceFirst("/kktv", "");
+            }
             com.melot.kk.module.resource.domain.Resource resource = new com.melot.kk.module.resource.domain.Resource();
             resource.setState(ResourceStateConstant.uncheck);
             resource.setMimeType(FileTypeConstant.video);
@@ -1093,13 +1101,6 @@ public class TownProjectFunctions {
             if (videoInfo != null) {
                 resource.setFileHeight(videoInfo.getHeight());
                 resource.setFileWidth(videoInfo.getWidth());
-            }
-            if (!StringUtil.strIsNull(workUrl)) {
-                workUrl = workUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
-                if(!workUrl.startsWith(SEPARATOR)) {
-                    workUrl = SEPARATOR + workUrl;
-                }
-                workUrl = workUrl.replaceFirst("/kktv", "");
             }
             resource.seteCloudType(ECloudTypeConstant.qiniu);
             resource.setImageUrl(workUrl.substring(0, workUrl.lastIndexOf(".")) + ".jpg");
