@@ -3047,6 +3047,10 @@
 		<constructor-arg name="t" ref="townProjectFunctions" />
 		<constructor-arg name="methodName" value="homePageStarList" />
 	</bean>
+	<bean id="51120124" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="townProjectFunctions" />
+		<constructor-arg name="methodName" value="recommendWork" />
+	</bean>
 
 	<!-- 微信直播小程序API -->
 	<bean id="51120201" class="com.melot.sdk.core.function.GenericFunction">

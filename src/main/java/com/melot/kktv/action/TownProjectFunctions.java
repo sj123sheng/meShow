@@ -1185,4 +1185,42 @@ public class TownProjectFunctions {
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
+
+    /**
+     * 推荐作品【51120124】
+     */
+    public JsonObject recommendWork(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId, workId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, USER_ID.getId(), 0, USER_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+            workId = CommonUtil.getJsonParamInt(jsonObject, WORK_ID.getId(), 0, WORK_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+
+            Result<Boolean> recommendReuslt = townWorkService.recommendWork(userId, workId);
+            if(!recommendReuslt.getCode().equals(CommonStateCode.SUCCESS)) {
+                result.addProperty("TagCode", recommendReuslt.getCode());
+                return result;
+            }
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error recommendWork()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
 }
