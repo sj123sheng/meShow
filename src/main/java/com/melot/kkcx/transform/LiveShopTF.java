@@ -53,7 +53,9 @@ public class LiveShopTF {
         if (orderDTO.getApplyRefundMoney() > 0) {
             JsonObject refundInfo = new JsonObject();
             refundInfo.addProperty("refundPrice", orderDTO.getApplyRefundMoney());
-            refundInfo.addProperty("refundDesc", orderDTO.getApplyRefundDesc());
+            if (orderDTO.getApplyRefundDesc() != null) {
+                refundInfo.addProperty("refundDesc", orderDTO.getApplyRefundDesc());
+            }
             
             JsonArray refundUrls = new JsonArray();
             if (orderDTO.getOrderPictures() != null) {
