@@ -1411,9 +1411,11 @@ public class LiveShopFunctions {
         }
         int userId;
         String phoneNo;
+        String wechatName;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, TagCodeEnum.INVALID_PARAMETERS, 0, Integer.MAX_VALUE);
             phoneNo = CommonUtil.getJsonParamString(jsonObject, "phoneNo", null, TagCodeEnum.INVALID_PARAMETERS, 11, 11);
+            wechatName = CommonUtil.getJsonParamString(jsonObject, "wechatName", null, TagCodeEnum.INVALID_PARAMETERS, 1, 100);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
             return result;
@@ -1424,8 +1426,8 @@ public class LiveShopFunctions {
 
         String tagCode = TagCodeEnum.MODULE_UNKNOWN_RESPCODE;
         try {
-            // 2表示微信小程序,暂时写死
-            if (liveShopService.registerSaleActorInfo(userId, phoneNo, 2)) {
+            // 渠道：2表示微信小程序, 暂时只有微信小程序
+            if (liveShopService.registerSaleActorInfo(userId, wechatName, phoneNo, 2)) {
                 tagCode = TagCodeEnum.SUCCESS;
             } else {
                 tagCode = "5106052502";
@@ -1501,7 +1503,7 @@ public class LiveShopFunctions {
     }
 
     /**
-     * 获取订单的数量（待支付、待发货、待收货、退款/售后），商家的话多显示销售的订单[51060526]
+     * 获取首个待支付订单的信息[52060527]
      * @param jsonObject
      * @param checkTag
      * @param request
