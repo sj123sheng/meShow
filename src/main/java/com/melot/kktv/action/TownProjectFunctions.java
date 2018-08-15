@@ -1085,7 +1085,6 @@ public class TownProjectFunctions {
 
             if (!StringUtil.strIsNull(workUrl)) {
                 workUrl = workUrl.replaceFirst(ConfigHelper.getVideoURL(), "");
-                workUrl = workUrl.replaceFirst("/kktv", "");
             }
             com.melot.kk.module.resource.domain.Resource resource = new com.melot.kk.module.resource.domain.Resource();
             resource.setState(ResourceStateConstant.uncheck);
@@ -1102,9 +1101,6 @@ public class TownProjectFunctions {
             }
             resource.seteCloudType(ECloudTypeConstant.qiniu);
             String imageUrl = workUrl.substring(0, workUrl.lastIndexOf(".")) + ".jpg";
-            if(!imageUrl.startsWith(SEPARATOR)) {
-                imageUrl = SEPARATOR + imageUrl;
-            }
             resource.setImageUrl(imageUrl);
             Result<Integer> resIdResult = resourceNewService.addResource(resource);
             if(resIdResult != null && resIdResult.getCode() != null && resIdResult.getCode().equals(CommonStateCode.SUCCESS)){
