@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMap      
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"      
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Profile">
+
+	<!-- 获取商城车市中的车辆列表 -->
+	<resultMap class="com.melot.kktv.model.Car" id="carInfoMap">
+		<result property="carid" column="carid" />
+		<result property="name" column="name" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<result property="photo" column="photo" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<result property="icon" column="icon" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<result property="orignalPrice" column="originalprice" javaType="java.lang.Long"
+			jdbcType="BIGINT" />
+		<result property="nowPrice" column="nowprice" javaType="java.lang.Long"
+			jdbcType="BIGINT" />
+		<result property="ifLimit" column="iflimit" />
+	</resultMap>
+
+	<parameterMap class="java.util.Map" id="getCarListMap">
+		<parameter property="pageIndex" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="numPerPage" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="orderBy" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="sortMode" mode="IN" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="category" mode="IN" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="TagCode" mode="OUT" javaType="java.lang.String"
+			jdbcType="VARCHAR" />
+		<parameter property="PageTotal" mode="OUT" javaType="java.lang.Integer"
+			jdbcType="INTEGER" />
+		<parameter property="CarList" mode="OUT" javaType="java.sql.ResultSet"
+			jdbcType="ORACLECURSOR" resultMap="carInfoMap" />
+	</parameterMap>
+
+	<procedure id="getCarList" parameterMap="getCarListMap">
+		{call
+		p_getCarList(?,?,?,?,?,?,?,?)}
+	</procedure>
+
+</sqlMap>
