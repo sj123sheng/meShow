@@ -412,6 +412,9 @@ public class KKLiveProjectFunctions {
                 for (GiftDTO giftDTO : catalogGiftDTO.getGiftDTOList()) {
                     json = new JsonObject();
                     json.addProperty("giftId", giftDTO.getGiftId());
+                    json.addProperty("giftName", giftDTO.getGiftName());
+                    json.addProperty("unit", giftDTO.getUnit());
+                    json.addProperty("sendPrice", giftDTO.getSendPrice());
                     jsonArray.add(json);
                 }
             }
