@@ -115,8 +115,7 @@ public class NewsV2Functions {
 
             mediaUrl = CommonUtil.getJsonParamString(jsonObject, "mediaUrl", null, null, 1, Integer.MAX_VALUE);
             if (!StringUtil.strIsNull(mediaUrl)) {
-                mediaUrl = mediaUrl.replaceFirst(ConfigHelper.getMediahttpdir(), "");
-                mediaUrl = mediaUrl.replaceFirst("/kktv", "");
+                mediaUrl = mediaUrl.replaceFirst(ConfigHelper.getVideoURL(), "");
             }
             mediaMd5 = CommonUtil.getJsonParamString(jsonObject, "mediaMd5", null, null, 1, Integer.MAX_VALUE);
 
@@ -206,15 +205,8 @@ public class NewsV2Functions {
                 resource.setFileHeight(videoInfo.getHeight());
                 resource.setFileWidth(videoInfo.getWidth());
             }
-            if (!StringUtil.strIsNull(imageUrl)) {
-                imageUrl = imageUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
-                if(!imageUrl.startsWith(SEPARATOR)) {
-                    imageUrl = SEPARATOR + imageUrl;
-                }
-                imageUrl = imageUrl.replaceFirst("/kktv", "");
-            }
             resource.seteCloudType(ECloudTypeConstant.qiniu);
-            resource.setImageUrl(imageUrl != null ? imageUrl : Pattern.compile("mp4$").matcher(mediaUrl).replaceAll("jpg"));
+            resource.setImageUrl(Pattern.compile("mp4$").matcher(mediaUrl).replaceAll("jpg"));
             Result<Integer> resIdResult = resourceNewService.addResource(resource);
             if(resIdResult != null && resIdResult.getCode() != null && resIdResult.getCode().equals(CommonStateCode.SUCCESS)){
                 Integer resId = resIdResult.getData();
