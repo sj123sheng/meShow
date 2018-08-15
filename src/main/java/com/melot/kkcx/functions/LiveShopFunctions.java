@@ -1533,8 +1533,8 @@ public class LiveShopFunctions {
             if (firstWaitPayOrder != null) {
                 result.addProperty("orderId", firstWaitPayOrder.getOrderId());
                 result.addProperty("expireTime", firstWaitPayOrder.getExpiryTime().getTime());
-                tagCode = TagCodeEnum.SUCCESS;
             }
+            tagCode = TagCodeEnum.SUCCESS;
         } catch (Exception e) {
             logger.error(String.format("Error:getOrderCount(userId=%s)", userId), e);
         }
