@@ -225,7 +225,7 @@ public class UserRelationFunctions {
             	msg.addProperty("followedNick", roomInfo.getNickName());
             	msg.addProperty("roomId", roomId);
             	msg.add("sPropList", new Gson().toJsonTree(propList).getAsJsonArray());
-            	GeneralService.sendMsgToRoom(4, msgToroom, 0, 0, msg);
+            	GeneralService.sendMsgToRoom(2, msgToroom, 0, 0, msg);
             }
             
 			HadoopLogger.fansLog(userId, followedId, new Date(), appId, platform, sourcesTag);
@@ -315,7 +315,7 @@ public class UserRelationFunctions {
         	msg.addProperty("userNick", userInfo.getNickName());
         	msg.addProperty("action", 0);
         	msg.addProperty("count", followFansCount);
-        	GeneralService.sendMsgToRoom(4, canceledId, 0, 0, msg);
+        	GeneralService.sendMsgToRoom(2, canceledId, 0, 0, msg);
         }
         
         //取关时删除列表结果缓存
