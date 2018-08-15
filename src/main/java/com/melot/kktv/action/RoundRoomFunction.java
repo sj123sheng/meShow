@@ -127,7 +127,7 @@ public class RoundRoomFunction {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-		String dateString =new SimpleDateFormat("yyyy-MM-dd 15:00:00").format(new Date());
+		String dateString =new SimpleDateFormat("yyyy-MM-dd 04:00:00").format(new Date());
 		Date startTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(dateString);
 		if(new Date().before(startTime)){
 			startTime = DateUtil.addOnField(startTime, Calendar.DATE, -1);
