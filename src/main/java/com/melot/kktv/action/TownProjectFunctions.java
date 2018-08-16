@@ -66,6 +66,9 @@ public class TownProjectFunctions {
     @Resource
     private ActorService actorService;
 
+    @Resource
+    private TownMessageService townMessageService;
+
     private static String SEPARATOR = "/";
 
     /**
@@ -389,6 +392,9 @@ public class TownProjectFunctions {
                 result.addProperty("tag",tag.toString().substring(0,tag.length()-1));
             }
         }
+
+        int unreadMsgCount = townMessageService.getUnreadMessageCount(userId);
+        result.addProperty("msgCount",unreadMsgCount);
 
         com.melot.kkcore.actor.api.RoomInfo roomInfo = actorService.getRoomInfoById(userId);
         if(roomInfo != null){
