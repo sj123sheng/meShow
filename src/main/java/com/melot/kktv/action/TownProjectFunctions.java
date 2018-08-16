@@ -354,8 +354,10 @@ public class TownProjectFunctions {
             result.addProperty("portrait", userProfile.getPortrait());
         }
         result.addProperty("gender",userProfile.getGender());
+
         int followsCount = UserRelationService.getFollowsCount(userId);
         result.addProperty("followCount",followsCount);
+        
         int fansCount = UserRelationService.getFansCount(userId);
         result.addProperty("fansCount",fansCount);
 
