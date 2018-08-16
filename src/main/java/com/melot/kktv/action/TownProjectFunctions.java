@@ -15,6 +15,7 @@ import com.melot.kk.town.api.dto.*;
 import com.melot.kk.town.api.param.TownUserInfoParam;
 import com.melot.kk.town.api.param.TownWorkParam;
 import com.melot.kk.town.api.service.*;
+import com.melot.kkcore.actor.service.ActorService;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kktv.base.CommonStateCode;
@@ -61,6 +62,9 @@ public class TownProjectFunctions {
 
     @Resource
     private TownStarApplyInfoService townStarApplyInfoService;
+
+    @Resource
+    private ActorService actorService;
 
     private static String SEPARATOR = "/";
 
@@ -386,6 +390,16 @@ public class TownProjectFunctions {
             }
         }
 
+        com.melot.kkcore.actor.api.RoomInfo roomInfo = actorService.getRoomInfoById(userId);
+        if(roomInfo != null){
+            if(roomInfo.getRoomSource() != null){
+                result.addProperty("roomSource",roomInfo.getRoomSource());
+            }
+            if(roomInfo.getRoomType() != null){
+                result.addProperty("roomSource",roomInfo.getRoomType());
+            }
+        }
+
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
@@ -503,6 +517,12 @@ public class TownProjectFunctions {
                         json.addProperty("tag",tag.toString().substring(0,tag.length()-1));
                     }
                 }
+                if(roomInfo.getRoomSource() != null){
+                    json.addProperty("roomSource",roomInfo.getRoomSource());
+                }
+                if(roomInfo.getLiveType() != null){
+                    json.addProperty("liveType",roomInfo.getLiveType());
+                }
                 jRoomList.add(json);
             }
         }
@@ -595,6 +615,12 @@ public class TownProjectFunctions {
                             roomJson.addProperty("tag",tag.toString().substring(0,tag.length()-1));
                         }
                     }
+                    if(room.getRoomSource() != null){
+                        result.addProperty("roomSource",room.getRoomSource());
+                    }
+                    if(room.getLiveType() != null){
+                        result.addProperty("liveType",room.getLiveType());
+                    }
 
                     jRoomList.add(roomJson);
                 }
@@ -669,6 +695,15 @@ public class TownProjectFunctions {
                                 tagString.append(tag.getTagName()).append(",");
                             }
                             json.addProperty("tag",tagString.toString().substring(0,tagString.length()-1));
+                        }
+                    }
+                    com.melot.kkcore.actor.api.RoomInfo roomInfo = actorService.getRoomInfoById(item.getUserId());
+                    if(roomInfo != null){
+                        if(roomInfo.getRoomSource() != null){
+                            result.addProperty("roomSource",roomInfo.getRoomSource());
+                        }
+                        if(roomInfo.getLiveType() != null){
+                            result.addProperty("liveType",roomInfo.getLiveType());
                         }
                     }
                     jsonArray.add(json);
@@ -1213,6 +1248,15 @@ public class TownProjectFunctions {
                         json.addProperty("portrait",userProfile.getPortrait());
                     }
                     json.addProperty("tag",item.getTagName());
+                    com.melot.kkcore.actor.api.RoomInfo roomInfo = actorService.getRoomInfoById(item.getUserId());
+                    if(roomInfo != null){
+                        if(roomInfo.getRoomSource() != null){
+                            result.addProperty("roomSource",roomInfo.getRoomSource());
+                        }
+                        if(roomInfo.getLiveType() != null){
+                            result.addProperty("liveType",roomInfo.getLiveType());
+                        }
+                    }
                     jsonArray.add(json);
                 }
             }
