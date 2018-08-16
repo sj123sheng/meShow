@@ -25,15 +25,14 @@ import com.melot.kktv.model.Room;
 import com.melot.kktv.service.UserRelationService;
 import com.melot.kktv.service.WorkService;
 import com.melot.kktv.util.*;
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.log4j.Logger;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.text.ParseException;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import static com.melot.kktv.util.ParamCodeEnum.*;
@@ -345,7 +344,7 @@ public class TownProjectFunctions {
         result.addProperty("userId",userProfile.getUserId());
         result.addProperty("nickname",userProfile.getNickName());
         if(userProfile.getPortrait()!=null){
-            result.addProperty("portrait",ConfigHelper.getHttpdir() + userProfile.getPortrait());
+            result.addProperty("portrait", userProfile.getPortrait());
         }
         result.addProperty("gender",userProfile.getGender());
         int followsCount = UserRelationService.getFollowsCount(userId);
@@ -369,6 +368,13 @@ public class TownProjectFunctions {
             }
             if(townUserInfoDTO.getBirthday()!=null){
                 result.addProperty("birthday",townUserInfoDTO.getBirthday());
+                try {
+                    Date birthDay = DateUtils.parseDate(townUserInfoDTO.getBirthday(),"yyyy-MM-dd");
+                    int age = this.getAge(birthDay);
+                    result.addProperty("age",age);
+                } catch (ParseException ex){
+                    logger.error("parse birthday error birthday:"+townUserInfoDTO.getBirthday()+",ex:",ex);
+                }
             }
             List<UserTagRelationDTO> list =  tagService.getUserTagList(userId);
             if(!CollectionUtils.isEmpty(list)){
@@ -382,6 +388,37 @@ public class TownProjectFunctions {
 
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
+    }
+
+    private int getAge(Date birthday) {
+        Calendar curr = Calendar.getInstance();
+        Calendar born = Calendar.getInstance();
+        born.setTime(birthday);
+        int age = curr.get(Calendar.YEAR) - born.get(Calendar.YEAR);
+        if (age <= 0) {
+            return 0;
+        }
+
+        int currMonth = curr.get(Calendar.MONTH);
+        int currDay = curr.get(Calendar.DAY_OF_MONTH);
+        int bornMonth = born.get(Calendar.MONTH);
+        int bornDay = born.get(Calendar.DAY_OF_MONTH);
+
+        if (currMonth < bornMonth) {
+            age--;
+        }
+        if(currMonth == bornMonth && currDay <= bornDay){
+            age--;
+        }
+
+        if(age < 0){
+            return 0;
+        }
+        int maxAge  =  120;
+        if(age > maxAge){
+            return maxAge;
+        }
+        return age;
     }
 
     /**
@@ -454,7 +491,7 @@ public class TownProjectFunctions {
                 json.addProperty("nickname",roomInfo.getNickname());
                 json.addProperty("roomId", roomInfo.getRoomId() != null ? roomInfo.getRoomId() : roomInfo.getActorId());
                 json.addProperty("gender",roomInfo.getGender());
-                json.addProperty("portrait_path_256", ConfigHelper.getHttpdir() + roomInfo.getPortrait()  + "!256");
+                json.addProperty("portrait_path_256",  roomInfo.getPortrait()  + "!256");
 
                 if(tagMap!=null && tagMap.containsKey(roomInfo.getActorId())){
                     List<UserTagRelationDTO> tagList = tagMap.get(roomInfo.getActorId());
@@ -546,7 +583,7 @@ public class TownProjectFunctions {
                     roomJson.addProperty("userId",roomId);
                     roomJson.addProperty("nickname",room.getNickname());
                     roomJson.addProperty("gender",room.getGender());
-                    roomJson.addProperty("portrait_path_256",ConfigHelper.getHttpdir() + room.getPortrait_path_256());
+                    roomJson.addProperty("portrait_path_256", room.getPortrait_path_256());
 
                     if(tagMap!=null && tagMap.containsKey(room.getUserId())){
                         List<UserTagRelationDTO> tagList = tagMap.get(room.getUserId());
@@ -622,7 +659,7 @@ public class TownProjectFunctions {
                     json.addProperty("userId",item.getUserId());
                     json.addProperty("nickname",userProfile.getNickName());
                     if(userProfile.getPortrait()!=null){
-                        json.addProperty("portrait",ConfigHelper.getHttpdir() + userProfile.getPortrait());
+                        json.addProperty("portrait", userProfile.getPortrait());
                     }
                     if(tagMap!=null && tagMap.containsKey(item.getUserId())){
                         List<UserTagRelationDTO> tagList = tagMap.get(item.getUserId());
@@ -1173,7 +1210,7 @@ public class TownProjectFunctions {
                     json.addProperty("userId",item.getUserId());
                     json.addProperty("nickname",userProfile.getNickName());
                     if(userProfile.getPortrait()!=null){
-                        json.addProperty("portrait",ConfigHelper.getHttpdir() + userProfile.getPortrait());
+                        json.addProperty("portrait",userProfile.getPortrait());
                     }
                     json.addProperty("tag",item.getTagName());
                     jsonArray.add(json);
