@@ -357,7 +357,7 @@ public class TownProjectFunctions {
 
         int followsCount = UserRelationService.getFollowsCount(userId);
         result.addProperty("followCount",followsCount);
-        
+
         int fansCount = UserRelationService.getFansCount(userId);
         result.addProperty("fansCount",fansCount);
 
@@ -624,10 +624,10 @@ public class TownProjectFunctions {
                         }
                     }
                     if(room.getRoomSource() != null){
-                        result.addProperty("roomSource",room.getRoomSource());
+                        roomJson.addProperty("roomSource",room.getRoomSource());
                     }
                     if(room.getLiveType() != null){
-                        result.addProperty("liveType",room.getLiveType());
+                        roomJson.addProperty("liveType",room.getLiveType());
                     }
 
                     jRoomList.add(roomJson);
@@ -708,10 +708,10 @@ public class TownProjectFunctions {
                     com.melot.kkcore.actor.api.RoomInfo roomInfo = actorService.getRoomInfoById(item.getUserId());
                     if(roomInfo != null){
                         if(roomInfo.getRoomSource() != null){
-                            result.addProperty("roomSource",roomInfo.getRoomSource());
+                            json.addProperty("roomSource",roomInfo.getRoomSource());
                         }
                         if(roomInfo.getLiveType() != null){
-                            result.addProperty("liveType",roomInfo.getLiveType());
+                            json.addProperty("liveType",roomInfo.getLiveType());
                         }
                     }
                     jsonArray.add(json);
@@ -1256,13 +1256,14 @@ public class TownProjectFunctions {
                         json.addProperty("portrait",userProfile.getPortrait());
                     }
                     json.addProperty("tag",item.getTagName());
+
                     com.melot.kkcore.actor.api.RoomInfo roomInfo = actorService.getRoomInfoById(item.getUserId());
                     if(roomInfo != null){
                         if(roomInfo.getRoomSource() != null){
-                            result.addProperty("roomSource",roomInfo.getRoomSource());
+                            json.addProperty("roomSource",roomInfo.getRoomSource());
                         }
                         if(roomInfo.getLiveType() != null){
-                            result.addProperty("liveType",roomInfo.getLiveType());
+                            json.addProperty("liveType",roomInfo.getLiveType());
                         }
                     }
                     jsonArray.add(json);
