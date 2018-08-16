@@ -401,8 +401,8 @@ public class TownProjectFunctions {
             if(roomInfo.getRoomSource() != null){
                 result.addProperty("roomSource",roomInfo.getRoomSource());
             }
-            if(roomInfo.getRoomType() != null){
-                result.addProperty("roomSource",roomInfo.getRoomType());
+            if(roomInfo.getLiveType() != null){
+                result.addProperty("liveType",roomInfo.getLiveType());
             }
         }
 
