@@ -1244,7 +1244,7 @@ public class TownProjectFunctions {
             return result;
         }
         JsonArray jsonArray = new JsonArray();
-        List<TownStarDTO> list = townUserRoleService.getTownStarList(areaCode,9);
+        List<TownStarDTO> list = townUserRoleService.getTownStarList(areaCode,10);
         if(!CollectionUtils.isEmpty(list)){
             for(TownStarDTO item : list){
                 UserProfile userProfile = kkUserService.getUserProfile(item.getUserId());
