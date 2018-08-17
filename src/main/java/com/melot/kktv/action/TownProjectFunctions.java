@@ -1,63 +1,23 @@
 package com.melot.kktv.action;
 
-import static com.melot.kktv.util.ParamCodeEnum.AGE;
-import static com.melot.kktv.util.ParamCodeEnum.APPLY_TYPE;
-import static com.melot.kktv.util.ParamCodeEnum.AREA_CODE;
-import static com.melot.kktv.util.ParamCodeEnum.EXPERIENCE;
-import static com.melot.kktv.util.ParamCodeEnum.GENDER;
-import static com.melot.kktv.util.ParamCodeEnum.HOME;
-import static com.melot.kktv.util.ParamCodeEnum.MOBILE_PHONE;
-import static com.melot.kktv.util.ParamCodeEnum.NAME;
-import static com.melot.kktv.util.ParamCodeEnum.PROFESSION;
-import static com.melot.kktv.util.ParamCodeEnum.REASON;
-import static com.melot.kktv.util.ParamCodeEnum.TOPIC_ID;
-import static com.melot.kktv.util.ParamCodeEnum.TOPIC_NAME;
-import static com.melot.kktv.util.ParamCodeEnum.USER_ID;
-import static com.melot.kktv.util.ParamCodeEnum.WORK_DESC;
-import static com.melot.kktv.util.ParamCodeEnum.WORK_ID;
-import static com.melot.kktv.util.ParamCodeEnum.WORK_SORT;
-import static com.melot.kktv.util.ParamCodeEnum.WORK_TYPE;
-import static com.melot.kktv.util.ParamCodeEnum.WORK_URL;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.log4j.Logger;
-import org.springframework.util.CollectionUtils;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.common.melot_utils.StringUtils;
+import com.melot.kk.location.api.service.LocationService;
 import com.melot.kk.module.resource.constant.ECloudTypeConstant;
 import com.melot.kk.module.resource.constant.FileTypeConstant;
 import com.melot.kk.module.resource.constant.ResourceStateConstant;
 import com.melot.kk.module.resource.service.ResourceNewService;
+import com.melot.kk.town.api.constant.PraiseTypeEnum;
 import com.melot.kk.town.api.constant.UserRoleTypeEnum;
 import com.melot.kk.town.api.constant.WorkCheckStatusEnum;
 import com.melot.kk.town.api.constant.WorkTypeEnum;
-import com.melot.kk.town.api.dto.ConfAreaBannerDTO;
-import com.melot.kk.town.api.dto.ResTownTopicDTO;
-import com.melot.kk.town.api.dto.ResTownWorkDTO;
-import com.melot.kk.town.api.dto.TownStarApplyInfoDTO;
-import com.melot.kk.town.api.dto.TownStarDTO;
-import com.melot.kk.town.api.dto.TownUserInfoDTO;
-import com.melot.kk.town.api.dto.TownUserRoleDTO;
-import com.melot.kk.town.api.dto.UserTagRelationDTO;
+import com.melot.kk.town.api.dto.*;
 import com.melot.kk.town.api.param.TownUserInfoParam;
 import com.melot.kk.town.api.param.TownWorkParam;
-import com.melot.kk.town.api.service.AreaBannerService;
-import com.melot.kk.town.api.service.TagService;
-import com.melot.kk.town.api.service.TownStarApplyInfoService;
-import com.melot.kk.town.api.service.TownUserRoleService;
-import com.melot.kk.town.api.service.TownUserService;
-import com.melot.kk.town.api.service.TownWorkService;
+import com.melot.kk.town.api.service.*;
+import com.melot.kkcore.actor.service.ActorService;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kktv.base.CommonStateCode;
@@ -67,10 +27,17 @@ import com.melot.kktv.domain.WorkVideoInfo;
 import com.melot.kktv.model.Room;
 import com.melot.kktv.service.UserRelationService;
 import com.melot.kktv.service.WorkService;
-import com.melot.kktv.util.CommonUtil;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.StringUtil;
-import com.melot.kktv.util.TagCodeEnum;
+import com.melot.kktv.util.*;
+import org.apache.log4j.Logger;
+import org.springframework.util.CollectionUtils;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import java.text.ParseException;
+import java.util.*;
+import java.util.regex.Pattern;
+
+import static com.melot.kktv.util.ParamCodeEnum.*;
 
 public class TownProjectFunctions {
 
@@ -99,6 +66,15 @@ public class TownProjectFunctions {
     
     @Resource
     private AreaBannerService areaBannerService;
+
+    @Resource
+    private ActorService actorService;
+
+    @Resource
+    private TownMessageService townMessageService;
+
+    @Resource
+    private LocationService locationService;
 
     private static String SEPARATOR = "/";
 
@@ -343,6 +319,7 @@ public class TownProjectFunctions {
                 for(ResTownWorkDTO townWorkDTO : townWorkDTOS) {
                     JsonObject townWork = new JsonObject();
                     townWork.addProperty("workId", townWorkDTO.getWorkId());
+                    townWork.addProperty("checkStatus", townWorkDTO.getCheckStatus());
                     townWork.addProperty("praiseNum", townWorkDTO.getPraiseNum());
                     townWork.addProperty("viewsNum", townWorkDTO.getViewsNum());
                     townWork.addProperty("coverUrl", townWorkDTO.getCoverUrl());
@@ -366,59 +343,148 @@ public class TownProjectFunctions {
     public JsonObject getUserProfile(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
         int userId;
+        int targetUserId;
         String areaCode;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-            areaCode =  CommonUtil.getJsonParamString(jsonObject, "areaCode", null, null, 1, Integer.MAX_VALUE);
+            targetUserId = CommonUtil.getJsonParamInt(jsonObject, "targetUserId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            areaCode =  CommonUtil.getJsonParamString(jsonObject, "areaCode", null, null, 1, 20);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
         }
-        UserProfile userProfile = kkUserService.getUserProfile(userId);
+        UserProfile loginUserProfile  = kkUserService.getUserProfile(userId);
+        if(loginUserProfile == null){
+            result.addProperty("TagCode", TagCodeEnum.USER_NOT_EXIST);
+            return result;
+        }
+        UserProfile userProfile = kkUserService.getUserProfile(targetUserId);
         if(userProfile == null){
             result.addProperty("TagCode", TagCodeEnum.USER_NOT_EXIST);
             return result;
         }
+
         result.addProperty("userId",userProfile.getUserId());
         result.addProperty("nickname",userProfile.getNickName());
         if(userProfile.getPortrait()!=null){
-            result.addProperty("portrait",ConfigHelper.getHttpdir() + userProfile.getPortrait());
+            result.addProperty("portrait", userProfile.getPortrait());
         }
         result.addProperty("gender",userProfile.getGender());
-        int followsCount = UserRelationService.getFollowsCount(userId);
+
+        int followsCount = UserRelationService.getFollowsCount(targetUserId);
         result.addProperty("followCount",followsCount);
-        int fansCount = UserRelationService.getFansCount(userId);
+
+        int fansCount = UserRelationService.getFansCount(targetUserId);
         result.addProperty("fansCount",fansCount);
 
+        boolean userFollowTarget = UserRelationService.isFollowed(userId,targetUserId);
+        boolean targetFollowUser = UserRelationService.isFollowed(targetUserId,userId);
+        if(userFollowTarget && targetFollowUser){
+            result.addProperty("isFollow",1);
+        }else{
+           if(userFollowTarget){
+               result.addProperty("isFollow",0);
+           }else{
+               result.addProperty("isFollow",-1);
+           }
+        }
+
         if(!StringUtils.isEmpty(areaCode)){
-            TownUserRoleDTO townUserRoleDTO = townUserRoleService.getUserAreaRole(userId,areaCode,UserRoleTypeEnum.OWER);
+            TownUserRoleDTO townUserRoleDTO = townUserRoleService.getUserAreaRole(targetUserId,areaCode,
+                    UserRoleTypeEnum.OWER);
             if(townUserRoleDTO != null){
                 result.addProperty("isOwer",1);
             }else{
                 result.addProperty("isOwer",0);
             }
+
+            String areaName = locationService.getAreaNameByAreaCode(areaCode);
+            if(!org.springframework.util.StringUtils.isEmpty(areaName)){
+                result.addProperty("areaName",areaName);
+            }
         }
 
-        TownUserInfoDTO townUserInfoDTO =  townUserService.getUserInfo(userId);
+        TownUserInfoDTO townUserInfoDTO =  townUserService.getUserInfo(targetUserId);
         if(townUserInfoDTO != null){
             if(townUserInfoDTO.getIntroduction()!=null){
                 result.addProperty("introduction",townUserInfoDTO.getIntroduction());
             }
             if(townUserInfoDTO.getBirthday()!=null){
                 result.addProperty("birthday",townUserInfoDTO.getBirthday());
-            }
-            List<UserTagRelationDTO> list =  tagService.getUserTagList(userId);
-            if(!CollectionUtils.isEmpty(list)){
-                StringBuilder tag = new StringBuilder();
-                for(UserTagRelationDTO item : list){
-                    tag.append(item.getTagName()).append(",");
+                try {
+                    Date birthDay = org.apache.commons.lang3.time.DateUtils.parseDate(townUserInfoDTO.getBirthday(),
+                            "yyyy-MM-dd");
+                    int age = this.getAge(birthDay);
+                    result.addProperty("age",age);
+                } catch (ParseException ex){
+                    logger.error("parse birthday error birthday:"+townUserInfoDTO.getBirthday()+",ex:",ex);
                 }
-                result.addProperty("tag",tag.toString().substring(0,tag.length()-1));
+            }
+            String tag = this.getUserTag(targetUserId);
+            result.addProperty("tag",tag);
+        }
+
+        int unreadMsgCount = townMessageService.getUnreadMessageCount(targetUserId);
+        result.addProperty("unreadMsgCount",unreadMsgCount);
+
+        com.melot.kkcore.actor.api.RoomInfo roomInfo = actorService.getRoomInfoById(targetUserId);
+        if(roomInfo != null){
+            if(roomInfo.getRoomSource() != null){
+                result.addProperty("roomSource",roomInfo.getRoomSource());
+            }
+            if(roomInfo.getLiveType() != null){
+                result.addProperty("liveType",roomInfo.getLiveType());
             }
         }
 
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
+    }
+
+    private String getUserTag(int userId){
+        List<UserTagRelationDTO> list =  tagService.getUserTagList(userId);
+        if(!CollectionUtils.isEmpty(list)){
+            StringBuilder tag = new StringBuilder();
+            for(UserTagRelationDTO item : list){
+                if(!org.springframework.util.StringUtils.isEmpty(item.getTagName())){
+                    tag.append(item.getTagName()).append(",");
+                }
+            }
+            return tag.toString().substring(0,tag.length()-1);
+        }else{
+            return "";
+        }
+    }
+
+    private int getAge(Date birthday) {
+        Calendar curr = Calendar.getInstance();
+        Calendar born = Calendar.getInstance();
+        born.setTime(birthday);
+        int age = curr.get(Calendar.YEAR) - born.get(Calendar.YEAR);
+        if (age <= 0) {
+            return 0;
+        }
+
+        int currMonth = curr.get(Calendar.MONTH);
+        int currDay = curr.get(Calendar.DAY_OF_MONTH);
+        int bornMonth = born.get(Calendar.MONTH);
+        int bornDay = born.get(Calendar.DAY_OF_MONTH);
+
+        if (currMonth < bornMonth) {
+            age--;
+        }
+        if(currMonth == bornMonth && currDay <= bornDay){
+            age--;
+        }
+
+        if(age < 0){
+            return 0;
+        }
+        int maxAge  =  120;
+        if(age > maxAge){
+            return maxAge;
+        }
+        return age;
     }
 
     /**
@@ -491,7 +557,7 @@ public class TownProjectFunctions {
                 json.addProperty("nickname",roomInfo.getNickname());
                 json.addProperty("roomId", roomInfo.getRoomId() != null ? roomInfo.getRoomId() : roomInfo.getActorId());
                 json.addProperty("gender",roomInfo.getGender());
-                json.addProperty("portrait_path_256", ConfigHelper.getHttpdir() + roomInfo.getPortrait()  + "!256");
+                json.addProperty("portrait_path_256",  roomInfo.getPortrait()  + "!256");
 
                 if(tagMap!=null && tagMap.containsKey(roomInfo.getActorId())){
                     List<UserTagRelationDTO> tagList = tagMap.get(roomInfo.getActorId());
@@ -502,6 +568,12 @@ public class TownProjectFunctions {
                         }
                         json.addProperty("tag",tag.toString().substring(0,tag.length()-1));
                     }
+                }
+                if(roomInfo.getRoomSource() != null){
+                    json.addProperty("roomSource",roomInfo.getRoomSource());
+                }
+                if(roomInfo.getLiveType() != null){
+                    json.addProperty("liveType",roomInfo.getLiveType());
                 }
                 jRoomList.add(json);
             }
@@ -583,7 +655,7 @@ public class TownProjectFunctions {
                     roomJson.addProperty("userId",roomId);
                     roomJson.addProperty("nickname",room.getNickname());
                     roomJson.addProperty("gender",room.getGender());
-                    roomJson.addProperty("portrait_path_256",ConfigHelper.getHttpdir() + room.getPortrait_path_256());
+                    roomJson.addProperty("portrait_path_256", room.getPortrait_path_256());
 
                     if(tagMap!=null && tagMap.containsKey(room.getUserId())){
                         List<UserTagRelationDTO> tagList = tagMap.get(room.getUserId());
@@ -594,6 +666,12 @@ public class TownProjectFunctions {
                             }
                             roomJson.addProperty("tag",tag.toString().substring(0,tag.length()-1));
                         }
+                    }
+                    if(room.getRoomSource() != null){
+                        roomJson.addProperty("roomSource",room.getRoomSource());
+                    }
+                    if(room.getLiveType() != null){
+                        roomJson.addProperty("liveType",room.getLiveType());
                     }
 
                     jRoomList.add(roomJson);
@@ -659,7 +737,7 @@ public class TownProjectFunctions {
                     json.addProperty("userId",item.getUserId());
                     json.addProperty("nickname",userProfile.getNickName());
                     if(userProfile.getPortrait()!=null){
-                        json.addProperty("portrait",ConfigHelper.getHttpdir() + userProfile.getPortrait());
+                        json.addProperty("portrait", userProfile.getPortrait());
                     }
                     if(tagMap!=null && tagMap.containsKey(item.getUserId())){
                         List<UserTagRelationDTO> tagList = tagMap.get(item.getUserId());
@@ -669,6 +747,15 @@ public class TownProjectFunctions {
                                 tagString.append(tag.getTagName()).append(",");
                             }
                             json.addProperty("tag",tagString.toString().substring(0,tagString.length()-1));
+                        }
+                    }
+                    com.melot.kkcore.actor.api.RoomInfo roomInfo = actorService.getRoomInfoById(item.getUserId());
+                    if(roomInfo != null){
+                        if(roomInfo.getRoomSource() != null){
+                            json.addProperty("roomSource",roomInfo.getRoomSource());
+                        }
+                        if(roomInfo.getLiveType() != null){
+                            json.addProperty("liveType",roomInfo.getLiveType());
                         }
                     }
                     jsonArray.add(json);
@@ -954,7 +1041,7 @@ public class TownProjectFunctions {
 
         try {
 
-            Result<Boolean> deleteResult = townWorkService.deletePraiseWork(userId, workId);
+            Result<Boolean> deleteResult = townWorkService.deleteWork(userId, workId);
             if(!deleteResult.getCode().equals(CommonStateCode.SUCCESS)) {
                 result.addProperty("TagCode", deleteResult.getCode());
                 return result;
@@ -1023,7 +1110,15 @@ public class TownProjectFunctions {
                     result.addProperty("portrait", getPortrait(userProfile));
                 }
                 result.addProperty("praiseNum", townWorkDTO.getPraiseNum());
-                result.addProperty("followed", UserRelationService.isFollowed(userId, workUserId));
+                int followStatus = 2;
+                boolean followed = UserRelationService.isFollowed(userId, workUserId);
+                boolean beFollowed = UserRelationService.isFollowed(workUserId, userId);
+                if(followed && beFollowed) {
+                    followStatus = 3;
+                } else if(followed) {
+                    followStatus = 1;
+                }
+                result.addProperty("followStatus", followStatus);
             } else {
                 result.addProperty("workStatus", 3);
             }
@@ -1261,7 +1356,7 @@ public class TownProjectFunctions {
             return result;
         }
         JsonArray jsonArray = new JsonArray();
-        List<TownStarDTO> list = townUserRoleService.getTownStarList(areaCode,9);
+        List<TownStarDTO> list = townUserRoleService.getTownStarList(areaCode,10);
         if(!CollectionUtils.isEmpty(list)){
             for(TownStarDTO item : list){
                 UserProfile userProfile = kkUserService.getUserProfile(item.getUserId());
@@ -1270,9 +1365,19 @@ public class TownProjectFunctions {
                     json.addProperty("userId",item.getUserId());
                     json.addProperty("nickname",userProfile.getNickName());
                     if(userProfile.getPortrait()!=null){
-                        json.addProperty("portrait",ConfigHelper.getHttpdir() + userProfile.getPortrait());
+                        json.addProperty("portrait",userProfile.getPortrait());
                     }
                     json.addProperty("tag",item.getTagName());
+
+                    com.melot.kkcore.actor.api.RoomInfo roomInfo = actorService.getRoomInfoById(item.getUserId());
+                    if(roomInfo != null){
+                        if(roomInfo.getRoomSource() != null){
+                            json.addProperty("roomSource",roomInfo.getRoomSource());
+                        }
+                        if(roomInfo.getLiveType() != null){
+                            json.addProperty("liveType",roomInfo.getLiveType());
+                        }
+                    }
                     jsonArray.add(json);
                 }
             }
@@ -1319,4 +1424,306 @@ public class TownProjectFunctions {
             return result;
         }
     }
+
+    /**
+     * 获取消息信息【51120125】
+     */
+    public JsonObject getMessageInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, USER_ID.getId(), 0, USER_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+
+            TownMessageInfoDTO messageInfo = townMessageService.getMessageInfo(userId);
+            if(messageInfo != null) {
+                result.addProperty("followUnreadNum", messageInfo.getFollowUnreadNum());
+                result.addProperty("praiseUnreadNum", messageInfo.getPraiseUnreadNum());
+                result.addProperty("commentUnreadNum", messageInfo.getCommentUnreadNum());
+                if(messageInfo.getSystemMessage() != null) {
+                    JsonObject systemMessage = new JsonObject();
+                    TownSystemMessageDTO systemMessageDTO = messageInfo.getSystemMessage();
+                    systemMessage.addProperty("messageTitle", systemMessageDTO.getMessageTitle());
+                    systemMessage.addProperty("messageContent", systemMessageDTO.getMessageContent());
+                    if(messageInfo.getSystemUnreadNum() > 0) {
+                        systemMessage.addProperty("unread", true);
+                    }else {
+                        systemMessage.addProperty("unread", false);
+                    }
+                    systemMessage.addProperty("sendTime", changeTimeToString(systemMessageDTO.getCreateTime()));
+                    result.add("systemMessage", systemMessage);
+                }
+            }
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error getMessageInfo()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 	获取关注消息列表【51120126】
+     */
+    public JsonObject getFollowMessageList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId, pageIndex, countPerPage;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, USER_ID.getId(), 0, USER_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
+            countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 10, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+
+            Page<UserFollowMessageDTO> page = townMessageService.getFollowMessageList(userId, pageIndex, countPerPage);
+            JsonArray messageList = new JsonArray();
+            if(page != null && page.getList() != null && page.getList().size() > 0) {
+                List<UserFollowMessageDTO> list = page.getList();
+                for(UserFollowMessageDTO record : list) {
+                    JsonObject messageJsonObject = new JsonObject();
+                    int messageUserId = record.getUserId();
+                    messageJsonObject.addProperty("userId", messageUserId);
+                    UserProfile userProfile = kkUserService.getUserProfile(messageUserId);
+                    if(userProfile != null) {
+                        messageJsonObject.addProperty("portrait", getPortrait(userProfile));
+                        messageJsonObject.addProperty("nickname", userProfile.getNickName());
+                    }
+                    messageJsonObject.addProperty("followTime", changeTimeToString(record.getFollowTime()));
+                    messageList.add(messageJsonObject);
+                }
+            }
+
+            result.add("messageList", messageList);
+            result.addProperty("messageCount", page.getCount());
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error getFollowMessageList()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 	获取点赞消息列表【51120127】
+     */
+    public JsonObject getPraiseMessageList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId, pageIndex, countPerPage;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, USER_ID.getId(), 0, USER_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
+            countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 10, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+
+            Page<UserPraiseMessageDTO> page = townMessageService.getPraiseMessageList(userId, pageIndex, countPerPage);
+            JsonArray messageList = new JsonArray();
+            if(page != null && page.getList() != null && page.getList().size() > 0) {
+                List<UserPraiseMessageDTO> list = page.getList();
+                for(UserPraiseMessageDTO record : list) {
+                    JsonObject messageJsonObject = new JsonObject();
+
+                    int messageUserId = record.getUserId();
+                    messageJsonObject.addProperty("userId", messageUserId);
+                    UserProfile userProfile = kkUserService.getUserProfile(messageUserId);
+                    if(userProfile != null) {
+                        messageJsonObject.addProperty("portrait", getPortrait(userProfile));
+                        messageJsonObject.addProperty("nickname", userProfile.getNickName());
+                    }
+                    messageJsonObject.addProperty("workId", record.getWorkId());
+                    messageJsonObject.addProperty("coverUrl",record.getCoverUrl());
+                    int praiseType = record.getPraiseType();
+                    messageJsonObject.addProperty("praiseType", praiseType);
+                    if(praiseType == PraiseTypeEnum.COMMENT_PRAISE) {
+                        messageJsonObject.addProperty("commentId", record.getCommentId());
+                        messageJsonObject.addProperty("commentContent",record.getCommentContent());
+                    }
+                    messageJsonObject.addProperty("praiseTime", changeTimeToString(record.getPraiseTime()));
+                    messageList.add(messageJsonObject);
+                }
+            }
+
+            result.add("messageList", messageList);
+            result.addProperty("messageCount", page.getCount());
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error getPraiseMessageList()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 	获取系统消息列表【51120129】
+     */
+    public JsonObject getSystemMessageList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId, pageIndex, countPerPage;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, USER_ID.getId(), 0, USER_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
+            countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 10, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+
+            Page<TownSystemMessageDTO> page = townMessageService.getSystemMessageList(userId, pageIndex, countPerPage);
+            JsonArray messageList = new JsonArray();
+            if(page != null && page.getList() != null && page.getList().size() > 0) {
+                List<TownSystemMessageDTO> list = page.getList();
+                for(TownSystemMessageDTO record : list) {
+                    JsonObject messageJsonObject = new JsonObject();
+
+                    messageJsonObject.addProperty("messageTitle", record.getMessageTitle());
+                    messageJsonObject.addProperty("messageContent",record.getMessageContent());
+                    messageJsonObject.addProperty("sendTime", changeTimeToString(record.getCreateTime()));
+                    messageList.add(messageJsonObject);
+                }
+            }
+
+            result.add("messageList", messageList);
+            result.addProperty("messageCount", page.getCount());
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error getSystemMessageList()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    private String changeTimeToString(Date time) {
+
+        String timeDesc;
+        Date currentTime = DateUtils.getCurrentDate();
+        long differSecond = (currentTime.getTime() - time.getTime()) / 1000;
+        System.out.println(differSecond);
+        if(differSecond < 60) {
+            timeDesc = "刚刚";
+        } else if(differSecond < 3600) {
+            timeDesc = differSecond / 60 + "分钟前";
+        } else if(differSecond < 3600 * 24) {
+            timeDesc = differSecond / 3600 + "小时前";
+        } else if(differSecond < 3600 * 48) {
+            timeDesc = "昨天";
+        } else if(DateUtils.getYear(currentTime) == DateUtils.getYear(time)) {
+            timeDesc = DateUtils.format(time, "M-d");
+        } else {
+            timeDesc = DateUtils.format(time, "yyyy-M-d");
+        }
+        return timeDesc;
+    }
+
+    /**
+     * 更新用户信息(51120130)
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject updateUserProfile(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId;
+        String birthday;
+        int gender;
+        String introduction;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "03040002", 1, Integer.MAX_VALUE);
+            gender=CommonUtil.getJsonParamInt(jsonObject, "gender", -1, null, 0, 1);
+            birthday = CommonUtil.getJsonParamString(jsonObject, "birthday", null, null, 1, 20);
+            introduction = CommonUtil.getJsonParamString(jsonObject, "name", null, null, 1, 100);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+        TownUserInfoDTO townUserInfoDTO = townUserService.getUserInfo(userId);
+        if(townUserInfoDTO == null){
+            result.addProperty("TagCode",TagCodeEnum.USER_NOT_EXIST);
+            return result;
+        }
+        TownUserInfoParam townUserInfoParam = BeanMapper.map(townUserInfoDTO,TownUserInfoParam.class);
+        if(!org.springframework.util.StringUtils.isEmpty(birthday)){
+            townUserInfoParam.setBirthday(birthday);
+        }
+        if(!org.springframework.util.StringUtils.isEmpty(introduction)){
+            townUserInfoParam.setIntroduction(introduction);
+        }
+        boolean success = townUserService.saveUserInfo(townUserInfoParam);
+        if(!success){
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+
+        if(gender > -1){
+            UserProfile userProfile = kkUserService.getUserProfile(userId);
+            if(userProfile != null){
+                userProfile.setGender(gender);
+                Map<String,Object> map = new HashMap<>();
+                map.put("gender",gender);
+                kkUserService.updateUserProfile(userId,map);
+            }
+        }
+
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+
 }

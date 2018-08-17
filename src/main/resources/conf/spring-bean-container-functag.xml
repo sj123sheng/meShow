@@ -3052,6 +3052,33 @@
 		<constructor-arg name="t" ref="townProjectFunctions" />
 		<constructor-arg name="methodName" value="recommendWork" />
 	</bean>
+    <bean id="51120125" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="townProjectFunctions" />
+        <constructor-arg name="methodName" value="getMessageInfo" />
+    </bean>
+    <bean id="51120126" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="townProjectFunctions" />
+        <constructor-arg name="methodName" value="getFollowMessageList" />
+    </bean>
+	<bean id="51120127" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="townProjectFunctions" />
+		<constructor-arg name="methodName" value="getPraiseMessageList" />
+	</bean>
+	<bean id="51120128" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="townProjectFunctions" />
+		<constructor-arg name="methodName" value="getCommentMessageList" />
+	</bean>
+	<bean id="51120129" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="townProjectFunctions" />
+		<constructor-arg name="methodName" value="getSystemMessageList" />
+	</bean>
+
+
+
+	<bean id="51120130" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="townProjectFunctions" />
+		<constructor-arg name="methodName" value="updateUserProfile" />
+	</bean>
 
 	<!-- 微信直播小程序API -->
 	<bean id="51120201" class="com.melot.sdk.core.function.GenericFunction">
