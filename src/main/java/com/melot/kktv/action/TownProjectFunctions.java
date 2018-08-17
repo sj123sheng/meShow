@@ -345,6 +345,11 @@ public class TownProjectFunctions {
             result.addProperty("TagCode", e.getErrCode());
             return result;
         }
+        UserProfile loginUserProfile  = kkUserService.getUserProfile(userId);
+        if(loginUserProfile == null){
+            result.addProperty("TagCode", TagCodeEnum.USER_NOT_EXIST);
+            return result;
+        }
         UserProfile userProfile = kkUserService.getUserProfile(targetUserId);
         if(userProfile == null){
             result.addProperty("TagCode", TagCodeEnum.USER_NOT_EXIST);
