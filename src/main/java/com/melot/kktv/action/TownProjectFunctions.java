@@ -409,7 +409,8 @@ public class TownProjectFunctions {
             if(townUserInfoDTO.getBirthday()!=null){
                 result.addProperty("birthday",townUserInfoDTO.getBirthday());
                 try {
-                    Date birthDay = DateUtils.parseDate(townUserInfoDTO.getBirthday(),"yyyy-MM-dd");
+                    Date birthDay = org.apache.commons.lang3.time.DateUtils.parseDate(townUserInfoDTO.getBirthday(),
+                            "yyyy-MM-dd");
                     int age = this.getAge(birthDay);
                     result.addProperty("age",age);
                 } catch (ParseException ex){
