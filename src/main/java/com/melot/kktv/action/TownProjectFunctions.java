@@ -1632,11 +1632,13 @@ public class TownProjectFunctions {
         String birthday;
         int gender;
         String introduction;
+        String nickname;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "03040002", 1, Integer.MAX_VALUE);
             gender=CommonUtil.getJsonParamInt(jsonObject, "gender", -1, null, 0, 1);
             birthday = CommonUtil.getJsonParamString(jsonObject, "birthday", null, null, 1, 20);
             introduction = CommonUtil.getJsonParamString(jsonObject, "name", null, null, 1, 100);
+            nickname = CommonUtil.getJsonParamString(jsonObject, "nickname", null, null, 1, 100);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -1665,6 +1667,15 @@ public class TownProjectFunctions {
                 userProfile.setGender(gender);
                 Map<String,Object> map = new HashMap<>();
                 map.put("gender",gender);
+                kkUserService.updateUserProfile(userId,map);
+            }
+        }
+        if(!org.springframework.util.StringUtils.isEmpty(nickname)){
+            UserProfile userProfile = kkUserService.getUserProfile(userId);
+            if(userProfile != null){
+                userProfile.setGender(gender);
+                Map<String,Object> map = new HashMap<>();
+                map.put("nickname",nickname);
                 kkUserService.updateUserProfile(userId,map);
             }
         }
