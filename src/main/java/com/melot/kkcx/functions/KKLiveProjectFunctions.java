@@ -191,6 +191,7 @@ public class KKLiveProjectFunctions {
                 tagCode = TagCodeEnum.SUCCESS;
             } else {
                 log.info(String.format("Fail:shareUnlockPrivatePhoto(histId=%s, userId=%s)", histId, userId));
+                tagCode = "5112020303";
             }
         } catch (MelotModuleException e) {
             log.info(String.format("Fail:shareUnlockPrivatePhoto(histId=%s, userId=%s)", histId, userId), e);
