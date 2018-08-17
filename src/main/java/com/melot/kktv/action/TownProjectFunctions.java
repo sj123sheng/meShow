@@ -393,6 +393,7 @@ public class TownProjectFunctions {
             }else{
                 result.addProperty("isOwer",0);
             }
+
             String areaName = locationService.getAreaNameByAreaCode(areaCode);
             if(!org.springframework.util.StringUtils.isEmpty(areaName)){
                 result.addProperty("areaName",areaName);
@@ -414,14 +415,8 @@ public class TownProjectFunctions {
                     logger.error("parse birthday error birthday:"+townUserInfoDTO.getBirthday()+",ex:",ex);
                 }
             }
-            List<UserTagRelationDTO> list =  tagService.getUserTagList(targetUserId);
-            if(!CollectionUtils.isEmpty(list)){
-                StringBuilder tag = new StringBuilder();
-                for(UserTagRelationDTO item : list){
-                    tag.append(item.getTagName()).append(",");
-                }
-                result.addProperty("tag",tag.toString().substring(0,tag.length()-1));
-            }
+            String tag = this.getUserTag(targetUserId);
+            result.addProperty("tag",tag);
         }
 
         int unreadMsgCount = townMessageService.getUnreadMessageCount(targetUserId);
@@ -439,6 +434,21 @@ public class TownProjectFunctions {
 
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
+    }
+
+    private String getUserTag(int userId){
+        List<UserTagRelationDTO> list =  tagService.getUserTagList(userId);
+        if(!CollectionUtils.isEmpty(list)){
+            StringBuilder tag = new StringBuilder();
+            for(UserTagRelationDTO item : list){
+                if(!org.springframework.util.StringUtils.isEmpty(item.getTagName())){
+                    tag.append(item.getTagName()).append(",");
+                }
+            }
+            return tag.toString().substring(0,tag.length()-1);
+        }else{
+            return "";
+        }
     }
 
     private int getAge(Date birthday) {
