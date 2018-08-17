@@ -9,6 +9,7 @@ import com.melot.kk.module.resource.constant.ECloudTypeConstant;
 import com.melot.kk.module.resource.constant.FileTypeConstant;
 import com.melot.kk.module.resource.constant.ResourceStateConstant;
 import com.melot.kk.module.resource.service.ResourceNewService;
+import com.melot.kk.town.api.constant.PraiseTypeEnum;
 import com.melot.kk.town.api.constant.UserRoleTypeEnum;
 import com.melot.kk.town.api.constant.WorkCheckStatusEnum;
 import com.melot.kk.town.api.constant.WorkTypeEnum;
@@ -27,7 +28,6 @@ import com.melot.kktv.model.Room;
 import com.melot.kktv.service.UserRelationService;
 import com.melot.kktv.service.WorkService;
 import com.melot.kktv.util.*;
-import org.apache.commons.lang3.time.DateUtils;
 import org.apache.log4j.Logger;
 import org.springframework.util.CollectionUtils;
 
@@ -316,6 +316,7 @@ public class TownProjectFunctions {
                 for(ResTownWorkDTO townWorkDTO : townWorkDTOS) {
                     JsonObject townWork = new JsonObject();
                     townWork.addProperty("workId", townWorkDTO.getWorkId());
+                    townWork.addProperty("checkStatus", townWorkDTO.getCheckStatus());
                     townWork.addProperty("praiseNum", townWorkDTO.getPraiseNum());
                     townWork.addProperty("viewsNum", townWorkDTO.getViewsNum());
                     townWork.addProperty("coverUrl", townWorkDTO.getCoverUrl());
@@ -976,7 +977,7 @@ public class TownProjectFunctions {
 
         try {
 
-            Result<Boolean> deleteResult = townWorkService.deletePraiseWork(userId, workId);
+            Result<Boolean> deleteResult = townWorkService.deleteWork(userId, workId);
             if(!deleteResult.getCode().equals(CommonStateCode.SUCCESS)) {
                 result.addProperty("TagCode", deleteResult.getCode());
                 return result;
@@ -1045,7 +1046,15 @@ public class TownProjectFunctions {
                     result.addProperty("portrait", getPortrait(userProfile));
                 }
                 result.addProperty("praiseNum", townWorkDTO.getPraiseNum());
-                result.addProperty("followed", UserRelationService.isFollowed(userId, workUserId));
+                int followStatus = 2;
+                boolean followed = UserRelationService.isFollowed(userId, workUserId);
+                boolean beFollowed = UserRelationService.isFollowed(workUserId, userId);
+                if(followed && beFollowed) {
+                    followStatus = 3;
+                } else if(followed) {
+                    followStatus = 1;
+                }
+                result.addProperty("followStatus", followStatus);
             } else {
                 result.addProperty("workStatus", 3);
             }
@@ -1352,6 +1361,247 @@ public class TownProjectFunctions {
         }
     }
 
+    /**
+     * 获取消息信息【51120125】
+     */
+    public JsonObject getMessageInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, USER_ID.getId(), 0, USER_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+
+            TownMessageInfoDTO messageInfo = townMessageService.getMessageInfo(userId);
+            if(messageInfo != null) {
+                result.addProperty("followUnreadNum", messageInfo.getFollowUnreadNum());
+                result.addProperty("praiseUnreadNum", messageInfo.getPraiseUnreadNum());
+                result.addProperty("commentUnreadNum", messageInfo.getCommentUnreadNum());
+                if(messageInfo.getSystemMessage() != null) {
+                    JsonObject systemMessage = new JsonObject();
+                    TownSystemMessageDTO systemMessageDTO = messageInfo.getSystemMessage();
+                    systemMessage.addProperty("messageTitle", systemMessageDTO.getMessageTitle());
+                    systemMessage.addProperty("messageContent", systemMessageDTO.getMessageContent());
+                    if(messageInfo.getSystemUnreadNum() > 0) {
+                        systemMessage.addProperty("unread", true);
+                    }else {
+                        systemMessage.addProperty("unread", false);
+                    }
+                    systemMessage.addProperty("sendTime", changeTimeToString(systemMessageDTO.getCreateTime()));
+                    result.add("systemMessage", systemMessage);
+                }
+            }
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error getMessageInfo()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 	获取关注消息列表【51120126】
+     */
+    public JsonObject getFollowMessageList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId, pageIndex, countPerPage;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, USER_ID.getId(), 0, USER_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
+            countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 10, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+
+            Page<UserFollowMessageDTO> page = townMessageService.getFollowMessageList(userId, pageIndex, countPerPage);
+            JsonArray messageList = new JsonArray();
+            if(page != null && page.getList() != null && page.getList().size() > 0) {
+                List<UserFollowMessageDTO> list = page.getList();
+                for(UserFollowMessageDTO record : list) {
+                    JsonObject messageJsonObject = new JsonObject();
+                    int messageUserId = record.getUserId();
+                    messageJsonObject.addProperty("userId", messageUserId);
+                    UserProfile userProfile = kkUserService.getUserProfile(messageUserId);
+                    if(userProfile != null) {
+                        messageJsonObject.addProperty("portrait", getPortrait(userProfile));
+                        messageJsonObject.addProperty("nickname", userProfile.getNickName());
+                    }
+                    messageJsonObject.addProperty("followTime", changeTimeToString(record.getFollowTime()));
+                    messageList.add(messageJsonObject);
+                }
+            }
+
+            result.add("messageList", messageList);
+            result.addProperty("messageCount", page.getCount());
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error getFollowMessageList()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 	获取点赞消息列表【51120127】
+     */
+    public JsonObject getPraiseMessageList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId, pageIndex, countPerPage;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, USER_ID.getId(), 0, USER_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
+            countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 10, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+
+            Page<UserPraiseMessageDTO> page = townMessageService.getPraiseMessageList(userId, pageIndex, countPerPage);
+            JsonArray messageList = new JsonArray();
+            if(page != null && page.getList() != null && page.getList().size() > 0) {
+                List<UserPraiseMessageDTO> list = page.getList();
+                for(UserPraiseMessageDTO record : list) {
+                    JsonObject messageJsonObject = new JsonObject();
+
+                    int messageUserId = record.getUserId();
+                    messageJsonObject.addProperty("userId", messageUserId);
+                    UserProfile userProfile = kkUserService.getUserProfile(messageUserId);
+                    if(userProfile != null) {
+                        messageJsonObject.addProperty("portrait", getPortrait(userProfile));
+                        messageJsonObject.addProperty("nickname", userProfile.getNickName());
+                    }
+                    messageJsonObject.addProperty("workId", record.getWorkId());
+                    messageJsonObject.addProperty("coverUrl",record.getCoverUrl());
+                    int praiseType = record.getPraiseType();
+                    messageJsonObject.addProperty("praiseType", praiseType);
+                    if(praiseType == PraiseTypeEnum.COMMENT_PRAISE) {
+                        messageJsonObject.addProperty("commentId", record.getCommentId());
+                        messageJsonObject.addProperty("commentContent",record.getCommentContent());
+                    }
+                    messageJsonObject.addProperty("praiseTime", changeTimeToString(record.getPraiseTime()));
+                    messageList.add(messageJsonObject);
+                }
+            }
+
+            result.add("messageList", messageList);
+            result.addProperty("messageCount", page.getCount());
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error getPraiseMessageList()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 	获取系统消息列表【51120129】
+     */
+    public JsonObject getSystemMessageList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId, pageIndex, countPerPage;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, USER_ID.getId(), 0, USER_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
+            countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 10, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+
+            Page<TownSystemMessageDTO> page = townMessageService.getSystemMessageList(userId, pageIndex, countPerPage);
+            JsonArray messageList = new JsonArray();
+            if(page != null && page.getList() != null && page.getList().size() > 0) {
+                List<TownSystemMessageDTO> list = page.getList();
+                for(TownSystemMessageDTO record : list) {
+                    JsonObject messageJsonObject = new JsonObject();
+
+                    messageJsonObject.addProperty("messageTitle", record.getMessageTitle());
+                    messageJsonObject.addProperty("messageContent",record.getMessageContent());
+                    messageJsonObject.addProperty("sendTime", changeTimeToString(record.getCreateTime()));
+                    messageList.add(messageJsonObject);
+                }
+            }
+
+            result.add("messageList", messageList);
+            result.addProperty("messageCount", page.getCount());
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error getSystemMessageList()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    private String changeTimeToString(Date time) {
+
+        String timeDesc;
+        Date currentTime = DateUtils.getCurrentDate();
+        long differSecond = (currentTime.getTime() - time.getTime()) / 1000;
+        System.out.println(differSecond);
+        if(differSecond < 60) {
+            timeDesc = "刚刚";
+        } else if(differSecond < 3600) {
+            timeDesc = differSecond / 60 + "分钟前";
+        } else if(differSecond < 3600 * 24) {
+            timeDesc = differSecond / 3600 + "小时前";
+        } else if(differSecond < 3600 * 48) {
+            timeDesc = "昨天";
+        } else if(DateUtils.getYear(currentTime) == DateUtils.getYear(time)) {
+            timeDesc = DateUtils.format(time, "M-d");
+        } else {
+            timeDesc = DateUtils.format(time, "yyyy-M-d");
+        }
+        return timeDesc;
+    }
 
     /**
      * 更新用户信息(51120130)
@@ -1411,4 +1661,5 @@ public class TownProjectFunctions {
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
+
 }
