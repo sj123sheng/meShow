@@ -429,8 +429,10 @@ public class TownProjectFunctions {
             if(roomInfo.getRoomSource() != null){
                 result.addProperty("roomSource",roomInfo.getRoomSource());
             }
-            if(roomInfo.getLiveType() != null){
-                result.addProperty("liveType",roomInfo.getLiveType());
+            if(roomInfo.getLiveEndTime()!=null && roomInfo.getLiveEndTime()>0){
+                result.addProperty("liveStatus",0);
+            }else{
+                result.addProperty("liveStatus",1);
             }
         }
 
@@ -569,8 +571,10 @@ public class TownProjectFunctions {
                 if(roomInfo.getRoomSource() != null){
                     json.addProperty("roomSource",roomInfo.getRoomSource());
                 }
-                if(roomInfo.getLiveType() != null){
-                    json.addProperty("liveType",roomInfo.getLiveType());
+                if(roomInfo.getLiveEndtime()!=null){
+                    result.addProperty("liveStatus",0);
+                }else{
+                    result.addProperty("liveStatus",1);
                 }
                 jRoomList.add(json);
             }
@@ -667,8 +671,10 @@ public class TownProjectFunctions {
                     if(room.getRoomSource() != null){
                         roomJson.addProperty("roomSource",room.getRoomSource());
                     }
-                    if(room.getLiveType() != null){
-                        roomJson.addProperty("liveType",room.getLiveType());
+                    if(room.getLiveendtime() != null){
+                        roomJson.addProperty("liveStatus",0);
+                    }else{
+                        roomJson.addProperty("liveStatus",1);
                     }
 
                     jRoomList.add(roomJson);
@@ -751,8 +757,10 @@ public class TownProjectFunctions {
                         if(roomInfo.getRoomSource() != null){
                             json.addProperty("roomSource",roomInfo.getRoomSource());
                         }
-                        if(roomInfo.getLiveType() != null){
-                            json.addProperty("liveType",roomInfo.getLiveType());
+                        if(roomInfo.getLiveEndTime()!=null && roomInfo.getLiveEndTime()>0){
+                            result.addProperty("liveStatus",0);
+                        }else{
+                            result.addProperty("liveStatus",1);
                         }
                     }
                     jsonArray.add(json);
@@ -1311,8 +1319,10 @@ public class TownProjectFunctions {
                         if(roomInfo.getRoomSource() != null){
                             json.addProperty("roomSource",roomInfo.getRoomSource());
                         }
-                        if(roomInfo.getLiveType() != null){
-                            json.addProperty("liveType",roomInfo.getLiveType());
+                        if(roomInfo.getLiveEndTime()!=null && roomInfo.getLiveEndTime()>0){
+                            result.addProperty("liveStatus",0);
+                        }else{
+                            result.addProperty("liveStatus",1);
                         }
                     }
                     jsonArray.add(json);
