@@ -393,6 +393,10 @@ public class TownProjectFunctions {
             }else{
                 result.addProperty("isOwer",0);
             }
+            String areaName = locationService.getAreaNameByAreaCode(areaCode);
+            if(!org.springframework.util.StringUtils.isEmpty(areaName)){
+                result.addProperty("areaName",areaName);
+            }
         }
 
         TownUserInfoDTO townUserInfoDTO =  townUserService.getUserInfo(targetUserId);
@@ -409,10 +413,6 @@ public class TownProjectFunctions {
                 } catch (ParseException ex){
                     logger.error("parse birthday error birthday:"+townUserInfoDTO.getBirthday()+",ex:",ex);
                 }
-            }
-            if(townUserInfoDTO.getLastAreaCode()!=null){
-                String areaName = locationService.getAreaNameByAreaCode(townUserInfoDTO.getLastAreaCode());
-                result.addProperty("areaName",areaName);
             }
             List<UserTagRelationDTO> list =  tagService.getUserTagList(targetUserId);
             if(!CollectionUtils.isEmpty(list)){
