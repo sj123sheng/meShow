@@ -1034,7 +1034,8 @@ public class TownProjectFunctions {
             if(townWorkDTO != null) {
                 int checkStatus = townWorkDTO.getCheckStatus();
                 boolean isOffShelf = townWorkDTO.getIsOffShelf();
-                if(isOwner || (checkStatus == WorkCheckStatusEnum.CHECK_PASS && !isOffShelf)) {
+                int workUserId = townWorkDTO.getUserId();
+                if((isOwner && userId == workUserId) || (checkStatus == WorkCheckStatusEnum.CHECK_PASS && !isOffShelf)) {
                     result.addProperty("workStatus", 1);
                 } else if(checkStatus == WorkCheckStatusEnum.WAIT_CHECK) {
                     result.addProperty("workStatus", 2);
@@ -1048,7 +1049,6 @@ public class TownProjectFunctions {
                 result.addProperty("imageUrls", townWorkDTO.getImageUrls());
                 result.addProperty("topicId", townWorkDTO.getTopicId());
                 result.addProperty("topicName", townWorkDTO.getTopicName());
-                int workUserId = townWorkDTO.getUserId();
                 result.addProperty("userId", workUserId);
                 UserProfile userProfile = kkUserService.getUserProfile(workUserId);
                 if(userProfile != null) {
