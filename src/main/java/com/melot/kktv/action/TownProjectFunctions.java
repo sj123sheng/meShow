@@ -432,8 +432,10 @@ public class TownProjectFunctions {
             if(roomInfo.getRoomSource() != null){
                 result.addProperty("roomSource",roomInfo.getRoomSource());
             }
-            if(roomInfo.getLiveType() != null){
-                result.addProperty("liveType",roomInfo.getLiveType());
+            if(roomInfo.getLiveEndTime()!=null && roomInfo.getLiveEndTime()>0){
+                result.addProperty("liveStatus",0);
+            }else{
+                result.addProperty("liveStatus",1);
             }
         }
 
@@ -572,8 +574,10 @@ public class TownProjectFunctions {
                 if(roomInfo.getRoomSource() != null){
                     json.addProperty("roomSource",roomInfo.getRoomSource());
                 }
-                if(roomInfo.getLiveType() != null){
-                    json.addProperty("liveType",roomInfo.getLiveType());
+                if(roomInfo.getLiveEndtime()!=null){
+                    result.addProperty("liveStatus",0);
+                }else{
+                    result.addProperty("liveStatus",1);
                 }
                 jRoomList.add(json);
             }
@@ -670,8 +674,10 @@ public class TownProjectFunctions {
                     if(room.getRoomSource() != null){
                         roomJson.addProperty("roomSource",room.getRoomSource());
                     }
-                    if(room.getLiveType() != null){
-                        roomJson.addProperty("liveType",room.getLiveType());
+                    if(room.getLiveendtime() != null){
+                        roomJson.addProperty("liveStatus",0);
+                    }else{
+                        roomJson.addProperty("liveStatus",1);
                     }
 
                     jRoomList.add(roomJson);
@@ -754,8 +760,10 @@ public class TownProjectFunctions {
                         if(roomInfo.getRoomSource() != null){
                             json.addProperty("roomSource",roomInfo.getRoomSource());
                         }
-                        if(roomInfo.getLiveType() != null){
-                            json.addProperty("liveType",roomInfo.getLiveType());
+                        if(roomInfo.getLiveEndTime()!=null && roomInfo.getLiveEndTime()>0){
+                            result.addProperty("liveStatus",0);
+                        }else{
+                            result.addProperty("liveStatus",1);
                         }
                     }
                     jsonArray.add(json);
@@ -1089,7 +1097,8 @@ public class TownProjectFunctions {
             if(townWorkDTO != null) {
                 int checkStatus = townWorkDTO.getCheckStatus();
                 boolean isOffShelf = townWorkDTO.getIsOffShelf();
-                if(isOwner || (checkStatus == WorkCheckStatusEnum.CHECK_PASS && !isOffShelf)) {
+                int workUserId = townWorkDTO.getUserId();
+                if((isOwner && userId == workUserId) || (checkStatus == WorkCheckStatusEnum.CHECK_PASS && !isOffShelf)) {
                     result.addProperty("workStatus", 1);
                 } else if(checkStatus == WorkCheckStatusEnum.WAIT_CHECK) {
                     result.addProperty("workStatus", 2);
@@ -1103,7 +1112,6 @@ public class TownProjectFunctions {
                 result.addProperty("imageUrls", townWorkDTO.getImageUrls());
                 result.addProperty("topicId", townWorkDTO.getTopicId());
                 result.addProperty("topicName", townWorkDTO.getTopicName());
-                int workUserId = townWorkDTO.getUserId();
                 result.addProperty("userId", workUserId);
                 UserProfile userProfile = kkUserService.getUserProfile(workUserId);
                 if(userProfile != null) {
@@ -1374,8 +1382,10 @@ public class TownProjectFunctions {
                         if(roomInfo.getRoomSource() != null){
                             json.addProperty("roomSource",roomInfo.getRoomSource());
                         }
-                        if(roomInfo.getLiveType() != null){
-                            json.addProperty("liveType",roomInfo.getLiveType());
+                        if(roomInfo.getLiveEndTime()!=null && roomInfo.getLiveEndTime()>0){
+                            result.addProperty("liveStatus",0);
+                        }else{
+                            result.addProperty("liveStatus",1);
                         }
                     }
                     jsonArray.add(json);
@@ -1685,11 +1695,13 @@ public class TownProjectFunctions {
         String birthday;
         int gender;
         String introduction;
+        String nickname;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "03040002", 1, Integer.MAX_VALUE);
             gender=CommonUtil.getJsonParamInt(jsonObject, "gender", -1, null, 0, 1);
             birthday = CommonUtil.getJsonParamString(jsonObject, "birthday", null, null, 1, 20);
             introduction = CommonUtil.getJsonParamString(jsonObject, "name", null, null, 1, 100);
+            nickname = CommonUtil.getJsonParamString(jsonObject, "nickname", null, null, 1, 100);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -1718,6 +1730,15 @@ public class TownProjectFunctions {
                 userProfile.setGender(gender);
                 Map<String,Object> map = new HashMap<>();
                 map.put("gender",gender);
+                kkUserService.updateUserProfile(userId,map);
+            }
+        }
+        if(!org.springframework.util.StringUtils.isEmpty(nickname)){
+            UserProfile userProfile = kkUserService.getUserProfile(userId);
+            if(userProfile != null){
+                userProfile.setGender(gender);
+                Map<String,Object> map = new HashMap<>();
+                map.put("nickname",nickname);
                 kkUserService.updateUserProfile(userId,map);
             }
         }
