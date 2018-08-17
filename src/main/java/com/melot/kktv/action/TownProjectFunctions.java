@@ -355,6 +355,7 @@ public class TownProjectFunctions {
             result.addProperty("TagCode", TagCodeEnum.USER_NOT_EXIST);
             return result;
         }
+
         result.addProperty("userId",userProfile.getUserId());
         result.addProperty("nickname",userProfile.getNickName());
         if(userProfile.getPortrait()!=null){
@@ -372,7 +373,8 @@ public class TownProjectFunctions {
         result.addProperty("isFollow",isFollow);
 
         if(!StringUtils.isEmpty(areaCode)){
-            TownUserRoleDTO townUserRoleDTO = townUserRoleService.getUserAreaRole(targetUserId,areaCode,UserRoleTypeEnum.OWER);
+            TownUserRoleDTO townUserRoleDTO = townUserRoleService.getUserAreaRole(targetUserId,areaCode,
+                    UserRoleTypeEnum.OWER);
             if(townUserRoleDTO != null){
                 result.addProperty("isOwer",1);
             }else{
