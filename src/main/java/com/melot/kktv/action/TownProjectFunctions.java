@@ -1344,7 +1344,7 @@ public class TownProjectFunctions {
 
 
     /**
-     * 更新用户信息
+     * 更新用户信息(51120130)
      * @param jsonObject
      * @param checkTag
      * @param request
