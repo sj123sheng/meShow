@@ -335,15 +335,17 @@ public class TownProjectFunctions {
     public JsonObject getUserProfile(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
         int userId;
+        int targetUserId;
         String areaCode;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            targetUserId = CommonUtil.getJsonParamInt(jsonObject, "targetUserId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
             areaCode =  CommonUtil.getJsonParamString(jsonObject, "areaCode", null, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
         }
-        UserProfile userProfile = kkUserService.getUserProfile(userId);
+        UserProfile userProfile = kkUserService.getUserProfile(targetUserId);
         if(userProfile == null){
             result.addProperty("TagCode", TagCodeEnum.USER_NOT_EXIST);
             return result;
@@ -355,14 +357,17 @@ public class TownProjectFunctions {
         }
         result.addProperty("gender",userProfile.getGender());
 
-        int followsCount = UserRelationService.getFollowsCount(userId);
+        int followsCount = UserRelationService.getFollowsCount(targetUserId);
         result.addProperty("followCount",followsCount);
 
-        int fansCount = UserRelationService.getFansCount(userId);
+        int fansCount = UserRelationService.getFansCount(targetUserId);
         result.addProperty("fansCount",fansCount);
 
+        boolean isFollow = UserRelationService.isFollowed(userId,targetUserId);
+        result.addProperty("isFollow",isFollow);
+
         if(!StringUtils.isEmpty(areaCode)){
-            TownUserRoleDTO townUserRoleDTO = townUserRoleService.getUserAreaRole(userId,areaCode,UserRoleTypeEnum.OWER);
+            TownUserRoleDTO townUserRoleDTO = townUserRoleService.getUserAreaRole(targetUserId,areaCode,UserRoleTypeEnum.OWER);
             if(townUserRoleDTO != null){
                 result.addProperty("isOwer",1);
             }else{
@@ -370,7 +375,7 @@ public class TownProjectFunctions {
             }
         }
 
-        TownUserInfoDTO townUserInfoDTO =  townUserService.getUserInfo(userId);
+        TownUserInfoDTO townUserInfoDTO =  townUserService.getUserInfo(targetUserId);
         if(townUserInfoDTO != null){
             if(townUserInfoDTO.getIntroduction()!=null){
                 result.addProperty("introduction",townUserInfoDTO.getIntroduction());
@@ -385,7 +390,7 @@ public class TownProjectFunctions {
                     logger.error("parse birthday error birthday:"+townUserInfoDTO.getBirthday()+",ex:",ex);
                 }
             }
-            List<UserTagRelationDTO> list =  tagService.getUserTagList(userId);
+            List<UserTagRelationDTO> list =  tagService.getUserTagList(targetUserId);
             if(!CollectionUtils.isEmpty(list)){
                 StringBuilder tag = new StringBuilder();
                 for(UserTagRelationDTO item : list){
@@ -395,10 +400,10 @@ public class TownProjectFunctions {
             }
         }
 
-        int unreadMsgCount = townMessageService.getUnreadMessageCount(userId);
-        result.addProperty("msgCount",unreadMsgCount);
+        int unreadMsgCount = townMessageService.getUnreadMessageCount(targetUserId);
+        result.addProperty("unreadMsgCount",unreadMsgCount);
 
-        com.melot.kkcore.actor.api.RoomInfo roomInfo = actorService.getRoomInfoById(userId);
+        com.melot.kkcore.actor.api.RoomInfo roomInfo = actorService.getRoomInfoById(targetUserId);
         if(roomInfo != null){
             if(roomInfo.getRoomSource() != null){
                 result.addProperty("roomSource",roomInfo.getRoomSource());
