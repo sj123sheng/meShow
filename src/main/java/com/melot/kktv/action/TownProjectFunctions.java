@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.common.melot_utils.StringUtils;
+import com.melot.kk.location.api.service.LocationService;
 import com.melot.kk.module.resource.constant.ECloudTypeConstant;
 import com.melot.kk.module.resource.constant.FileTypeConstant;
 import com.melot.kk.module.resource.constant.ResourceStateConstant;
@@ -68,6 +69,9 @@ public class TownProjectFunctions {
 
     @Resource
     private TownMessageService townMessageService;
+
+    @Resource
+    private LocationService locationService;
 
     private static String SEPARATOR = "/";
 
@@ -369,8 +373,17 @@ public class TownProjectFunctions {
         int fansCount = UserRelationService.getFansCount(targetUserId);
         result.addProperty("fansCount",fansCount);
 
-        boolean isFollow = UserRelationService.isFollowed(userId,targetUserId);
-        result.addProperty("isFollow",isFollow);
+        boolean userFollowTarget = UserRelationService.isFollowed(userId,targetUserId);
+        boolean targetFollowUser = UserRelationService.isFollowed(targetUserId,userId);
+        if(userFollowTarget && targetFollowUser){
+            result.addProperty("isFollow",1);
+        }else{
+           if(userFollowTarget){
+               result.addProperty("isFollow",0);
+           }else{
+               result.addProperty("isFollow",-1);
+           }
+        }
 
         if(!StringUtils.isEmpty(areaCode)){
             TownUserRoleDTO townUserRoleDTO = townUserRoleService.getUserAreaRole(targetUserId,areaCode,
@@ -396,6 +409,10 @@ public class TownProjectFunctions {
                 } catch (ParseException ex){
                     logger.error("parse birthday error birthday:"+townUserInfoDTO.getBirthday()+",ex:",ex);
                 }
+            }
+            if(townUserInfoDTO.getLastAreaCode()!=null){
+                String areaName = locationService.getAreaNameByAreaCode(townUserInfoDTO.getLastAreaCode());
+                result.addProperty("areaName",areaName);
             }
             List<UserTagRelationDTO> list =  tagService.getUserTagList(targetUserId);
             if(!CollectionUtils.isEmpty(list)){
@@ -1323,5 +1340,65 @@ public class TownProjectFunctions {
             result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             return result;
         }
+    }
+
+
+    /**
+     * 更新用户信息
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject updateUserProfile(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId;
+        String birthday;
+        int gender;
+        String introduction;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "03040002", 1, Integer.MAX_VALUE);
+            gender=CommonUtil.getJsonParamInt(jsonObject, "gender", -1, null, 0, 1);
+            birthday = CommonUtil.getJsonParamString(jsonObject, "birthday", null, null, 1, 20);
+            introduction = CommonUtil.getJsonParamString(jsonObject, "name", null, null, 1, 100);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+        TownUserInfoDTO townUserInfoDTO = townUserService.getUserInfo(userId);
+        if(townUserInfoDTO == null){
+            result.addProperty("TagCode",TagCodeEnum.USER_NOT_EXIST);
+            return result;
+        }
+        TownUserInfoParam townUserInfoParam = BeanMapper.map(townUserInfoDTO,TownUserInfoParam.class);
+        if(!org.springframework.util.StringUtils.isEmpty(birthday)){
+            townUserInfoParam.setBirthday(birthday);
+        }
+        if(!org.springframework.util.StringUtils.isEmpty(introduction)){
+            townUserInfoParam.setIntroduction(introduction);
+        }
+        boolean success = townUserService.saveUserInfo(townUserInfoParam);
+        if(!success){
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+
+        if(gender > -1){
+            UserProfile userProfile = kkUserService.getUserProfile(userId);
+            if(userProfile != null){
+                userProfile.setGender(gender);
+                Map<String,Object> map = new HashMap<>();
+                map.put("gender",gender);
+                kkUserService.updateUserProfile(userId,map);
+            }
+        }
+
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
     }
 }
