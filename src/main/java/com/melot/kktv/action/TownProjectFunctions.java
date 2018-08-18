@@ -1045,10 +1045,16 @@ public class TownProjectFunctions {
                 result.addProperty("workType", townWorkDTO.getWorkType());
                 result.addProperty("isRecommend", townWorkDTO.getIsRecommend());
                 result.addProperty("coverUrl", townWorkDTO.getCoverUrl());
-                result.addProperty("videoUrl", townWorkDTO.getVideoUrl());
-                result.addProperty("imageUrls", townWorkDTO.getImageUrls());
-                result.addProperty("topicId", townWorkDTO.getTopicId());
-                result.addProperty("topicName", townWorkDTO.getTopicName());
+                if(StringUtils.isNotEmpty(townWorkDTO.getVideoUrl())) {
+                    result.addProperty("videoUrl", townWorkDTO.getVideoUrl());
+                }
+                if(StringUtils.isNotEmpty(townWorkDTO.getImageUrls())) {
+                    result.addProperty("imageUrls", townWorkDTO.getImageUrls());
+                }
+                if(townWorkDTO.getTopicId() != null) {
+                    result.addProperty("topicId", townWorkDTO.getTopicId());
+                    result.addProperty("topicName", townWorkDTO.getTopicName());
+                }
                 result.addProperty("userId", workUserId);
                 UserProfile userProfile = kkUserService.getUserProfile(workUserId);
                 if(userProfile != null) {
