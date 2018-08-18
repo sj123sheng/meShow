@@ -1711,7 +1711,8 @@ public class TownProjectFunctions {
             result.addProperty("TagCode",TagCodeEnum.USER_NOT_EXIST);
             return result;
         }
-        TownUserInfoParam townUserInfoParam = BeanMapper.map(townUserInfoDTO,TownUserInfoParam.class);
+        TownUserInfoParam townUserInfoParam = new TownUserInfoParam();
+        townUserInfoParam.setUserId(userId);
         if(!org.springframework.util.StringUtils.isEmpty(birthday)){
             townUserInfoParam.setBirthday(birthday);
         }
