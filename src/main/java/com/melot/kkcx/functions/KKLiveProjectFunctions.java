@@ -5,6 +5,8 @@ import com.google.gson.JsonObject;
 import com.melot.kk.liveproject.api.dto.LiveProjectTaskDTO;
 import com.melot.kk.liveproject.api.dto.ResPrivatePhotoDTO;
 import com.melot.kk.liveproject.api.service.LiveProjectService;
+import com.melot.kkcore.user.api.UserProfile;
+import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ParameterKeys;
 import com.melot.kktv.util.TagCodeEnum;
@@ -40,6 +42,9 @@ public class KKLiveProjectFunctions {
 
     @Resource
     RoomGiftService roomGiftService;
+
+    @Resource
+    KkUserService kkUserService;
 
     /**
      * 51120201
@@ -83,7 +88,7 @@ public class KKLiveProjectFunctions {
         if (privatePhotoListForUser != null) {
             JsonArray array = new JsonArray();
             JsonObject json;
-            JsonArray helpUserIds;
+            JsonArray helpUsers;
             for (ResPrivatePhotoDTO resPrivatePhotoDTO : privatePhotoListForUser) {
                 json = new JsonObject();
                 json.addProperty("photoId", resPrivatePhotoDTO.getPhotoId());
@@ -93,7 +98,7 @@ public class KKLiveProjectFunctions {
                 json.addProperty("unlockShareNum", resPrivatePhotoDTO.getUnlockShareNum());
                 json.addProperty("photoUrl", resPrivatePhotoDTO.getPhotoPath());
 
-                helpUserIds = new JsonArray();
+                helpUsers = new JsonArray();
                 // 游客不显示以下信息
                 if (userId != 0) {
                     if (resPrivatePhotoDTO.getCurrentUnlockNum() != null) {
@@ -102,13 +107,22 @@ public class KKLiveProjectFunctions {
                     if (resPrivatePhotoDTO.getUnlockState() != null) {
                         json.addProperty("isUnlock", resPrivatePhotoDTO.getUnlockState() > 0);
                     }
-                    if (resPrivatePhotoDTO.getHelpUnlockUserIds() != null) {
-                        for (Integer helpUserId : resPrivatePhotoDTO.getHelpUnlockUserIds()) {
-                            helpUserIds.add(helpUserId);
+                    if (CollectionUtils.isNotEmpty(resPrivatePhotoDTO.getHelpUnlockUserIds())) {
+                        JsonObject helpUser;
+                        List<UserProfile> userProfileList = kkUserService.getUserProfileBatch(resPrivatePhotoDTO.getHelpUnlockUserIds());
+                        if (CollectionUtils.isNotEmpty(userProfileList)) {
+                            for (UserProfile userProfile : userProfileList) {
+                                helpUser = new JsonObject();
+                                helpUser.addProperty("userId", userProfile.getUserId());
+                                if (userProfile.getPortrait() != null) {
+                                    helpUser.addProperty("userPortrait", userProfile.getPortrait());
+                                }
+                                helpUsers.add(helpUser);
+                            }
                         }
                     }
                 }
-                json.add("helpUserIds", helpUserIds);
+                json.add("helpUsers", helpUsers);
                 array.add(json);
             }
             result.add("photoList", array);
