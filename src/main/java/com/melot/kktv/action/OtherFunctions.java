@@ -1774,7 +1774,7 @@ public class OtherFunctions {
         List<NewUserBootPageConf> newUserBootpageConfList = newUserTaskService.getNewUserBootPage();
 		JsonArray jsonArray = new JsonArray();
         for(NewUserBootPageConf conf:newUserBootpageConfList){
-			if(hallPartService.getPartLiveCount(conf.getCataId())>=2){
+			if(conf.getType() != 0 || hallPartService.getPartLiveCount(conf.getCataId())>=2){
 				JsonObject json = new JsonObject();
 				json.addProperty("title",conf.getTitle());
 				json.addProperty("desc",conf.getDesc());
