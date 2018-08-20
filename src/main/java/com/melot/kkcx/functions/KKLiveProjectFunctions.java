@@ -185,13 +185,13 @@ public class KKLiveProjectFunctions {
             return result;
         }
 
-        String tagCode = "5112020302";
+        String tagCode = TagCodeEnum.MODULE_UNKNOWN_RESPCODE;
         try {
             if (liveProjectService.shareUnlockPrivatePhoto(histId, userId)) {
                 tagCode = TagCodeEnum.SUCCESS;
             } else {
                 log.info(String.format("Fail:shareUnlockPrivatePhoto(histId=%s, userId=%s)", histId, userId));
-                tagCode = "5112020303";
+                tagCode = "5112020304";
             }
         } catch (MelotModuleException e) {
             log.info(String.format("Fail:shareUnlockPrivatePhoto(histId=%s, userId=%s)", histId, userId), e);
@@ -201,10 +201,11 @@ public class KKLiveProjectFunctions {
                 tagCode = TagCodeEnum.INVALID_PARAMETERS;
             } else if (e.getErrCode() == 103) {
                 tagCode = "5112020302";
+            } else if (e.getErrCode() == 104) {
+                tagCode = "5112020303";
             }
         } catch (Exception e) {
             log.error(String.format("Error:shareUnlockPrivatePhoto(histId=%s, userId=%s)", histId, userId), e);
-            tagCode = TagCodeEnum.MODULE_UNKNOWN_RESPCODE;
         }
         result.addProperty(ParameterKeys.TAG_CODE, tagCode);
         return result;
@@ -364,6 +365,8 @@ public class KKLiveProjectFunctions {
                 tagCode = "5112020501";
             } else if (e.getErrCode() == 102) {
                 tagCode = "5112020502";
+            } else if (e.getErrCode() == 103) {
+                tagCode = TagCodeEnum.INVALID_PARAMETERS;
             }
         } catch (Exception e) {
             log.error("Error:getTaskConfiguration()", e);
