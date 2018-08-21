@@ -1856,6 +1856,7 @@ public class TownProjectFunctions {
                 }
             }
 
+            result.addProperty("commentCount", page.getCount());
             result.add("commentList", commentList);
             result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
