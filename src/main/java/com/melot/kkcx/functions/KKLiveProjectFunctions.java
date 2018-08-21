@@ -92,7 +92,6 @@ public class KKLiveProjectFunctions {
             for (ResPrivatePhotoDTO resPrivatePhotoDTO : privatePhotoListForUser) {
                 json = new JsonObject();
                 json.addProperty("photoId", resPrivatePhotoDTO.getPhotoId());
-                json.addProperty("photoTitle", resPrivatePhotoDTO.getTitleName());
                 json.addProperty("level", resPrivatePhotoDTO.getPhotoLevel());
                 json.addProperty("unlockPrice", resPrivatePhotoDTO.getUnlockPrice());
                 json.addProperty("unlockShareNum", resPrivatePhotoDTO.getUnlockShareNum());
