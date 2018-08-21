@@ -8,6 +8,7 @@ import com.melot.kk.liveproject.api.service.LiveProjectService;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.ParameterKeys;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.module.api.exceptions.MelotModuleException;
@@ -87,13 +88,13 @@ public class KKLiveProjectFunctions {
 
         if (privatePhotoListForUser != null) {
             JsonArray array = new JsonArray();
-            JsonObject json;
             for (ResPrivatePhotoDTO resPrivatePhotoDTO : privatePhotoListForUser) {
-                json = new JsonObject();
+                JsonObject json = new JsonObject();
                 photoToJson(json, userId, resPrivatePhotoDTO);
                 array.add(json);
             }
             result.add("photoList", array);
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
         }
         result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
         return result;
@@ -116,15 +117,15 @@ public class KKLiveProjectFunctions {
                 json.addProperty("isUnlock", resPrivatePhotoDTO.getUnlockState() > 0);
             }
             if (CollectionUtils.isNotEmpty(resPrivatePhotoDTO.getHelpUnlockUserIds())) {
-                JsonObject helpUser;
                 List<UserProfile> userProfileList = kkUserService.getUserProfileBatch(resPrivatePhotoDTO.getHelpUnlockUserIds());
                 if (CollectionUtils.isNotEmpty(userProfileList)) {
                     for (UserProfile userProfile : userProfileList) {
-                        helpUser = new JsonObject();
+                        JsonObject helpUser = new JsonObject();
                         helpUser.addProperty("userId", userProfile.getUserId());
                         if (userProfile.getPortrait() != null) {
                             helpUser.addProperty("userPortrait", userProfile.getPortrait());
                         }
+                        helpUser.addProperty("gender", userProfile.getGender());
                         helpUsers.add(helpUser);
                     }
                 }
@@ -323,8 +324,8 @@ public class KKLiveProjectFunctions {
 
         if (taskConfiguration != null) {
             JsonArray array = new JsonArray();
-            JsonObject json = new JsonObject();
             for (LiveProjectTaskDTO liveProjectTaskDTO : taskConfiguration) {
+                JsonObject json = new JsonObject();
                 json.addProperty("taskId", liveProjectTaskDTO.getTaskId());
                 json.addProperty("taskName", liveProjectTaskDTO.getTaskName());
                 json.addProperty("rewardGiftId", liveProjectTaskDTO.getRewardGiftId());
@@ -428,9 +429,8 @@ public class KKLiveProjectFunctions {
             }
             // 设置礼物配置
             if (CollectionUtils.isNotEmpty(catalogGiftDTO.getGiftDTOList())) {
-                JsonObject json;
                 for (GiftDTO giftDTO : catalogGiftDTO.getGiftDTOList()) {
-                    json = new JsonObject();
+                    JsonObject json = new JsonObject();
                     json.addProperty("giftId", giftDTO.getGiftId());
                     json.addProperty("giftName", giftDTO.getGiftName());
                     json.addProperty("unit", giftDTO.getUnit());
@@ -481,6 +481,7 @@ public class KKLiveProjectFunctions {
             ResPrivatePhotoDTO resPrivatePhotoDTO = liveProjectService.getPrivatePhotoForHelpUser(histId, userId == 0 ? null : userId);
             if (resPrivatePhotoDTO != null) {
                 photoToJson(result, userId, resPrivatePhotoDTO);
+                result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
                 tagCode = TagCodeEnum.SUCCESS;
             }
         } catch (MelotModuleException e) {
