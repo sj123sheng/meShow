@@ -9,12 +9,10 @@ import com.melot.kk.module.resource.constant.ECloudTypeConstant;
 import com.melot.kk.module.resource.constant.FileTypeConstant;
 import com.melot.kk.module.resource.constant.ResourceStateConstant;
 import com.melot.kk.module.resource.service.ResourceNewService;
-import com.melot.kk.town.api.constant.PraiseTypeEnum;
-import com.melot.kk.town.api.constant.UserRoleTypeEnum;
-import com.melot.kk.town.api.constant.WorkCheckStatusEnum;
-import com.melot.kk.town.api.constant.WorkTypeEnum;
+import com.melot.kk.town.api.constant.*;
 import com.melot.kk.town.api.dto.*;
 import com.melot.kk.town.api.param.TownUserInfoParam;
+import com.melot.kk.town.api.param.TownWorkCommentParam;
 import com.melot.kk.town.api.param.TownWorkParam;
 import com.melot.kk.town.api.service.*;
 import com.melot.kkcore.actor.service.ActorService;
@@ -72,6 +70,9 @@ public class TownProjectFunctions {
 
     @Resource
     private LocationService locationService;
+
+    @Resource
+    private TownCommentService townCommentService;
 
     private static String SEPARATOR = "/";
 
@@ -1556,7 +1557,11 @@ public class TownProjectFunctions {
                     messageJsonObject.addProperty("praiseType", praiseType);
                     if(praiseType == PraiseTypeEnum.COMMENT_PRAISE) {
                         messageJsonObject.addProperty("commentId", record.getCommentId());
+                        messageJsonObject.addProperty("commentMode", record.getCommentMode());
                         messageJsonObject.addProperty("commentContent",record.getCommentContent());
+                        if(record.getCommentMode() == CommentModeEnum.VOICE) {
+                            messageJsonObject.addProperty("voiceDuration", record.getVoiceDuration());
+                        }
                     }
                     messageJsonObject.addProperty("praiseTime", changeTimeToString(record.getPraiseTime()));
                     messageList.add(messageJsonObject);
@@ -1719,6 +1724,364 @@ public class TownProjectFunctions {
 
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
+    }
+
+    /**
+     * 	获取热评区评论列表【51120131】
+     */
+    public JsonObject getHotCommentList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        int workId;
+        try {
+            workId = CommonUtil.getJsonParamInt(jsonObject, WORK_ID.getId(), 0, WORK_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+
+            List<TownWorkCommentDTO> commentDTOS = townCommentService.getHotCommentList(workId);
+            JsonArray commentList = new JsonArray();
+            if(commentDTOS != null && commentDTOS.size() > 0) {
+                for(TownWorkCommentDTO record : commentDTOS) {
+                    JsonObject commentJsonObject = new JsonObject();
+                    int commentUserId = record.getUserId();
+                    commentJsonObject.addProperty("userId", commentUserId);
+                    UserProfile userProfile = kkUserService.getUserProfile(commentUserId);
+                    if(userProfile != null) {
+                        result.addProperty("portrait", getPortrait(userProfile));
+                        result.addProperty("nickname", userProfile.getNickName());
+                    }
+                    commentJsonObject.addProperty("identity", record.getIdentity());
+                    commentJsonObject.addProperty("commentId", record.getCommentId());
+                    commentJsonObject.addProperty("commentType", record.getCommentType());
+                    commentJsonObject.addProperty("commentMode", record.getCommentMode());
+                    commentJsonObject.addProperty("commentContent", record.getCommentContent());
+                    if(record.getCommentMode() == CommentModeEnum.VOICE) {
+                        commentJsonObject.addProperty("voiceDuration", record.getVoiceDuration());
+                    }
+                    if(record.getRefCommentId() != null) {
+                        int refCommentUserId = record.getRefUserId();
+                        commentJsonObject.addProperty("refUserId", refCommentUserId);
+                        UserProfile userProfile1 = kkUserService.getUserProfile(refCommentUserId);
+                        if(userProfile1 != null) {
+                            result.addProperty("refNickname", userProfile1.getNickName());
+                        }
+                        commentJsonObject.addProperty("refCommentId", record.getRefCommentId());
+                        commentJsonObject.addProperty("refCommentMode", record.getRefCommentMode());
+                        commentJsonObject.addProperty("refCommentContent", record.getRefCommentContent());
+                        if(record.getRefCommentMode() == CommentModeEnum.VOICE) {
+                            commentJsonObject.addProperty("refVoiceDuration", record.getRefVoiceDuration());
+                        }
+                    }
+                    commentJsonObject.addProperty("praiseNum", record.getPraiseNum());
+                    commentJsonObject.addProperty("commentTime", changeTimeToString(record.getCommentTime()));
+
+                    commentList.add(commentJsonObject);
+                }
+            }
+
+            result.add("commentList", commentList);
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error getHotCommentList()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 	获取全部评论列表【51120132】
+     */
+    public JsonObject getCommentList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        int workId, pageIndex, countPerPage;
+        try {
+            workId = CommonUtil.getJsonParamInt(jsonObject, WORK_ID.getId(), 0, WORK_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
+            countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 10, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+
+            Page<TownWorkCommentDTO> page = townCommentService.getCommentListByWorkId(workId, pageIndex, countPerPage);
+            JsonArray commentList = new JsonArray();
+            if(page != null && page.getList() != null && page.getList().size() > 0) {
+                List<TownWorkCommentDTO> commentDTOS = page.getList();
+                for(TownWorkCommentDTO record : commentDTOS) {
+                    JsonObject commentJsonObject = new JsonObject();
+                    int commentUserId = record.getUserId();
+                    commentJsonObject.addProperty("userId", commentUserId);
+                    UserProfile userProfile = kkUserService.getUserProfile(commentUserId);
+                    if(userProfile != null) {
+                        result.addProperty("portrait", getPortrait(userProfile));
+                        result.addProperty("nickname", userProfile.getNickName());
+                    }
+                    commentJsonObject.addProperty("identity", record.getIdentity());
+                    commentJsonObject.addProperty("commentId", record.getCommentId());
+                    commentJsonObject.addProperty("commentType", record.getCommentType());
+                    commentJsonObject.addProperty("commentMode", record.getCommentMode());
+                    commentJsonObject.addProperty("commentContent", record.getCommentContent());
+                    if(record.getCommentMode() == CommentModeEnum.VOICE) {
+                        commentJsonObject.addProperty("voiceDuration", record.getVoiceDuration());
+                    }
+                    if(record.getRefCommentId() != null) {
+                        int refCommentUserId = record.getRefUserId();
+                        commentJsonObject.addProperty("refUserId", refCommentUserId);
+                        UserProfile userProfile1 = kkUserService.getUserProfile(refCommentUserId);
+                        if(userProfile1 != null) {
+                            result.addProperty("refNickname", userProfile1.getNickName());
+                        }
+                        commentJsonObject.addProperty("refCommentId", record.getRefCommentId());
+                        commentJsonObject.addProperty("refCommentMode", record.getRefCommentMode());
+                        commentJsonObject.addProperty("refCommentContent", record.getRefCommentContent());
+                        if(record.getRefCommentMode() == CommentModeEnum.VOICE) {
+                            commentJsonObject.addProperty("refVoiceDuration", record.getRefVoiceDuration());
+                        }
+                    }
+                    commentJsonObject.addProperty("praiseNum", record.getPraiseNum());
+                    commentJsonObject.addProperty("commentTime", changeTimeToString(record.getCommentTime()));
+
+                    commentList.add(commentJsonObject);
+                }
+            }
+
+            result.add("commentList", commentList);
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error getCommentList()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 发布评论【51120133】
+     */
+    public JsonObject publishComment(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        String commentContent;
+        int userId, workId, voiceDuration;
+        long refCommentId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, USER_ID.getId(), 0, USER_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+            workId = CommonUtil.getJsonParamInt(jsonObject, WORK_ID.getId(), 0, WORK_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+            commentContent = CommonUtil.getJsonParamString(jsonObject, COMMENT_CONTENT.getId(), null, COMMENT_CONTENT.getErrorCode(), 1, Integer.MAX_VALUE);
+            refCommentId = CommonUtil.getJsonParamLong(jsonObject, "refCommentId", 0l, null, 1, Long.MAX_VALUE);
+            voiceDuration = CommonUtil.getJsonParamInt(jsonObject, "voiceDuration", 0, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+
+            TownWorkCommentParam commentParam = new TownWorkCommentParam();
+            commentParam.setUserId(userId);
+            commentParam.setWorkId(workId);
+            commentParam.setCommentContent(commentContent);
+            if(voiceDuration > 0) {
+                commentParam.setVoiceDuration(voiceDuration);
+            }
+            if(refCommentId > 0) {
+                commentParam.setRefCommentId(refCommentId);
+            }
+
+            Result<Boolean> publishResult = townCommentService.publishComment(commentParam);
+
+            if(publishResult == null || !publishResult.getCode().equals(CommonStateCode.SUCCESS)) {
+                result.addProperty("TagCode", publishResult.getCode());
+                return result;
+            }
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error publishComment()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 点赞评论【51120134】
+     */
+    public JsonObject praiseComment(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId;
+        long commentId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, USER_ID.getId(), 0, USER_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+            commentId = CommonUtil.getJsonParamLong(jsonObject, COMMENT_ID.getId(), 0, COMMENT_ID.getErrorCode(), 1, Long.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+
+            townCommentService.praiseComment(userId, commentId);
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error praiseComment()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 取消点赞评论【51120135】
+     */
+    public JsonObject cancelPraiseComment(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId;
+        long commentId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, USER_ID.getId(), 0, USER_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+            commentId = CommonUtil.getJsonParamLong(jsonObject, COMMENT_ID.getId(), 0, COMMENT_ID.getErrorCode(), 1, Long.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+
+            townCommentService.cancelPraiseComment(userId, commentId);
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error cancelPraiseComment()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 	获取作品页面的评论列表【51120136】
+     */
+    public JsonObject getWorkPageCommentList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        int workId;
+        try {
+            workId = CommonUtil.getJsonParamInt(jsonObject, WORK_ID.getId(), 0, WORK_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+
+            List<TownWorkCommentDTO> commentDTOS = townCommentService.getWorkPageCommentList(workId);
+            JsonArray commentList = new JsonArray();
+            if(commentDTOS != null && commentDTOS.size() > 0) {
+                for(TownWorkCommentDTO record : commentDTOS) {
+                    JsonObject commentJsonObject = new JsonObject();
+                    int commentUserId = record.getUserId();
+                    commentJsonObject.addProperty("userId", commentUserId);
+                    UserProfile userProfile = kkUserService.getUserProfile(commentUserId);
+                    if(userProfile != null) {
+                        result.addProperty("nickname", userProfile.getNickName());
+                    }
+                    String identity = record.getIdentity();
+                    boolean isAuthor = false;
+                    if(StringUtils.isNotEmpty(identity) && identity.equals("作者")) {
+                        isAuthor = true;
+                    }
+                    commentJsonObject.addProperty("isAuthor", isAuthor);
+                    commentJsonObject.addProperty("commentId", record.getCommentId());
+                    commentJsonObject.addProperty("commentMode", record.getCommentMode());
+                    commentJsonObject.addProperty("commentContent", record.getCommentContent());
+                    if(record.getCommentMode() == CommentModeEnum.VOICE) {
+                        commentJsonObject.addProperty("voiceDuration", record.getVoiceDuration());
+                    }
+                    commentJsonObject.addProperty("praiseNum", record.getPraiseNum());
+                    commentJsonObject.addProperty("commentTime", changeTimeToString(record.getCommentTime()));
+
+                    commentList.add(commentJsonObject);
+                }
+            }
+
+            result.add("commentList", commentList);
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error getWorkPageCommentList()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 设置评论违规【51120137】
+     */
+    public JsonObject setCommentViolation(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId;
+        long commentId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, USER_ID.getId(), 0, USER_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+            commentId = CommonUtil.getJsonParamLong(jsonObject, COMMENT_ID.getId(), 0, COMMENT_ID.getErrorCode(), 1, Long.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+
+            townCommentService.setCommentViolation(userId, commentId);
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error setCommentViolation()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
     }
 
 }
