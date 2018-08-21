@@ -2102,6 +2102,8 @@ public class TownProjectFunctions {
                 }
             }
 
+            long commentNum =  townCommentService.getCommentNum(workId);
+            result.addProperty("commentNum", commentNum);
             result.add("commentList", commentList);
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
