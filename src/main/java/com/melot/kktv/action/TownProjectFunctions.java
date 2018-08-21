@@ -2140,7 +2140,11 @@ public class TownProjectFunctions {
 
         try {
 
-            townCommentService.setCommentViolation(userId, commentId);
+            Result<Boolean> setResult = townCommentService.setCommentViolation(userId, commentId);
+            if(!setResult.getCode().equals(CommonStateCode.SUCCESS)) {
+                result.addProperty("TagCode", setResult.getCode());
+                return result;
+            }
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
         } catch (Exception e) {
