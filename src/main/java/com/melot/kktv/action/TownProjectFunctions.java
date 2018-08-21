@@ -1676,13 +1676,22 @@ public class TownProjectFunctions {
             result.addProperty("TagCode", e.getErrCode());
             return result;
         }
+
+        UserProfile userProfile = kkUserService.getUserProfile(userId);
+        if(userProfile == null){
+            result.addProperty("TagCode",TagCodeEnum.USER_NOT_EXIST);
+            return result;
+        }
+
         TownUserInfoDTO townUserInfoDTO = townUserService.getUserInfo(userId);
         if(townUserInfoDTO == null){
             result.addProperty("TagCode",TagCodeEnum.USER_NOT_EXIST);
             return result;
         }
+
         TownUserInfoParam townUserInfoParam = new TownUserInfoParam();
         townUserInfoParam.setUserId(userId);
+
         if(!org.springframework.util.StringUtils.isEmpty(birthday)){
             townUserInfoParam.setBirthday(birthday);
         }
@@ -1696,22 +1705,16 @@ public class TownProjectFunctions {
         }
 
         if(gender > -1){
-            UserProfile userProfile = kkUserService.getUserProfile(userId);
-            if(userProfile != null){
-                userProfile.setGender(gender);
-                Map<String,Object> map = new HashMap<>();
-                map.put("gender",gender);
-                kkUserService.updateUserProfile(userId,map);
-            }
+            userProfile.setGender(gender);
+            Map<String,Object> map = new HashMap<>();
+            map.put("gender",gender);
+            kkUserService.updateUserProfile(userId,map);
         }
         if(!org.springframework.util.StringUtils.isEmpty(nickname)){
-            UserProfile userProfile = kkUserService.getUserProfile(userId);
-            if(userProfile != null){
-                userProfile.setGender(gender);
-                Map<String,Object> map = new HashMap<>();
-                map.put("nickname",nickname);
-                kkUserService.updateUserProfile(userId,map);
-            }
+            userProfile.setGender(gender);
+            Map<String,Object> map = new HashMap<>();
+            map.put("nickname",nickname);
+            kkUserService.updateUserProfile(userId,map);
         }
 
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
