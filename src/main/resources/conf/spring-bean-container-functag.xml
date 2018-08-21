@@ -3072,12 +3072,37 @@
 		<constructor-arg name="t" ref="townProjectFunctions" />
 		<constructor-arg name="methodName" value="getSystemMessageList" />
 	</bean>
-
-
-
 	<bean id="51120130" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="townProjectFunctions" />
 		<constructor-arg name="methodName" value="updateUserProfile" />
+	</bean>
+    <bean id="51120131" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="townProjectFunctions" />
+        <constructor-arg name="methodName" value="getHotCommentList" />
+    </bean>
+	<bean id="51120132" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="townProjectFunctions" />
+		<constructor-arg name="methodName" value="getCommentList" />
+	</bean>
+	<bean id="51120133" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="townProjectFunctions" />
+		<constructor-arg name="methodName" value="publishComment" />
+	</bean>
+	<bean id="51120134" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="townProjectFunctions" />
+		<constructor-arg name="methodName" value="praiseComment" />
+	</bean>
+	<bean id="51120135" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="townProjectFunctions" />
+		<constructor-arg name="methodName" value="cancelPraiseComment" />
+	</bean>
+	<bean id="51120136" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="townProjectFunctions" />
+		<constructor-arg name="methodName" value="getWorkPageCommentList" />
+	</bean>
+	<bean id="51120137" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="townProjectFunctions" />
+		<constructor-arg name="methodName" value="setCommentViolation" />
 	</bean>
 
 	<!-- 微信直播小程序API -->

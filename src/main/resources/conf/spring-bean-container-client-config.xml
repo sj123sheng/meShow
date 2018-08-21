@@ -238,6 +238,7 @@
 	<kkrpc:reference id="townStarApplyInfoService" interface="com.melot.kk.town.api.service.TownStarApplyInfoService" version="1.0.0" />
 	<kkrpc:reference id="areaBannerService" interface="com.melot.kk.town.api.service.AreaBannerService" version="1.0.0" />
     <kkrpc:reference id="townMessageService" interface="com.melot.kk.town.api.service.TownMessageService" version="1.0.0" />
+	<kkrpc:reference id="townCommentService" interface="com.melot.kk.town.api.service.TownCommentService" version="1.0.0" />
 
     <!-- 微信直播小程序服务 -->
 	<kkrpc:reference id="liveProjectService" interface="com.melot.kk.liveproject.api.service.LiveProjectService" version="1.0.0"/>
