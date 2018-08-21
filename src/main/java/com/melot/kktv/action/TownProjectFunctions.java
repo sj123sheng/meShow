@@ -571,10 +571,18 @@ public class TownProjectFunctions {
                 if(roomInfo.getRoomSource() != null){
                     json.addProperty("roomSource",roomInfo.getRoomSource());
                 }
+
                 if(roomInfo.getLiveEndtime()!=null){
-                    result.addProperty("liveStatus",0);
+                    json.addProperty("liveStatus",0);
                 }else{
-                    result.addProperty("liveStatus",1);
+                    json.addProperty("liveStatus",1);
+                }
+
+                boolean isFollow = UserRelationService.isFollowed(roomInfo.getActorId(),userId);
+                if(isFollow){
+                    json.addProperty("isFollow",1);
+                }else{
+                    json.addProperty("isFollow",-1);
                 }
                 jRoomList.add(json);
             }
@@ -671,10 +679,18 @@ public class TownProjectFunctions {
                     if(room.getRoomSource() != null){
                         roomJson.addProperty("roomSource",room.getRoomSource());
                     }
+
                     if(room.getLiveendtime() != null){
                         roomJson.addProperty("liveStatus",0);
                     }else{
                         roomJson.addProperty("liveStatus",1);
+                    }
+
+                    boolean isFollow = UserRelationService.isFollowed(userId,room.getUserId());
+                    if(isFollow){
+                        roomJson.addProperty("isFollow",1);
+                    }else{
+                        roomJson.addProperty("isFollow",-1);
                     }
 
                     jRoomList.add(roomJson);
