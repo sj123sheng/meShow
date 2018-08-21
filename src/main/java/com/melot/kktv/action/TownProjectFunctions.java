@@ -495,9 +495,7 @@ public class TownProjectFunctions {
      */
     public JsonObject getUserFollowedList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
-        int userId;
-        int targetUserId;
-        int pageIndex, countPerPage, platform;
+        int userId, pageIndex, countPerPage, platform;
 
         //排序规则  默认:直播状态,1:关注时间
         Integer sortType = 1;
@@ -509,7 +507,6 @@ public class TownProjectFunctions {
             countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 20, null, 1, 30);
             platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, 1, Integer.MAX_VALUE);
             sortType = CommonUtil.getJsonParamInt(jsonObject, "sortType", 1, null, 0, Integer.MAX_VALUE);
-            targetUserId = CommonUtil.getJsonParamInt(jsonObject, "targetUserId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
         } catch(CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -525,7 +522,7 @@ public class TownProjectFunctions {
 
         int pageTotal = 0;
 
-        int followsCount = UserRelationService.getFollowsCount(targetUserId);
+        int followsCount = UserRelationService.getFollowsCount(userId);
         if (followsCount > 0) {
             pageTotal = (int) Math.ceil((double) followsCount / countPerPage);
         }
@@ -537,27 +534,15 @@ public class TownProjectFunctions {
             return result;
         }
 
-        boolean userFollowTarget = UserRelationService.isFollowed(userId,targetUserId);
-        boolean targetFollowUser = UserRelationService.isFollowed(targetUserId,userId);
-        if(userFollowTarget && targetFollowUser){
-            result.addProperty("isFollow",1);
-        }else{
-            if(userFollowTarget){
-                result.addProperty("isFollow",0);
-            }else{
-                result.addProperty("isFollow",-1);
-            }
-        }
-
         JsonArray jRoomList = new JsonArray();
 
         List<RoomInfo> roomList = null;
 
         //查看1000以上的关注人页按关注时间排序,没有排序必要
         if (pageIndex * countPerPage > 1000 || sortType == 1) {
-            roomList = com.melot.kkcx.service.UserRelationService.getFollowByTime(targetUserId, countPerPage, pageIndex);
+            roomList = com.melot.kkcx.service.UserRelationService.getFollowByTime(userId, countPerPage, pageIndex);
         } else {
-            roomList = com.melot.kkcx.service.UserRelationService.getFollowByLiveState(targetUserId, followsCount, pageIndex, pageTotal, countPerPage, platform);
+            roomList = com.melot.kkcx.service.UserRelationService.getFollowByLiveState(userId, followsCount, pageIndex, pageTotal, countPerPage, platform);
         }
         if (roomList != null) {
             List<Integer> userIdList = new ArrayList<>(roomList.size());
@@ -616,7 +601,6 @@ public class TownProjectFunctions {
         }
 
         int userId = 0;
-        int targetUserId = 0;
         int pageIndex = 1;
         int countPerPage = 20;
         int platform = 0;
@@ -626,7 +610,6 @@ public class TownProjectFunctions {
             pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
             countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 20, null, 1, Integer.MAX_VALUE);
             platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, 1, Integer.MAX_VALUE);
-            targetUserId = CommonUtil.getJsonParamInt(jsonObject, "targetUserId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
         } catch(CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -639,7 +622,7 @@ public class TownProjectFunctions {
         int end = pageIndex * countPerPage - 1;
         int pageTotal = 0;
 
-        int totalCount = UserRelationService.getFansCount(targetUserId);
+        int totalCount = UserRelationService.getFansCount(userId);
         if (totalCount > 0) {
             if (totalCount % countPerPage == 0) {
                 pageTotal = (int) totalCount / countPerPage;
@@ -655,21 +638,9 @@ public class TownProjectFunctions {
             return result;
         }
 
-        boolean userFollowTarget = UserRelationService.isFollowed(userId,targetUserId);
-        boolean targetFollowUser = UserRelationService.isFollowed(targetUserId,userId);
-        if(userFollowTarget && targetFollowUser){
-            result.addProperty("isFollow",1);
-        }else{
-            if(userFollowTarget){
-                result.addProperty("isFollow",0);
-            }else{
-                result.addProperty("isFollow",-1);
-            }
-        }
-
         JsonArray jRoomList = new JsonArray();
 
-        String fanIdsStr = UserRelationService.getFanIdsString(targetUserId, start, end);
+        String fanIdsStr = UserRelationService.getFanIdsString(userId, start, end);
         if (fanIdsStr != null) {
             List<Room> roomList = getFansRoomList(fanIdsStr);
             if (roomList != null && roomList.size() > 0) {
