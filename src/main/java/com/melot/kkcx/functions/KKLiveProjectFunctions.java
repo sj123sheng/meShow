@@ -88,46 +88,49 @@ public class KKLiveProjectFunctions {
         if (privatePhotoListForUser != null) {
             JsonArray array = new JsonArray();
             JsonObject json;
-            JsonArray helpUsers;
             for (ResPrivatePhotoDTO resPrivatePhotoDTO : privatePhotoListForUser) {
                 json = new JsonObject();
-                json.addProperty("photoId", resPrivatePhotoDTO.getPhotoId());
-                json.addProperty("level", resPrivatePhotoDTO.getPhotoLevel());
-                json.addProperty("unlockPrice", resPrivatePhotoDTO.getUnlockPrice());
-                json.addProperty("unlockShareNum", resPrivatePhotoDTO.getUnlockShareNum());
-                json.addProperty("photoUrl", resPrivatePhotoDTO.getPhotoPath());
-
-                helpUsers = new JsonArray();
-                // 游客不显示以下信息
-                if (userId != 0) {
-                    if (resPrivatePhotoDTO.getCurrentUnlockNum() != null) {
-                        json.addProperty("currentUnlockNum", resPrivatePhotoDTO.getCurrentUnlockNum());
-                    }
-                    if (resPrivatePhotoDTO.getUnlockState() != null) {
-                        json.addProperty("isUnlock", resPrivatePhotoDTO.getUnlockState() > 0);
-                    }
-                    if (CollectionUtils.isNotEmpty(resPrivatePhotoDTO.getHelpUnlockUserIds())) {
-                        JsonObject helpUser;
-                        List<UserProfile> userProfileList = kkUserService.getUserProfileBatch(resPrivatePhotoDTO.getHelpUnlockUserIds());
-                        if (CollectionUtils.isNotEmpty(userProfileList)) {
-                            for (UserProfile userProfile : userProfileList) {
-                                helpUser = new JsonObject();
-                                helpUser.addProperty("userId", userProfile.getUserId());
-                                if (userProfile.getPortrait() != null) {
-                                    helpUser.addProperty("userPortrait", userProfile.getPortrait());
-                                }
-                                helpUsers.add(helpUser);
-                            }
-                        }
-                    }
-                }
-                json.add("helpUsers", helpUsers);
+                photoToJson(json, userId, resPrivatePhotoDTO);
                 array.add(json);
             }
             result.add("photoList", array);
         }
         result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
         return result;
+    }
+
+    private void photoToJson(JsonObject json, int userId, ResPrivatePhotoDTO resPrivatePhotoDTO) {
+        json.addProperty("photoId", resPrivatePhotoDTO.getPhotoId());
+        json.addProperty("level", resPrivatePhotoDTO.getPhotoLevel());
+        json.addProperty("unlockPrice", resPrivatePhotoDTO.getUnlockPrice());
+        json.addProperty("unlockShareNum", resPrivatePhotoDTO.getUnlockShareNum());
+        json.addProperty("photoUrl", resPrivatePhotoDTO.getPhotoPath());
+
+        JsonArray helpUsers = new JsonArray();
+        // 游客不显示以下信息
+        if (userId != 0) {
+            if (resPrivatePhotoDTO.getCurrentUnlockNum() != null) {
+                json.addProperty("currentUnlockNum", resPrivatePhotoDTO.getCurrentUnlockNum());
+            }
+            if (resPrivatePhotoDTO.getUnlockState() != null) {
+                json.addProperty("isUnlock", resPrivatePhotoDTO.getUnlockState() > 0);
+            }
+            if (CollectionUtils.isNotEmpty(resPrivatePhotoDTO.getHelpUnlockUserIds())) {
+                JsonObject helpUser;
+                List<UserProfile> userProfileList = kkUserService.getUserProfileBatch(resPrivatePhotoDTO.getHelpUnlockUserIds());
+                if (CollectionUtils.isNotEmpty(userProfileList)) {
+                    for (UserProfile userProfile : userProfileList) {
+                        helpUser = new JsonObject();
+                        helpUser.addProperty("userId", userProfile.getUserId());
+                        if (userProfile.getPortrait() != null) {
+                            helpUser.addProperty("userPortrait", userProfile.getPortrait());
+                        }
+                        helpUsers.add(helpUser);
+                    }
+                }
+            }
+        }
+        json.add("helpUsers", helpUsers);
     }
 
 
@@ -439,6 +442,55 @@ public class KKLiveProjectFunctions {
             tagCode = TagCodeEnum.SUCCESS;
         } catch (Exception e) {
             log.error(String.format("Error:getGiftConf(jsonObject=%s, checkTag=%s, request=%s)", jsonObject, checkTag, request), e);
+        }
+        result.addProperty(ParameterKeys.TAG_CODE, tagCode);
+        return result;
+    }
+
+    /**
+     * 51120208
+     * 帮助者获取所帮助的照片信息，若是游客或未帮助过，则不显示照片的解锁进度
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getPhotoInfoForHelpUser(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        int histId, userId;
+        try {
+            histId = CommonUtil.getJsonParamInt(jsonObject, "histId", 0, TagCodeEnum.PARAMETER_PARSE_ERROR, 1, Integer.MAX_VALUE);
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        // 检验token
+        if (userId != 0 && !checkTag) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_INCORRECT);
+            return result;
+        }
+
+        String tagCode = TagCodeEnum.MODULE_UNKNOWN_RESPCODE;
+        try {
+            ResPrivatePhotoDTO resPrivatePhotoDTO = liveProjectService.getPrivatePhotoForHelpUser(histId, userId == 0 ? null : userId);
+            if (resPrivatePhotoDTO != null) {
+                photoToJson(result, userId, resPrivatePhotoDTO);
+                tagCode = TagCodeEnum.SUCCESS;
+            }
+        } catch (MelotModuleException e) {
+            if (e.getErrCode() == 101) {
+                tagCode = "5112020801";
+            } else if (e.getErrCode() == 102) {
+                tagCode = "5112020802";
+            }
+        } catch (Exception e) {
+            log.error(String.format("Error:getPrivatePhotoForHelpUser(histId=%s, userId=%s)", histId, userId), e);
         }
         result.addProperty(ParameterKeys.TAG_CODE, tagCode);
         return result;
