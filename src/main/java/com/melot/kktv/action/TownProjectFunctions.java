@@ -436,6 +436,15 @@ public class TownProjectFunctions {
             }
         }
 
+        int workCount = townWorkService.getMyWorkNum(targetUserId);
+        result.addProperty("workCount",workCount);
+
+        int like = townWorkService.getMyPraiseWorkNum(targetUserId);
+        result.addProperty("like",like);
+
+        int receiveLike = townWorkService.getMyWorkPraiseNum(targetUserId);
+        result.addProperty("receiveLike",receiveLike);
+
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
