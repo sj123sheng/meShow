@@ -773,10 +773,11 @@ public class TownProjectFunctions {
                         if(roomInfo.getRoomSource() != null){
                             json.addProperty("roomSource",roomInfo.getRoomSource());
                         }
+
                         if(roomInfo.getLiveEndTime()!=null && roomInfo.getLiveEndTime()>0){
-                            result.addProperty("liveStatus",0);
+                            json.addProperty("liveStatus",0);
                         }else{
-                            result.addProperty("liveStatus",1);
+                            json.addProperty("liveStatus",1);
                         }
                     }
                     jsonArray.add(json);
@@ -1341,10 +1342,11 @@ public class TownProjectFunctions {
                         if(roomInfo.getRoomSource() != null){
                             json.addProperty("roomSource",roomInfo.getRoomSource());
                         }
+
                         if(roomInfo.getLiveEndTime()!=null && roomInfo.getLiveEndTime()>0){
-                            result.addProperty("liveStatus",0);
+                            json.addProperty("liveStatus",0);
                         }else{
-                            result.addProperty("liveStatus",1);
+                            json.addProperty("liveStatus",1);
                         }
                     }
                     jsonArray.add(json);
