@@ -406,7 +406,7 @@ public class TownProjectFunctions {
             if(townUserInfoDTO.getIntroduction()!=null){
                 result.addProperty("introduction",townUserInfoDTO.getIntroduction());
             }
-            if(townUserInfoDTO.getBirthday()!=null){
+            if(!org.springframework.util.StringUtils.isEmpty(townUserInfoDTO.getBirthday())){
                 result.addProperty("birthday",townUserInfoDTO.getBirthday());
                 try {
                     Date birthDay = org.apache.commons.lang3.time.DateUtils.parseDate(townUserInfoDTO.getBirthday(),
