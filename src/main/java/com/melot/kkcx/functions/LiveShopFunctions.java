@@ -1397,10 +1397,6 @@ public class LiveShopFunctions {
 
     /**
      * 登记商家信息[51060525]
-     * @param jsonObject
-     * @param checkTag
-     * @param request
-     * @return
      */
     public JsonObject registerSaleActorInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
@@ -1448,10 +1444,6 @@ public class LiveShopFunctions {
 
     /**
      * 获取订单的数量（待支付、待发货、待收货、退款/售后），商家的话多显示销售的订单[51060526]
-     * @param jsonObject
-     * @param checkTag
-     * @param request
-     * @return
      */
     public JsonObject getOrderCount(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
@@ -1504,10 +1496,6 @@ public class LiveShopFunctions {
 
     /**
      * 获取首个待支付订单的信息[52060527]
-     * @param jsonObject
-     * @param checkTag
-     * @param request
-     * @return
      */
     public JsonObject getFirstWaitPayOrder(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
