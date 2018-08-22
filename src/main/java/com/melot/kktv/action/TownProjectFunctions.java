@@ -61,6 +61,9 @@ public class TownProjectFunctions {
 
     @Resource
     private TownStarApplyInfoService townStarApplyInfoService;
+    
+    @Resource
+    private AreaBannerService areaBannerService;
 
     @Resource
     private ActorService actorService;
@@ -915,6 +918,66 @@ public class TownProjectFunctions {
             return result;
         } catch (Exception e) {
             logger.error("Error searchTopicList()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+    
+    /**
+     * 获取乡镇banner(51120115)
+     */
+    public JsonObject getAreaBannerList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        String areaCode;
+        int appId, channelId;
+        try {
+            areaCode = CommonUtil.getJsonParamString(jsonObject, AREA_CODE.getId(), null, AREA_CODE.getErrorCode(), 1, Integer.MAX_VALUE);
+            channelId = CommonUtil.getJsonParamInt(jsonObject, "c", 0, null, 1, Integer.MAX_VALUE);
+            appId = CommonUtil.getJsonParamInt(jsonObject, "a", 0, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+            List<ConfAreaBannerDTO> confAreaBannerDTOList = areaBannerService.getAreaBannerList(areaCode, appId > 0 ? appId : null, channelId > 0 ? channelId : null);
+            JsonArray bannerList = new JsonArray();
+            if(!CollectionUtils.isEmpty(confAreaBannerDTOList)) {
+                for (ConfAreaBannerDTO confAreaBannerDTO : confAreaBannerDTOList) {
+                    JsonObject jsonObj = new JsonObject();
+                    jsonObj.addProperty("bannerId", confAreaBannerDTO.getBannerId());
+                    if (!StringUtil.strIsNull(confAreaBannerDTO.getAndroidBannerPath())) {
+                        jsonObj.addProperty("androidBannerPath", confAreaBannerDTO.getAndroidBannerPath());
+                    }
+                    if (!StringUtil.strIsNull(confAreaBannerDTO.getIosBannerPath())) {
+                        jsonObj.addProperty("iosBannerPath", confAreaBannerDTO.getIosBannerPath());
+                    }
+                    if (!StringUtil.strIsNull(confAreaBannerDTO.getIpadBannerPath())) {
+                        jsonObj.addProperty("ipadBannerPath", confAreaBannerDTO.getIpadBannerPath());
+                    }
+                    if (!StringUtil.strIsNull(confAreaBannerDTO.getLinkPath())) {
+                        jsonObj.addProperty("linkPath", confAreaBannerDTO.getLinkPath());
+                    }
+                    if (!StringUtil.strIsNull(confAreaBannerDTO.getBannerTitle())) {
+                        jsonObj.addProperty("bannerTitle", confAreaBannerDTO.getBannerTitle());
+                    }
+                    if (confAreaBannerDTO.getLinkId() != null) {
+                        jsonObj.addProperty("linkId", confAreaBannerDTO.getLinkId());
+                    }
+                    if (confAreaBannerDTO.getPosition() != null) {
+                        jsonObj.addProperty("position", confAreaBannerDTO.getPosition());
+                    }
+                    jsonObj.addProperty("linkType", confAreaBannerDTO.getLinkType());
+                    bannerList.add(jsonObj);
+                }
+            }
+            result.add("bannerList", bannerList);
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error getAreaBannerList()", e);
             result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             return result;
         }

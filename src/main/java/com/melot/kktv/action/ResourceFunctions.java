@@ -1,7 +1,6 @@
 package com.melot.kktv.action;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,7 +16,6 @@ import com.google.gson.reflect.TypeToken;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcx.service.AssetService;
 import com.melot.kkcx.service.FamilyService;
-import com.melot.kktv.model.Car;
 import com.melot.kktv.model.Family;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConfigHelper;
@@ -25,8 +23,6 @@ import com.melot.kktv.util.ConstantEnum;
 import com.melot.kktv.util.PlatformEnum;
 import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
-import com.melot.kktv.util.db.DB;
-import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.module.packagegift.driver.domain.Prop;
 import com.melot.module.packagegift.driver.domain.PropPrice;
 import com.melot.module.packagegift.driver.domain.UserTicketInfo;

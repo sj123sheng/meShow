@@ -880,6 +880,11 @@
 	</bean>
 	
 	<!-- 个人资产接口类 -->
+	<!-- 获取汽车列表 -->
+	<bean id="20010101" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="assetFunction" />
+		<constructor-arg name="methodName" value="getCarList" />
+	</bean>
 	<!-- 获取汽车月价格区间 -->
 	<bean id="20010103" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="assetFunction" />
@@ -1279,10 +1284,6 @@
 	
 	<!-- 系统资源相关的接口类 -->
 	<!-- 商城车市获取车辆列表 -->
-	<bean id="10005011" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="resourceFunction" />
-		<constructor-arg name="methodName" value="getCarList" />
-	</bean>
 	<!-- 获取道具资源列表 -->
 	<bean id="10009001" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="resourceFunction" />
@@ -3143,6 +3144,11 @@
 		<constructor-arg name="t" ref="kKLiveProjectFunctions" />
 		<constructor-arg name="methodName" value="getGiftConf" />
 		<constructor-arg name="cacheType" value="60" />
+	</bean>
+
+	<bean id="51120208" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kKLiveProjectFunctions" />
+		<constructor-arg name="methodName" value="getPhotoInfoForHelpUser" />
 	</bean>
 
 </beans>
