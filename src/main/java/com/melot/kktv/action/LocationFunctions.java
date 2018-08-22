@@ -36,14 +36,25 @@ public class LocationFunctions {
         JsonObject result = new JsonObject();
 
         int userId;
-        String lat,lng;
+        String lat,lng, token;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, USER_ID.getId(), 0, null, 1, Integer.MAX_VALUE);
             lat = CommonUtil.getJsonParamString(jsonObject, LAT.getId(), null, LAT.getErrorCode(), 1, Integer.MAX_VALUE);
             lng = CommonUtil.getJsonParamString(jsonObject, LNG.getId(), null, LNG.getErrorCode(), 1, Integer.MAX_VALUE);
+            token = CommonUtil.getJsonParamString(jsonObject, "token", null, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
+        }
+
+        boolean isOwner = false;
+        // 查询本人作品列表需要验证token,未验证的返回错误码
+        if(StringUtils.isNotEmpty(token)) {
+            if (!checkTag) {
+                result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+                return result;
+            }
+            isOwner = true;
         }
 
         try {
@@ -52,7 +63,7 @@ public class LocationFunctions {
             if(addressComponentDTO != null && StringUtils.isNotEmpty(addressComponentDTO.getTown())
                     && StringUtils.isNotEmpty(addressComponentDTO.getTownAreaCode())){
 
-                if(userId > 0) {
+                if(userId > 0 && isOwner) {
                     TownUserInfoParam userInfoParam = new TownUserInfoParam();
                     userInfoParam.setUserId(userId);
                     userInfoParam.setLastAreaCode(addressComponentDTO.getTownAreaCode());
