@@ -368,7 +368,7 @@ public class TownProjectFunctions {
         result.addProperty("userId",userProfile.getUserId());
         result.addProperty("nickname",userProfile.getNickName());
         if(userProfile.getPortrait()!=null){
-            result.addProperty("portrait", userProfile.getPortrait());
+            result.addProperty("portrait", this.getPortrait(userProfile));
         }
         result.addProperty("gender",userProfile.getGender());
 
@@ -449,6 +449,7 @@ public class TownProjectFunctions {
         int receiveLike = townWorkService.getMyWorkPraiseNum(targetUserId);
         result.addProperty("receiveLike",receiveLike);
 
+        result.addProperty("pathPrefix",ConfigHelper.getHttpdir());
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
@@ -569,7 +570,7 @@ public class TownProjectFunctions {
                 json.addProperty("nickname",roomInfo.getNickname());
                 json.addProperty("roomId", roomInfo.getRoomId() != null ? roomInfo.getRoomId() : roomInfo.getActorId());
                 json.addProperty("gender",roomInfo.getGender());
-                json.addProperty("portrait_path_256",  roomInfo.getPortrait()  + "!256");
+                json.addProperty("portrait",  roomInfo.getPortrait()  + "!128");
 
                 if(tagMap!=null && tagMap.containsKey(roomInfo.getActorId())){
                     List<UserTagRelationDTO> tagList = tagMap.get(roomInfo.getActorId());
@@ -601,6 +602,7 @@ public class TownProjectFunctions {
             }
         }
         result.add("roomList", jRoomList);
+        result.addProperty("pathPrefix",ConfigHelper.getHttpdir());
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
@@ -677,7 +679,7 @@ public class TownProjectFunctions {
                     roomJson.addProperty("userId",roomId);
                     roomJson.addProperty("nickname",room.getNickname());
                     roomJson.addProperty("gender",room.getGender());
-                    roomJson.addProperty("portrait_path_256", room.getPortrait_path_256());
+                    roomJson.addProperty("portrait", room.getPortrait_path_128());
 
                     if(tagMap!=null && tagMap.containsKey(room.getUserId())){
                         List<UserTagRelationDTO> tagList = tagMap.get(room.getUserId());
@@ -711,6 +713,7 @@ public class TownProjectFunctions {
             }
         }
 
+        result.addProperty("pathPrefix",ConfigHelper.getHttpdir());
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         result.addProperty("pageTotal", pageTotal);
         result.add("roomList", jRoomList);
@@ -769,7 +772,7 @@ public class TownProjectFunctions {
                     json.addProperty("userId",item.getUserId());
                     json.addProperty("nickname",userProfile.getNickName());
                     if(userProfile.getPortrait()!=null){
-                        json.addProperty("portrait", userProfile.getPortrait());
+                        json.addProperty("portrait", this.getPortrait(userProfile));
                     }
                     if(tagMap!=null && tagMap.containsKey(item.getUserId())){
                         List<UserTagRelationDTO> tagList = tagMap.get(item.getUserId());
@@ -798,6 +801,7 @@ public class TownProjectFunctions {
             }
         }
         result.add("list",jsonArray);
+        result.addProperty("pathPrefix",ConfigHelper.getHttpdir());
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
@@ -1406,7 +1410,7 @@ public class TownProjectFunctions {
                     json.addProperty("userId",item.getUserId());
                     json.addProperty("nickname",userProfile.getNickName());
                     if(userProfile.getPortrait()!=null){
-                        json.addProperty("portrait",userProfile.getPortrait());
+                        json.addProperty("portrait",this.getPortrait(userProfile));
                     }
                     json.addProperty("tag",item.getTagName());
 
@@ -1427,6 +1431,7 @@ public class TownProjectFunctions {
             }
         }
         result.add("list",jsonArray);
+        result.addProperty("pathPrefix",ConfigHelper.getHttpdir());
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
@@ -2154,4 +2159,35 @@ public class TownProjectFunctions {
         }
     }
 
+    /**
+     * 获取站长申请状态(51120138)
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getStarApplyState(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int  userId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "03040002", 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+        List<TownStarApplyInfoDTO> list =
+                townStarApplyInfoService.getUserApplyInfoListByStatus(userId,TownStarCheckStatusEnum.IN_REVIEW);
+        if(!CollectionUtils.isEmpty(list)){
+            result.addProperty("applyId",list.get(0).getApplyId());
+        }else{
+            result.addProperty("applyId",0);
+        }
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
 }

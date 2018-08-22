@@ -3104,6 +3104,10 @@
 		<constructor-arg name="t" ref="townProjectFunctions" />
 		<constructor-arg name="methodName" value="setCommentViolation" />
 	</bean>
+	<bean id="51120138" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="townProjectFunctions" />
+		<constructor-arg name="methodName" value="getStarApplyState" />
+	</bean>
 
 	<!-- 微信直播小程序API -->
 	<bean id="51120201" class="com.melot.sdk.core.function.GenericFunction">
