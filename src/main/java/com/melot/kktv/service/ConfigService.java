@@ -167,7 +167,7 @@ public class ConfigService {
      */
     private String chargeBanner;
 
-    private String roundTineStart;
+    private String roundTimeStart;
 
     @DisconfFileItem(name = "nearbyStartDistance", associateField = "nearbyStartDistance")
     public int getNearbyStartDistance() {
@@ -411,12 +411,12 @@ public class ConfigService {
         return chargeBanner;
     }
 
-    @DisconfFileItem(name = "roundTineStart", associateField = "roundTineStart")
-    public String getRoundTineStart() {
-        return roundTineStart;
+    @DisconfFileItem(name = "roundTimeStart", associateField = "roundTimeStart")
+    public String getRoundTimeStart() {
+        return roundTimeStart;
     }
 
-    public void setRoundTineStart(String roundTineStart) {
-        this.roundTineStart = roundTineStart;
+    public void setRoundTimeStart(String roundTimeStart) {
+        this.roundTimeStart = roundTimeStart;
     }
 }

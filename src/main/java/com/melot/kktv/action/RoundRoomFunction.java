@@ -133,7 +133,7 @@ public class RoundRoomFunction {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-        String roundStartTime = configService.getRoundTineStart();
+        String roundStartTime = configService.getRoundTimeStart();
 		if(StringUtil.strIsNull(roundStartTime)){
 			roundStartTime = "04:00:00";
 		}
