@@ -365,7 +365,7 @@ public class TownProjectFunctions {
         result.addProperty("userId",userProfile.getUserId());
         result.addProperty("nickname",userProfile.getNickName());
         if(userProfile.getPortrait()!=null){
-            result.addProperty("portrait", userProfile.getPortrait());
+            result.addProperty("portrait", this.getPortrait(userProfile));
         }
         result.addProperty("gender",userProfile.getGender());
 
@@ -566,7 +566,7 @@ public class TownProjectFunctions {
                 json.addProperty("nickname",roomInfo.getNickname());
                 json.addProperty("roomId", roomInfo.getRoomId() != null ? roomInfo.getRoomId() : roomInfo.getActorId());
                 json.addProperty("gender",roomInfo.getGender());
-                json.addProperty("portrait_path_256",  roomInfo.getPortrait()  + "!256");
+                json.addProperty("portrait",  roomInfo.getPortrait()  + "!128");
 
                 if(tagMap!=null && tagMap.containsKey(roomInfo.getActorId())){
                     List<UserTagRelationDTO> tagList = tagMap.get(roomInfo.getActorId());
@@ -674,7 +674,7 @@ public class TownProjectFunctions {
                     roomJson.addProperty("userId",roomId);
                     roomJson.addProperty("nickname",room.getNickname());
                     roomJson.addProperty("gender",room.getGender());
-                    roomJson.addProperty("portrait_path_256", room.getPortrait_path_256());
+                    roomJson.addProperty("portrait", room.getPortrait_path_128());
 
                     if(tagMap!=null && tagMap.containsKey(room.getUserId())){
                         List<UserTagRelationDTO> tagList = tagMap.get(room.getUserId());
@@ -766,7 +766,7 @@ public class TownProjectFunctions {
                     json.addProperty("userId",item.getUserId());
                     json.addProperty("nickname",userProfile.getNickName());
                     if(userProfile.getPortrait()!=null){
-                        json.addProperty("portrait", userProfile.getPortrait());
+                        json.addProperty("portrait", this.getPortrait(userProfile));
                     }
                     if(tagMap!=null && tagMap.containsKey(item.getUserId())){
                         List<UserTagRelationDTO> tagList = tagMap.get(item.getUserId());
@@ -1343,7 +1343,7 @@ public class TownProjectFunctions {
                     json.addProperty("userId",item.getUserId());
                     json.addProperty("nickname",userProfile.getNickName());
                     if(userProfile.getPortrait()!=null){
-                        json.addProperty("portrait",userProfile.getPortrait());
+                        json.addProperty("portrait",this.getPortrait(userProfile));
                     }
                     json.addProperty("tag",item.getTagName());
 
