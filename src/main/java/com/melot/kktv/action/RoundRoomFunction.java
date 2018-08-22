@@ -1,5 +1,6 @@
 package com.melot.kktv.action;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -128,6 +129,9 @@ public class RoundRoomFunction {
         }
 		String dateString =new SimpleDateFormat("yyyy-MM-dd 04:00:00").format(new Date());
 		Date startTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(dateString);
+		if(new Date().before(startTime)){
+			startTime = DateUtil.addOnField(startTime, Calendar.DATE, -1);
+		}
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
     	Transaction t = Cat.getProducer().newTransaction("MCall", "RoundRoomService.getRoundRoomActList");
 		try {
@@ -180,6 +184,13 @@ public class RoundRoomFunction {
 	    result.addProperty("systemTime", systemTime==0l?new Date().getTime():systemTime);
 	    result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 		return result;
+	}
+
+	public static void main(String[] args) throws ParseException {
+		String dateString =new SimpleDateFormat("yyyy-MM-dd 16:00:00").format(new Date());
+		Date startTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(dateString);
+		System.out.println(startTime.before(new Date()));
+
 	}
 
 

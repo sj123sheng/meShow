@@ -115,99 +115,99 @@ public class NodeFunctions {
 	        		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 	        		return result;
 				}
-	        } else {
-	            ResUserXman resUserXman = null;
-	        	t = Cat.getProducer().newTransaction("MCall", "xmanService.getResUserXmanByUserId");
-				try {
-					resUserXman = xmanService.getResUserXmanByUserId(userId);
-					t.setStatus(Transaction.SUCCESS);
-				} catch (Exception e) {
-					Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
-					t.setStatus(e);
-				} finally {
-					t.complete();
-				}
-	            if (resUserXman == null || (resUserXman.getExpireTime().getTime() < new Date().getTime())) {
-	                result.addProperty("mysType", 0);
-	            } else {
-	                //判断该用户是否拥有神秘人标志，如果有则随机分配一个神秘人帐号信息给该用户，从而在返回用户信息中添加mysInfo字段，里面包含神们人ID的用户信息
-	            	t = Cat.getProducer().newTransaction("MCall", "xmanService.getResXmanByUserId");
-	            	ResXman resXman = null;
-					try {
-						resXman = xmanService.getResXmanByUserId(userId);
-						t.setStatus(Transaction.SUCCESS);
-					} catch (Exception e) {
-						Cat.getProducer().logError(e);
-						t.setStatus(e);
-					} finally {
-						t.complete();
-					}
-	            	if (resXman != null && resXman.getMysType() == 2) {
-	            		result.addProperty("mysType", resXman.getMysType());
-	            		XmanUserInfo mysInfo = null;
-	            		t = Cat.getProducer().newTransaction("MCall", "xmanService.updateGetMysteryInfo");
-						try {
-							mysInfo = xmanService.updateGetMysteryInfo(userId);
-							t.setStatus(Transaction.SUCCESS);
-						} catch (Exception e) {
-							Cat.getProducer().logError(e);
-							t.setStatus(e);
-						} finally {
-							t.complete();
-						}
-	            		if (mysInfo != null) {
-                            JsonObject mysInfoJson = new JsonObject();
-                            mysInfoJson.addProperty("userId", mysInfo.getUserId());
-                            mysInfoJson.addProperty("isMys", 1);
-                            mysInfoJson.addProperty("nickname", mysInfo.getNickname());
-                            mysInfoJson.addProperty("gender", mysInfo.getGender());
-                            mysInfoJson.addProperty("actorTag", mysInfo.getActorTag());
-                            mysInfoJson.addProperty("openPlatform", mysInfo.getOpenPlatform());
-                            mysInfoJson.addProperty("richLevel", Constant.xman_richLevel);
-                            mysInfoJson.addProperty("actorLevel", Constant.xman_actorLevel);
-                            mysInfoJson.addProperty("starLevel", Constant.xman_starLevel);
-                            if (mysInfo.getPortrait_path() != null) {
-                                mysInfoJson.addProperty("portrait_path_original", ConfigHelper.getHttpdir() + mysInfo.getPortrait_path());
-                                mysInfoJson.addProperty("portrait_path_1280", ConfigHelper.getHttpdir() + (mysInfo.getPortrait_path())+ "!1280");
-                                mysInfoJson.addProperty("portrait_path_256", ConfigHelper.getHttpdir() + (mysInfo.getPortrait_path())+ "!256");
-                                mysInfoJson.addProperty("portrait_path_128", ConfigHelper.getHttpdir() + (mysInfo.getPortrait_path())+ "!128");
-                                mysInfoJson.addProperty("portrait_path_48", ConfigHelper.getHttpdir() + (mysInfo.getPortrait_path())+ "!48");
-                                
-                                mysInfoJson.addProperty("portrait", mysInfo.getPortrait_path());
-                            }
-                            
-                            // 获取神秘人会员信息
-                            JsonArray propArray = new JsonArray();
-                            try {
-                                List<Integer> propList = null;
-        	            		t = Cat.getProducer().newTransaction("MCall", "UserService.getUserProps");
-								try {
-									propList = UserService.getUserProps(mysInfo.getUserId());
-									t.setStatus(Transaction.SUCCESS);
-								} catch (Exception e) {
-									Cat.getProducer().logError(e);
-									t.setStatus(e);
-								} finally {
-									t.complete();
-								}
-                                if (propList != null) {
-                                    propArray = (JsonArray) new JsonParser().parse(new Gson().toJson(propList));
-                                }
-                            } catch (Exception e) {
-                                logger.error("UserService.getUserProps(" + mysInfo.getUserId() + ") execute exception.", e);
-                            }
-                            mysInfoJson.add("propList", propArray);
-                            
-                            // 获取神秘人勋章信息
-                            mysInfoJson.add("userMedal", new JsonArray());
-                            
-                            result.add("mysInfo", mysInfoJson);
-                        }
-	            	} else {
-	            		result.addProperty("mysType", 1);
-	            	}
-	            }
 	        }
+	        
+	        ResUserXman resUserXman = null;
+            t = Cat.getProducer().newTransaction("MCall", "xmanService.getResUserXmanByUserId");
+            try {
+                resUserXman = xmanService.getResUserXmanByUserId(userId);
+                t.setStatus(Transaction.SUCCESS);
+            } catch (Exception e) {
+                Cat.getProducer().logError(e);// 用log4j记录系统异常，以便在Logview中看到此信息
+                t.setStatus(e);
+            } finally {
+                t.complete();
+            }
+            if (resUserXman == null || (resUserXman.getExpireTime().getTime() < new Date().getTime())) {
+                result.addProperty("mysType", 0);
+            } else {
+                //判断该用户是否拥有神秘人标志，如果有则随机分配一个神秘人帐号信息给该用户，从而在返回用户信息中添加mysInfo字段，里面包含神们人ID的用户信息
+                t = Cat.getProducer().newTransaction("MCall", "xmanService.getResXmanByUserId");
+                ResXman resXman = null;
+                try {
+                    resXman = xmanService.getResXmanByUserId(userId);
+                    t.setStatus(Transaction.SUCCESS);
+                } catch (Exception e) {
+                    Cat.getProducer().logError(e);
+                    t.setStatus(e);
+                } finally {
+                    t.complete();
+                }
+                if (resXman != null && resXman.getMysType() == 2) {
+                    result.addProperty("mysType", resXman.getMysType());
+                    XmanUserInfo mysInfo = null;
+                    t = Cat.getProducer().newTransaction("MCall", "xmanService.updateGetMysteryInfo");
+                    try {
+                        mysInfo = xmanService.updateGetMysteryInfo(userId);
+                        t.setStatus(Transaction.SUCCESS);
+                    } catch (Exception e) {
+                        Cat.getProducer().logError(e);
+                        t.setStatus(e);
+                    } finally {
+                        t.complete();
+                    }
+                    if (mysInfo != null) {
+                        JsonObject mysInfoJson = new JsonObject();
+                        mysInfoJson.addProperty("userId", mysInfo.getUserId());
+                        mysInfoJson.addProperty("isMys", 1);
+                        mysInfoJson.addProperty("nickname", mysInfo.getNickname());
+                        mysInfoJson.addProperty("gender", mysInfo.getGender());
+                        mysInfoJson.addProperty("actorTag", mysInfo.getActorTag());
+                        mysInfoJson.addProperty("openPlatform", mysInfo.getOpenPlatform());
+                        mysInfoJson.addProperty("richLevel", Constant.xman_richLevel);
+                        mysInfoJson.addProperty("actorLevel", Constant.xman_actorLevel);
+                        mysInfoJson.addProperty("starLevel", Constant.xman_starLevel);
+                        if (mysInfo.getPortrait_path() != null) {
+                            mysInfoJson.addProperty("portrait_path_original", ConfigHelper.getHttpdir() + mysInfo.getPortrait_path());
+                            mysInfoJson.addProperty("portrait_path_1280", ConfigHelper.getHttpdir() + (mysInfo.getPortrait_path())+ "!1280");
+                            mysInfoJson.addProperty("portrait_path_256", ConfigHelper.getHttpdir() + (mysInfo.getPortrait_path())+ "!256");
+                            mysInfoJson.addProperty("portrait_path_128", ConfigHelper.getHttpdir() + (mysInfo.getPortrait_path())+ "!128");
+                            mysInfoJson.addProperty("portrait_path_48", ConfigHelper.getHttpdir() + (mysInfo.getPortrait_path())+ "!48");
+                            
+                            mysInfoJson.addProperty("portrait", mysInfo.getPortrait_path());
+                        }
+                        
+                        // 获取神秘人会员信息
+                        JsonArray propArray = new JsonArray();
+                        try {
+                            List<Integer> propList = null;
+                            t = Cat.getProducer().newTransaction("MCall", "UserService.getUserProps");
+                            try {
+                                propList = UserService.getUserProps(mysInfo.getUserId());
+                                t.setStatus(Transaction.SUCCESS);
+                            } catch (Exception e) {
+                                Cat.getProducer().logError(e);
+                                t.setStatus(e);
+                            } finally {
+                                t.complete();
+                            }
+                            if (propList != null) {
+                                propArray = (JsonArray) new JsonParser().parse(new Gson().toJson(propList));
+                            }
+                        } catch (Exception e) {
+                            logger.error("UserService.getUserProps(" + mysInfo.getUserId() + ") execute exception.", e);
+                        }
+                        mysInfoJson.add("propList", propArray);
+                        
+                        // 获取神秘人勋章信息
+                        mysInfoJson.add("userMedal", new JsonArray());
+                        
+                        result.add("mysInfo", mysInfoJson);
+                    }
+                } else {
+                    result.addProperty("mysType", 1);
+                }
+            }
         } catch (Exception e) {
             logger.error("Get user[" + userId + "] xman info execute exception.", e);
         }

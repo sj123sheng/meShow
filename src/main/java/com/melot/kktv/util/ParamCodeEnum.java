@@ -45,7 +45,6 @@ public enum ParamCodeEnum {
     WORK_DESC("workDesc", "53000020"),
     TOPIC_ID("topicId", "53000021"),
     WORK_ID("workId", "53000022"),
-    COVER_URL("coverUrl", "53000022"),
     RESOURCE_IDS("resourceIds", "53000023"),
     WORK_SORT("workSort", "53000024"),
     APPLY_TYPE("applyType","53000025"),
@@ -56,7 +55,10 @@ public enum ParamCodeEnum {
     MOBILE_PHONE("mobilePhone","53000030"),
     PROFESSION("profession","53000031"),
     EXPERIENCE("experience","53000032"),
-    REASON("reason","53000033");
+    REASON("reason","53000033"),
+    COMMENT_CONTENT("commentContent","53000034"),
+    COMMENT_ID("commentId","53000035"),
+    ;
 
 
     private String id;

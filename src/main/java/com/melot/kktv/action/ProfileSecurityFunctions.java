@@ -15,7 +15,6 @@ import com.melot.blacklist.service.BlacklistService;
 import com.melot.common.melot_utils.StringUtils;
 import com.melot.kk.module.resource.domain.QiNiuTokenConf;
 import com.melot.kk.module.resource.service.ResourceNewService;
-import com.melot.kk.recharge.api.service.RechargeService;
 import com.melot.kk.userSecurity.api.domain.DO.UserVerifyDO;
 import com.melot.kk.userSecurity.api.service.UserVerifyService;
 import com.melot.kkcore.account.api.ResResetPassword;
@@ -57,9 +56,6 @@ public class ProfileSecurityFunctions {
 	
 	@Resource
     UserVerifyService userVerifyService;
-	
-	@Resource
-    RechargeService rechargeService;
 
 	private static JsonObject setUserNameAndPassword(JsonObject jsonObject, String up){
 

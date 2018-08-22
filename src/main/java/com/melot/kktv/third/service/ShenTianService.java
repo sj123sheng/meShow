@@ -42,9 +42,9 @@ public class ShenTianService extends BaseService{
     
     private String serverUrl;
     
-    private static final String KEY = "f30f0f82dsewleld29dwe0qleperjgpw";
+    private static final String KEY = "2c3ac3b6731947cd90983777819f8eb0";
     
-    private static final String SECRET = "kke_s13_ld^4ew11e";
+    private static final String SECRET = "a1kalnlrwmpfoeik";
 
     /**
      * @param sessionid 调用接口凭证

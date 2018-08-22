@@ -5,7 +5,10 @@ import com.google.gson.JsonObject;
 import com.melot.kk.liveproject.api.dto.LiveProjectTaskDTO;
 import com.melot.kk.liveproject.api.dto.ResPrivatePhotoDTO;
 import com.melot.kk.liveproject.api.service.LiveProjectService;
+import com.melot.kkcore.user.api.UserProfile;
+import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.ParameterKeys;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.module.api.exceptions.MelotModuleException;
@@ -40,6 +43,9 @@ public class KKLiveProjectFunctions {
 
     @Resource
     RoomGiftService roomGiftService;
+
+    @Resource
+    KkUserService kkUserService;
 
     /**
      * 51120201
@@ -82,39 +88,50 @@ public class KKLiveProjectFunctions {
 
         if (privatePhotoListForUser != null) {
             JsonArray array = new JsonArray();
-            JsonObject json;
-            JsonArray helpUserIds;
             for (ResPrivatePhotoDTO resPrivatePhotoDTO : privatePhotoListForUser) {
-                json = new JsonObject();
-                json.addProperty("photoId", resPrivatePhotoDTO.getPhotoId());
-                json.addProperty("photoTitle", resPrivatePhotoDTO.getTitleName());
-                json.addProperty("level", resPrivatePhotoDTO.getPhotoLevel());
-                json.addProperty("unlockPrice", resPrivatePhotoDTO.getUnlockPrice());
-                json.addProperty("unlockShareNum", resPrivatePhotoDTO.getUnlockShareNum());
-                json.addProperty("photoUrl", resPrivatePhotoDTO.getPhotoPath());
-
-                helpUserIds = new JsonArray();
-                // 游客不显示以下信息
-                if (userId != 0) {
-                    if (resPrivatePhotoDTO.getCurrentUnlockNum() != null) {
-                        json.addProperty("currentUnlockNum", resPrivatePhotoDTO.getCurrentUnlockNum());
-                    }
-                    if (resPrivatePhotoDTO.getUnlockState() != null) {
-                        json.addProperty("isUnlock", resPrivatePhotoDTO.getUnlockState() > 0);
-                    }
-                    if (resPrivatePhotoDTO.getHelpUnlockUserIds() != null) {
-                        for (Integer helpUserId : resPrivatePhotoDTO.getHelpUnlockUserIds()) {
-                            helpUserIds.add(helpUserId);
-                        }
-                    }
-                }
-                json.add("helpUserIds", helpUserIds);
+                JsonObject json = new JsonObject();
+                photoToJson(json, userId, resPrivatePhotoDTO);
                 array.add(json);
             }
             result.add("photoList", array);
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
         }
         result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
         return result;
+    }
+
+    private void photoToJson(JsonObject json, int userId, ResPrivatePhotoDTO resPrivatePhotoDTO) {
+        json.addProperty("photoId", resPrivatePhotoDTO.getPhotoId());
+        json.addProperty("level", resPrivatePhotoDTO.getPhotoLevel());
+        json.addProperty("unlockPrice", resPrivatePhotoDTO.getUnlockPrice());
+        json.addProperty("unlockShareNum", resPrivatePhotoDTO.getUnlockShareNum());
+        json.addProperty("photoUrl", resPrivatePhotoDTO.getPhotoPath());
+
+        JsonArray helpUsers = new JsonArray();
+        // 游客不显示以下信息
+        if (userId != 0) {
+            if (resPrivatePhotoDTO.getCurrentUnlockNum() != null) {
+                json.addProperty("currentUnlockNum", resPrivatePhotoDTO.getCurrentUnlockNum());
+            }
+            if (resPrivatePhotoDTO.getUnlockState() != null) {
+                json.addProperty("isUnlock", resPrivatePhotoDTO.getUnlockState() > 0);
+            }
+            if (CollectionUtils.isNotEmpty(resPrivatePhotoDTO.getHelpUnlockUserIds())) {
+                List<UserProfile> userProfileList = kkUserService.getUserProfileBatch(resPrivatePhotoDTO.getHelpUnlockUserIds());
+                if (CollectionUtils.isNotEmpty(userProfileList)) {
+                    for (UserProfile userProfile : userProfileList) {
+                        JsonObject helpUser = new JsonObject();
+                        helpUser.addProperty("userId", userProfile.getUserId());
+                        if (userProfile.getPortrait() != null) {
+                            helpUser.addProperty("userPortrait", userProfile.getPortrait());
+                        }
+                        helpUser.addProperty("gender", userProfile.getGender());
+                        helpUsers.add(helpUser);
+                    }
+                }
+            }
+        }
+        json.add("helpUsers", helpUsers);
     }
 
 
@@ -185,12 +202,13 @@ public class KKLiveProjectFunctions {
             return result;
         }
 
-        String tagCode = "5112020302";
+        String tagCode = TagCodeEnum.MODULE_UNKNOWN_RESPCODE;
         try {
             if (liveProjectService.shareUnlockPrivatePhoto(histId, userId)) {
                 tagCode = TagCodeEnum.SUCCESS;
             } else {
                 log.info(String.format("Fail:shareUnlockPrivatePhoto(histId=%s, userId=%s)", histId, userId));
+                tagCode = "5112020304";
             }
         } catch (MelotModuleException e) {
             log.info(String.format("Fail:shareUnlockPrivatePhoto(histId=%s, userId=%s)", histId, userId), e);
@@ -200,10 +218,11 @@ public class KKLiveProjectFunctions {
                 tagCode = TagCodeEnum.INVALID_PARAMETERS;
             } else if (e.getErrCode() == 103) {
                 tagCode = "5112020302";
+            } else if (e.getErrCode() == 104) {
+                tagCode = "5112020303";
             }
         } catch (Exception e) {
             log.error(String.format("Error:shareUnlockPrivatePhoto(histId=%s, userId=%s)", histId, userId), e);
-            tagCode = TagCodeEnum.MODULE_UNKNOWN_RESPCODE;
         }
         result.addProperty(ParameterKeys.TAG_CODE, tagCode);
         return result;
@@ -305,8 +324,8 @@ public class KKLiveProjectFunctions {
 
         if (taskConfiguration != null) {
             JsonArray array = new JsonArray();
-            JsonObject json = new JsonObject();
             for (LiveProjectTaskDTO liveProjectTaskDTO : taskConfiguration) {
+                JsonObject json = new JsonObject();
                 json.addProperty("taskId", liveProjectTaskDTO.getTaskId());
                 json.addProperty("taskName", liveProjectTaskDTO.getTaskName());
                 json.addProperty("rewardGiftId", liveProjectTaskDTO.getRewardGiftId());
@@ -363,6 +382,8 @@ public class KKLiveProjectFunctions {
                 tagCode = "5112020501";
             } else if (e.getErrCode() == 102) {
                 tagCode = "5112020502";
+            } else if (e.getErrCode() == 103) {
+                tagCode = TagCodeEnum.INVALID_PARAMETERS;
             }
         } catch (Exception e) {
             log.error("Error:getTaskConfiguration()", e);
@@ -408,10 +429,12 @@ public class KKLiveProjectFunctions {
             }
             // 设置礼物配置
             if (CollectionUtils.isNotEmpty(catalogGiftDTO.getGiftDTOList())) {
-                JsonObject json;
                 for (GiftDTO giftDTO : catalogGiftDTO.getGiftDTOList()) {
-                    json = new JsonObject();
+                    JsonObject json = new JsonObject();
                     json.addProperty("giftId", giftDTO.getGiftId());
+                    json.addProperty("giftName", giftDTO.getGiftName());
+                    json.addProperty("unit", giftDTO.getUnit());
+                    json.addProperty("sendPrice", giftDTO.getSendPrice());
                     jsonArray.add(json);
                 }
             }
@@ -419,6 +442,56 @@ public class KKLiveProjectFunctions {
             tagCode = TagCodeEnum.SUCCESS;
         } catch (Exception e) {
             log.error(String.format("Error:getGiftConf(jsonObject=%s, checkTag=%s, request=%s)", jsonObject, checkTag, request), e);
+        }
+        result.addProperty(ParameterKeys.TAG_CODE, tagCode);
+        return result;
+    }
+
+    /**
+     * 51120208
+     * 帮助者获取所帮助的照片信息，若是游客或未帮助过，则不显示照片的解锁进度
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getPhotoInfoForHelpUser(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        int histId, userId;
+        try {
+            histId = CommonUtil.getJsonParamInt(jsonObject, "histId", 0, TagCodeEnum.PARAMETER_PARSE_ERROR, 1, Integer.MAX_VALUE);
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        // 检验token
+        if (userId != 0 && !checkTag) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_INCORRECT);
+            return result;
+        }
+
+        String tagCode = TagCodeEnum.MODULE_UNKNOWN_RESPCODE;
+        try {
+            ResPrivatePhotoDTO resPrivatePhotoDTO = liveProjectService.getPrivatePhotoForHelpUser(histId, userId == 0 ? null : userId);
+            if (resPrivatePhotoDTO != null) {
+                photoToJson(result, userId, resPrivatePhotoDTO);
+                result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+                tagCode = TagCodeEnum.SUCCESS;
+            }
+        } catch (MelotModuleException e) {
+            if (e.getErrCode() == 101) {
+                tagCode = "5112020801";
+            } else if (e.getErrCode() == 102) {
+                tagCode = "5112020802";
+            }
+        } catch (Exception e) {
+            log.error(String.format("Error:getPrivatePhotoForHelpUser(histId=%s, userId=%s)", histId, userId), e);
         }
         result.addProperty(ParameterKeys.TAG_CODE, tagCode);
         return result;
