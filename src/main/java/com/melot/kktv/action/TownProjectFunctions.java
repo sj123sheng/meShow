@@ -2091,4 +2091,30 @@ public class TownProjectFunctions {
         }
     }
 
+    /**
+     * 获取站长申请状态(51120138)
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getStarApplyState(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        int  userId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "03040002", 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+        List<TownStarApplyInfoDTO> list =
+                townStarApplyInfoService.getUserApplyInfoListByStatus(userId,TownStarCheckStatusEnum.IN_REVIEW);
+        if(!CollectionUtils.isEmpty(list)){
+            result.addProperty("applyId",list.get(0).getApplyId());
+        }else{
+            result.addProperty("applyId",0);
+        }
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
 }
