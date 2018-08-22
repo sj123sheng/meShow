@@ -7,6 +7,8 @@ import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.melot.kktv.service.ConfigService;
+import com.melot.kktv.util.StringUtil;
 import org.apache.commons.lang.StringUtils;
 
 import com.dianping.cat.Cat;
@@ -25,10 +27,14 @@ import com.melot.round.driver.domain.RoundRoomActInfo;
 import com.melot.round.driver.domain.RoundRoomActList;
 import com.melot.round.driver.service.RoundRoomService;
 import com.melot.sdk.core.util.MelotBeanFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class RoundRoomFunction {
 	
 	private static final int cache_time = 300;
+
+	@Autowired
+	private ConfigService configService;
 	
 	/**
 	 * 获取轮播房节目列表(50001013)
@@ -127,7 +133,11 @@ public class RoundRoomFunction {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-		String dateString =new SimpleDateFormat("yyyy-MM-dd 04:00:00").format(new Date());
+        String roundStartTime = configService.getRoundTineStart();
+		if(StringUtil.strIsNull(roundStartTime)){
+			roundStartTime = "04:00:00";
+		}
+		String dateString =new SimpleDateFormat("yyyy-MM-dd "+roundStartTime).format(new Date());
 		Date startTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(dateString);
 		if(new Date().before(startTime)){
 			startTime = DateUtil.addOnField(startTime, Calendar.DATE, -1);
