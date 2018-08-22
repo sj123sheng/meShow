@@ -446,6 +446,7 @@ public class TownProjectFunctions {
         int receiveLike = townWorkService.getMyWorkPraiseNum(targetUserId);
         result.addProperty("receiveLike",receiveLike);
 
+        result.addProperty("pathPrefix",ConfigHelper.getHttpdir());
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
@@ -598,6 +599,7 @@ public class TownProjectFunctions {
             }
         }
         result.add("roomList", jRoomList);
+        result.addProperty("pathPrefix",ConfigHelper.getHttpdir());
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
@@ -708,6 +710,7 @@ public class TownProjectFunctions {
             }
         }
 
+        result.addProperty("pathPrefix",ConfigHelper.getHttpdir());
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         result.addProperty("pageTotal", pageTotal);
         result.add("roomList", jRoomList);
@@ -795,6 +798,7 @@ public class TownProjectFunctions {
             }
         }
         result.add("list",jsonArray);
+        result.addProperty("pathPrefix",ConfigHelper.getHttpdir());
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
@@ -1364,6 +1368,7 @@ public class TownProjectFunctions {
             }
         }
         result.add("list",jsonArray);
+        result.addProperty("pathPrefix",ConfigHelper.getHttpdir());
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
