@@ -208,7 +208,9 @@ public class TownProjectFunctions {
                     UserProfile userProfile = kkUserService.getUserProfile(sponsorUserId);
                     if(userProfile != null) {
                         result.addProperty("sponsorGender", userProfile.getGender());
-                        result.addProperty("sponsorPortrait", getPortrait(userProfile));
+                        if(userProfile.getPortrait() != null) {
+                            result.addProperty("sponsorPortrait", getPortrait(userProfile));
+                        }
                         result.addProperty("sponsorNickname", userProfile.getNickName());
                     }
                     result.addProperty("sponsorUserId", sponsorUserId);
@@ -1151,7 +1153,7 @@ public class TownProjectFunctions {
                 }
                 result.addProperty("userId", workUserId);
                 UserProfile userProfile = kkUserService.getUserProfile(workUserId);
-                if(userProfile != null) {
+                if(userProfile != null && userProfile.getPortrait() != null) {
                     result.addProperty("portrait", getPortrait(userProfile));
                 }
                 result.addProperty("praiseNum", townWorkDTO.getPraiseNum());
@@ -1164,6 +1166,11 @@ public class TownProjectFunctions {
                     followStatus = 1;
                 }
                 result.addProperty("followStatus", followStatus);
+                boolean isPraise = false;
+                if(userId > 0) {
+                    isPraise = townWorkService.isPraiseWork(userId, workId);
+                }
+                result.addProperty("isPraise", isPraise);
             } else {
                 result.addProperty("workStatus", 3);
             }
@@ -1560,7 +1567,9 @@ public class TownProjectFunctions {
                     messageJsonObject.addProperty("userId", messageUserId);
                     UserProfile userProfile = kkUserService.getUserProfile(messageUserId);
                     if(userProfile != null) {
-                        messageJsonObject.addProperty("portrait", getPortrait(userProfile));
+                        if(userProfile.getPortrait() != null) {
+                            messageJsonObject.addProperty("portrait", getPortrait(userProfile));
+                        }
                         messageJsonObject.addProperty("nickname", userProfile.getNickName());
                     }
                     messageJsonObject.addProperty("followTime", changeTimeToString(record.getFollowTime()));
@@ -1616,7 +1625,9 @@ public class TownProjectFunctions {
                     messageJsonObject.addProperty("userId", messageUserId);
                     UserProfile userProfile = kkUserService.getUserProfile(messageUserId);
                     if(userProfile != null) {
-                        messageJsonObject.addProperty("portrait", getPortrait(userProfile));
+                        if(userProfile.getPortrait() != null) {
+                            messageJsonObject.addProperty("portrait", getPortrait(userProfile));
+                        }
                         messageJsonObject.addProperty("nickname", userProfile.getNickName());
                     }
                     messageJsonObject.addProperty("workId", record.getWorkId());
@@ -1801,8 +1812,9 @@ public class TownProjectFunctions {
 
         JsonObject result = new JsonObject();
 
-        int workId;
+        int userId, workId;
         try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, USER_ID.getId(), 0, null, 1, Integer.MAX_VALUE);
             workId = CommonUtil.getJsonParamInt(jsonObject, WORK_ID.getId(), 0, WORK_ID.getErrorCode(), 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
@@ -1811,7 +1823,7 @@ public class TownProjectFunctions {
 
         try {
 
-            List<TownWorkCommentDTO> commentDTOS = townCommentService.getHotCommentList(workId);
+            List<TownWorkCommentDTO> commentDTOS = townCommentService.getHotCommentList(userId, workId);
             JsonArray commentList = new JsonArray();
             if(commentDTOS != null && commentDTOS.size() > 0) {
                 for(TownWorkCommentDTO record : commentDTOS) {
@@ -1820,7 +1832,9 @@ public class TownProjectFunctions {
                     commentJsonObject.addProperty("userId", commentUserId);
                     UserProfile userProfile = kkUserService.getUserProfile(commentUserId);
                     if(userProfile != null) {
-                        result.addProperty("portrait", getPortrait(userProfile));
+                        if(userProfile.getPortrait() != null) {
+                            result.addProperty("portrait", getPortrait(userProfile));
+                        }
                         result.addProperty("nickname", userProfile.getNickName());
                     }
                     commentJsonObject.addProperty("identity", record.getIdentity());
@@ -1870,8 +1884,9 @@ public class TownProjectFunctions {
 
         JsonObject result = new JsonObject();
 
-        int workId, pageIndex, countPerPage;
+        int userId, workId, pageIndex, countPerPage;
         try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, USER_ID.getId(), 0, null, 1, Integer.MAX_VALUE);
             workId = CommonUtil.getJsonParamInt(jsonObject, WORK_ID.getId(), 0, WORK_ID.getErrorCode(), 1, Integer.MAX_VALUE);
             pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
             countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 10, null, 1, Integer.MAX_VALUE);
@@ -1882,7 +1897,7 @@ public class TownProjectFunctions {
 
         try {
 
-            Page<TownWorkCommentDTO> page = townCommentService.getCommentListByWorkId(workId, pageIndex, countPerPage);
+            Page<TownWorkCommentDTO> page = townCommentService.getCommentListByWorkId(userId, workId, pageIndex, countPerPage);
             JsonArray commentList = new JsonArray();
             if(page != null && page.getList() != null && page.getList().size() > 0) {
                 List<TownWorkCommentDTO> commentDTOS = page.getList();
@@ -1892,7 +1907,9 @@ public class TownProjectFunctions {
                     commentJsonObject.addProperty("userId", commentUserId);
                     UserProfile userProfile = kkUserService.getUserProfile(commentUserId);
                     if(userProfile != null) {
-                        result.addProperty("portrait", getPortrait(userProfile));
+                        if(userProfile.getPortrait() != null) {
+                            result.addProperty("portrait", getPortrait(userProfile));
+                        }
                         result.addProperty("nickname", userProfile.getNickName());
                     }
                     commentJsonObject.addProperty("identity", record.getIdentity());
