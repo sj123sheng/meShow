@@ -1797,6 +1797,7 @@ public class TownProjectFunctions {
                         }
                     }
                     commentJsonObject.addProperty("praiseNum", record.getPraiseNum());
+                    commentJsonObject.addProperty("isPraise", record.getPraise());
                     commentJsonObject.addProperty("commentTime", changeTimeToString(record.getCommentTime()));
 
                     commentList.add(commentJsonObject);
@@ -1872,6 +1873,7 @@ public class TownProjectFunctions {
                         }
                     }
                     commentJsonObject.addProperty("praiseNum", record.getPraiseNum());
+                    commentJsonObject.addProperty("isPraise", record.getPraise());
                     commentJsonObject.addProperty("commentTime", changeTimeToString(record.getCommentTime()));
 
                     commentList.add(commentJsonObject);
