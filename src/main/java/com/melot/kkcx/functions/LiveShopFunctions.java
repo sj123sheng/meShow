@@ -267,7 +267,7 @@ public class LiveShopFunctions {
                 int relationId;
                 UserProfile userProfile;
                 // 我是买家，联系人为商家
-                if (liveShopOrderDTO.getUserId().equals(userId)) {
+                if (type == 1) {
                     relationId = liveShopOrderDTO.getActorId();
                     userProfile = kkUserService.getUserProfile(relationId);
                     

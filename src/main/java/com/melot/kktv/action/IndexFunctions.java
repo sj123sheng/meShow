@@ -221,12 +221,13 @@ public class IndexFunctions {
 		
 		JsonObject result = new JsonObject();
 		
-		int catalogId, start, offset, platform;
+		int catalogId, start, offset, platform, appId;
 		try {
 			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, 1, Integer.MAX_VALUE);
 			catalogId = CommonUtil.getJsonParamInt(jsonObject, "catalogId", 14, null, 1, Integer.MAX_VALUE);
 			start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, "02020005", 0, Integer.MAX_VALUE);
 			offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 0, "02020003", 1, Integer.MAX_VALUE);
+	        appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 0, Integer.MAX_VALUE);
 		} catch (CommonUtil.ErrorGetParameterException e) {
 			result.addProperty("TagCode", e.getErrCode());
 			return result;
@@ -285,7 +286,7 @@ public class IndexFunctions {
 			HallPartConfDTO sysMenu = null;
 			try {
 				// 根据栏目id查询房间列表
-				Result<HallPartConfDTO> partListResult = hallPartService.getPartList(cataId, 0, 0, 0, start, offset);
+				Result<HallPartConfDTO> partListResult = hallPartService.getPartList(cataId, 0, 0, 0, appId, start, offset);
 				if (checkResultData(partListResult)) {
 					sysMenu = partListResult.getData();
 				}
@@ -1721,11 +1722,13 @@ public class IndexFunctions {
 		JsonObject result = new JsonObject();
 		
 		int cataId, start, offset, platform;
+		int appId;
 		try {
 			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, 1, Integer.MAX_VALUE);
 			cataId = CommonUtil.getJsonParamInt(jsonObject, "partId", 0, "02320001", 1, Integer.MAX_VALUE);
 			start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, "02320003", 0, Integer.MAX_VALUE);
 			offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 0, "02320005", 0, Integer.MAX_VALUE);
+			appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 0, Integer.MAX_VALUE);
 		} catch(CommonUtil.ErrorGetParameterException e) {
 			result.addProperty("TagCode", e.getErrCode());
 			return result;
@@ -1740,7 +1743,7 @@ public class IndexFunctions {
 		if (cataId > 0) {
 			try {
 				// 根据栏目id获取该栏目信息
-				Result<HallPartConfDTO> partListResult = hallPartService.getPartList(cataId, 0, 0, 0, start, offset);
+				Result<HallPartConfDTO> partListResult = hallPartService.getPartList(cataId, 0, 0, 0, appId, start, offset);
 				if (partListResult != null && partListResult.getData() != null) {
 					roomCount = partListResult.getData().getRoomCount();
 					List<HallRoomInfoDTO> roomList = partListResult.getData().getRooms();
