@@ -69,6 +69,9 @@ public class LocationFunctions {
                     userInfoParam.setLastAreaCode(addressComponentDTO.getTownAreaCode());
                     townUserService.saveUserInfo(userInfoParam);
                 }
+                result.addProperty("province", addressComponentDTO.getProvince());
+                result.addProperty("city", addressComponentDTO.getCity());
+                result.addProperty("district", addressComponentDTO.getDistrict());
                 result.addProperty("town", addressComponentDTO.getTown());
                 result.addProperty("townAreaCode", addressComponentDTO.getTownAreaCode());
             }
