@@ -1679,6 +1679,87 @@ public class TownProjectFunctions {
     }
 
     /**
+     * 	获取评论消息列表【5112018】
+     */
+    public JsonObject getCommentMessageList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId, pageIndex, countPerPage;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, USER_ID.getId(), 0, USER_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
+            countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 10, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+
+            Page<TownWorkCommentDTO> page = townMessageService.getCommentMessageList(userId, pageIndex, countPerPage);
+            JsonArray messageList = new JsonArray();
+            if(page != null && page.getList() != null && page.getList().size() > 0) {
+                List<TownWorkCommentDTO> list = page.getList();
+                for(TownWorkCommentDTO record : list) {
+                    JsonObject messageJsonObject = new JsonObject();
+
+                    int messageUserId = record.getUserId();
+                    messageJsonObject.addProperty("userId", messageUserId);
+                    UserProfile userProfile = kkUserService.getUserProfile(messageUserId);
+                    if(userProfile != null) {
+                        if(userProfile.getPortrait() != null) {
+                            messageJsonObject.addProperty("portrait", getPortrait(userProfile));
+                        }
+                        messageJsonObject.addProperty("nickname", userProfile.getNickName());
+                    }
+                    messageJsonObject.addProperty("workId", record.getWorkId());
+                    messageJsonObject.addProperty("coverUrl",record.getCoverUrl());
+                    messageJsonObject.addProperty("commentId", record.getCommentId());
+                    messageJsonObject.addProperty("commentType", record.getCommentType());
+                    messageJsonObject.addProperty("commentMode", record.getCommentMode());
+                    messageJsonObject.addProperty("commentContent",record.getCommentContent());
+                    if(record.getCommentMode() == CommentModeEnum.VOICE) {
+                        messageJsonObject.addProperty("voiceDuration", record.getVoiceDuration());
+                    }
+                    if(record.getCommentType() == CommentTypeEnum.REPLY_COMMENT) {
+                        int refUserId = record.getRefUserId();
+                        messageJsonObject.addProperty("refUserId", refUserId);
+                        UserProfile refUserProfile = kkUserService.getUserProfile(refUserId);
+                        if(refUserProfile != null) {
+                            messageJsonObject.addProperty("refNickname", refUserProfile.getNickName());
+                        }
+                        messageJsonObject.addProperty("refCommentId", record.getRefCommentId());
+                        messageJsonObject.addProperty("refCommentMode", record.getRefCommentMode());
+                        messageJsonObject.addProperty("refCommentContent",record.getRefCommentContent());
+                        if(record.getRefCommentMode() == CommentModeEnum.VOICE) {
+                            messageJsonObject.addProperty("refVoiceDuration", record.getRefVoiceDuration());
+                        }
+                    }
+                    messageJsonObject.addProperty("commentTime", changeTimeToString(record.getCommentTime()));
+                    messageList.add(messageJsonObject);
+                }
+            }
+
+            result.add("messageList", messageList);
+            result.addProperty("messageCount", page.getCount());
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error getPraiseMessageList()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
      * 	获取系统消息列表【51120129】
      */
     public JsonObject getSystemMessageList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
