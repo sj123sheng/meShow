@@ -9,6 +9,7 @@ import com.melot.kk.module.resource.constant.ECloudTypeConstant;
 import com.melot.kk.module.resource.constant.FileTypeConstant;
 import com.melot.kk.module.resource.constant.ResourceStateConstant;
 import com.melot.kk.module.resource.service.ResourceNewService;
+import com.melot.kk.opus.api.constant.OpusCostantEnum;
 import com.melot.kk.town.api.constant.*;
 import com.melot.kk.town.api.dto.*;
 import com.melot.kk.town.api.param.TownUserInfoParam;
@@ -23,6 +24,7 @@ import com.melot.kktv.base.Page;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.domain.WorkVideoInfo;
 import com.melot.kktv.model.Room;
+import com.melot.kktv.service.LiveVideoService;
 import com.melot.kktv.service.UserRelationService;
 import com.melot.kktv.service.WorkService;
 import com.melot.kktv.util.*;
@@ -375,7 +377,11 @@ public class TownProjectFunctions {
 
         result.addProperty("userId",userProfile.getUserId());
         result.addProperty("nickname",userProfile.getNickName());
-        if(userProfile.getPortrait()!=null){
+        boolean  checkPortrait = LiveVideoService.checkingPortrait(userId);
+        if (checkPortrait) {
+            String path = OpusCostantEnum.CHECKING_PORTRAIT_RESOURCEURL;
+            result.addProperty("portrait", path + "!128");
+        }else{
             result.addProperty("portrait", this.getPortrait(userProfile));
         }
         result.addProperty("gender",userProfile.getGender());
