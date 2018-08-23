@@ -352,7 +352,7 @@ public class TownProjectFunctions {
         int targetUserId;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
-            targetUserId = CommonUtil.getJsonParamInt(jsonObject, "targetUserId", 0, null, 1, Integer.MAX_VALUE);
+            targetUserId = CommonUtil.getJsonParamInt(jsonObject, "targetUserId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -369,14 +369,7 @@ public class TownProjectFunctions {
             }
         }
 
-        int sourceUserId;
-        if(targetUserId <= 0){
-            sourceUserId = userId;
-        }else{
-            sourceUserId = targetUserId;
-        }
-
-        UserProfile userProfile = kkUserService.getUserProfile(sourceUserId);
+        UserProfile userProfile = kkUserService.getUserProfile(targetUserId);
         if(userProfile == null){
             result.addProperty("TagCode", TagCodeEnum.USER_NOT_EXIST);
             return result;
@@ -384,7 +377,7 @@ public class TownProjectFunctions {
 
         result.addProperty("userId",userProfile.getUserId());
         result.addProperty("nickname",userProfile.getNickName());
-        boolean  checkPortrait = LiveVideoService.checkingPortrait(sourceUserId);
+        boolean  checkPortrait = LiveVideoService.checkingPortrait(targetUserId);
         if (checkPortrait) {
             String path = OpusCostantEnum.CHECKING_PORTRAIT_RESOURCEURL;
             result.addProperty("portrait", path + "!128");
@@ -393,28 +386,30 @@ public class TownProjectFunctions {
         }
         result.addProperty("gender",userProfile.getGender());
 
-        int followsCount = UserRelationService.getFollowsCount(sourceUserId);
+        int followsCount = UserRelationService.getFollowsCount(targetUserId);
         result.addProperty("followCount",followsCount);
 
-        int fansCount = UserRelationService.getFansCount(sourceUserId);
+        int fansCount = UserRelationService.getFansCount(targetUserId);
         result.addProperty("fansCount",fansCount);
 
-        boolean userFollowTarget = UserRelationService.isFollowed(userId,sourceUserId);
-        boolean targetFollowUser = UserRelationService.isFollowed(sourceUserId,userId);
-        if(userFollowTarget && targetFollowUser){
-            result.addProperty("isFollow",1);
-        }else{
-           if(userFollowTarget){
-               result.addProperty("isFollow",0);
-           }else{
-               result.addProperty("isFollow",-1);
-           }
+        if(userId > 0 ){
+            boolean userFollowTarget = UserRelationService.isFollowed(userId,targetUserId);
+            boolean targetFollowUser = UserRelationService.isFollowed(targetUserId,userId);
+            if(userFollowTarget && targetFollowUser){
+                result.addProperty("isFollow",1);
+            }else{
+                if(userFollowTarget){
+                    result.addProperty("isFollow",0);
+                }else{
+                    result.addProperty("isFollow",-1);
+                }
+            }
         }
 
-        TownUserInfoDTO townUserInfoDTO = townUserService.getUserInfo(sourceUserId);
+        TownUserInfoDTO townUserInfoDTO = townUserService.getUserInfo(targetUserId);
         if(townUserInfoDTO != null){
             if(!StringUtils.isEmpty(townUserInfoDTO.getLastAreaCode())){
-                TownUserRoleDTO townUserRoleDTO = townUserRoleService.getUserAreaRole(sourceUserId,
+                TownUserRoleDTO townUserRoleDTO = townUserRoleService.getUserAreaRole(targetUserId,
                         townUserInfoDTO.getLastAreaCode(), UserRoleTypeEnum.OWER);
                 if(townUserRoleDTO != null){
                     result.addProperty("isOwer",1);
@@ -442,14 +437,14 @@ public class TownProjectFunctions {
                     logger.error("parse birthday error birthday:"+townUserInfoDTO.getBirthday()+",ex:",ex);
                 }
             }
-            String tag = this.getUserTag(sourceUserId);
+            String tag = this.getUserTag(targetUserId);
             result.addProperty("tag",tag);
         }
 
-        int unreadMsgCount = townMessageService.getUnreadMessageCount(sourceUserId);
+        int unreadMsgCount = townMessageService.getUnreadMessageCount(targetUserId);
         result.addProperty("unreadMsgCount",unreadMsgCount);
 
-        com.melot.kkcore.actor.api.RoomInfo roomInfo = actorService.getRoomInfoById(sourceUserId);
+        com.melot.kkcore.actor.api.RoomInfo roomInfo = actorService.getRoomInfoById(targetUserId);
         if(roomInfo != null){
             if(roomInfo.getRoomSource() != null){
                 result.addProperty("roomSource",roomInfo.getRoomSource());
@@ -461,13 +456,13 @@ public class TownProjectFunctions {
             }
         }
 
-        int workCount = townWorkService.getMyWorkNum(sourceUserId);
+        int workCount = townWorkService.getMyWorkNum(targetUserId);
         result.addProperty("workCount",workCount);
 
-        int like = townWorkService.getMyPraiseWorkNum(sourceUserId);
+        int like = townWorkService.getMyPraiseWorkNum(targetUserId);
         result.addProperty("like",like);
 
-        int receiveLike = townWorkService.getMyWorkPraiseNum(sourceUserId);
+        int receiveLike = townWorkService.getMyWorkPraiseNum(targetUserId);
         result.addProperty("receiveLike",receiveLike);
 
         result.addProperty("pathPrefix",ConfigHelper.getHttpdir());
@@ -530,6 +525,11 @@ public class TownProjectFunctions {
      */
     public JsonObject getUserFollowedList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
+        int selfTag = 0;
+        if (checkTag) {
+            selfTag = 1;
+        }
+
         int userId, pageIndex, countPerPage, platform;
 
         //排序规则  默认:直播状态,1:关注时间
@@ -547,11 +547,6 @@ public class TownProjectFunctions {
             return result;
         } catch(Exception e) {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-            return result;
-        }
-
-        if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
         }
 
