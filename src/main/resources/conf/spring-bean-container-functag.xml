@@ -1284,10 +1284,6 @@
 	
 	<!-- 系统资源相关的接口类 -->
 	<!-- 商城车市获取车辆列表 -->
-	<bean id="10005011" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="resourceFunction" />
-		<constructor-arg name="methodName" value="getCarList" />
-	</bean>
 	<!-- 获取道具资源列表 -->
 	<bean id="10009001" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="resourceFunction" />
@@ -2828,6 +2824,31 @@
 	<bean id="51060519" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="liveShopFunctions" />
 		<constructor-arg name="methodName" value="getSaleActorInfo" />
+	</bean>
+	
+	<bean id="51060520" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getSubShopIds" />
+	</bean>
+	
+	<bean id="51060521" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getSubShopInfos" />
+	</bean>
+	
+	<bean id="52060522" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="addSubShopInfo" />
+	</bean>
+	
+	<bean id="52060523" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="delSubShopInfo" />
+	</bean>
+	
+	<bean id="51060524" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="canAddSubShop" />
 	</bean>
 	
 	<!-- 获取积分礼物列表 -->

@@ -38,7 +38,27 @@ public enum ParamCodeEnum {
     SEASON_TYPE("seasonType", "53000013"),
     LAT("lat", "53000014"),
     LNG("lng", "53000015"),
-    AREA_CODE("areaCode", "53000016");
+    AREA_CODE("areaCode", "53000016"),
+    WORK_URL("workUrl", "53000017"),
+    WORK_TYPE("workType", "53000018"),
+    TOPIC_NAME("topicName", "53000019"),
+    WORK_DESC("workDesc", "53000020"),
+    TOPIC_ID("topicId", "53000021"),
+    WORK_ID("workId", "53000022"),
+    RESOURCE_IDS("resourceIds", "53000023"),
+    WORK_SORT("workSort", "53000024"),
+    APPLY_TYPE("applyType","53000025"),
+    NAME("name","53000026"),
+    AGE("age","53000027"),
+    GENDER("gender","53000028"),
+    HOME("home","53000029"),
+    MOBILE_PHONE("mobilePhone","53000030"),
+    PROFESSION("profession","53000031"),
+    EXPERIENCE("experience","53000032"),
+    REASON("reason","53000033"),
+    COMMENT_CONTENT("commentContent","53000034"),
+    COMMENT_ID("commentId","53000035"),
+    ;
 
 
     private String id;

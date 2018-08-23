@@ -1,7 +1,6 @@
 package com.melot.kktv.action;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,7 +16,6 @@ import com.google.gson.reflect.TypeToken;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcx.service.AssetService;
 import com.melot.kkcx.service.FamilyService;
-import com.melot.kktv.model.Car;
 import com.melot.kktv.model.Family;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConfigHelper;
@@ -25,8 +23,6 @@ import com.melot.kktv.util.ConstantEnum;
 import com.melot.kktv.util.PlatformEnum;
 import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
-import com.melot.kktv.util.db.DB;
-import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.module.packagegift.driver.domain.Prop;
 import com.melot.module.packagegift.driver.domain.PropPrice;
 import com.melot.module.packagegift.driver.domain.UserTicketInfo;
@@ -45,150 +41,6 @@ public class ResourceFunctions {
 	/** 日志记录对象 */
 	private static Logger logger = Logger.getLogger(ResourceFunctions.class);
 
-	/**
-	 * 商城车市获取车辆列表
-	 * 
-	 * @param paramJsonObject
-	 * @return 车辆列表
-	 */
-	public JsonObject getCarList(JsonObject paramJsonObject, boolean checkTag, HttpServletRequest request) {
-		// 获取参数
-		JsonElement pageIndexje = paramJsonObject.get("pageIndex");
-		JsonElement numPerPageje = paramJsonObject.get("numPerPage");
-		JsonElement orderByje = paramJsonObject.get("orderBy");
-		JsonElement sortModeje = paramJsonObject.get("sortMode");
-		JsonElement categoryje = paramJsonObject.get("category");
-		JsonElement platformje = paramJsonObject.get("platform");
-
-		int pageIndex = 1; // 页码
-		int numPerPage = 16; // 每页显示数量
-		int orderBy = 0; // 按哪列排序
-		String sortMode = "asc"; // 升序/降序
-		int category = -1; // 分类
-		int platform = PlatformEnum.WEB;
-		// 验证参数
-		if (pageIndexje != null) {
-			try {
-				pageIndex = pageIndexje.getAsInt();
-			} catch (Exception e) {
-				JsonObject result = new JsonObject();
-				result.addProperty("TagCode", 05110001);
-				return result;
-			}
-		} else {
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", 05110001);
-			return result;
-		}
-
-		if (numPerPageje != null) {
-			try {
-				numPerPage = numPerPageje.getAsInt();
-				if (numPerPage < 0) {
-					JsonObject result = new JsonObject();
-					result.addProperty("TagCode", 05110002);
-					return result;
-				}
-			} catch (Exception e) {
-				JsonObject result = new JsonObject();
-				result.addProperty("TagCode", 05110002);
-				return result;
-			}
-		} else {
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", 05110002);
-			return result;
-		}
-
-		if (orderByje != null) {
-			try {
-				orderBy = orderByje.getAsInt();
-			} catch (Exception e) {
-				orderBy = 0;
-			}
-		}
-
-		if (categoryje != null) {
-			try {
-				category = categoryje.getAsInt();
-			} catch (Exception e) {
-				category = -1;
-			}
-		}
-
-		if (sortModeje != null) {
-			sortMode = sortModeje.getAsString();
-			if (!sortMode.equals("asc") && !sortMode.equals("desc")) {
-				JsonObject result = new JsonObject();
-				result.addProperty("TagCode", 05110003);
-				return result;
-			}
-		}
-
-		if (platformje != null) {
-			try {
-				platform = platformje.getAsInt();
-			} catch (Exception e) {
-				platform = PlatformEnum.WEB;
-			}
-		}
-
-		Map<Object, Object> map = new HashMap<Object, Object>();
-		map.put("pageIndex", pageIndex);
-		map.put("numPerPage", numPerPage);
-		map.put("orderBy", orderBy);
-		map.put("sortMode", sortMode);
-		map.put("category", category);
-
-		try {
-			SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Profile.getCarList", map);
-		} catch (Exception e) {
-			logger.error("未能正常调用存储过程", e);
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
-			return result;
-		}
-
-		String tagCode = map.get("TagCode").toString();
-		String pageTotal = map.get("PageTotal").toString();
-		// 返回结果
-		JsonObject result = new JsonObject();
-		if (tagCode.equals(TagCodeEnum.SUCCESS)) {
-			result.addProperty("TagCode", tagCode);
-			result.addProperty("pageTotal", pageTotal);
-
-			@SuppressWarnings("unchecked")
-			List<Car> list = (List<Car>) map.get("CarList");
-
-			JsonArray ja = new JsonArray();
-			for (Car car : list) {
-				if (platform == PlatformEnum.ANDROID) {
-					car.setPhoto(ConfigHelper.getParkCarAndroidResURL() + car.getPhoto());
-					car.setIcon(ConfigHelper.getParkLogoAndroidResURL() + car.getIcon());
-				} else if (platform == PlatformEnum.IPHONE) {
-					car.setPhoto(ConfigHelper.getParkCarResURL() + car.getPhoto());
-					car.setIcon(ConfigHelper.getParkLogoResURL() + car.getIcon());
-				} else if (platform == PlatformEnum.IPAD) {
-					car.setPhoto(ConfigHelper.getParkCarResURL() + car.getPhoto());
-					car.setIcon(ConfigHelper.getParkLogoResURL() + car.getIcon());
-				}
-				ja.add(car.toJsonObjectForCarList());
-			}
-			result.add("CarList", ja);
-		} else if (tagCode.equals("02")) {
-			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-			result.addProperty("pageTotal", pageTotal);
-			result.add("CarList", new JsonArray());
-		} else if (tagCode.equals("03")) {
-			result.addProperty("TagCode", "05110004");
-		} else {
-			logger.error("调用存储过程(Profile.getCarList)未的到正常结果,TagCode:" + tagCode + ",jsonObject:" + paramJsonObject.toString());
-			result.addProperty("TagCode", TagCodeEnum.IRREGULAR_RESULT);
-		}
-
-		return result;
-	}
-	
 	/**
 	 * 获取道具资源列表
 	 * Sql Resource.getPropList（可删除）
