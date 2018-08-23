@@ -347,29 +347,36 @@ public class TownProjectFunctions {
      */
     public JsonObject getUserProfile(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
-        if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-            return result;
-        }
 
         int userId;
         int targetUserId;
         try {
-            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
             targetUserId = CommonUtil.getJsonParamInt(jsonObject, "targetUserId", 0, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
         }
-        UserProfile loginUserProfile  = kkUserService.getUserProfile(userId);
-        if(loginUserProfile == null){
-            result.addProperty("TagCode", TagCodeEnum.USER_NOT_EXIST);
-            return result;
+        if(userId > 0){
+            if (!checkTag) {
+                result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+                return result;
+            }
+            UserProfile loginUserProfile  = kkUserService.getUserProfile(userId);
+            if(loginUserProfile == null){
+                result.addProperty("TagCode", TagCodeEnum.USER_NOT_EXIST);
+                return result;
+            }
         }
+
+        int sourceUserId;
         if(targetUserId <= 0){
-            targetUserId = userId;
+            sourceUserId = userId;
+        }else{
+            sourceUserId = targetUserId;
         }
-        UserProfile userProfile = kkUserService.getUserProfile(targetUserId);
+
+        UserProfile userProfile = kkUserService.getUserProfile(sourceUserId);
         if(userProfile == null){
             result.addProperty("TagCode", TagCodeEnum.USER_NOT_EXIST);
             return result;
@@ -377,7 +384,7 @@ public class TownProjectFunctions {
 
         result.addProperty("userId",userProfile.getUserId());
         result.addProperty("nickname",userProfile.getNickName());
-        boolean  checkPortrait = LiveVideoService.checkingPortrait(targetUserId);
+        boolean  checkPortrait = LiveVideoService.checkingPortrait(sourceUserId);
         if (checkPortrait) {
             String path = OpusCostantEnum.CHECKING_PORTRAIT_RESOURCEURL;
             result.addProperty("portrait", path + "!128");
@@ -386,14 +393,14 @@ public class TownProjectFunctions {
         }
         result.addProperty("gender",userProfile.getGender());
 
-        int followsCount = UserRelationService.getFollowsCount(targetUserId);
+        int followsCount = UserRelationService.getFollowsCount(sourceUserId);
         result.addProperty("followCount",followsCount);
 
-        int fansCount = UserRelationService.getFansCount(targetUserId);
+        int fansCount = UserRelationService.getFansCount(sourceUserId);
         result.addProperty("fansCount",fansCount);
 
-        boolean userFollowTarget = UserRelationService.isFollowed(userId,targetUserId);
-        boolean targetFollowUser = UserRelationService.isFollowed(targetUserId,userId);
+        boolean userFollowTarget = UserRelationService.isFollowed(userId,sourceUserId);
+        boolean targetFollowUser = UserRelationService.isFollowed(sourceUserId,userId);
         if(userFollowTarget && targetFollowUser){
             result.addProperty("isFollow",1);
         }else{
@@ -404,10 +411,10 @@ public class TownProjectFunctions {
            }
         }
 
-        TownUserInfoDTO townUserInfoDTO = townUserService.getUserInfo(targetUserId);
+        TownUserInfoDTO townUserInfoDTO = townUserService.getUserInfo(sourceUserId);
         if(townUserInfoDTO != null){
             if(!StringUtils.isEmpty(townUserInfoDTO.getLastAreaCode())){
-                TownUserRoleDTO townUserRoleDTO = townUserRoleService.getUserAreaRole(targetUserId,
+                TownUserRoleDTO townUserRoleDTO = townUserRoleService.getUserAreaRole(sourceUserId,
                         townUserInfoDTO.getLastAreaCode(), UserRoleTypeEnum.OWER);
                 if(townUserRoleDTO != null){
                     result.addProperty("isOwer",1);
@@ -435,14 +442,14 @@ public class TownProjectFunctions {
                     logger.error("parse birthday error birthday:"+townUserInfoDTO.getBirthday()+",ex:",ex);
                 }
             }
-            String tag = this.getUserTag(targetUserId);
+            String tag = this.getUserTag(sourceUserId);
             result.addProperty("tag",tag);
         }
 
-        int unreadMsgCount = townMessageService.getUnreadMessageCount(targetUserId);
+        int unreadMsgCount = townMessageService.getUnreadMessageCount(sourceUserId);
         result.addProperty("unreadMsgCount",unreadMsgCount);
 
-        com.melot.kkcore.actor.api.RoomInfo roomInfo = actorService.getRoomInfoById(targetUserId);
+        com.melot.kkcore.actor.api.RoomInfo roomInfo = actorService.getRoomInfoById(sourceUserId);
         if(roomInfo != null){
             if(roomInfo.getRoomSource() != null){
                 result.addProperty("roomSource",roomInfo.getRoomSource());
@@ -454,13 +461,13 @@ public class TownProjectFunctions {
             }
         }
 
-        int workCount = townWorkService.getMyWorkNum(targetUserId);
+        int workCount = townWorkService.getMyWorkNum(sourceUserId);
         result.addProperty("workCount",workCount);
 
-        int like = townWorkService.getMyPraiseWorkNum(targetUserId);
+        int like = townWorkService.getMyPraiseWorkNum(sourceUserId);
         result.addProperty("like",like);
 
-        int receiveLike = townWorkService.getMyWorkPraiseNum(targetUserId);
+        int receiveLike = townWorkService.getMyWorkPraiseNum(sourceUserId);
         result.addProperty("receiveLike",receiveLike);
 
         result.addProperty("pathPrefix",ConfigHelper.getHttpdir());
