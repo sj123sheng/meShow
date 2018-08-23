@@ -525,6 +525,11 @@ public class TownProjectFunctions {
      */
     public JsonObject getUserFollowedList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
+        int selfTag = 0;
+        if (checkTag) {
+            selfTag = 1;
+        }
+
         int userId, pageIndex, countPerPage, platform;
 
         //排序规则  默认:直播状态,1:关注时间
@@ -542,11 +547,6 @@ public class TownProjectFunctions {
             return result;
         } catch(Exception e) {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-            return result;
-        }
-
-        if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
         }
 
