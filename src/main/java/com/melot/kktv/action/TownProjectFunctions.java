@@ -1928,9 +1928,9 @@ public class TownProjectFunctions {
                     UserProfile userProfile = kkUserService.getUserProfile(commentUserId);
                     if(userProfile != null) {
                         if(userProfile.getPortrait() != null) {
-                            result.addProperty("portrait", getPortrait(userProfile));
+                            commentJsonObject.addProperty("portrait", getPortrait(userProfile));
                         }
-                        result.addProperty("nickname", userProfile.getNickName());
+                        commentJsonObject.addProperty("nickname", userProfile.getNickName());
                     }
                     commentJsonObject.addProperty("identity", record.getIdentity());
                     commentJsonObject.addProperty("commentId", record.getCommentId());
@@ -1945,7 +1945,7 @@ public class TownProjectFunctions {
                         commentJsonObject.addProperty("refUserId", refCommentUserId);
                         UserProfile userProfile1 = kkUserService.getUserProfile(refCommentUserId);
                         if(userProfile1 != null) {
-                            result.addProperty("refNickname", userProfile1.getNickName());
+                            commentJsonObject.addProperty("refNickname", userProfile1.getNickName());
                         }
                         commentJsonObject.addProperty("refCommentId", record.getRefCommentId());
                         commentJsonObject.addProperty("refCommentMode", record.getRefCommentMode());
@@ -2004,9 +2004,9 @@ public class TownProjectFunctions {
                     UserProfile userProfile = kkUserService.getUserProfile(commentUserId);
                     if(userProfile != null) {
                         if(userProfile.getPortrait() != null) {
-                            result.addProperty("portrait", getPortrait(userProfile));
+                            commentJsonObject.addProperty("portrait", getPortrait(userProfile));
                         }
-                        result.addProperty("nickname", userProfile.getNickName());
+                        commentJsonObject.addProperty("nickname", userProfile.getNickName());
                     }
                     commentJsonObject.addProperty("identity", record.getIdentity());
                     commentJsonObject.addProperty("commentId", record.getCommentId());
@@ -2021,7 +2021,7 @@ public class TownProjectFunctions {
                         commentJsonObject.addProperty("refUserId", refCommentUserId);
                         UserProfile userProfile1 = kkUserService.getUserProfile(refCommentUserId);
                         if(userProfile1 != null) {
-                            result.addProperty("refNickname", userProfile1.getNickName());
+                            commentJsonObject.addProperty("refNickname", userProfile1.getNickName());
                         }
                         commentJsonObject.addProperty("refCommentId", record.getRefCommentId());
                         commentJsonObject.addProperty("refCommentMode", record.getRefCommentMode());
@@ -2201,7 +2201,7 @@ public class TownProjectFunctions {
                     commentJsonObject.addProperty("userId", commentUserId);
                     UserProfile userProfile = kkUserService.getUserProfile(commentUserId);
                     if(userProfile != null) {
-                        result.addProperty("nickname", userProfile.getNickName());
+                        commentJsonObject.addProperty("nickname", userProfile.getNickName());
                     }
                     String identity = record.getIdentity();
                     boolean isAuthor = false;
