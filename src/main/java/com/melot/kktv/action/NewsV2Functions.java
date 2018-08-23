@@ -780,6 +780,58 @@ public class NewsV2Functions {
         return result;
     }
 
+    /**
+     * 获取大厅推荐话题列表（51100109）
+     * @param jsonObject
+     * @param checkTag
+     * @return
+     */
+    public JsonObject getTopicByTitle(JsonObject jsonObject, boolean checkTag) {
+        JsonObject result = new JsonObject();
+        // 定义所需参数
+        int appId,pageNum;
+        String title;
+        // 解析参数
+        try {
+            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, TagCodeEnum.APPID_MISSING, 1, Integer.MAX_VALUE);
+            pageNum = CommonUtil.getJsonParamInt(jsonObject, "pageNum", 8, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            title = CommonUtil.getJsonParamString(jsonObject, "title", null, "5110010901", 1, 10);
+        } catch (ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+        NewsTopic newsTopic = NewsService.getTopicByContent(appId,title);
+        if(newsTopic != null && newsTopic.getTopicId()!= null){
+            result.addProperty("topicId",newsTopic.getTopicId());
+            result.addProperty("content",newsTopic.getContent());
+            List<NewsInfo> newsList = NewsService.getNewsListsByTopicId(newsTopic.getTopicId(),0,pageNum);
+            JsonArray newsJsonArray = new JsonArray();
+            for(NewsInfo newsInfo:newsList){
+                JsonObject news = new JsonObject();
+                news.addProperty("newsId",newsInfo.getNewsId());
+                news.addProperty("userId",newsInfo.getUserId());
+                news.addProperty("praiseNum",newsInfo.getNewsPraise());
+                RoomInfo actorInfo = RoomService.getRoomInfo(newsInfo.getUserId());
+                if (actorInfo != null) {
+                    news.addProperty("nickname", actorInfo.getNickname());
+                }
+                if(newsInfo.getRefVideo()!=null){
+                    int resId = Integer.valueOf(Pattern.compile("\\{|\\}").matcher(newsInfo.getRefVideo()).replaceAll(""));
+                    Resource resVideo = resourceNewService.getResourceById(resId).getData();
+                    if(resVideo != null){
+                        news.addProperty("imageUrl", resVideo.getImageUrl());
+                        news.addProperty("mediaUrl", resVideo.getSpecificUrl());
+                    }
+                }
+                newsJsonArray.add(news);
+            }
+            result.add("newsList",newsJsonArray);
+        }
+        result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());// 七牛前缀
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+
     public JsonObject checkAudioWhiteUser(JsonObject jsonObject, boolean checkTag) throws Exception {
         String functag = "51100106";
         JsonObject result = new JsonObject();
