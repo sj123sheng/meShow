@@ -377,7 +377,7 @@ public class TownProjectFunctions {
 
         result.addProperty("userId",userProfile.getUserId());
         result.addProperty("nickname",userProfile.getNickName());
-        boolean  checkPortrait = LiveVideoService.checkingPortrait(userId);
+        boolean  checkPortrait = LiveVideoService.checkingPortrait(targetUserId);
         if (checkPortrait) {
             String path = OpusCostantEnum.CHECKING_PORTRAIT_RESOURCEURL;
             result.addProperty("portrait", path + "!128");
