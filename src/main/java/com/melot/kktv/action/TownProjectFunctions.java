@@ -345,13 +345,16 @@ public class TownProjectFunctions {
      */
     public JsonObject getUserProfile(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
         int userId;
         int targetUserId;
-        String areaCode;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-            targetUserId = CommonUtil.getJsonParamInt(jsonObject, "targetUserId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-            areaCode =  CommonUtil.getJsonParamString(jsonObject, "areaCode", null, null, 1, 20);
+            targetUserId = CommonUtil.getJsonParamInt(jsonObject, "targetUserId", 0, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -360,6 +363,9 @@ public class TownProjectFunctions {
         if(loginUserProfile == null){
             result.addProperty("TagCode", TagCodeEnum.USER_NOT_EXIST);
             return result;
+        }
+        if(targetUserId <= 0){
+            targetUserId = userId;
         }
         UserProfile userProfile = kkUserService.getUserProfile(targetUserId);
         if(userProfile == null){
@@ -392,23 +398,23 @@ public class TownProjectFunctions {
            }
         }
 
-        if(!StringUtils.isEmpty(areaCode)){
-            TownUserRoleDTO townUserRoleDTO = townUserRoleService.getUserAreaRole(targetUserId,areaCode,
-                    UserRoleTypeEnum.OWER);
-            if(townUserRoleDTO != null){
-                result.addProperty("isOwer",1);
-            }else{
-                result.addProperty("isOwer",0);
-            }
-
-            String areaName = locationService.getAreaNameByAreaCode(areaCode);
-            if(!org.springframework.util.StringUtils.isEmpty(areaName)){
-                result.addProperty("areaName",areaName);
-            }
-        }
-
-        TownUserInfoDTO townUserInfoDTO =  townUserService.getUserInfo(targetUserId);
+        TownUserInfoDTO townUserInfoDTO = townUserService.getUserInfo(targetUserId);
         if(townUserInfoDTO != null){
+            if(!StringUtils.isEmpty(townUserInfoDTO.getLastAreaCode())){
+                TownUserRoleDTO townUserRoleDTO = townUserRoleService.getUserAreaRole(targetUserId,
+                        townUserInfoDTO.getLastAreaCode(), UserRoleTypeEnum.OWER);
+                if(townUserRoleDTO != null){
+                    result.addProperty("isOwer",1);
+                }else{
+                    result.addProperty("isOwer",0);
+                }
+
+                String areaName = locationService.getAreaNameByAreaCode(townUserInfoDTO.getLastAreaCode());
+                if(!org.springframework.util.StringUtils.isEmpty(areaName)){
+                    result.addProperty("areaName",areaName);
+                }
+            }
+
             if(townUserInfoDTO.getIntroduction()!=null){
                 result.addProperty("introduction",townUserInfoDTO.getIntroduction());
             }
