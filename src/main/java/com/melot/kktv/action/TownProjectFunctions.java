@@ -352,7 +352,7 @@ public class TownProjectFunctions {
         int targetUserId;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
-            targetUserId = CommonUtil.getJsonParamInt(jsonObject, "targetUserId", 0, null, 1, Integer.MAX_VALUE);
+            targetUserId = CommonUtil.getJsonParamInt(jsonObject, "targetUserId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -370,9 +370,9 @@ public class TownProjectFunctions {
         }
 
         int sourceUserId;
-        if(targetUserId <= 0){
+        if (targetUserId <= 0) {
             sourceUserId = userId;
-        }else{
+        } else {
             sourceUserId = targetUserId;
         }
 
