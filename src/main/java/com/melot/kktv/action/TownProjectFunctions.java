@@ -604,7 +604,7 @@ public class TownProjectFunctions {
                 if(isFollow){
                     json.addProperty("isFollow",1);
                 }else{
-                    json.addProperty("isFollow",-1);
+                    json.addProperty("isFollow",0);
                 }
                 jRoomList.add(json);
             }
