@@ -757,6 +757,7 @@ public class NewsV2Functions {
                 news.addProperty("newsId",newsInfo.getNewsId());
                 news.addProperty("userId",newsInfo.getUserId());
                 news.addProperty("praiseNum",newsInfo.getNewsPraise());
+                news.addProperty("content",newsInfo.getContent());
                 RoomInfo actorInfo = RoomService.getRoomInfo(newsInfo.getUserId());
                 if (actorInfo != null) {
                     news.addProperty("nickname", actorInfo.getNickname());
@@ -781,7 +782,7 @@ public class NewsV2Functions {
     }
 
     /**
-     * 获取大厅推荐话题列表（51100109）
+     * 根据话题名获取话题及相关视频动态（51100109）
      * @param jsonObject
      * @param checkTag
      * @return
@@ -811,6 +812,7 @@ public class NewsV2Functions {
                 news.addProperty("newsId",newsInfo.getNewsId());
                 news.addProperty("userId",newsInfo.getUserId());
                 news.addProperty("praiseNum",newsInfo.getNewsPraise());
+                news.addProperty("content",newsInfo.getContent());
                 RoomInfo actorInfo = RoomService.getRoomInfo(newsInfo.getUserId());
                 if (actorInfo != null) {
                     news.addProperty("nickname", actorInfo.getNickname());
