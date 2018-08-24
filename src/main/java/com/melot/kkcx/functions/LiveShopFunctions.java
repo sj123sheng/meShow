@@ -35,6 +35,7 @@ import com.melot.kktv.base.Result;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class LiveShopFunctions {
 
@@ -73,10 +74,12 @@ public class LiveShopFunctions {
         int userId;
         int auctionId;
         int resourceId;
+        int channel;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, "5106050201", 1, Integer.MAX_VALUE);
             auctionId = CommonUtil.getJsonParamInt(jsonObject, "auctionId", 0, "5106050202", 1, Integer.MAX_VALUE);
             resourceId = CommonUtil.getJsonParamInt(jsonObject, "resourceId", 0, "5106050203", 1, Integer.MAX_VALUE);
+            channel = CommonUtil.getJsonParamInt(jsonObject, "channel", 1, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
             return result;
@@ -86,7 +89,7 @@ public class LiveShopFunctions {
         }
         
         try {
-            Result<String> addOrderResult = liveShopService.addAuctionOrder(userId, auctionId, resourceId);
+            Result<String> addOrderResult = liveShopService.addAuctionOrder(userId, auctionId, resourceId, channel);
             if (addOrderResult == null) {
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
                 return result;
@@ -725,12 +728,14 @@ public class LiveShopFunctions {
         int productId;
         int count;
         int addressId;
+        int channel;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, "5106051301", 1, Integer.MAX_VALUE);
             distributorId = CommonUtil.getJsonParamInt(jsonObject, "distributorId", 0, "5106051302", 0, Integer.MAX_VALUE);
             productId = CommonUtil.getJsonParamInt(jsonObject, "productId", 0, "5106051303", 1, Integer.MAX_VALUE);
             count = CommonUtil.getJsonParamInt(jsonObject, "count", 0, "5106051304", 1, Integer.MAX_VALUE);
             addressId = CommonUtil.getJsonParamInt(jsonObject, "addressId", 0, "5106051305", 1, Integer.MAX_VALUE);
+            channel = CommonUtil.getJsonParamInt(jsonObject, "channel", 1, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
             return result;
@@ -740,7 +745,7 @@ public class LiveShopFunctions {
         }
         
         try {
-            Result<String> addOrderResult = liveShopService.addDistributorOrder(userId, distributorId, productId, count, addressId);
+            Result<String> addOrderResult = liveShopService.addDistributorOrder(userId, distributorId, productId, count, addressId,channel);
             if (addOrderResult == null) {
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
                 return result;
@@ -788,6 +793,7 @@ public class LiveShopFunctions {
         String productName;
         long productPrice;
         long expressMoney;
+        int channel;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, "5106051401", 0, Integer.MAX_VALUE);
             buyerId = CommonUtil.getJsonParamInt(jsonObject, "buyerId", 0, "5106051402", 0, Integer.MAX_VALUE);
@@ -795,6 +801,7 @@ public class LiveShopFunctions {
             productName = CommonUtil.getJsonParamString(jsonObject, "productName", null, "5106051404", 1, Integer.MAX_VALUE);
             productPrice = CommonUtil.getJsonParamLong(jsonObject, "productPrice", 0, "5106051405", 1, 99999999L);
             expressMoney = CommonUtil.getJsonParamLong(jsonObject, "expressMoney", 0, null, 0, 99999L);
+            channel = CommonUtil.getJsonParamInt(jsonObject, "channel", 1, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
             return result;
@@ -808,7 +815,7 @@ public class LiveShopFunctions {
             productDTO.setExpressPrice(expressMoney);
             productDTO.setProductPrice(productPrice);
             productDTO.setProductName(productName);
-            Result<String> addOrderResult = liveShopService.addOrderByActor(userId, productDTO, buyerId);
+            Result<String> addOrderResult = liveShopService.addOrderByActor(userId, productDTO, buyerId, channel);
             if (addOrderResult == null) {
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
                 return result;
@@ -1385,6 +1392,143 @@ public class LiveShopFunctions {
             logger.error(String.format("Module Error：liveShopService.canAddSubShop(userId=%s)", userId), e);
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
         }
+        return result;
+    }
+
+    /**
+     * 登记商家信息[51060525]
+     */
+    public JsonObject registerSaleActorInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        // 检验token
+        if (!checkTag) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_INCORRECT);
+            return result;
+        }
+        int userId;
+        String phoneNo;
+        String wechatName;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, TagCodeEnum.INVALID_PARAMETERS, 0, Integer.MAX_VALUE);
+            phoneNo = CommonUtil.getJsonParamString(jsonObject, "phoneNo", null, TagCodeEnum.INVALID_PARAMETERS, 11, 11);
+            wechatName = CommonUtil.getJsonParamString(jsonObject, "wechatName", null, TagCodeEnum.INVALID_PARAMETERS, 1, 100);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.INVALID_PARAMETERS);
+            return result;
+        }
+
+        String tagCode = TagCodeEnum.MODULE_UNKNOWN_RESPCODE;
+        try {
+            // 渠道：2表示微信小程序, 暂时只有微信小程序
+            if (liveShopService.registerSaleActorInfo(userId, wechatName, phoneNo, 2)) {
+                tagCode = TagCodeEnum.SUCCESS;
+            } else {
+                tagCode = "5106052502";
+            }
+        } catch (MelotModuleException e) {
+            logger.info(String.format("Fail:registerSaleActorInfo(userId=%s, phoneNo=%s)", userId, phoneNo), e);
+            if (e.getErrCode() == 101) {
+                tagCode = TagCodeEnum.INVALID_PARAMETERS;
+            } else if (e.getErrCode() == 102) {
+                tagCode = "5106052501";
+            }
+        } catch (Exception e) {
+            logger.error(String.format("Error:registerSaleActorInfo(userId=%s, phoneNo=%s)", userId, phoneNo), e);
+        }
+        result.addProperty(ParameterKeys.TAG_CODE, tagCode);
+        return result;
+    }
+
+    /**
+     * 获取订单的数量（待支付、待发货、待收货、退款/售后），商家的话多显示销售的订单[51060526]
+     */
+    public JsonObject getOrderCount(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        // 检验token
+        if (!checkTag) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_INCORRECT);
+            return result;
+        }
+        int userId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, TagCodeEnum.INVALID_PARAMETERS, 0, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.INVALID_PARAMETERS);
+            return result;
+        }
+
+        String tagCode = TagCodeEnum.MODULE_UNKNOWN_RESPCODE;
+        try {
+            Map<Integer, LiveShopOrderCountInfoDTO> orderCountInfo = liveShopService.getOrderCountInfo(userId);
+            if (orderCountInfo.containsKey(1)) {
+                result.add("buyOrderCount", getOrderCountJson(orderCountInfo.get(1)));
+            }
+            if (orderCountInfo.containsKey(2)) {
+                result.add("saleOrderCount", getOrderCountJson(orderCountInfo.get(2)));
+            }
+            tagCode = TagCodeEnum.SUCCESS;
+        } catch (MelotModuleException e) {
+            logger.info(String.format("Fail:getOrderCount(userId=%s)", userId), e);
+            if (e.getErrCode() == 101) {
+                tagCode = TagCodeEnum.INVALID_PARAMETERS;
+            }
+        } catch (Exception e) {
+            logger.error(String.format("Error:getOrderCount(userId=%s)", userId), e);
+        }
+        result.addProperty(ParameterKeys.TAG_CODE, tagCode);
+        return result;
+    }
+
+    private JsonObject getOrderCountJson(LiveShopOrderCountInfoDTO orderCountInfoDTO) {
+        JsonObject json = new JsonObject();
+        json.addProperty("waitPayOrderCount", orderCountInfoDTO.getWaitPayOrderCount());
+        json.addProperty("waitDeliverOrderCount", orderCountInfoDTO.getWaitDeliverOrderCount());
+        json.addProperty("waitReceiveOrderCount", orderCountInfoDTO.getWaitReceiveOrderCount());
+        json.addProperty("refundOrderCount", orderCountInfoDTO.getRefundOrderCount());
+        return json;
+    }
+
+    /**
+     * 获取首个待支付订单的信息[52060527]
+     */
+    public JsonObject getFirstWaitPayOrder(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        // 检验token
+        if (!checkTag) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_INCORRECT);
+            return result;
+        }
+        int userId, actorId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, TagCodeEnum.INVALID_PARAMETERS, 0, Integer.MAX_VALUE);
+            actorId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.ACTOR_ID, 0, TagCodeEnum.INVALID_PARAMETERS, 0, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.INVALID_PARAMETERS);
+            return result;
+        }
+
+        String tagCode = TagCodeEnum.MODULE_UNKNOWN_RESPCODE;
+        try {
+            // 获取首个待支付手动发送订单
+            LiveShopOrderDTO firstWaitPayOrder = liveShopService.getFirstWaitPayOrder(userId, actorId, 3);
+            if (firstWaitPayOrder != null) {
+                result.addProperty("orderId", firstWaitPayOrder.getOrderId());
+                result.addProperty("expireTime", firstWaitPayOrder.getExpiryTime().getTime());
+            }
+            tagCode = TagCodeEnum.SUCCESS;
+        } catch (Exception e) {
+            logger.error(String.format("Error:getOrderCount(userId=%s)", userId), e);
+        }
+        result.addProperty(ParameterKeys.TAG_CODE, tagCode);
         return result;
     }
 }
