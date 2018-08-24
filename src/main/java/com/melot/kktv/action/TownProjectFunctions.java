@@ -115,7 +115,9 @@ public class TownProjectFunctions {
                 Type type = new TypeToken<FreshItem>(){}.getType();
                 for (String freshItemStr : set) {
                     FreshItem freshItem = gson.fromJson(freshItemStr, type);
-                    jsonArray.add(freshItem.toJsonObject(freshItem));
+                    JsonObject freshItemJsonObject  = freshItem.toJsonObject(freshItem);
+                    freshItemJsonObject.addProperty("publishTime", changeTimeToString(new Date(freshItem.getPublishTime())));
+                    jsonArray.add(freshItemJsonObject);
                 }
             }
             
@@ -1853,7 +1855,6 @@ public class TownProjectFunctions {
         String timeDesc;
         Date currentTime = DateUtils.getCurrentDate();
         long differSecond = (currentTime.getTime() - time.getTime()) / 1000;
-        System.out.println(differSecond);
         if(differSecond < 60) {
             timeDesc = "刚刚";
         } else if(differSecond < 3600) {
