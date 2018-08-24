@@ -8,9 +8,9 @@
  */
 package com.melot.kktv.domain;
 
-import java.io.Serializable;
-
 import com.google.gson.JsonObject;
+
+import java.io.Serializable;
 
 /**
  * Title: FreshItem
@@ -142,7 +142,6 @@ public class FreshItem implements Serializable{
         result.addProperty("id", freshItem.getId());
         result.addProperty("isHot", freshItem.isHot);
         result.addProperty("coverUrl", freshItem.getCoverUrl());
-        result.addProperty("publishTime", freshItem.getPublishTime());
         result.addProperty("userId", freshItem.getUserId());
         result.addProperty("gender", freshItem.getGender());
         if (freshItem.getPortrait() != null) {
