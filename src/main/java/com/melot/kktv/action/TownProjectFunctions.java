@@ -445,7 +445,9 @@ public class TownProjectFunctions {
                 }
             }
             String tag = this.getUserTag(sourceUserId);
-            result.addProperty("tag",tag);
+            if(!org.springframework.util.StringUtils.isEmpty(tag)){
+                result.addProperty("tag",tag);
+            }
         }
 
         int unreadMsgCount = townMessageService.getUnreadMessageCount(sourceUserId);
@@ -599,7 +601,10 @@ public class TownProjectFunctions {
                 json.addProperty("nickname",roomInfo.getNickname());
                 json.addProperty("roomId", roomInfo.getRoomId() != null ? roomInfo.getRoomId() : roomInfo.getActorId());
                 json.addProperty("gender",roomInfo.getGender());
-                json.addProperty("tag",this.getUserTag(tagMap,roomInfo.getActorId()));
+                String tag = this.getUserTag(tagMap,roomInfo.getActorId());
+                if(!org.springframework.util.StringUtils.isEmpty(tag)){
+                    json.addProperty("tag",tag);
+                }
                 if(roomInfo.getPortrait()!=null){
                     json.addProperty("portrait",  roomInfo.getPortrait()  + "!128");
                 }
@@ -1464,7 +1469,9 @@ public class TownProjectFunctions {
                     if(userProfile.getPortrait()!=null){
                         json.addProperty("portrait",this.getPortrait(userProfile));
                     }
-                    json.addProperty("tag",item.getTagName());
+                    if(!org.springframework.util.StringUtils.isEmpty(item.getTagName())){
+                        json.addProperty("tag",item.getTagName());
+                    }
 
                     com.melot.kkcore.actor.api.RoomInfo roomInfo = actorService.getRoomInfoById(item.getUserId());
                     if(roomInfo != null){
