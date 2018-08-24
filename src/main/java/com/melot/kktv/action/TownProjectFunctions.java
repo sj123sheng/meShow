@@ -415,7 +415,7 @@ public class TownProjectFunctions {
 
         TownUserInfoDTO townUserInfoDTO = townUserService.getUserInfo(sourceUserId);
         if(townUserInfoDTO != null){
-            if(!StringUtils.isEmpty(townUserInfoDTO.getLastAreaCode())){
+            if(!org.springframework.util.StringUtils.isEmpty(townUserInfoDTO.getLastAreaCode())){
                 TownUserRoleDTO townUserRoleDTO = townUserRoleService.getUserAreaRole(sourceUserId,
                         townUserInfoDTO.getLastAreaCode(), UserRoleTypeEnum.OWER);
                 if(townUserRoleDTO != null){
@@ -486,7 +486,13 @@ public class TownProjectFunctions {
                     tag.append(item.getTagName()).append(",");
                 }
             }
-            return tag.toString().substring(0,tag.length()-1);
+            String result = tag.toString();
+            int minLength = 1;
+            if(!org.springframework.util.StringUtils.isEmpty(result) && result.length() > minLength){
+                return result.substring(0,tag.length()-1);
+            }else{
+                return "";
+            }
         }else{
             return "";
         }
@@ -593,17 +599,9 @@ public class TownProjectFunctions {
                 json.addProperty("nickname",roomInfo.getNickname());
                 json.addProperty("roomId", roomInfo.getRoomId() != null ? roomInfo.getRoomId() : roomInfo.getActorId());
                 json.addProperty("gender",roomInfo.getGender());
-                json.addProperty("portrait",  roomInfo.getPortrait()  + "!128");
-
-                if(tagMap!=null && tagMap.containsKey(roomInfo.getActorId())){
-                    List<UserTagRelationDTO> tagList = tagMap.get(roomInfo.getActorId());
-                    if(!CollectionUtils.isEmpty(tagList)){
-                        StringBuilder tag = new StringBuilder();
-                        for(UserTagRelationDTO item : tagList){
-                            tag.append(item.getTagName()).append(",");
-                        }
-                        json.addProperty("tag",tag.toString().substring(0,tag.length()-1));
-                    }
+                json.addProperty("tag",this.getUserTag(tagMap,roomInfo.getActorId()));
+                if(roomInfo.getPortrait()!=null){
+                    json.addProperty("portrait",  roomInfo.getPortrait()  + "!128");
                 }
                 if(roomInfo.getRoomSource() != null){
                     json.addProperty("roomSource",roomInfo.getRoomSource());
@@ -628,6 +626,32 @@ public class TownProjectFunctions {
         result.addProperty("pathPrefix",ConfigHelper.getHttpdir());
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
+    }
+
+    private String getUserTag(Map<Integer,List<UserTagRelationDTO>> tagMap,Integer userId){
+        if(CollectionUtils.isEmpty(tagMap)){
+            return "";
+        }
+        if(!tagMap.containsKey(userId)){
+            return "";
+        }
+
+        StringBuilder tag = new StringBuilder();
+        List<UserTagRelationDTO> tagList = tagMap.get(userId);
+        if(!CollectionUtils.isEmpty(tagList)){
+            for(UserTagRelationDTO item : tagList){
+                if(!org.springframework.util.StringUtils.isEmpty(item.getTagName())){
+                    tag.append(item.getTagName()).append(",");
+                }
+            }
+        }
+        String result = tag.toString();
+        int minLength = 1;
+        if(!org.springframework.util.StringUtils.isEmpty(result) && result.length()>minLength){
+            return result.substring(0,result.length()-1);
+        }else{
+            return "";
+        }
     }
 
     /**
