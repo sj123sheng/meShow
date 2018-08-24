@@ -369,7 +369,14 @@ public class TownProjectFunctions {
             }
         }
 
-        UserProfile userProfile = kkUserService.getUserProfile(targetUserId);
+        int sourceUserId;
+        if(userId > 0){
+            sourceUserId = userId;
+        }else{
+            sourceUserId = targetUserId;
+        }
+
+        UserProfile userProfile = kkUserService.getUserProfile(sourceUserId);
         if(userProfile == null){
             result.addProperty("TagCode", TagCodeEnum.USER_NOT_EXIST);
             return result;
@@ -377,7 +384,7 @@ public class TownProjectFunctions {
 
         result.addProperty("userId",userProfile.getUserId());
         result.addProperty("nickname",userProfile.getNickName());
-        boolean  checkPortrait = LiveVideoService.checkingPortrait(targetUserId);
+        boolean  checkPortrait = LiveVideoService.checkingPortrait(sourceUserId);
         if (checkPortrait) {
             String path = OpusCostantEnum.CHECKING_PORTRAIT_RESOURCEURL;
             result.addProperty("portrait", path + "!128");
@@ -386,10 +393,10 @@ public class TownProjectFunctions {
         }
         result.addProperty("gender",userProfile.getGender());
 
-        int followsCount = UserRelationService.getFollowsCount(targetUserId);
+        int followsCount = UserRelationService.getFollowsCount(sourceUserId);
         result.addProperty("followCount",followsCount);
 
-        int fansCount = UserRelationService.getFansCount(targetUserId);
+        int fansCount = UserRelationService.getFansCount(sourceUserId);
         result.addProperty("fansCount",fansCount);
 
         if(userId > 0 ){
@@ -406,10 +413,10 @@ public class TownProjectFunctions {
             }
         }
 
-        TownUserInfoDTO townUserInfoDTO = townUserService.getUserInfo(targetUserId);
+        TownUserInfoDTO townUserInfoDTO = townUserService.getUserInfo(sourceUserId);
         if(townUserInfoDTO != null){
             if(!StringUtils.isEmpty(townUserInfoDTO.getLastAreaCode())){
-                TownUserRoleDTO townUserRoleDTO = townUserRoleService.getUserAreaRole(targetUserId,
+                TownUserRoleDTO townUserRoleDTO = townUserRoleService.getUserAreaRole(sourceUserId,
                         townUserInfoDTO.getLastAreaCode(), UserRoleTypeEnum.OWER);
                 if(townUserRoleDTO != null){
                     result.addProperty("isOwer",1);
@@ -437,14 +444,14 @@ public class TownProjectFunctions {
                     logger.error("parse birthday error birthday:"+townUserInfoDTO.getBirthday()+",ex:",ex);
                 }
             }
-            String tag = this.getUserTag(targetUserId);
+            String tag = this.getUserTag(sourceUserId);
             result.addProperty("tag",tag);
         }
 
-        int unreadMsgCount = townMessageService.getUnreadMessageCount(targetUserId);
+        int unreadMsgCount = townMessageService.getUnreadMessageCount(sourceUserId);
         result.addProperty("unreadMsgCount",unreadMsgCount);
 
-        com.melot.kkcore.actor.api.RoomInfo roomInfo = actorService.getRoomInfoById(targetUserId);
+        com.melot.kkcore.actor.api.RoomInfo roomInfo = actorService.getRoomInfoById(sourceUserId);
         if(roomInfo != null){
             if(roomInfo.getRoomSource() != null){
                 result.addProperty("roomSource",roomInfo.getRoomSource());
@@ -456,13 +463,13 @@ public class TownProjectFunctions {
             }
         }
 
-        int workCount = townWorkService.getMyWorkNum(targetUserId);
+        int workCount = townWorkService.getMyWorkNum(sourceUserId);
         result.addProperty("workCount",workCount);
 
-        int like = townWorkService.getMyPraiseWorkNum(targetUserId);
+        int like = townWorkService.getMyPraiseWorkNum(sourceUserId);
         result.addProperty("like",like);
 
-        int receiveLike = townWorkService.getMyWorkPraiseNum(targetUserId);
+        int receiveLike = townWorkService.getMyWorkPraiseNum(sourceUserId);
         result.addProperty("receiveLike",receiveLike);
 
         result.addProperty("pathPrefix",ConfigHelper.getHttpdir());
