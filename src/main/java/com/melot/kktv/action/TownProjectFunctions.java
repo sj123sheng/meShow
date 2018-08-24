@@ -733,15 +733,9 @@ public class TownProjectFunctions {
                     roomJson.addProperty("gender",room.getGender());
                     roomJson.addProperty("portrait", room.getPortrait_path_128());
 
-                    if(tagMap!=null && tagMap.containsKey(room.getUserId())){
-                        List<UserTagRelationDTO> tagList = tagMap.get(room.getUserId());
-                        if(!CollectionUtils.isEmpty(tagList)){
-                            StringBuilder tag = new StringBuilder();
-                            for(UserTagRelationDTO item : tagList){
-                                tag.append(item.getTagName()).append(",");
-                            }
-                            roomJson.addProperty("tag",tag.toString().substring(0,tag.length()-1));
-                        }
+                    String tag = this.getUserTag(tagMap,room.getUserId());
+                    if(!org.springframework.util.StringUtils.isEmpty(tag)){
+                        roomJson.addProperty("tag",tag);
                     }
                     if(room.getRoomSource() != null){
                         roomJson.addProperty("roomSource",room.getRoomSource());
@@ -759,7 +753,6 @@ public class TownProjectFunctions {
                     }else{
                         roomJson.addProperty("isFollow",-1);
                     }
-
                     jRoomList.add(roomJson);
                 }
             }
@@ -769,7 +762,6 @@ public class TownProjectFunctions {
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         result.addProperty("pageTotal", pageTotal);
         result.add("roomList", jRoomList);
-
         return result;
     }
 
@@ -826,15 +818,9 @@ public class TownProjectFunctions {
                     if(userProfile.getPortrait()!=null){
                         json.addProperty("portrait", this.getPortrait(userProfile));
                     }
-                    if(tagMap!=null && tagMap.containsKey(item.getUserId())){
-                        List<UserTagRelationDTO> tagList = tagMap.get(item.getUserId());
-                        if(!CollectionUtils.isEmpty(tagList)){
-                            StringBuilder tagString = new StringBuilder();
-                            for(UserTagRelationDTO tag : tagList){
-                                tagString.append(tag.getTagName()).append(",");
-                            }
-                            json.addProperty("tag",tagString.toString().substring(0,tagString.length()-1));
-                        }
+                    String tag = this.getUserTag(tagMap,item.getUserId());
+                    if(!org.springframework.util.StringUtils.isEmpty(tag)){
+                        json.addProperty("tag",tag);
                     }
                     com.melot.kkcore.actor.api.RoomInfo roomInfo = actorService.getRoomInfoById(item.getUserId());
                     if(roomInfo != null){
