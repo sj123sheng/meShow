@@ -2869,7 +2869,7 @@
 	<bean id="51060526" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="liveShopFunctions" />
 		<constructor-arg name="methodName" value="getOrderCount" />
-		<constructor-arg name="cacheType" value="60" />
+		<constructor-arg name="cacheType" value="30" />
 	</bean>
 
 	<bean id="51060527" class="com.melot.sdk.core.function.GenericFunction">
