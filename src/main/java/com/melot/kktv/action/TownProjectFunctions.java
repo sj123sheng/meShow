@@ -445,7 +445,14 @@ public class TownProjectFunctions {
             }
         }
 
-        UserProfile userProfile = kkUserService.getUserProfile(targetUserId);
+        int sourceUserId;
+        if (userId > 0) {
+            sourceUserId = userId;
+        } else {
+            sourceUserId = targetUserId;
+        }
+
+        UserProfile userProfile = kkUserService.getUserProfile(sourceUserId);
         if(userProfile == null){
             result.addProperty("TagCode", TagCodeEnum.USER_NOT_EXIST);
             return result;
@@ -453,7 +460,7 @@ public class TownProjectFunctions {
 
         result.addProperty("userId",userProfile.getUserId());
         result.addProperty("nickname",userProfile.getNickName());
-        boolean  checkPortrait = LiveVideoService.checkingPortrait(targetUserId);
+        boolean  checkPortrait = LiveVideoService.checkingPortrait(sourceUserId);
         if (checkPortrait) {
             String path = OpusCostantEnum.CHECKING_PORTRAIT_RESOURCEURL;
             result.addProperty("portrait", path + "!128");
@@ -462,13 +469,13 @@ public class TownProjectFunctions {
         }
         result.addProperty("gender",userProfile.getGender());
 
-        int followsCount = UserRelationService.getFollowsCount(targetUserId);
+        int followsCount = UserRelationService.getFollowsCount(sourceUserId);
         result.addProperty("followCount",followsCount);
 
-        int fansCount = UserRelationService.getFansCount(targetUserId);
+        int fansCount = UserRelationService.getFansCount(sourceUserId);
         result.addProperty("fansCount",fansCount);
 
-        if(userId > 0 ){
+        if(userId > 0 && targetUserId > 0){
             boolean userFollowTarget = UserRelationService.isFollowed(userId,targetUserId);
             boolean targetFollowUser = UserRelationService.isFollowed(targetUserId,userId);
             if(userFollowTarget && targetFollowUser){
@@ -482,10 +489,10 @@ public class TownProjectFunctions {
             }
         }
 
-        TownUserInfoDTO townUserInfoDTO = townUserService.getUserInfo(targetUserId);
+        TownUserInfoDTO townUserInfoDTO = townUserService.getUserInfo(sourceUserId);
         if(townUserInfoDTO != null){
-            if(!StringUtils.isEmpty(townUserInfoDTO.getLastAreaCode())){
-                TownUserRoleDTO townUserRoleDTO = townUserRoleService.getUserAreaRole(targetUserId,
+            if(!org.springframework.util.StringUtils.isEmpty(townUserInfoDTO.getLastAreaCode())){
+                TownUserRoleDTO townUserRoleDTO = townUserRoleService.getUserAreaRole(sourceUserId,
                         townUserInfoDTO.getLastAreaCode(), UserRoleTypeEnum.OWER);
                 if(townUserRoleDTO != null){
                     result.addProperty("isOwer",1);
@@ -513,14 +520,14 @@ public class TownProjectFunctions {
                     logger.error("parse birthday error birthday:"+townUserInfoDTO.getBirthday()+",ex:",ex);
                 }
             }
-            String tag = this.getUserTag(targetUserId);
+            String tag = this.getUserTag(sourceUserId);
             result.addProperty("tag",tag);
         }
 
-        int unreadMsgCount = townMessageService.getUnreadMessageCount(targetUserId);
+        int unreadMsgCount = townMessageService.getUnreadMessageCount(sourceUserId);
         result.addProperty("unreadMsgCount",unreadMsgCount);
 
-        com.melot.kkcore.actor.api.RoomInfo roomInfo = actorService.getRoomInfoById(targetUserId);
+        com.melot.kkcore.actor.api.RoomInfo roomInfo = actorService.getRoomInfoById(sourceUserId);
         if(roomInfo != null){
             if(roomInfo.getRoomSource() != null){
                 result.addProperty("roomSource",roomInfo.getRoomSource());
@@ -532,13 +539,13 @@ public class TownProjectFunctions {
             }
         }
 
-        int workCount = townWorkService.getMyWorkNum(targetUserId);
+        int workCount = townWorkService.getMyWorkNum(sourceUserId);
         result.addProperty("workCount",workCount);
 
-        int like = townWorkService.getMyPraiseWorkNum(targetUserId);
+        int like = townWorkService.getMyPraiseWorkNum(sourceUserId);
         result.addProperty("like",like);
 
-        int receiveLike = townWorkService.getMyWorkPraiseNum(targetUserId);
+        int receiveLike = townWorkService.getMyWorkPraiseNum(sourceUserId);
         result.addProperty("receiveLike",receiveLike);
 
         result.addProperty("pathPrefix",ConfigHelper.getHttpdir());
@@ -555,7 +562,13 @@ public class TownProjectFunctions {
                     tag.append(item.getTagName()).append(",");
                 }
             }
-            return tag.toString().substring(0,tag.length()-1);
+            String result = tag.toString();
+            int minLength = 1;
+            if(!org.springframework.util.StringUtils.isEmpty(result) && result.length() > minLength){
+                return result.substring(0,tag.length()-1);
+            }else{
+                return "";
+            }
         }else{
             return "";
         }
@@ -662,17 +675,9 @@ public class TownProjectFunctions {
                 json.addProperty("nickname",roomInfo.getNickname());
                 json.addProperty("roomId", roomInfo.getRoomId() != null ? roomInfo.getRoomId() : roomInfo.getActorId());
                 json.addProperty("gender",roomInfo.getGender());
-                json.addProperty("portrait",  roomInfo.getPortrait()  + "!128");
-
-                if(tagMap!=null && tagMap.containsKey(roomInfo.getActorId())){
-                    List<UserTagRelationDTO> tagList = tagMap.get(roomInfo.getActorId());
-                    if(!CollectionUtils.isEmpty(tagList)){
-                        StringBuilder tag = new StringBuilder();
-                        for(UserTagRelationDTO item : tagList){
-                            tag.append(item.getTagName()).append(",");
-                        }
-                        json.addProperty("tag",tag.toString().substring(0,tag.length()-1));
-                    }
+                json.addProperty("tag",this.getUserTag(tagMap,roomInfo.getActorId()));
+                if(roomInfo.getPortrait()!=null){
+                    json.addProperty("portrait",  roomInfo.getPortrait()  + "!128");
                 }
                 if(roomInfo.getRoomSource() != null){
                     json.addProperty("roomSource",roomInfo.getRoomSource());
@@ -697,6 +702,32 @@ public class TownProjectFunctions {
         result.addProperty("pathPrefix",ConfigHelper.getHttpdir());
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
+    }
+
+    private String getUserTag(Map<Integer,List<UserTagRelationDTO>> tagMap,Integer userId){
+        if(CollectionUtils.isEmpty(tagMap)){
+            return "";
+        }
+        if(!tagMap.containsKey(userId)){
+            return "";
+        }
+
+        StringBuilder tag = new StringBuilder();
+        List<UserTagRelationDTO> tagList = tagMap.get(userId);
+        if(!CollectionUtils.isEmpty(tagList)){
+            for(UserTagRelationDTO item : tagList){
+                if(!org.springframework.util.StringUtils.isEmpty(item.getTagName())){
+                    tag.append(item.getTagName()).append(",");
+                }
+            }
+        }
+        String result = tag.toString();
+        int minLength = 1;
+        if(!org.springframework.util.StringUtils.isEmpty(result) && result.length()>minLength){
+            return result.substring(0,result.length()-1);
+        }else{
+            return "";
+        }
     }
 
     /**
@@ -1478,7 +1509,7 @@ public class TownProjectFunctions {
     }
 
     private String getPortrait(UserProfile userProfile) {
-        return userProfile.getPortrait() == null ? null : userProfile.getPortrait() + "!128";
+        return userProfile.getPortrait() == null ? "" : userProfile.getPortrait() + "!128";
     }
 
     /**
@@ -2008,7 +2039,9 @@ public class TownProjectFunctions {
                         }
                         commentJsonObject.addProperty("nickname", userProfile.getNickName());
                     }
-                    commentJsonObject.addProperty("identity", record.getIdentity());
+                    if(StringUtils.isNotEmpty(record.getIdentity())) {
+                        commentJsonObject.addProperty("identity", record.getIdentity());
+                    }
                     commentJsonObject.addProperty("commentId", record.getCommentId());
                     commentJsonObject.addProperty("commentType", record.getCommentType());
                     commentJsonObject.addProperty("commentMode", record.getCommentMode());
@@ -2084,7 +2117,9 @@ public class TownProjectFunctions {
                         }
                         commentJsonObject.addProperty("nickname", userProfile.getNickName());
                     }
-                    commentJsonObject.addProperty("identity", record.getIdentity());
+                    if(StringUtils.isNotEmpty(record.getIdentity())) {
+                        commentJsonObject.addProperty("identity", record.getIdentity());
+                    }
                     commentJsonObject.addProperty("commentId", record.getCommentId());
                     commentJsonObject.addProperty("commentType", record.getCommentType());
                     commentJsonObject.addProperty("commentMode", record.getCommentMode());
