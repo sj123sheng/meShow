@@ -63,17 +63,21 @@ public class LocationFunctions {
             if(addressComponentDTO != null && StringUtils.isNotEmpty(addressComponentDTO.getTown())
                     && StringUtils.isNotEmpty(addressComponentDTO.getTownAreaCode())){
 
-                if(userId > 0 && isOwner) {
-                    TownUserInfoParam userInfoParam = new TownUserInfoParam();
-                    userInfoParam.setUserId(userId);
-                    userInfoParam.setLastAreaCode(addressComponentDTO.getTownAreaCode());
-                    townUserService.saveUserInfo(userInfoParam);
+                String townAreaCode = addressComponentDTO.getTownAreaCode();
+
+                if(StringUtils.isNotEmpty(townAreaCode)) {
+                    result.addProperty("province", addressComponentDTO.getProvince());
+                    result.addProperty("city", addressComponentDTO.getCity());
+                    result.addProperty("district", addressComponentDTO.getDistrict());
+                    result.addProperty("town", addressComponentDTO.getTown());
+                    result.addProperty("townAreaCode", townAreaCode);
+                    if (userId > 0 && isOwner) {
+                        TownUserInfoParam userInfoParam = new TownUserInfoParam();
+                        userInfoParam.setUserId(userId);
+                        userInfoParam.setLastAreaCode(addressComponentDTO.getTownAreaCode());
+                        townUserService.saveUserInfo(userInfoParam);
+                    }
                 }
-                result.addProperty("province", addressComponentDTO.getProvince());
-                result.addProperty("city", addressComponentDTO.getCity());
-                result.addProperty("district", addressComponentDTO.getDistrict());
-                result.addProperty("town", addressComponentDTO.getTown());
-                result.addProperty("townAreaCode", addressComponentDTO.getTownAreaCode());
             }
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
