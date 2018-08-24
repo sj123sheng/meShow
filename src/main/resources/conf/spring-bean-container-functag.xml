@@ -1075,6 +1075,11 @@
 		<constructor-arg name="t" ref="newsV2Function" />
 		<constructor-arg name="methodName" value="getHallTopicList" />
 	</bean>
+
+	<bean id="51100109" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="newsV2Function" />
+		<constructor-arg name="methodName" value="getTopicByTitle" />
+	</bean>
 	
 	<!-- 其他接口类 -->
 	<!-- 发送小喇叭: 唱响20000002，直播10007000 -->
@@ -2854,6 +2859,22 @@
 	<bean id="51060524" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="liveShopFunctions" />
 		<constructor-arg name="methodName" value="canAddSubShop" />
+	</bean>
+
+	<bean id="51060525" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="registerSaleActorInfo" />
+	</bean>
+
+	<bean id="51060526" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getOrderCount" />
+		<constructor-arg name="cacheType" value="30" />
+	</bean>
+
+	<bean id="51060527" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getFirstWaitPayOrder" />
 	</bean>
 	
 	<!-- 获取积分礼物列表 -->

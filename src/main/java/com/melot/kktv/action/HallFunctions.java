@@ -230,7 +230,7 @@ public class HallFunctions {
                     sysMenu = sysMenuResult.getData();
                 }
 		    } else {
-		        Result<HallPartConfDTO> sysMenuResult = hallPartService.getPartList(cataId, userId, cityId, area, start, offset);
+		        Result<HallPartConfDTO> sysMenuResult = hallPartService.getPartList(cataId, userId, cityId, area, appId, start, offset);
                 if (sysMenuResult != null && CommonStateCode.SUCCESS.equals(sysMenuResult.getCode())) {
                     sysMenu = sysMenuResult.getData();
                 }

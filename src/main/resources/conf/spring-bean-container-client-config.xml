@@ -180,7 +180,7 @@
 	<kkrpc:reference id="userAddressService" interface="com.melot.kk.logistics.api.service.UserAddressService" version="1.0.0"/>
 	
 	<!-- 直播购服务 -->
-	<kkrpc:reference id="liveShopService" interface="com.melot.kk.liveshop.api.service.LiveShopService" version="1.0.2"/>
+	<kkrpc:reference id="liveShopService" interface="com.melot.kk.liveshop.api.service.LiveShopService" version="1.0.3"/>
 	
 	<kkrpc:reference id="rechargeService" interface="com.melot.kk.recharge.api.service.RechargeService" version="1.0.1"/>
 
@@ -191,7 +191,7 @@
 	<kkrpc:reference id="openPageService" interface="com.melot.kk.config.api.service.OpenPageService" version="1.0.0"/>
 	<!-- 大厅模块 -->
 	<kkrpc:reference id="hallRoomService" interface="com.melot.kk.hall.api.service.HallRoomService" version="1.0.0"/>
-	<kkrpc:reference id="hallPartService" interface="com.melot.kk.hall.api.service.SysMenuService" version="1.0.0"/>
+	<kkrpc:reference id="hallPartService" interface="com.melot.kk.hall.api.service.SysMenuService" version="1.0.1"/>
 	<kkrpc:reference id="hallHomeService" interface="com.melot.kk.hall.api.service.HomeService" version="1.0.0"/>
 
     <!-- 竞猜模块 -->
