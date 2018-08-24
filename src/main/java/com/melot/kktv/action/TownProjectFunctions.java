@@ -399,7 +399,7 @@ public class TownProjectFunctions {
         int fansCount = UserRelationService.getFansCount(sourceUserId);
         result.addProperty("fansCount",fansCount);
 
-        if(userId > 0 ){
+        if(userId > 0 && targetUserId > 0){
             boolean userFollowTarget = UserRelationService.isFollowed(userId,targetUserId);
             boolean targetFollowUser = UserRelationService.isFollowed(targetUserId,userId);
             if(userFollowTarget && targetFollowUser){
