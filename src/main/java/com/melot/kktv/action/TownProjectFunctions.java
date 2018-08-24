@@ -370,10 +370,10 @@ public class TownProjectFunctions {
         }
 
         int sourceUserId;
-        if (userId > 0) {
-            sourceUserId = userId;
-        } else {
+        if (targetUserId > 0) {
             sourceUserId = targetUserId;
+        } else {
+            sourceUserId = userId;
         }
 
         UserProfile userProfile = kkUserService.getUserProfile(sourceUserId);
