@@ -74,12 +74,10 @@ public class LiveShopFunctions {
         int userId;
         int auctionId;
         int resourceId;
-        int channel;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, "5106050201", 1, Integer.MAX_VALUE);
             auctionId = CommonUtil.getJsonParamInt(jsonObject, "auctionId", 0, "5106050202", 1, Integer.MAX_VALUE);
             resourceId = CommonUtil.getJsonParamInt(jsonObject, "resourceId", 0, "5106050203", 1, Integer.MAX_VALUE);
-            channel = CommonUtil.getJsonParamInt(jsonObject, "channel", 1, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
             return result;
@@ -89,7 +87,8 @@ public class LiveShopFunctions {
         }
         
         try {
-            Result<String> addOrderResult = liveShopService.addAuctionOrder(userId, auctionId, resourceId, channel);
+            // 订单渠道只有app
+            Result<String> addOrderResult = liveShopService.addAuctionOrder(userId, auctionId, resourceId, 1);
             if (addOrderResult == null) {
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
                 return result;
@@ -728,14 +727,12 @@ public class LiveShopFunctions {
         int productId;
         int count;
         int addressId;
-        int channel;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, "5106051301", 1, Integer.MAX_VALUE);
             distributorId = CommonUtil.getJsonParamInt(jsonObject, "distributorId", 0, "5106051302", 0, Integer.MAX_VALUE);
             productId = CommonUtil.getJsonParamInt(jsonObject, "productId", 0, "5106051303", 1, Integer.MAX_VALUE);
             count = CommonUtil.getJsonParamInt(jsonObject, "count", 0, "5106051304", 1, Integer.MAX_VALUE);
             addressId = CommonUtil.getJsonParamInt(jsonObject, "addressId", 0, "5106051305", 1, Integer.MAX_VALUE);
-            channel = CommonUtil.getJsonParamInt(jsonObject, "channel", 1, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
             return result;
@@ -745,7 +742,8 @@ public class LiveShopFunctions {
         }
         
         try {
-            Result<String> addOrderResult = liveShopService.addDistributorOrder(userId, distributorId, productId, count, addressId,channel);
+            // 订单渠道只有app
+            Result<String> addOrderResult = liveShopService.addDistributorOrder(userId, distributorId, productId, count, addressId,1);
             if (addOrderResult == null) {
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
                 return result;
