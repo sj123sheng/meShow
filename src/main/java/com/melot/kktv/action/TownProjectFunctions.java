@@ -1402,7 +1402,7 @@ public class TownProjectFunctions {
     }
 
     private String getPortrait(UserProfile userProfile) {
-        return userProfile.getPortrait() == null ? null : userProfile.getPortrait() + "!128";
+        return userProfile.getPortrait() == null ? "" : userProfile.getPortrait() + "!128";
     }
 
     /**
