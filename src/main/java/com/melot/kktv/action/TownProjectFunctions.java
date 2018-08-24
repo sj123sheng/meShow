@@ -1970,7 +1970,9 @@ public class TownProjectFunctions {
                         }
                         commentJsonObject.addProperty("nickname", userProfile.getNickName());
                     }
-                    commentJsonObject.addProperty("identity", record.getIdentity());
+                    if(StringUtils.isNotEmpty(record.getIdentity())) {
+                        commentJsonObject.addProperty("identity", record.getIdentity());
+                    }
                     commentJsonObject.addProperty("commentId", record.getCommentId());
                     commentJsonObject.addProperty("commentType", record.getCommentType());
                     commentJsonObject.addProperty("commentMode", record.getCommentMode());
@@ -2046,7 +2048,9 @@ public class TownProjectFunctions {
                         }
                         commentJsonObject.addProperty("nickname", userProfile.getNickName());
                     }
-                    commentJsonObject.addProperty("identity", record.getIdentity());
+                    if(StringUtils.isNotEmpty(record.getIdentity())) {
+                        commentJsonObject.addProperty("identity", record.getIdentity());
+                    }
                     commentJsonObject.addProperty("commentId", record.getCommentId());
                     commentJsonObject.addProperty("commentType", record.getCommentType());
                     commentJsonObject.addProperty("commentMode", record.getCommentMode());
