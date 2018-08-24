@@ -1,43 +1,5 @@
 package com.melot.kktv.action;
 
-import static com.melot.kktv.util.ParamCodeEnum.AGE;
-import static com.melot.kktv.util.ParamCodeEnum.APPLY_TYPE;
-import static com.melot.kktv.util.ParamCodeEnum.AREA_CODE;
-import static com.melot.kktv.util.ParamCodeEnum.COMMENT_CONTENT;
-import static com.melot.kktv.util.ParamCodeEnum.COMMENT_ID;
-import static com.melot.kktv.util.ParamCodeEnum.EXPERIENCE;
-import static com.melot.kktv.util.ParamCodeEnum.GENDER;
-import static com.melot.kktv.util.ParamCodeEnum.HOME;
-import static com.melot.kktv.util.ParamCodeEnum.MOBILE_PHONE;
-import static com.melot.kktv.util.ParamCodeEnum.NAME;
-import static com.melot.kktv.util.ParamCodeEnum.PROFESSION;
-import static com.melot.kktv.util.ParamCodeEnum.REASON;
-import static com.melot.kktv.util.ParamCodeEnum.TOPIC_ID;
-import static com.melot.kktv.util.ParamCodeEnum.TOPIC_NAME;
-import static com.melot.kktv.util.ParamCodeEnum.USER_ID;
-import static com.melot.kktv.util.ParamCodeEnum.WORK_DESC;
-import static com.melot.kktv.util.ParamCodeEnum.WORK_ID;
-import static com.melot.kktv.util.ParamCodeEnum.WORK_SORT;
-import static com.melot.kktv.util.ParamCodeEnum.WORK_TYPE;
-import static com.melot.kktv.util.ParamCodeEnum.WORK_URL;
-
-import java.lang.reflect.Type;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Pattern;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.log4j.Logger;
-import org.springframework.util.CollectionUtils;
-
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -50,37 +12,12 @@ import com.melot.kk.module.resource.constant.FileTypeConstant;
 import com.melot.kk.module.resource.constant.ResourceStateConstant;
 import com.melot.kk.module.resource.service.ResourceNewService;
 import com.melot.kk.opus.api.constant.OpusCostantEnum;
-import com.melot.kk.town.api.constant.CommentModeEnum;
-import com.melot.kk.town.api.constant.CommentTypeEnum;
-import com.melot.kk.town.api.constant.PraiseTypeEnum;
-import com.melot.kk.town.api.constant.TownStarCheckStatusEnum;
-import com.melot.kk.town.api.constant.UserRoleTypeEnum;
-import com.melot.kk.town.api.constant.WorkCheckStatusEnum;
-import com.melot.kk.town.api.constant.WorkTypeEnum;
-import com.melot.kk.town.api.dto.ConfAreaBannerDTO;
-import com.melot.kk.town.api.dto.ResTownTopicDTO;
-import com.melot.kk.town.api.dto.ResTownWorkDTO;
-import com.melot.kk.town.api.dto.TownMessageInfoDTO;
-import com.melot.kk.town.api.dto.TownStarApplyInfoDTO;
-import com.melot.kk.town.api.dto.TownStarDTO;
-import com.melot.kk.town.api.dto.TownSystemMessageDTO;
-import com.melot.kk.town.api.dto.TownUserInfoDTO;
-import com.melot.kk.town.api.dto.TownUserRoleDTO;
-import com.melot.kk.town.api.dto.TownWorkCommentDTO;
-import com.melot.kk.town.api.dto.UserFollowMessageDTO;
-import com.melot.kk.town.api.dto.UserPraiseMessageDTO;
-import com.melot.kk.town.api.dto.UserTagRelationDTO;
+import com.melot.kk.town.api.constant.*;
+import com.melot.kk.town.api.dto.*;
 import com.melot.kk.town.api.param.TownUserInfoParam;
 import com.melot.kk.town.api.param.TownWorkCommentParam;
 import com.melot.kk.town.api.param.TownWorkParam;
-import com.melot.kk.town.api.service.AreaBannerService;
-import com.melot.kk.town.api.service.TagService;
-import com.melot.kk.town.api.service.TownCommentService;
-import com.melot.kk.town.api.service.TownMessageService;
-import com.melot.kk.town.api.service.TownStarApplyInfoService;
-import com.melot.kk.town.api.service.TownUserRoleService;
-import com.melot.kk.town.api.service.TownUserService;
-import com.melot.kk.town.api.service.TownWorkService;
+import com.melot.kk.town.api.service.*;
 import com.melot.kkcore.actor.service.ActorService;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.service.KkUserService;
@@ -94,11 +31,18 @@ import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.service.LiveVideoService;
 import com.melot.kktv.service.UserRelationService;
 import com.melot.kktv.service.WorkService;
-import com.melot.kktv.util.CommonUtil;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.DateUtils;
-import com.melot.kktv.util.StringUtil;
-import com.melot.kktv.util.TagCodeEnum;
+import com.melot.kktv.util.*;
+import org.apache.log4j.Logger;
+import org.springframework.util.CollectionUtils;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import java.lang.reflect.Type;
+import java.text.ParseException;
+import java.util.*;
+import java.util.regex.Pattern;
+
+import static com.melot.kktv.util.ParamCodeEnum.*;
 
 public class TownProjectFunctions {
 
