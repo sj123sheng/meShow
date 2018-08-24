@@ -370,9 +370,9 @@ public class TownProjectFunctions {
         }
 
         int sourceUserId;
-        if(userId > 0){
+        if (userId > 0) {
             sourceUserId = userId;
-        }else{
+        } else {
             sourceUserId = targetUserId;
         }
 
