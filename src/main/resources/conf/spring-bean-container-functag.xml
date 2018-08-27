@@ -1167,6 +1167,11 @@
 		<constructor-arg name="t" ref="otherFunction" />
 		<constructor-arg name="methodName" value="getChargeBanner" />
 	</bean>
+
+	<bean id="51090305" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="otherFunction" />
+		<constructor-arg name="methodName" value="getNewUserBootpage" />
+	</bean>
 	
 	<!-- 用户档案安全接口类 -->
 	<!-- 安全注册 -->
