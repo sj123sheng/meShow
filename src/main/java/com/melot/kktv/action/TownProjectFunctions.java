@@ -1225,10 +1225,16 @@ public class TownProjectFunctions {
                 }
                 result.addProperty("followStatus", followStatus);
                 boolean isPraise = false;
-                if(userId > 0) {
+                boolean isStationHead = false;
+                if(isOwner && userId > 0) {
                     isPraise = townWorkService.isPraiseWork(userId, workId);
+                    TownUserRoleDTO townUserRoleDTO = townUserRoleService.getUserAreaRole(userId, townWorkDTO.getAreaCode(), UserRoleTypeEnum.OWER);
+                    if(townUserRoleDTO != null) {
+                        isStationHead = true;
+                    }
                 }
                 result.addProperty("isPraise", isPraise);
+                result.addProperty("isStationHead", isStationHead);
             } else {
                 result.addProperty("workStatus", 3);
             }
@@ -1720,7 +1726,7 @@ public class TownProjectFunctions {
     }
 
     /**
-     * 	获取评论消息列表【5112018】
+     * 	获取评论消息列表【5112028】
      */
     public JsonObject getCommentMessageList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 
