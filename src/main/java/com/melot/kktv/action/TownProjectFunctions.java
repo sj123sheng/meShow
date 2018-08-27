@@ -1,7 +1,5 @@
 package com.melot.kktv.action;
 
-import com.google.common.reflect.TypeToken;
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
@@ -24,10 +22,8 @@ import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Page;
 import com.melot.kktv.base.Result;
-import com.melot.kktv.domain.FreshItem;
 import com.melot.kktv.domain.WorkVideoInfo;
 import com.melot.kktv.model.Room;
-import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.service.LiveVideoService;
 import com.melot.kktv.service.UserRelationService;
 import com.melot.kktv.service.WorkService;
@@ -37,7 +33,6 @@ import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.lang.reflect.Type;
 import java.text.ParseException;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -108,20 +103,18 @@ public class TownProjectFunctions {
         }
 
         try {
-            JsonArray jsonArray = new JsonArray();
-            Set<String> set = HotDataSource.rangeSortedSet(String.format(AREA_FRESH_KEY, areaCode), (pageIndex - 1) * countPerPage, pageIndex * countPerPage - 1);
-            if (!CollectionUtils.isEmpty(set)) {
-                Gson gson = new Gson();
-                Type type = new TypeToken<FreshItem>(){}.getType();
-                for (String freshItemStr : set) {
-                    FreshItem freshItem = gson.fromJson(freshItemStr, type);
-                    JsonObject freshItemJsonObject  = freshItem.toJsonObject(freshItem);
-                    freshItemJsonObject.addProperty("publishTime", changeTimeToString(new Date(freshItem.getPublishTime())));
-                    jsonArray.add(freshItemJsonObject);
+            JsonArray localFreshList = new JsonArray();
+            Page<FreshItemDTO> page = townWorkService.getLocalFreshList(areaCode, pageIndex, countPerPage);
+            if(page != null && page.getList() != null && page.getList().size() > 0) {
+                List<FreshItemDTO> list = page.getList();
+                for(FreshItemDTO freshItem : list) {
+                    JsonObject localFreshJsonObject = getLocalFreshJsonObject(result, freshItem);
+                    localFreshList.add(localFreshJsonObject);
                 }
             }
             
-            result.add("localFreshList", jsonArray);
+            result.add("localFreshList", localFreshList);
+            result.addProperty("localFreshCount", page.getCount());
             result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
@@ -130,6 +123,24 @@ public class TownProjectFunctions {
             result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             return result;
         }
+    }
+
+    private JsonObject getLocalFreshJsonObject(JsonObject result, FreshItemDTO freshItem) {
+        JsonObject localFreshJsonObject = new JsonObject();
+        localFreshJsonObject.addProperty("type", freshItem.getType());
+        localFreshJsonObject.addProperty("id", freshItem.getId());
+        localFreshJsonObject.addProperty("isHot", freshItem.isHot());
+        localFreshJsonObject.addProperty("coverUrl", freshItem.getCoverUrl());
+        localFreshJsonObject.addProperty("userId", freshItem.getUserId());
+        localFreshJsonObject.addProperty("gender", freshItem.getGender());
+        if (freshItem.getPortrait() != null) {
+            result.addProperty("portrait", freshItem.getPortrait());
+        }
+        result.addProperty("nickname", freshItem.getNickname());
+        localFreshJsonObject.addProperty("viewsNum", freshItem.getViewsNum());
+        localFreshJsonObject.addProperty("desc", freshItem.getDesc());
+        localFreshJsonObject.addProperty("publishTime", changeTimeToString(new Date(freshItem.getPublishTime())));
+        return localFreshJsonObject;
     }
 
     /**
@@ -225,7 +236,9 @@ public class TownProjectFunctions {
             ResTownTopicDTO townTopicDTO = townWorkService.getTopicInfo(topicId);
             if(townTopicDTO != null) {
                 result.addProperty("topicName", townTopicDTO.getTopicName());
-                result.addProperty("topicDesc", townTopicDTO.getTopicDesc());
+                if(StringUtils.isNotEmpty(townTopicDTO.getTopicDesc())) {
+                    result.addProperty("topicDesc", townTopicDTO.getTopicDesc());
+                }
                 result.addProperty("coverUrl", townTopicDTO.getCoverUrl());
                 Integer sponsorUserId = townTopicDTO.getSponsorUserId();
                 if(sponsorUserId != null) {
@@ -2359,4 +2372,99 @@ public class TownProjectFunctions {
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
+
+    /**
+     * 	获取作品列表【51120139】
+     */
+    public JsonObject getWorkList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        int userId, workListType, topicId, pageIndex, countPerPage;
+        String areaCode, token;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, USER_ID.getId(), 0, null, 1, Integer.MAX_VALUE);
+            workListType = CommonUtil.getJsonParamInt(jsonObject, WORK_LIST_TYPE.getId(), 0, WORK_LIST_TYPE.getErrorCode(), 1, Integer.MAX_VALUE);
+            topicId = CommonUtil.getJsonParamInt(jsonObject, TOPIC_ID.getId(), 0, null, 1, Integer.MAX_VALUE);
+            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
+            countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 10, null, 1, Integer.MAX_VALUE);
+            areaCode = CommonUtil.getJsonParamString(jsonObject, AREA_CODE.getId(), null, null, 1, Integer.MAX_VALUE);
+            token = CommonUtil.getJsonParamString(jsonObject, "token", null, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        if(workListType == 1 && StringUtils.isEmpty(areaCode)) {
+            result.addProperty("TagCode", AREA_CODE.getErrorCode());
+            return result;
+        }
+        if((workListType == 2 || workListType == 3) && topicId <= 0) {
+            result.addProperty("TagCode", TOPIC_ID.getErrorCode());
+            return result;
+        }
+        if((workListType == 4 || workListType == 5) && userId <= 0) {
+            result.addProperty("TagCode", USER_ID.getErrorCode());
+            return result;
+        }
+        boolean isOwner = false;
+        // 查询本人作品列表需要验证token,未验证的返回错误码
+        if(StringUtils.isNotEmpty(token)) {
+            if (!checkTag) {
+                result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+                return result;
+            }
+            isOwner = true;
+        }
+
+        try {
+
+            Page<ResTownWorkDTO> page = null;
+            if(workListType == 1) {
+                JsonArray workList = new JsonArray();
+                Page<FreshItemDTO> itemPage = townWorkService.getLocalFreshList(areaCode, pageIndex, countPerPage);
+                if(itemPage != null && itemPage.getList() != null && itemPage.getList().size() > 0) {
+                    List<FreshItemDTO> list = itemPage.getList();
+                    for(FreshItemDTO freshItem : list) {
+                        JsonObject localFreshJsonObject = getLocalFreshJsonObject(result, freshItem);
+                        workList.add(localFreshJsonObject);
+                    }
+                }
+                result.add("workList", workList);
+                result.addProperty("workCount", itemPage.getCount());
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                return result;
+            } else if(workListType == 2) {
+                page = townWorkService.getTopicWorkList(topicId, 1, pageIndex ,countPerPage);
+            } else if(workListType == 3) {
+                page = townWorkService.getTopicWorkList(topicId, 2, pageIndex ,countPerPage);
+            } else if(workListType == 4) {
+                page = townWorkService.getMyWorkList(userId, isOwner, pageIndex, countPerPage);
+            } else if(workListType == 5) {
+                page = townWorkService.getMyPraiseWorkList(userId, pageIndex, countPerPage);
+            }
+            JsonArray workList = new JsonArray();
+            if(page != null && page.getList() != null && page.getList().size() > 0) {
+                List<ResTownWorkDTO> townWorkDTOS = page.getList();
+                for(ResTownWorkDTO townWorkDTO : townWorkDTOS) {
+                    JsonObject townWork = new JsonObject();
+                    townWork.addProperty("workId", townWorkDTO.getWorkId());
+                    townWork.addProperty("checkStatus", townWorkDTO.getCheckStatus());
+                    townWork.addProperty("praiseNum", townWorkDTO.getPraiseNum());
+                    townWork.addProperty("viewsNum", townWorkDTO.getViewsNum());
+                    townWork.addProperty("coverUrl", townWorkDTO.getCoverUrl());
+                    workList.add(townWork);
+                }
+            }
+            result.add("workList", workList);
+            result.addProperty("workCount", page.getCount());
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error getMyWorkList()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
 }
