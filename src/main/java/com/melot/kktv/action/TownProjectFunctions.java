@@ -1900,7 +1900,7 @@ public class TownProjectFunctions {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "03040002", 1, Integer.MAX_VALUE);
             gender=CommonUtil.getJsonParamInt(jsonObject, "gender", -1, null, 0, 1);
             birthday = CommonUtil.getJsonParamString(jsonObject, "birthday", null, null, 1, 20);
-            introduction = CommonUtil.getJsonParamString(jsonObject, "name", null, null, 1, 100);
+            introduction = CommonUtil.getJsonParamString(jsonObject, "introduction", null, null, 1, 100);
             nickname = CommonUtil.getJsonParamString(jsonObject, "nickname", null, null, 1, 100);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
