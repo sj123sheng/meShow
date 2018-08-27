@@ -2088,6 +2088,11 @@
 		<constructor-arg name="t" ref="roundRoomFunction" />
 		<constructor-arg name="methodName" value="getRoundRoomActList" />
 	</bean>
+
+	<bean id="51001013" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="roundRoomFunction" />
+		<constructor-arg name="methodName" value="getRoundRoomActListNew" />
+	</bean>
 	
 	<!-- 根据KEY获取配置信息 -->
 	<bean id="50001101" class="com.melot.sdk.core.function.GenericFunction">
