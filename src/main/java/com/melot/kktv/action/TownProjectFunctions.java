@@ -643,14 +643,18 @@ public class TownProjectFunctions {
                 if(roomInfo.getPortrait()!=null){
                     json.addProperty("portrait",  roomInfo.getPortrait()  + "!128");
                 }
-                if(roomInfo.getRoomSource() != null){
-                    json.addProperty("roomSource",roomInfo.getRoomSource());
-                }
 
-                if(roomInfo.getLiveEndtime()!=null){
-                    json.addProperty("liveStatus",0);
-                }else{
-                    json.addProperty("liveStatus",1);
+                com.melot.kkcore.actor.api.RoomInfo room = actorService.getRoomInfoById(roomInfo.getActorId());
+                if(room != null){
+                    if(room.getRoomSource() != null){
+                        json.addProperty("roomSource",roomInfo.getRoomSource());
+                    }
+
+                    if(room.getLiveEndTime()!=null && room.getLiveEndTime()>0){
+                        json.addProperty("liveStatus",0);
+                    }else{
+                        json.addProperty("liveStatus",1);
+                    }
                 }
 
                 boolean isFollow = UserRelationService.isFollowed(roomInfo.getActorId(),userId);
@@ -687,7 +691,7 @@ public class TownProjectFunctions {
         }
         String result = tag.toString();
         int minLength = 1;
-        if(!org.springframework.util.StringUtils.isEmpty(result) && result.length()>minLength){
+        if(!org.springframework.util.StringUtils.isEmpty(result) && result.length() > minLength){
             return result.substring(0,result.length()-1);
         }else{
             return "";
@@ -772,14 +776,18 @@ public class TownProjectFunctions {
                     if(!org.springframework.util.StringUtils.isEmpty(tag)){
                         roomJson.addProperty("tag",tag);
                     }
-                    if(room.getRoomSource() != null){
-                        roomJson.addProperty("roomSource",room.getRoomSource());
-                    }
 
-                    if(room.getLiveendtime() != null){
-                        roomJson.addProperty("liveStatus",0);
-                    }else{
-                        roomJson.addProperty("liveStatus",1);
+                    com.melot.kkcore.actor.api.RoomInfo roomInfo = actorService.getRoomInfoById(roomId);
+                    if(roomInfo != null){
+                        if(roomInfo.getRoomSource() != null){
+                            roomJson.addProperty("roomSource",roomInfo.getRoomSource());
+                        }
+
+                        if(roomInfo.getLiveEndTime()!=null && roomInfo.getLiveEndTime()>0){
+                            roomJson.addProperty("liveStatus",0);
+                        }else{
+                            roomJson.addProperty("liveStatus",1);
+                        }
                     }
 
                     boolean isFollow = UserRelationService.isFollowed(userId,room.getUserId());
@@ -2466,5 +2474,4 @@ public class TownProjectFunctions {
             return result;
         }
     }
-
 }
