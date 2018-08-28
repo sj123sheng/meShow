@@ -736,6 +736,12 @@
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
 
+		<!-- 微信小程序模块-->
+		<dependency>
+			<groupId>com.melot.kk</groupId>
+			<artifactId>kk-wechatProject-api</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>
     </dependencies>
  	
 </project>

@@ -218,4 +218,6 @@
 	<!-- 微信直播小程序接口 -->
 	<bean id="kKLiveProjectFunctions" class="com.melot.kkcx.functions.KKLiveProjectFunctions" />
 
+	<!-- 微信小程序接口 -->
+	<bean id="WechatProjectFunctions" class="com.melot.kkcx.functions.WechatProjectFunctions" />
 </beans>
