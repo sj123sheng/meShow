@@ -2434,8 +2434,11 @@ public class TownProjectFunctions {
                 if(itemPage != null && itemPage.getList() != null && itemPage.getList().size() > 0) {
                     List<FreshItemDTO> list = itemPage.getList();
                     for(FreshItemDTO freshItem : list) {
-                        JsonObject localFreshJsonObject = getLocalFreshJsonObject(result, freshItem);
-                        workList.add(localFreshJsonObject);
+                        if(freshItem.getType() == ItemTypeEnum.WORK) {
+                            JsonObject townWork = new JsonObject();
+                            townWork.addProperty("workId", freshItem.getId());
+                            workList.add(townWork);
+                        }
                     }
                 }
                 result.add("workList", workList);
@@ -2457,10 +2460,6 @@ public class TownProjectFunctions {
                 for(ResTownWorkDTO townWorkDTO : townWorkDTOS) {
                     JsonObject townWork = new JsonObject();
                     townWork.addProperty("workId", townWorkDTO.getWorkId());
-                    townWork.addProperty("checkStatus", townWorkDTO.getCheckStatus());
-                    townWork.addProperty("praiseNum", townWorkDTO.getPraiseNum());
-                    townWork.addProperty("viewsNum", townWorkDTO.getViewsNum());
-                    townWork.addProperty("coverUrl", townWorkDTO.getCoverUrl());
                     workList.add(townWork);
                 }
             }
