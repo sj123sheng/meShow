@@ -640,9 +640,8 @@ public class TownProjectFunctions {
                 if(!org.springframework.util.StringUtils.isEmpty(tag)){
                     json.addProperty("tag",tag);
                 }
-                if(roomInfo.getPortrait()!=null){
-                    json.addProperty("portrait",  roomInfo.getPortrait()  + "!128");
-                }
+                UserProfile userProfile = kkUserService.getUserProfile(roomInfo.getActorId());
+                json.addProperty("portrait",this.getPortrait(userProfile));
 
                 com.melot.kkcore.actor.api.RoomInfo room = actorService.getRoomInfoById(roomInfo.getActorId());
                 if(room != null){
@@ -770,7 +769,8 @@ public class TownProjectFunctions {
                     roomJson.addProperty("userId",roomId);
                     roomJson.addProperty("nickname",room.getNickname());
                     roomJson.addProperty("gender",room.getGender());
-                    roomJson.addProperty("portrait", room.getPortrait_path_128());
+                    UserProfile userProfile = kkUserService.getUserProfile(roomId);
+                    roomJson.addProperty("portrait",this.getPortrait(userProfile));
 
                     String tag = this.getUserTag(tagMap,room.getUserId());
                     if(!org.springframework.util.StringUtils.isEmpty(tag)){
