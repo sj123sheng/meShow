@@ -135,9 +135,9 @@ public class TownProjectFunctions {
         localFreshJsonObject.addProperty("userId", freshItem.getUserId());
         localFreshJsonObject.addProperty("gender", freshItem.getGender());
         if (freshItem.getPortrait() != null) {
-            result.addProperty("portrait", freshItem.getPortrait());
+            localFreshJsonObject.addProperty("portrait", freshItem.getPortrait());
         }
-        result.addProperty("nickname", freshItem.getNickname());
+        localFreshJsonObject.addProperty("nickname", freshItem.getNickname());
         localFreshJsonObject.addProperty("viewsNum", freshItem.getViewsNum());
         localFreshJsonObject.addProperty("desc", freshItem.getDesc());
         localFreshJsonObject.addProperty("publishTime", changeTimeToString(new Date(freshItem.getPublishTime())));
