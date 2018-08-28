@@ -17,6 +17,7 @@ import com.melot.kk.town.api.param.TownWorkCommentParam;
 import com.melot.kk.town.api.param.TownWorkParam;
 import com.melot.kk.town.api.service.*;
 import com.melot.kkcore.actor.service.ActorService;
+import com.melot.kkcore.user.api.ProfileKeys;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kktv.base.CommonStateCode;
@@ -402,6 +403,7 @@ public class TownProjectFunctions {
                 result.addProperty("TagCode", TagCodeEnum.USER_NOT_EXIST);
                 return result;
             }
+
         }
 
         int sourceUserId;
@@ -419,13 +421,18 @@ public class TownProjectFunctions {
 
         result.addProperty("userId",userProfile.getUserId());
         result.addProperty("nickname",userProfile.getNickName());
-        boolean  checkPortrait = LiveVideoService.checkingPortrait(sourceUserId);
-        if (checkPortrait) {
-            String path = OpusCostantEnum.CHECKING_PORTRAIT_RESOURCEURL;
-            result.addProperty("portrait", path + "!128");
+        if(userId == targetUserId){
+            boolean  checkPortrait = LiveVideoService.checkingPortrait(sourceUserId);
+            if (checkPortrait) {
+                String path = OpusCostantEnum.CHECKING_PORTRAIT_RESOURCEURL;
+                result.addProperty("portrait", path + "!128");
+            }else{
+                result.addProperty("portrait", this.getPortrait(userProfile));
+            }
         }else{
             result.addProperty("portrait", this.getPortrait(userProfile));
         }
+
         result.addProperty("gender",userProfile.getGender());
 
         int followsCount = UserRelationService.getFollowsCount(sourceUserId);
@@ -450,10 +457,11 @@ public class TownProjectFunctions {
 
         TownUserInfoDTO townUserInfoDTO = townUserService.getUserInfo(sourceUserId);
         if(townUserInfoDTO != null){
+            TownUserRoleDTO townUserRoleOwer = null;
             if(!org.springframework.util.StringUtils.isEmpty(townUserInfoDTO.getLastAreaCode())){
-                TownUserRoleDTO townUserRoleDTO = townUserRoleService.getUserAreaRole(sourceUserId,
+                townUserRoleOwer = townUserRoleService.getUserAreaRole(sourceUserId,
                         townUserInfoDTO.getLastAreaCode(), UserRoleTypeEnum.OWER);
-                if(townUserRoleDTO != null){
+                if(townUserRoleOwer != null){
                     result.addProperty("isOwer",1);
                 }else{
                     result.addProperty("isOwer",0);
@@ -463,6 +471,10 @@ public class TownProjectFunctions {
                 if(!org.springframework.util.StringUtils.isEmpty(areaName)){
                     result.addProperty("areaName",areaName);
                 }
+            }
+            String tag = this.getUserTag(sourceUserId,townUserRoleOwer,townUserInfoDTO.getLastAreaCode());
+            if(!org.springframework.util.StringUtils.isEmpty(tag)){
+                result.addProperty("tag",tag);
             }
 
             if(townUserInfoDTO.getIntroduction()!=null){
@@ -478,10 +490,6 @@ public class TownProjectFunctions {
                 } catch (ParseException ex){
                     logger.error("parse birthday error birthday:"+townUserInfoDTO.getBirthday()+",ex:",ex);
                 }
-            }
-            String tag = this.getUserTag(sourceUserId);
-            if(!org.springframework.util.StringUtils.isEmpty(tag)){
-                result.addProperty("tag",tag);
             }
         }
 
@@ -514,22 +522,27 @@ public class TownProjectFunctions {
         return result;
     }
 
-    private String getUserTag(int userId){
+    private String getUserTag(int userId,TownUserRoleDTO townUserRoleOwer,String areaCode){
+        StringBuilder tag = new StringBuilder();
+        if(townUserRoleOwer != null){
+            tag.append("站长").append(",");
+        }
+        TownUserRoleDTO  townUserRoleStar = townUserRoleService.getUserAreaRole(userId, areaCode, UserRoleTypeEnum.STAR);
+        if(townUserRoleStar != null){
+            tag.append("红人").append(",");
+        }
         List<UserTagRelationDTO> list =  tagService.getUserTagList(userId);
         if(!CollectionUtils.isEmpty(list)){
-            StringBuilder tag = new StringBuilder();
             for(UserTagRelationDTO item : list){
                 if(!org.springframework.util.StringUtils.isEmpty(item.getTagName())){
                     tag.append(item.getTagName()).append(",");
                 }
             }
-            String result = tag.toString();
-            int minLength = 1;
-            if(!org.springframework.util.StringUtils.isEmpty(result) && result.length() > minLength){
-                return result.substring(0,tag.length()-1);
-            }else{
-                return "";
-            }
+        }
+        String result = tag.toString();
+        int minLength = 1;
+        if(!org.springframework.util.StringUtils.isEmpty(result) && result.length() > minLength){
+            return result.substring(0,tag.length()-1);
         }else{
             return "";
         }
@@ -1956,15 +1969,13 @@ public class TownProjectFunctions {
         }
 
         if(gender > -1){
-            userProfile.setGender(gender);
             Map<String,Object> map = new HashMap<>();
-            map.put("gender",gender);
+            map.put(ProfileKeys.GENDER.key(),gender);
             kkUserService.updateUserProfile(userId,map);
         }
         if(!org.springframework.util.StringUtils.isEmpty(nickname)){
-            userProfile.setGender(gender);
             Map<String,Object> map = new HashMap<>();
-            map.put("nickname",nickname);
+            map.put(ProfileKeys.NICKNAME.key(),nickname);
             kkUserService.updateUserProfile(userId,map);
         }
 
