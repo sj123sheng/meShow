@@ -1095,7 +1095,7 @@ public class TownProjectFunctions {
             age = CommonUtil.getJsonParamInt(jsonObject, "age", 0, AGE.getErrorCode(), 1, 200);
             gender = CommonUtil.getJsonParamInt(jsonObject, "gender", 0, GENDER.getErrorCode(), 0, 1);
             home =  CommonUtil.getJsonParamString(jsonObject, "home", null, HOME.getErrorCode(), 1, 500);
-            mobilePhone = CommonUtil.getJsonParamString(jsonObject, "mobilePhone", null, MOBILE_PHONE.getErrorCode(), 11, 11);
+            mobilePhone = CommonUtil.getJsonParamString(jsonObject, "mobilePhone", null, MOBILE_PHONE.getErrorCode(), 11, 50);
             profession = CommonUtil.getJsonParamString(jsonObject, "profession", null, PROFESSION.getErrorCode(), 1, 1000);
             experience = CommonUtil.getJsonParamString(jsonObject, "experience", null, EXPERIENCE.getErrorCode(), 1, 1000);
             reason = CommonUtil.getJsonParamString(jsonObject, "reason", null, REASON.getErrorCode(), 1, 1000);
