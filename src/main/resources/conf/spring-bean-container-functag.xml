@@ -3176,4 +3176,8 @@
 		<constructor-arg name="methodName" value="getPhotoInfoForHelpUser" />
 	</bean>
 
+	<bean id="51120301" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="WechatProjectFunctions" />
+		<constructor-arg name="methodName" value="addPromoteHistByChannel" />
+	</bean>
 </beans>
