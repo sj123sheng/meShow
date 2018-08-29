@@ -665,7 +665,7 @@ public class TownProjectFunctions {
                 com.melot.kkcore.actor.api.RoomInfo room = actorService.getRoomInfoById(roomInfo.getActorId());
                 if(room != null){
                     if(room.getRoomSource() != null){
-                        json.addProperty("roomSource",roomInfo.getRoomSource());
+                        json.addProperty("roomSource",room.getRoomSource());
                     }
 
                     if(room.getLiveEndTime()!=null && room.getLiveEndTime()>0){
