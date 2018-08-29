@@ -1775,7 +1775,7 @@ public class TownProjectFunctions {
     }
 
     /**
-     * 	获取评论消息列表【5112028】
+     * 	获取评论消息列表【51120128】
      */
     public JsonObject getCommentMessageList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 
