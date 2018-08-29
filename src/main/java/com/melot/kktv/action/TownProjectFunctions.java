@@ -592,7 +592,7 @@ public class TownProjectFunctions {
         int userId, pageIndex, countPerPage, platform;
 
         //排序规则  默认:直播状态,1:关注时间
-        Integer sortType = 1;
+        Integer sortType = 0;
 
         // 获取参数
         try {
