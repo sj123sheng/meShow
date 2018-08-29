@@ -704,7 +704,7 @@ public class TownProjectFunctions {
             TownUserRoleDTO  townUserOwer = townUserRoleService.getUserAreaRole(userId,
                     townUserInfoDTO.getLastAreaCode(), UserRoleTypeEnum.OWER);
             if(townUserOwer != null){
-                tag.append("红人").append(",");
+                tag.append("站长").append(",");
             }
 
             TownUserRoleDTO  townUserRoleStar = townUserRoleService.getUserAreaRole(userId,
