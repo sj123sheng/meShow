@@ -533,9 +533,9 @@ public class TownProjectFunctions {
             tag.append("站长").append(",");
         }
         TownUserRoleDTO  townUserRoleStar = townUserRoleService.getUserAreaRole(userId, areaCode, UserRoleTypeEnum.STAR);
-        if(townUserRoleStar != null){
+        /*if(townUserRoleStar != null){
             tag.append("红人").append(",");
-        }
+        }*/
         List<UserTagRelationDTO> list =  tagService.getUserTagList(userId);
         if(!CollectionUtils.isEmpty(list)){
             for(UserTagRelationDTO item : list){
