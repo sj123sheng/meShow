@@ -588,10 +588,6 @@ public class TownProjectFunctions {
      */
     public JsonObject getUserFollowedList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
-        int selfTag = 0;
-        if (checkTag) {
-            selfTag = 1;
-        }
 
         int userId, pageIndex, countPerPage, platform;
 
@@ -646,15 +642,19 @@ public class TownProjectFunctions {
             for (RoomInfo roomInfo : roomList) {
                 JsonObject json = new JsonObject();
                 json.addProperty("userId",roomInfo.getActorId());
-                json.addProperty("nickname",roomInfo.getNickname());
                 json.addProperty("roomId", roomInfo.getRoomId() != null ? roomInfo.getRoomId() : roomInfo.getActorId());
-                json.addProperty("gender",roomInfo.getGender());
+
+                UserProfile userProfile = kkUserService.getUserProfile(roomInfo.getActorId());
+                if(userProfile != null){
+                    json.addProperty("nickname",userProfile.getNickName());
+                    json.addProperty("gender",userProfile.getGender());
+                    json.addProperty("portrait",this.getPortrait(userProfile));
+                }
+
                 String tag = this.getUserTag(tagMap,roomInfo.getActorId());
                 if(!org.springframework.util.StringUtils.isEmpty(tag)){
                     json.addProperty("tag",tag);
                 }
-                UserProfile userProfile = kkUserService.getUserProfile(roomInfo.getActorId());
-                json.addProperty("portrait",this.getPortrait(userProfile));
 
                 com.melot.kkcore.actor.api.RoomInfo room = actorService.getRoomInfoById(roomInfo.getActorId());
                 if(room != null){
@@ -720,12 +720,6 @@ public class TownProjectFunctions {
     public JsonObject getUserFansList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
 
-        // 该接口toke可选
-        int selfTag = 0;
-        if (checkTag) {
-            selfTag = 1;
-        }
-
         int userId = 0;
         int pageIndex = 1;
         int countPerPage = 20;
@@ -751,18 +745,12 @@ public class TownProjectFunctions {
         int totalCount = UserRelationService.getFansCount(userId);
         if (totalCount > 0) {
             if (totalCount % countPerPage == 0) {
-                pageTotal = (int) totalCount / countPerPage;
+                pageTotal =  totalCount / countPerPage;
             } else {
-                pageTotal = (int) (totalCount / countPerPage) + 1;
+                pageTotal =  (totalCount / countPerPage) + 1;
             }
         }
         result.addProperty("fansCount", totalCount);
-
-        //不是自己查看仅返回粉丝数
-        if (!checkTag) {
-            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-            return result;
-        }
 
         JsonArray jRoomList = new JsonArray();
 
@@ -780,10 +768,13 @@ public class TownProjectFunctions {
                     int roomId = room.getUserId();
                     JsonObject roomJson = new JsonObject();
                     roomJson.addProperty("userId",roomId);
-                    roomJson.addProperty("nickname",room.getNickname());
-                    roomJson.addProperty("gender",room.getGender());
+
                     UserProfile userProfile = kkUserService.getUserProfile(roomId);
-                    roomJson.addProperty("portrait",this.getPortrait(userProfile));
+                    if(userProfile != null){
+                        roomJson.addProperty("portrait",this.getPortrait(userProfile));
+                        roomJson.addProperty("nickname",userProfile.getNickName());
+                        roomJson.addProperty("gender",userProfile.getGender());
+                    }
 
                     String tag = this.getUserTag(tagMap,room.getUserId());
                     if(!org.springframework.util.StringUtils.isEmpty(tag)){
