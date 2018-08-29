@@ -644,6 +644,7 @@ public class TownProjectFunctions {
                 userIdList.add(roomInfo.getActorId());
             }
             Map<Integer,List<UserTagRelationDTO>> tagMap = tagService.getAllUserTagMap(userIdList);
+            Map<Integer,String> userRoleTagMap = townUserRoleService.getUserRoleTag(userIdList);
             for (RoomInfo roomInfo : roomList) {
                 JsonObject json = new JsonObject();
                 json.addProperty("userId",roomInfo.getActorId());
@@ -656,7 +657,7 @@ public class TownProjectFunctions {
                     json.addProperty("portrait",this.getPortrait(userProfile));
                 }
 
-                String tag = this.getUserTag(tagMap,roomInfo.getActorId());
+                String tag = this.getUserTag(tagMap, userRoleTagMap, roomInfo.getActorId());
                 if(!org.springframework.util.StringUtils.isEmpty(tag)){
                     json.addProperty("tag",tag);
                 }
@@ -689,29 +690,16 @@ public class TownProjectFunctions {
         return result;
     }
 
-    private String getUserTag(Map<Integer,List<UserTagRelationDTO>> tagMap,Integer userId){
-        if(CollectionUtils.isEmpty(tagMap)){
-            return "";
-        }
-        if(!tagMap.containsKey(userId)){
+    private String getUserTag(Map<Integer,List<UserTagRelationDTO>> tagMap,Map<Integer,String> userRoleMap, Integer userId){
+        if(CollectionUtils.isEmpty(tagMap) && CollectionUtils.isEmpty(userRoleMap)){
             return "";
         }
 
         StringBuilder tag = new StringBuilder();
 
-        TownUserInfoDTO townUserInfoDTO = townUserService.getUserInfo(userId);
-        if(townUserInfoDTO != null && !org.springframework.util.StringUtils.isEmpty(townUserInfoDTO.getLastAreaCode())){
-            TownUserRoleDTO  townUserOwer = townUserRoleService.getUserAreaRole(userId,
-                    townUserInfoDTO.getLastAreaCode(), UserRoleTypeEnum.OWER);
-            if(townUserOwer != null){
-                tag.append("站长").append(",");
-            }
-
-            TownUserRoleDTO  townUserRoleStar = townUserRoleService.getUserAreaRole(userId,
-                    townUserInfoDTO.getLastAreaCode(), UserRoleTypeEnum.STAR);
-            if(townUserRoleStar != null){
-                tag.append("红人").append(",");
-            }
+        String roleTag = userRoleMap.get(userId);
+        if(!org.springframework.util.StringUtils.isEmpty(roleTag)){
+            tag.append(roleTag).append(",");
         }
 
         List<UserTagRelationDTO> tagList = tagMap.get(userId);
@@ -785,6 +773,7 @@ public class TownProjectFunctions {
                 }
 
                 Map<Integer,List<UserTagRelationDTO>> tagMap = tagService.getAllUserTagMap(userIdList);
+                Map<Integer,String> userRoleTagMap = townUserRoleService.getUserRoleTag(userIdList);
                 for (Room room : roomList) {
                     int roomId = room.getUserId();
                     JsonObject roomJson = new JsonObject();
@@ -797,7 +786,7 @@ public class TownProjectFunctions {
                         roomJson.addProperty("gender",userProfile.getGender());
                     }
 
-                    String tag = this.getUserTag(tagMap,room.getUserId());
+                    String tag = this.getUserTag(tagMap,userRoleTagMap, room.getUserId());
                     if(!org.springframework.util.StringUtils.isEmpty(tag)){
                         roomJson.addProperty("tag",tag);
                     }
@@ -877,6 +866,8 @@ public class TownProjectFunctions {
                 userIdList.add(item.getUserId());
             }
             Map<Integer,List<UserTagRelationDTO>> tagMap = tagService.getAllUserTagMap(userIdList);
+            Map<Integer,String> userRoleTagMap = townUserRoleService.getUserRoleTag(userIdList);
+
             for(TownUserRoleDTO item : list){
                 UserProfile userProfile = kkUserService.getUserProfile(item.getUserId());
                 if(userProfile!=null){
@@ -886,7 +877,7 @@ public class TownProjectFunctions {
                     if(userProfile.getPortrait()!=null){
                         json.addProperty("portrait", this.getPortrait(userProfile));
                     }
-                    String tag = this.getUserTag(tagMap,item.getUserId());
+                    String tag = this.getUserTag(tagMap, userRoleTagMap,item.getUserId());
                     if(!org.springframework.util.StringUtils.isEmpty(tag)){
                         json.addProperty("tag",tag);
                     }
