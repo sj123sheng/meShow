@@ -53,9 +53,7 @@ public class WechatProjectFunctions {
         String tagCode = TagCodeEnum.MODULE_UNKNOWN_RESPCODE;
         try {
             ipAddr = GeneralService.getIpAddr(request, 1, 1, null);
-            log.info(String.format("get ipAddr:%s", ipAddr));
-            String[] ips = ipAddr.split(",");
-            wechatPromoteService.addPromoteHistByChannel(ips[0], channel, appId);
+            wechatPromoteService.addPromoteHistByChannel(ipAddr, channel, appId);
             tagCode = TagCodeEnum.SUCCESS;
         } catch(MelotModuleException e) {
             log.info(String.format("addPromoteHistByChannel fail: ipAddr=%s, channel=%s, addId=%s", ipAddr, channel, appId), e);
