@@ -698,6 +698,22 @@ public class TownProjectFunctions {
         }
 
         StringBuilder tag = new StringBuilder();
+
+        TownUserInfoDTO townUserInfoDTO = townUserService.getUserInfo(userId);
+        if(townUserInfoDTO != null && !org.springframework.util.StringUtils.isEmpty(townUserInfoDTO.getLastAreaCode())){
+            TownUserRoleDTO  townUserOwer = townUserRoleService.getUserAreaRole(userId,
+                    townUserInfoDTO.getLastAreaCode(), UserRoleTypeEnum.OWER);
+            if(townUserOwer != null){
+                tag.append("红人").append(",");
+            }
+
+            TownUserRoleDTO  townUserRoleStar = townUserRoleService.getUserAreaRole(userId,
+                    townUserInfoDTO.getLastAreaCode(), UserRoleTypeEnum.STAR);
+            if(townUserRoleStar != null){
+                tag.append("红人").append(",");
+            }
+        }
+
         List<UserTagRelationDTO> tagList = tagMap.get(userId);
         if(!CollectionUtils.isEmpty(tagList)){
             for(UserTagRelationDTO item : tagList){
