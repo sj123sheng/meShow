@@ -1508,10 +1508,22 @@ public class TownProjectFunctions {
             result.addProperty("TagCode", e.getErrCode());
             return result;
         }
+
         JsonArray jsonArray = new JsonArray();
-        List<TownStarDTO> list = townUserRoleService.getTownStarList(areaCode,10);
+        int maxCount = 10;
+        List<TownStarDTO> list = townUserRoleService.getTownStarList(areaCode,maxCount + 1);
         if(!CollectionUtils.isEmpty(list)){
-            for(TownStarDTO item : list){
+            int listLength;
+            if(list.size() > maxCount){
+                listLength = maxCount;
+                result.addProperty("more",1);
+            }else{
+                listLength = list.size();
+                result.addProperty("more",0);
+            }
+
+            for(int i = 0;i < listLength; i++){
+                TownStarDTO item = list.get(i);
                 UserProfile userProfile = kkUserService.getUserProfile(item.getUserId());
                 if(userProfile!=null){
                     JsonObject json = new JsonObject();
