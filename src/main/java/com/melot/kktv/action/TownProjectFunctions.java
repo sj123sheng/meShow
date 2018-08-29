@@ -605,7 +605,7 @@ public class TownProjectFunctions {
             pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
             countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 20, null, 1, 30);
             platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, 1, Integer.MAX_VALUE);
-            sortType = CommonUtil.getJsonParamInt(jsonObject, "sortType", 1, null, 0, Integer.MAX_VALUE);
+            sortType = CommonUtil.getJsonParamInt(jsonObject, "sortType", 0, null, 0, Integer.MAX_VALUE);
         } catch(CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -664,7 +664,7 @@ public class TownProjectFunctions {
                 com.melot.kkcore.actor.api.RoomInfo room = actorService.getRoomInfoById(roomInfo.getActorId());
                 if(room != null){
                     if(room.getRoomSource() != null){
-                        json.addProperty("roomSource",roomInfo.getRoomSource());
+                        json.addProperty("roomSource",room.getRoomSource());
                     }
 
                     if(room.getLiveEndTime()!=null && room.getLiveEndTime()>0){
