@@ -477,7 +477,7 @@ public class TownProjectFunctions {
                     result.addProperty("areaName",areaName);
                 }
             }
-            String tag = this.getUserTag(sourceUserId,townUserRoleOwer,townUserInfoDTO.getLastAreaCode());
+            String tag = this.getUserTag(sourceUserId,townUserRoleOwer);
             if(!org.springframework.util.StringUtils.isEmpty(tag)){
                 result.addProperty("tag",tag);
             }
@@ -527,13 +527,13 @@ public class TownProjectFunctions {
         return result;
     }
 
-    private String getUserTag(int userId,TownUserRoleDTO townUserRoleOwer,String areaCode){
+    private String getUserTag(int userId,TownUserRoleDTO townUserRoleOwer){
         StringBuilder tag = new StringBuilder();
         if(townUserRoleOwer != null){
             tag.append("站长").append(",");
         }
-        TownUserRoleDTO  townUserRoleStar = townUserRoleService.getUserAreaRole(userId, areaCode, UserRoleTypeEnum.STAR);
-        /*if(townUserRoleStar != null){
+        /*TownUserRoleDTO  townUserRoleStar = townUserRoleService.getUserAreaRole(userId, areaCode, UserRoleTypeEnum.STAR);
+        if(townUserRoleStar != null){
             tag.append("红人").append(",");
         }*/
         List<UserTagRelationDTO> list =  tagService.getUserTagList(userId);
