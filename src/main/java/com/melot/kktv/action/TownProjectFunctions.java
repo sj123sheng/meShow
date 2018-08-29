@@ -104,19 +104,20 @@ public class TownProjectFunctions {
         }
 
         try {
+            String pathPrefix = ConfigHelper.getHttpdir();
             JsonArray localFreshList = new JsonArray();
             Page<FreshItemDTO> page = townWorkService.getLocalFreshList(areaCode, pageIndex, countPerPage);
             if(page != null && page.getList() != null && page.getList().size() > 0) {
                 List<FreshItemDTO> list = page.getList();
                 for(FreshItemDTO freshItem : list) {
-                    JsonObject localFreshJsonObject = getLocalFreshJsonObject(result, freshItem);
+                    JsonObject localFreshJsonObject = getLocalFreshJsonObject(pathPrefix, freshItem);
                     localFreshList.add(localFreshJsonObject);
                 }
             }
             
             result.add("localFreshList", localFreshList);
             result.addProperty("localFreshCount", page.getCount());
-            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+            result.addProperty("pathPrefix", pathPrefix);
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
         } catch (Exception e) {
@@ -126,12 +127,16 @@ public class TownProjectFunctions {
         }
     }
 
-    private JsonObject getLocalFreshJsonObject(JsonObject result, FreshItemDTO freshItem) {
+    private JsonObject getLocalFreshJsonObject(String pathPrefix, FreshItemDTO freshItem) {
         JsonObject localFreshJsonObject = new JsonObject();
         localFreshJsonObject.addProperty("type", freshItem.getType());
         localFreshJsonObject.addProperty("id", freshItem.getId());
         localFreshJsonObject.addProperty("isHot", freshItem.isHot());
-        localFreshJsonObject.addProperty("coverUrl", freshItem.getCoverUrl());
+        String coverUrl = freshItem.getCoverUrl();
+        if(freshItem.getType() == ItemTypeEnum.ROOM) {
+            coverUrl = pathPrefix + coverUrl;
+        }
+        localFreshJsonObject.addProperty("coverUrl", coverUrl);
         localFreshJsonObject.addProperty("userId", freshItem.getUserId());
         localFreshJsonObject.addProperty("gender", freshItem.getGender());
         if (freshItem.getPortrait() != null) {
