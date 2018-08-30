@@ -2400,7 +2400,7 @@ public class TownProjectFunctions {
             result.addProperty("TagCode", e.getErrCode());
             return result;
         }
-        
+
         List<TownStarCheckStatusEnum> checkStatus = new ArrayList<>();
         checkStatus.add(TownStarCheckStatusEnum.IN_REVIEW);
         checkStatus.add(TownStarCheckStatusEnum.PASS);
