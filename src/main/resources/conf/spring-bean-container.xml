@@ -6,16 +6,6 @@
         http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/context
         http://www.springframework.org/schema/context/spring-context.xsd">
-        
-    <!-- oracle master database -->
-	<bean id="sqlMapClient_oracle_master" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean" lazy-init="true">
-		<property name="configLocation">
-			<value>conf/SqlMapConfig-oracle_master.xml</value>
-		</property>
-		<property name="dataSource">
-			<ref bean="dataSource_master" />
-		</property>
-	</bean>
 
 	<!-- postgresql database -->
 	<bean id="sqlMapClient_pg_master" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean">

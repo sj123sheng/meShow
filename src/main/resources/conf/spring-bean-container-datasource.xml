@@ -5,27 +5,6 @@
         http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 	<!-- DBMS -->
-	<bean id="dataSource_master" class="com.alibaba.druid.pool.DruidDataSource" destroy-method="close" lazy-init="true">
-		<property name="driverClassName" value="${spring.ds.oracle.driverClassName}"/>
-		<property name="url" value="${spring.ds.oracle.url}" />
-		<property name="username" value="${spring.ds.oracle.username}"/>
-		<property name="password" value="${spring.ds.oracle.password}"/>
-		<property name="validationQuery" value="${spring.ds.oracle.validationQuery}" />
-
-		<property name="poolPreparedStatements" value="${spring.ds.oracle.poolPreparedStatements}"/>
-		<property name="initialSize" value="${spring.ds.oracle.initialSize}"/>
-		<property name="maxActive" value="${spring.ds.oracle.maxActive}"/>
-		<property name="maxIdle" value="${spring.ds.oracle.maxIdle}"/>
-		<property name="maxWait" value="${spring.ds.oracle.maxWait}" />
-		<property name="minIdle" value="${spring.ds.oracle.minIdle}"/>
-		<property name="numTestsPerEvictionRun" value="${spring.ds.oracle.numTestsPerEvictionRun}" />
-		<property name="testWhileIdle" value="${spring.ds.oracle.testWhileIdle}" />
-		<property name="testOnBorrow" value="${spring.ds.oracle.testOnBorrow}" />
-		<property name="defaultAutoCommit" value="${spring.ds.oracle.defaultAutoCommit}" />
-		<property name="timeBetweenLogStatsMillis" value="${spring.ds.oracle.timeBetweenLogStatsMillis}"/>
-		<property name="filters" value="${spring.ds.oracle.filters}" />
-	</bean>
-
 	<bean id="dataSource_pg_master" class="com.alibaba.druid.pool.DruidDataSource" lazy-init="true">
 		<property name="driverClassName" value="${spring.ds.pg.driverClassName}" />
 		<property name="url" value="${spring.ds.pg.url}" />

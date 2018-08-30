@@ -1,6 +1,5 @@
 package com.melot.kktv.action;
 
-import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -49,10 +48,7 @@ import com.melot.kktv.util.Constant;
 import com.melot.kktv.util.HadoopLogger;
 import com.melot.kktv.util.PlatformEnum;
 import com.melot.kktv.util.RankingEnum;
-import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
-import com.melot.kktv.util.db.DB;
-import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.module.packagegift.driver.domain.ResUserXman;
 import com.melot.module.packagegift.driver.domain.ResXman;
 import com.melot.module.packagegift.driver.service.XmanService;
