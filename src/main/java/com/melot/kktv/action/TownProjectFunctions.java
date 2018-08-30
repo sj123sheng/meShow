@@ -704,11 +704,13 @@ public class TownProjectFunctions {
             }
         }
 
-        List<UserTagRelationDTO> tagList = tagMap.get(userId);
-        if(!CollectionUtils.isEmpty(tagList)){
-            for(UserTagRelationDTO item : tagList){
-                if(!org.springframework.util.StringUtils.isEmpty(item.getTagName())){
-                    tag.append(item.getTagName()).append(",");
+        if(tagMap != null) {
+            List<UserTagRelationDTO> tagList = tagMap.get(userId);
+            if (!CollectionUtils.isEmpty(tagList)) {
+                for (UserTagRelationDTO item : tagList) {
+                    if (!org.springframework.util.StringUtils.isEmpty(item.getTagName())) {
+                        tag.append(item.getTagName()).append(",");
+                    }
                 }
             }
         }
