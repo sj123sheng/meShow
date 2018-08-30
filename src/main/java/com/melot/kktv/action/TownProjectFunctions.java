@@ -646,42 +646,41 @@ public class TownProjectFunctions {
             Map<Integer,List<UserTagRelationDTO>> tagMap = tagService.getAllUserTagMap(userIdList);
             Map<Integer,String> userRoleTagMap = townUserRoleService.getUserRoleTag(userIdList);
             for (RoomInfo roomInfo : roomList) {
-                JsonObject json = new JsonObject();
-                json.addProperty("userId",roomInfo.getActorId());
-                json.addProperty("roomId", roomInfo.getRoomId() != null ? roomInfo.getRoomId() : roomInfo.getActorId());
-
                 UserProfile userProfile = kkUserService.getUserProfile(roomInfo.getActorId());
                 if(userProfile != null){
+                    JsonObject json = new JsonObject();
+                    json.addProperty("userId",roomInfo.getActorId());
+                    json.addProperty("roomId", roomInfo.getRoomId() != null ? roomInfo.getRoomId() : roomInfo.getActorId());
                     json.addProperty("nickname",userProfile.getNickName());
                     json.addProperty("gender",userProfile.getGender());
                     json.addProperty("portrait",this.getPortrait(userProfile));
-                }
 
-                String tag = this.getUserTag(tagMap, userRoleTagMap, roomInfo.getActorId());
-                if(!org.springframework.util.StringUtils.isEmpty(tag)){
-                    json.addProperty("tag",tag);
-                }
-
-                com.melot.kkcore.actor.api.RoomInfo room = actorService.getRoomInfoById(roomInfo.getActorId());
-                if(room != null){
-                    if(room.getRoomSource() != null){
-                        json.addProperty("roomSource",room.getRoomSource());
+                    String tag = this.getUserTag(tagMap, userRoleTagMap, roomInfo.getActorId());
+                    if(!org.springframework.util.StringUtils.isEmpty(tag)){
+                        json.addProperty("tag",tag);
                     }
 
-                    if(room.getLiveEndTime()!=null && room.getLiveEndTime()>0){
-                        json.addProperty("liveStatus",0);
+                    com.melot.kkcore.actor.api.RoomInfo room = actorService.getRoomInfoById(roomInfo.getActorId());
+                    if(room != null){
+                        if(room.getRoomSource() != null){
+                            json.addProperty("roomSource",room.getRoomSource());
+                        }
+
+                        if(room.getLiveEndTime()!=null && room.getLiveEndTime()>0){
+                            json.addProperty("liveStatus",0);
+                        }else{
+                            json.addProperty("liveStatus",1);
+                        }
+                    }
+
+                    boolean isFollow = UserRelationService.isFollowed(roomInfo.getActorId(),userId);
+                    if(isFollow){
+                        json.addProperty("isFollow",1);
                     }else{
-                        json.addProperty("liveStatus",1);
+                        json.addProperty("isFollow",0);
                     }
+                    jRoomList.add(json);
                 }
-
-                boolean isFollow = UserRelationService.isFollowed(roomInfo.getActorId(),userId);
-                if(isFollow){
-                    json.addProperty("isFollow",1);
-                }else{
-                    json.addProperty("isFollow",0);
-                }
-                jRoomList.add(json);
             }
         }
         result.add("roomList", jRoomList);
@@ -780,41 +779,42 @@ public class TownProjectFunctions {
                 Map<Integer,String> userRoleTagMap = townUserRoleService.getUserRoleTag(userIdList);
                 for (Room room : roomList) {
                     int roomId = room.getUserId();
-                    JsonObject roomJson = new JsonObject();
-                    roomJson.addProperty("userId",roomId);
+
 
                     UserProfile userProfile = kkUserService.getUserProfile(roomId);
                     if(userProfile != null){
+                        JsonObject roomJson = new JsonObject();
+                        roomJson.addProperty("userId",roomId);
                         roomJson.addProperty("portrait",this.getPortrait(userProfile));
                         roomJson.addProperty("nickname",userProfile.getNickName());
                         roomJson.addProperty("gender",userProfile.getGender());
-                    }
 
-                    String tag = this.getUserTag(tagMap,userRoleTagMap, room.getUserId());
-                    if(!org.springframework.util.StringUtils.isEmpty(tag)){
-                        roomJson.addProperty("tag",tag);
-                    }
-
-                    com.melot.kkcore.actor.api.RoomInfo roomInfo = actorService.getRoomInfoById(roomId);
-                    if(roomInfo != null){
-                        if(roomInfo.getRoomSource() != null){
-                            roomJson.addProperty("roomSource",roomInfo.getRoomSource());
+                        String tag = this.getUserTag(tagMap,userRoleTagMap, room.getUserId());
+                        if(!org.springframework.util.StringUtils.isEmpty(tag)){
+                            roomJson.addProperty("tag",tag);
                         }
 
-                        if(roomInfo.getLiveEndTime()!=null && roomInfo.getLiveEndTime()>0){
-                            roomJson.addProperty("liveStatus",0);
+                        com.melot.kkcore.actor.api.RoomInfo roomInfo = actorService.getRoomInfoById(roomId);
+                        if(roomInfo != null){
+                            if(roomInfo.getRoomSource() != null){
+                                roomJson.addProperty("roomSource",roomInfo.getRoomSource());
+                            }
+
+                            if(roomInfo.getLiveEndTime()!=null && roomInfo.getLiveEndTime()>0){
+                                roomJson.addProperty("liveStatus",0);
+                            }else{
+                                roomJson.addProperty("liveStatus",1);
+                            }
+                        }
+
+                        boolean isFollow = UserRelationService.isFollowed(userId,room.getUserId());
+                        if(isFollow){
+                            roomJson.addProperty("isFollow",1);
                         }else{
-                            roomJson.addProperty("liveStatus",1);
+                            roomJson.addProperty("isFollow",-1);
                         }
+                        jRoomList.add(roomJson);
                     }
-
-                    boolean isFollow = UserRelationService.isFollowed(userId,room.getUserId());
-                    if(isFollow){
-                        roomJson.addProperty("isFollow",1);
-                    }else{
-                        roomJson.addProperty("isFollow",-1);
-                    }
-                    jRoomList.add(roomJson);
                 }
             }
         }
