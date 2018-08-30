@@ -379,9 +379,9 @@ public class KKLiveProjectFunctions {
         } catch (MelotModuleException e) {
             log.info(String.format("Fail:finishTask(userId=%s, taskId=%s)", userId, taskId), e);
             if (e.getErrCode() == 101) {
-                tagCode = "5112020501";
+                tagCode = "5112020601";
             } else if (e.getErrCode() == 102) {
-                tagCode = "5112020502";
+                tagCode = "5112020602";
             } else if (e.getErrCode() == 103) {
                 tagCode = TagCodeEnum.INVALID_PARAMETERS;
             }
