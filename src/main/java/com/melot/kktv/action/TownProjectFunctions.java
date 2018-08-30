@@ -697,9 +697,11 @@ public class TownProjectFunctions {
 
         StringBuilder tag = new StringBuilder();
 
-        String roleTag = userRoleMap.get(userId);
-        if(!org.springframework.util.StringUtils.isEmpty(roleTag)){
-            tag.append(roleTag).append(",");
+        if(userRoleMap != null) {
+            String roleTag = userRoleMap.get(userId);
+            if (!org.springframework.util.StringUtils.isEmpty(roleTag)) {
+                tag.append(roleTag).append(",");
+            }
         }
 
         List<UserTagRelationDTO> tagList = tagMap.get(userId);
