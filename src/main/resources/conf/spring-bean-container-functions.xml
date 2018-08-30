@@ -23,7 +23,6 @@
 	
 	<bean id="activityFunction" class="com.melot.kktv.action.ActivityFunctions" />
 	<bean id="chargingFunction" class="com.melot.kktv.action.ChargingFunctions" />
-	<bean id="consumeFunction" class="com.melot.kktv.action.ConsumAction" />
 	<bean id="gameRankFunction" class="com.melot.kktv.action.GameRankAction" />
 	<bean id="newsFunction" class="com.melot.kktv.action.NewsFunctions" />
 	<bean id="newsV2Function" class="com.melot.kktv.action.NewsV2Functions" />
@@ -35,7 +34,6 @@
 	
 	<bean id="profileSecurityFunction" class="com.melot.kktv.action.ProfileSecurityFunctions" />
 	<bean id="resourceFunction" class="com.melot.kktv.action.ResourceFunctions" />
-	<bean id="tempFunction" class="com.melot.kktv.action.TempFunctions" />
 	<bean id="userLotteryPrizeFunction" class="com.melot.kktv.action.UserLotteryPrizeFunctions" />
 	<bean id="guardFunction" class="com.melot.kktv.action.GuardFunctions" />
 	<bean id="redEnvelopeFunction" class="com.melot.kktv.action.RedEnvelopeFunctions" />
@@ -207,4 +205,10 @@
     
     <!-- 财富等级升级接口 -->
     <bean id="userLevelFunctions" class="com.melot.kkcx.functions.UserLevelFunctions" />
+
+	<!-- 微信直播小程序接口 -->
+	<bean id="kKLiveProjectFunctions" class="com.melot.kkcx.functions.KKLiveProjectFunctions" />
+
+	<!-- 微信小程序接口 -->
+	<bean id="WechatProjectFunctions" class="com.melot.kkcx.functions.WechatProjectFunctions" />
 </beans>

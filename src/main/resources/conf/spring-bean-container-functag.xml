@@ -2949,4 +2949,50 @@
 		<constructor-arg name="methodName" value="getLaunchedVideoList" />
 	</bean>
 
+	<!-- 微信直播小程序API -->
+	<bean id="51120201" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kKLiveProjectFunctions" />
+		<constructor-arg name="methodName" value="getActorPrivatePhoto" />
+	</bean>
+
+	<bean id="51120202" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kKLiveProjectFunctions" />
+		<constructor-arg name="methodName" value="checkUnlockAfterPay" />
+	</bean>
+
+	<bean id="51120203" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kKLiveProjectFunctions" />
+		<constructor-arg name="methodName" value="shareUnlockActorPrivatePhoto" />
+	</bean>
+
+	<bean id="51120204" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kKLiveProjectFunctions" />
+		<constructor-arg name="methodName" value="addShareUnlockHist" />
+	</bean>
+
+	<bean id="51120205" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kKLiveProjectFunctions" />
+		<constructor-arg name="methodName" value="getTaskConf" />
+	</bean>
+
+	<bean id="51120206" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kKLiveProjectFunctions" />
+		<constructor-arg name="methodName" value="finishTask" />
+	</bean>
+
+	<bean id="51120207" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kKLiveProjectFunctions" />
+		<constructor-arg name="methodName" value="getGiftConf" />
+		<constructor-arg name="cacheType" value="60" />
+	</bean>
+
+	<bean id="51120208" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kKLiveProjectFunctions" />
+		<constructor-arg name="methodName" value="getPhotoInfoForHelpUser" />
+	</bean>
+
+	<bean id="51120301" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="WechatProjectFunctions" />
+		<constructor-arg name="methodName" value="addPromoteHistByChannel" />
+	</bean>
 </beans>
