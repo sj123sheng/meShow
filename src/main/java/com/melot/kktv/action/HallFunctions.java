@@ -274,7 +274,9 @@ public class HallFunctions {
 			HallRoomInfoDTO roomInfo;
 			if (roomList != null) {
 				int i = 0;
-				if (sysMenu.getDataSourceType() != null && sysMenu.getDataSourceType() == 16) {
+				if (sysMenu.getDataSourceType() != null 
+				        && (sysMenu.getDataSourceType() == 16
+				        || sysMenu.getDataSourceType() == 17)) {
 					// 如果是聚合栏目，需要判断同城，添加距离
 					int dist;
 					while (i < roomList.size()) {
@@ -298,7 +300,9 @@ public class HallFunctions {
 				while (i < roomList.size()) {
 					roomInfo = roomList.get(i++);
 					json = HallRoomTF.roomInfoWithPlaybackToJson(roomInfo, platform);
-					if (sysMenu.getDataSourceType() != null && sysMenu.getDataSourceType() == 16) {
+					if (sysMenu.getDataSourceType() != null 
+					        && (sysMenu.getDataSourceType() == 16
+					        || sysMenu.getDataSourceType() == 17)) {
 						json.addProperty("distance", 0);
 					}
 					roomArray.add(json);
