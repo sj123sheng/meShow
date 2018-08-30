@@ -1030,11 +1030,11 @@ public class TownProjectFunctions {
         JsonObject result = new JsonObject();
 
         String areaCode;
-        int appId, channelId;
+        int appId = 0, channelId = 0;
         try {
             areaCode = CommonUtil.getJsonParamString(jsonObject, AREA_CODE.getId(), null, AREA_CODE.getErrorCode(), 1, Integer.MAX_VALUE);
-            channelId = CommonUtil.getJsonParamInt(jsonObject, "c", 0, null, 1, Integer.MAX_VALUE);
-            appId = CommonUtil.getJsonParamInt(jsonObject, "a", 0, null, 1, Integer.MAX_VALUE);
+            //channelId = CommonUtil.getJsonParamInt(jsonObject, "c", 0, null, 1, Integer.MAX_VALUE);
+            //appId = CommonUtil.getJsonParamInt(jsonObject, "a", 0, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -2400,12 +2400,22 @@ public class TownProjectFunctions {
             result.addProperty("TagCode", e.getErrCode());
             return result;
         }
-        List<TownStarApplyInfoDTO> list =
-                townStarApplyInfoService.getUserApplyInfoListByStatus(userId,TownStarCheckStatusEnum.IN_REVIEW);
+
+        List<TownStarCheckStatusEnum> checkStatus = new ArrayList<>();
+        checkStatus.add(TownStarCheckStatusEnum.IN_REVIEW);
+        checkStatus.add(TownStarCheckStatusEnum.PASS);
+
+        List<Integer> list = townStarApplyInfoService.getUserApplyInfoStatus(userId,checkStatus);
         if(!CollectionUtils.isEmpty(list)){
-            result.addProperty("applyId",list.get(0).getApplyId());
-        }else{
-            result.addProperty("applyId",0);
+            if(list.contains(TownStarCheckStatusEnum.PASS.value())){
+                result.addProperty("checkStatus",1);
+            } else if(list.contains(TownStarCheckStatusEnum.IN_REVIEW.value())){
+                result.addProperty("checkStatus",0);
+            } else {
+                result.addProperty("checkStatus",-1);
+            }
+        } else {
+            result.addProperty("checkStatus",-1);
         }
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
