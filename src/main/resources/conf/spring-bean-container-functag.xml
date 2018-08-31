@@ -696,16 +696,6 @@
 		<constructor-arg name="t" ref="familyFunction" />
 		<constructor-arg name="methodName" value="getFamilyMatchUserResult" />
 	</bean>
-	<!-- 获取家族擂台赛冠军榜 -->
-	<bean id="10008019" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="familyFunction" />
-		<constructor-arg name="methodName" value="getFamilyMatchChampion" />
-	</bean>
-	<!-- 获取家族擂台赛蝉联冠军 -->
-	<bean id="10008020" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="familyFunction" />
-		<constructor-arg name="methodName" value="getFamilyMatchContinueChampion" />
-	</bean>
 	<!-- 购买家族勋章 -->
 	<bean id="10008021" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="familyFunction" />
@@ -1166,11 +1156,6 @@
 	<bean id="51090304" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="otherFunction" />
 		<constructor-arg name="methodName" value="getChargeBanner" />
-	</bean>
-
-	<bean id="51090305" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="otherFunction" />
-		<constructor-arg name="methodName" value="getNewUserBootpage" />
 	</bean>
 	
 	<!-- 用户档案安全接口类 -->
@@ -2947,6 +2932,179 @@
 	<bean id="86010001" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="otherFunction" />
 		<constructor-arg name="methodName" value="getLaunchedVideoList" />
+	</bean>
+
+	<bean id="51090305" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="otherFunction" />
+		<constructor-arg name="methodName" value="getNewUserBootpage" />
+	</bean>
+
+
+    <!-- 位置坐标接口 -->
+    <bean id="51120101" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="locationFunctions" />
+        <constructor-arg name="methodName" value="getAddressComponent" />
+    </bean>
+    <bean id="51120102" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="locationFunctions" />
+        <constructor-arg name="methodName" value="getNextAreaCodeList" />
+        <constructor-arg name="cacheType" value="60" />
+        <constructor-arg name="cacheKeyExcluedUserId" value="1" />
+    </bean>
+    <!-- 乡镇微信小程序接口 -->
+    <bean id="51120103" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="townProjectFunctions" />
+        <constructor-arg name="methodName" value="getLocalFreshList" />
+<!--        <constructor-arg name="cacheType" value="60" />
+        <constructor-arg name="cacheKeyExcluedUserId" value="1" />-->
+    </bean>
+    <bean id="51120104" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="townProjectFunctions" />
+        <constructor-arg name="methodName" value="publishWork" />
+    </bean>
+    <bean id="51120105" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="townProjectFunctions" />
+        <constructor-arg name="methodName" value="getTopicInfo" />
+    </bean>
+    <bean id="51120106" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="townProjectFunctions" />
+        <constructor-arg name="methodName" value="getTopicWorkList" />
+    </bean>
+    <bean id="51120107" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="townProjectFunctions" />
+        <constructor-arg name="methodName" value="getMyWorkList" />
+    </bean>
+    <bean id="51120108" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="townProjectFunctions" />
+        <constructor-arg name="methodName" value="getStarList" />
+    </bean>
+    <bean id="51120109" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="townProjectFunctions" />
+        <constructor-arg name="methodName" value="getUserProfile" />
+    </bean>
+    <bean id="51120110" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="townProjectFunctions" />
+        <constructor-arg name="methodName" value="getUserFollowedList" />
+    </bean>
+    <bean id="51120111" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="townProjectFunctions" />
+        <constructor-arg name="methodName" value="getUserFansList" />
+    </bean>
+    <bean id="51120112" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="townProjectFunctions" />
+        <constructor-arg name="methodName" value="getMyPraiseWorkList" />
+    </bean>
+    <bean id="51120113" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="townProjectFunctions" />
+        <constructor-arg name="methodName" value="praiseWork" />
+    </bean>
+    <bean id="51120114" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="townProjectFunctions" />
+        <constructor-arg name="methodName" value="searchTopicList" />
+    </bean>
+    <bean id="51120115" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="townProjectFunctions" />
+        <constructor-arg name="methodName" value="getAreaBannerList" />
+    </bean>
+    <bean id="51120116" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="townProjectFunctions" />
+        <constructor-arg name="methodName" value="starApply" />
+    </bean>
+    <bean id="51120117" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="townProjectFunctions" />
+        <constructor-arg name="methodName" value="deleteWork" />
+    </bean>
+    <bean id="51120118" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="townProjectFunctions" />
+        <constructor-arg name="methodName" value="getWorkInfo" />
+    </bean>
+    <bean id="51120119" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="townProjectFunctions" />
+        <constructor-arg name="methodName" value="cancelPraiseWork" />
+    </bean>
+    <bean id="51120120" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="townProjectFunctions" />
+        <constructor-arg name="methodName" value="updateUserLastAreaCode" />
+    </bean>
+    <bean id="51120121" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="townProjectFunctions" />
+        <constructor-arg name="methodName" value="offTheShelfWork" />
+    </bean>
+    <bean id="51120122" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="townProjectFunctions" />
+        <constructor-arg name="methodName" value="viewsWork" />
+    </bean>
+	<bean id="51120123" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="townProjectFunctions" />
+		<constructor-arg name="methodName" value="homePageStarList" />
+	</bean>
+	<bean id="51120124" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="townProjectFunctions" />
+		<constructor-arg name="methodName" value="recommendWork" />
+	</bean>
+    <bean id="51120125" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="townProjectFunctions" />
+        <constructor-arg name="methodName" value="getMessageInfo" />
+    </bean>
+    <bean id="51120126" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="townProjectFunctions" />
+        <constructor-arg name="methodName" value="getFollowMessageList" />
+    </bean>
+	<bean id="51120127" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="townProjectFunctions" />
+		<constructor-arg name="methodName" value="getPraiseMessageList" />
+	</bean>
+	<bean id="51120128" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="townProjectFunctions" />
+		<constructor-arg name="methodName" value="getCommentMessageList" />
+	</bean>
+	<bean id="51120129" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="townProjectFunctions" />
+		<constructor-arg name="methodName" value="getSystemMessageList" />
+	</bean>
+	<bean id="51120130" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="townProjectFunctions" />
+		<constructor-arg name="methodName" value="updateUserProfile" />
+	</bean>
+    <bean id="51120131" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="townProjectFunctions" />
+        <constructor-arg name="methodName" value="getHotCommentList" />
+    </bean>
+	<bean id="51120132" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="townProjectFunctions" />
+		<constructor-arg name="methodName" value="getCommentList" />
+	</bean>
+	<bean id="51120133" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="townProjectFunctions" />
+		<constructor-arg name="methodName" value="publishComment" />
+	</bean>
+	<bean id="51120134" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="townProjectFunctions" />
+		<constructor-arg name="methodName" value="praiseComment" />
+	</bean>
+	<bean id="51120135" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="townProjectFunctions" />
+		<constructor-arg name="methodName" value="cancelPraiseComment" />
+	</bean>
+	<bean id="51120136" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="townProjectFunctions" />
+		<constructor-arg name="methodName" value="getWorkPageCommentList" />
+	</bean>
+	<bean id="51120137" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="townProjectFunctions" />
+		<constructor-arg name="methodName" value="setCommentViolation" />
+	</bean>
+	<bean id="51120138" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="townProjectFunctions" />
+		<constructor-arg name="methodName" value="getStarApplyState" />
+	</bean>
+	<bean id="51120139" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="townProjectFunctions" />
+		<constructor-arg name="methodName" value="getWorkList" />
+	</bean>
+	<bean id="51120140" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="locationFunctions" />
+		<constructor-arg name="methodName" value="getLocation" />
 	</bean>
 
 	<!-- 微信直播小程序API -->

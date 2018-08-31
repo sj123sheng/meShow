@@ -224,6 +224,21 @@
 	<kkrpc:reference id="recommendedMsgService" interface="com.melot.kk.message.api.service.RecommendedMsgService" version="1.0.0"/>
 	<kkrpc:reference id="messageService" interface="com.melot.common.driver.service.MessageService" version="1.0.0"/>
 
+
+    <!-- 位置坐标模块 -->
+    <kkrpc:reference id="locationService" interface="com.melot.kk.location.api.service.LocationService" version="1.0.0" />
+
+    <!-- 乡镇微信小程序模块 -->
+    <kkrpc:reference id="townWorkService" interface="com.melot.kk.town.api.service.TownWorkService" version="1.0.0" />
+    <kkrpc:reference id="townTopService" interface="com.melot.kk.town.api.service.TownTopService" version="1.0.0" />
+    <kkrpc:reference id="townUserService" interface="com.melot.kk.town.api.service.TownUserService" version="1.0.0" />
+    <kkrpc:reference id="townUserRoleService" interface="com.melot.kk.town.api.service.TownUserRoleService" version="1.0.0" />
+    <kkrpc:reference id="tagService" interface="com.melot.kk.town.api.service.TagService" version="1.0.0" />
+	<kkrpc:reference id="townStarApplyInfoService" interface="com.melot.kk.town.api.service.TownStarApplyInfoService" version="1.0.0" />
+	<kkrpc:reference id="areaBannerService" interface="com.melot.kk.town.api.service.AreaBannerService" version="1.0.0" />
+    <kkrpc:reference id="townMessageService" interface="com.melot.kk.town.api.service.TownMessageService" version="1.0.0" />
+	<kkrpc:reference id="townCommentService" interface="com.melot.kk.town.api.service.TownCommentService" version="1.0.0" />
+
     <!-- 微信直播小程序服务 -->
 	<kkrpc:reference id="liveProjectService" interface="com.melot.kk.liveproject.api.service.LiveProjectService" version="1.0.0"/>
 

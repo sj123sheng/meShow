@@ -206,6 +206,13 @@
     <!-- 财富等级升级接口 -->
     <bean id="userLevelFunctions" class="com.melot.kkcx.functions.UserLevelFunctions" />
 
+
+    <!-- 位置坐标相关接口 -->
+    <bean id="locationFunctions" class="com.melot.kktv.action.LocationFunctions" />
+
+    <!-- 乡镇微信小程序接口 -->
+    <bean id="townProjectFunctions" class="com.melot.kktv.action.TownProjectFunctions" />
+
 	<!-- 微信直播小程序接口 -->
 	<bean id="kKLiveProjectFunctions" class="com.melot.kkcx.functions.KKLiveProjectFunctions" />
 

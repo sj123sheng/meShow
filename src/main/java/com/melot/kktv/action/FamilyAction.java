@@ -1,40 +1,11 @@
 package com.melot.kktv.action;
 
-import java.io.UnsupportedEncodingException;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.io.Charsets;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import com.google.common.collect.Sets;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.blacklist.service.BlacklistService;
 import com.melot.family.driver.constant.UserApplyActorStatusEnum;
-import com.melot.family.driver.domain.ActorTransferHistV2;
-import com.melot.family.driver.domain.ApplyFamilyHist;
-import com.melot.family.driver.domain.FamilyApplicantMeshow;
-import com.melot.family.driver.domain.FamilyInfo;
-import com.melot.family.driver.domain.FamilyPoster;
-import com.melot.family.driver.domain.RespMsg;
+import com.melot.family.driver.domain.*;
 import com.melot.family.driver.domain.DO.UserApplyActorDO;
 import com.melot.family.driver.service.FamilyAdminNewService;
 import com.melot.family.driver.service.FamilyAdminService;
@@ -48,7 +19,6 @@ import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcx.model.RecentFamilyMatch;
 import com.melot.kkcx.service.FamilyService;
 import com.melot.kkcx.service.RoomService;
-import com.melot.kkcx.service.UserAssetServices;
 import com.melot.kkcx.service.UserService;
 import com.melot.kkcx.transform.RoomTF;
 import com.melot.kktv.base.Page;
@@ -56,31 +26,26 @@ import com.melot.kktv.domain.Honour;
 import com.melot.kktv.domain.PreviewAct;
 import com.melot.kktv.model.Family;
 import com.melot.kktv.model.FamilyHonor;
-import com.melot.kktv.model.FamilyMatchChampion;
 import com.melot.kktv.model.FamilyMatchRank;
 import com.melot.kktv.model.FamilyMember;
 import com.melot.kktv.redis.FamilyApplySource;
-import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.MatchSource;
 import com.melot.kktv.redis.MedalSource;
 import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.UserRelationService;
-import com.melot.kktv.util.AppIdEnum;
-import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.*;
 import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.Constant;
-import com.melot.kktv.util.FamilyMemberEnum;
-import com.melot.kktv.util.FamilyRankingEnum;
-import com.melot.kktv.util.PaginationUtil;
-import com.melot.kktv.util.PlatformEnum;
-import com.melot.kktv.util.StringUtil;
-import com.melot.kktv.util.TagCodeEnum;
-import com.melot.kktv.util.db.DB;
-import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.module.medal.driver.domain.ResultByFamilyMedal;
 import com.melot.module.medal.driver.service.FamilyMedalService;
 import com.melot.sdk.core.util.MelotBeanFactory;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import java.io.UnsupportedEncodingException;
+import java.util.*;
 
 /**
  * 家族相关接口
@@ -1779,280 +1744,6 @@ public class FamilyAction {
 		result.add("rankList", rankArr);
 		return result;
 	
-	}
-
-	/**
-	 * 获取家族擂台赛冠军榜(1:家族 2:富豪 3:用户)(10008019)
-	 * @param jsonObject
-	 * @return
-	 */
-	@SuppressWarnings("unchecked")
-    public JsonObject getFamilyMatchChampion(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-		// 获取参数
-		JsonElement platformje = jsonObject.get("platform");
-		JsonElement typeje = jsonObject.get("type");
-		int platform = 0;
-		int type = 0;
-		// 验证参数
-		if (platformje != null && !platformje.isJsonNull() && platformje.getAsInt()>0) {
-			try {
-				platform = platformje.getAsInt();
-			} catch (Exception e) {
-				JsonObject result = new JsonObject();
-				result.addProperty("TagCode", "08190002");
-				return result;
-			}
-		} else {
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", "08190001");
-			return result;
-		}
-		if (typeje != null && !typeje.isJsonNull() && typeje.getAsInt()>0) {
-			try {
-				type = typeje.getAsInt();
-			} catch (Exception e) {
-				JsonObject result = new JsonObject();
-				result.addProperty("TagCode", "08190004");
-				return result;
-			}
-		} else {
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", "08190003");
-			return result;
-		}
-		
-		//  定义结果
-		JsonObject result = new JsonObject();
-		JsonArray rankArr = new JsonArray();
-		
-		if (type == 3) {
-		    List<FamilyMatchRank> rankList = null;
-		    
-		    String key = "FamilyAction.getFamilyMatchChampion(" + type + ")";
-		    String cacheValue = HotDataSource.getTempDataString(key);
-		    if (!StringUtil.strIsNull(cacheValue)) {
-		        rankList = new Gson().fromJson(cacheValue, new TypeToken<List<FamilyMatchRank>>(){}.getType());
-            } else {
-                Map<Object, Object> map = new HashMap<Object, Object>();
-                try {
-                    SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Family.getFamiluMatchUserChampion", map);
-                    
-                    String TagCode = (String) map.get("TagCode");
-                    if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-                        if(map.containsKey("rankList") && map.get("rankList") != null) {
-                            rankList = (List<FamilyMatchRank>) map.get("rankList");
-                            
-                            HotDataSource.setTempDataString(key, new Gson().toJson(rankList), 5 * 60);
-                        }
-                    }
-                } catch (Exception e) {
-                    logger.error("未能正常调用存储过程", e);
-                }
-            }
-		    if (rankList != null && rankList.size() > 0) {
-		        JsonObject rankJson;
-		        for (FamilyMatchRank familyMatchRank : rankList) {
-		            rankJson = familyMatchRank.toJsonObject(platform);
-		            rankArr.add(rankJson);
-		        }
-		    }
-        } else {
-            // 上期
-            //获取最近2期家族擂台赛信息
-            RecentFamilyMatch recentFamilyMatch = getRecentFamilyMatch();
-            Integer v_last_period = null;
-            if(recentFamilyMatch != null) {
-                v_last_period = recentFamilyMatch.getLastPeriod();
-
-                if (type == 1) {
-                    // 家族冠军榜
-                    // 8小时更新一次  redis中读取缓存
-                    String data = MatchSource.getFamilyMatchFamilyChampion();
-                    if (data != null) {
-                        try {
-                            rankArr = new JsonParser().parse(data).getAsJsonArray();
-                        } catch (Exception e) {
-                            rankArr = null;
-                        }
-                    }
-                    if (rankArr == null || rankArr.size() == 0) {
-                        // oracle 读取
-                        try {
-                            Map<Object, Object> map = new HashMap<Object, Object>();
-                            map.put("period", v_last_period);
-                            SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Family.getFamilyMatchFamilyChampion", map);
-                            String TagCode = (String) map.get("TagCode");
-                            if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-                                if (map.containsKey("rankList") && map.get("rankList") != null) {
-                                    List<FamilyMatchChampion> rankList = (ArrayList<FamilyMatchChampion>) map.get("rankList");
-                                    rankArr = new JsonArray();
-                                    for (FamilyMatchChampion fmChampion : rankList) {
-                                        JsonObject rankJson = fmChampion.toJsonObject(platform);
-                                        rankArr.add(rankJson);
-                                    }
-                                    // 保存redis存储 8小时过期
-                                    MatchSource.setFamilyMatchFamilyChampion(rankArr.toString(), ConfigHelper.getFamilyMatchCacheRefreshExpireTime());
-                                } else {
-                                    logger.error("调用存储过程得到rankList为null,jsonObject:" + jsonObject.toString());
-                                }
-                            } else {
-                                logger.error("调用存储过程(Family.getFamilyMatchFamilyChampion)未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
-                            }
-                        } catch (SQLException e) {
-                            logger.error("未能正常调用存储过程", e);
-                        }
-                    }
-                }
-                if (type == 2) {
-                    // 富豪冠军榜
-                    // 8小时更新一次  redis中读取缓存
-                    String data = MatchSource.getFamilyMatchRichChampion();
-                    if (data != null) {
-                        try {
-                            rankArr = new JsonParser().parse(data).getAsJsonArray();
-                        } catch (Exception e) {
-                            rankArr = null;
-                        }
-                    }
-                    if (rankArr == null || rankArr.size() == 0) {
-                        // oracle 读取
-                        try {
-                            Map<Object, Object> map = new HashMap<Object, Object>();
-                            map.put("period", v_last_period);
-                            SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Family.getFamilyMatchRichChampion", map);
-                            String TagCode = (String) map.get("TagCode");
-                            if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-                                if (map.containsKey("rankList") && map.get("rankList") != null) {
-                                    List<FamilyMatchChampion> rankList = (ArrayList<FamilyMatchChampion>) map.get("rankList");
-                                    rankArr = new JsonArray();
-                                    for (FamilyMatchChampion fmChampion : rankList) {
-                                        JsonObject rankJson = fmChampion.toJsonObject(platform);
-
-                                        // 获取用户有效靓号
-                                        JsonObject validVirtualId = UserAssetServices.getValidVirtualId(fmChampion.getUserId()); //获取用户虚拟账号
-                                        if (validVirtualId != null) {
-                                            if (validVirtualId.get("idType").getAsInt() == 1) {
-                                                // 支持老版靓号
-                                                rankJson.addProperty("luckyId", validVirtualId.get("id").getAsInt());
-                                            }
-                                            rankJson.add("validId", validVirtualId);
-                                        }
-
-                                        // 读取富豪等级
-                                        rankJson.addProperty("richLevel", UserService.getRichLevel(fmChampion.getUserId()));
-                                        rankJson.addProperty("roomSource", AppIdEnum.AMUSEMENT);
-                                        rankJson.addProperty("roomType", AppIdEnum.AMUSEMENT);
-                                        rankArr.add(rankJson);
-                                    }
-                                    // 保存redis存储 8小时过期
-                                    MatchSource.setFamilyMatchRichChampion(rankArr.toString(), ConfigHelper.getFamilyMatchCacheRefreshExpireTime());
-                                } else {
-                                    logger.error("调用存储过程得到rankList为null,jsonObject:" + jsonObject.toString());
-                                }
-                            } else {
-                                logger.error("调用存储过程(Family.getFamilyMatchRichChampion)未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
-                            }
-                        } catch (SQLException e) {
-                            logger.error("未能正常调用存储过程", e);
-                        }
-                    }
-                }
-            }
-        }
-		
-
-		// 返回结果
-		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-		result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
-		result.add("rankList", rankArr);
-		return result;
-	
-	}
-
-	/**
-	 * 获取家族擂台赛蝉联冠军(10008020)
-	 * @param jsonObject
-	 * @return
-	 */
-	public JsonObject getFamilyMatchContinueChampion(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-		// 获取参数
-		JsonElement platformje = jsonObject.get("platform");
-		int platform = 0;
-		// 验证参数
-		if (platformje != null && !platformje.isJsonNull() && platformje.getAsInt()>0) {
-			try {
-				platform = platformje.getAsInt();
-			} catch (Exception e) {
-				JsonObject result = new JsonObject();
-				result.addProperty("TagCode", "08200002");
-				return result;
-			}
-		} else {
-			JsonObject result = new JsonObject();
-			result.addProperty("TagCode", "08200001");
-			return result;
-		}
-		
-		//  定义结果
-		JsonObject result = new JsonObject();
-		JsonObject championObj = null;
-		String data = MatchSource.getFamilyMatchContinueChampion();
-		if(data!=null) {
-			try {
-				championObj = new JsonParser().parse(data).getAsJsonObject();
-			} catch (Exception e) {
-				championObj = null;
-			}
-		}
-		if (championObj == null) {
-			// oracle 读取
-			try {
-				Map<Object, Object> map = new HashMap<Object, Object>();
-				SqlMapClientHelper.getInstance(DB.MASTER).queryForObject("Family.getFamiluMatchContinueChampion", map);
-				String TagCode = (String) map.get("TagCode");
-				if (TagCode.equals(TagCodeEnum.SUCCESS)) {
-					if(map.containsKey("rankList") && map.get("rankList")!=null) {
-						@SuppressWarnings("unchecked")
-						List<FamilyMatchChampion> rankList = (ArrayList<FamilyMatchChampion>) map.get("rankList");
-						FamilyMatchChampion fmChampion = rankList.get(0);
-						championObj = fmChampion.toJsonObject(platform);
-						
-						// 获取用户有效靓号
-						JsonObject validVirtualId =  UserAssetServices.getValidVirtualId(fmChampion.getUserId()); //获取用户虚拟账号
-						if(validVirtualId != null) {
-							if (validVirtualId.get("idType").getAsInt()==1) {
-								// 支持老版靓号
-								championObj.addProperty("luckyId", validVirtualId.get("id").getAsInt());
-							}
-							championObj.add("validId", validVirtualId);
-						}
-						
-						// 读取富豪等级
-						championObj.addProperty("richLevel", UserService.getRichLevel(fmChampion.getUserId()));
-						
-						// 添加勋章信息
-						championObj.add("userMedal", MedalSource.getUserMedalsAsJson(fmChampion.getUserId(), platform));
-						
-						championObj.addProperty("roomSource", AppIdEnum.AMUSEMENT);
-						championObj.addProperty("roomType", AppIdEnum.AMUSEMENT);
-						// 保存redis存储 8小时过期
-						MatchSource.setFamilyMatchContinueChampion(championObj.toString(), ConfigHelper.getFamilyMatchCacheRefreshExpireTime());
-					} else {
-						logger.error("调用存储过程得到rankList为null,jsonObject:" + jsonObject.toString());
-					}
-				} else {
-					logger.error("调用存储过程(Family.getFamiluMatchContinueChampion)未的到正常结果,TagCode:" + TagCode + ",jsonObject:" + jsonObject.toString());
-				}
-			} catch (SQLException e) {
-				logger.error("未能正常调用存储过程", e);
-			}
-		}
-		
-		// 返回结果
-		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-		result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
-		result.add("champion", championObj);
-		return result;
 	}
 	
 	/**
