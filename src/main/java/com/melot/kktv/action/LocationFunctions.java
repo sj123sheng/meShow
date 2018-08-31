@@ -153,7 +153,7 @@ public class LocationFunctions {
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
         } catch (Exception e) {
-            logger.error("Error getLocation()", e);
+            logger.error("Error  getLocation()", e);
             result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             return result;
         }
