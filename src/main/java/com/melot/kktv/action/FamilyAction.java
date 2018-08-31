@@ -1,40 +1,11 @@
 package com.melot.kktv.action;
 
-import java.io.UnsupportedEncodingException;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.io.Charsets;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import com.google.common.collect.Sets;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.blacklist.service.BlacklistService;
 import com.melot.family.driver.constant.UserApplyActorStatusEnum;
-import com.melot.family.driver.domain.ActorTransferHistV2;
-import com.melot.family.driver.domain.ApplyFamilyHist;
-import com.melot.family.driver.domain.FamilyApplicantMeshow;
-import com.melot.family.driver.domain.FamilyInfo;
-import com.melot.family.driver.domain.FamilyPoster;
-import com.melot.family.driver.domain.RespMsg;
+import com.melot.family.driver.domain.*;
 import com.melot.family.driver.domain.DO.UserApplyActorDO;
 import com.melot.family.driver.service.FamilyAdminNewService;
 import com.melot.family.driver.service.FamilyAdminService;
@@ -48,7 +19,6 @@ import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcx.model.RecentFamilyMatch;
 import com.melot.kkcx.service.FamilyService;
 import com.melot.kkcx.service.RoomService;
-import com.melot.kkcx.service.UserAssetServices;
 import com.melot.kkcx.service.UserService;
 import com.melot.kkcx.transform.RoomTF;
 import com.melot.kktv.base.Page;
@@ -56,29 +26,26 @@ import com.melot.kktv.domain.Honour;
 import com.melot.kktv.domain.PreviewAct;
 import com.melot.kktv.model.Family;
 import com.melot.kktv.model.FamilyHonor;
-import com.melot.kktv.model.FamilyMatchChampion;
 import com.melot.kktv.model.FamilyMatchRank;
 import com.melot.kktv.model.FamilyMember;
 import com.melot.kktv.redis.FamilyApplySource;
-import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.MatchSource;
 import com.melot.kktv.redis.MedalSource;
 import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.UserRelationService;
-import com.melot.kktv.util.AppIdEnum;
-import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.*;
 import com.melot.kktv.util.CommonUtil.ErrorGetParameterException;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.Constant;
-import com.melot.kktv.util.FamilyMemberEnum;
-import com.melot.kktv.util.FamilyRankingEnum;
-import com.melot.kktv.util.PaginationUtil;
-import com.melot.kktv.util.PlatformEnum;
-import com.melot.kktv.util.StringUtil;
-import com.melot.kktv.util.TagCodeEnum;
 import com.melot.module.medal.driver.domain.ResultByFamilyMedal;
 import com.melot.module.medal.driver.service.FamilyMedalService;
 import com.melot.sdk.core.util.MelotBeanFactory;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import java.io.UnsupportedEncodingException;
+import java.util.*;
 
 /**
  * 家族相关接口
