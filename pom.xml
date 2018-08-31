@@ -719,7 +719,7 @@
         <dependency>
             <groupId>com.melot.kk</groupId>
             <artifactId>kk-location-api</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.1</version>
         </dependency>
 
 		<!-- 微信直播小程序API-->
