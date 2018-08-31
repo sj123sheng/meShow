@@ -135,6 +135,12 @@ public class TownProjectFunctions {
         String coverUrl = freshItem.getCoverUrl();
         if(freshItem.getType() == ItemTypeEnum.ROOM) {
             coverUrl = pathPrefix + coverUrl;
+            com.melot.kkcore.actor.api.RoomInfo roomInfo = actorService.getRoomInfoById(freshItem.getId());
+            if(roomInfo != null) {
+                if (roomInfo.getRoomSource() != null) {
+                    localFreshJsonObject.addProperty("roomSource", roomInfo.getRoomSource());
+                }
+            }
         }
         localFreshJsonObject.addProperty("coverUrl", coverUrl);
         localFreshJsonObject.addProperty("userId", freshItem.getUserId());
