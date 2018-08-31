@@ -696,16 +696,6 @@
 		<constructor-arg name="t" ref="familyFunction" />
 		<constructor-arg name="methodName" value="getFamilyMatchUserResult" />
 	</bean>
-	<!-- 获取家族擂台赛冠军榜 -->
-	<bean id="10008019" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="familyFunction" />
-		<constructor-arg name="methodName" value="getFamilyMatchChampion" />
-	</bean>
-	<!-- 获取家族擂台赛蝉联冠军 -->
-	<bean id="10008020" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="familyFunction" />
-		<constructor-arg name="methodName" value="getFamilyMatchContinueChampion" />
-	</bean>
 	<!-- 购买家族勋章 -->
 	<bean id="10008021" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="familyFunction" />
