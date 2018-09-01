@@ -3137,6 +3137,10 @@
 		<constructor-arg name="t" ref="locationFunctions" />
 		<constructor-arg name="methodName" value="getLocation" />
 	</bean>
+    <bean id="51120141" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="townProjectFunctions" />
+        <constructor-arg name="methodName" value="getCommentInfo" />
+    </bean>
 
 	<!-- 微信直播小程序API -->
 	<bean id="51120201" class="com.melot.sdk.core.function.GenericFunction">

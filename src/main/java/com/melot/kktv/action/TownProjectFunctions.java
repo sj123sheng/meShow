@@ -2519,4 +2519,73 @@ public class TownProjectFunctions {
             return result;
         }
     }
+
+    /**
+     * 	获取评论信息【51120141】
+     */
+    public JsonObject getCommentInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        int userId, workId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, USER_ID.getId(), 0, null, 1, Integer.MAX_VALUE);
+            workId = CommonUtil.getJsonParamInt(jsonObject, COMMENT_ID.getId(), 0, COMMENT_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+
+            TownWorkCommentDTO record = townCommentService.getCommentInfo(userId, workId);
+            if(record != null) {
+                int commentUserId = record.getUserId();
+                result.addProperty("userId", commentUserId);
+                UserProfile userProfile = kkUserService.getUserProfile(commentUserId);
+                if(userProfile != null) {
+                    if(userProfile.getPortrait() != null) {
+                        result.addProperty("portrait", getPortrait(userProfile));
+                    }
+                    result.addProperty("nickname", userProfile.getNickName());
+                }
+                if(StringUtils.isNotEmpty(record.getIdentity())) {
+                    result.addProperty("identity", record.getIdentity());
+                }
+                result.addProperty("commentId", record.getCommentId());
+                result.addProperty("commentType", record.getCommentType());
+                result.addProperty("commentMode", record.getCommentMode());
+                result.addProperty("commentContent", record.getCommentContent());
+                if(record.getCommentMode() == CommentModeEnum.VOICE) {
+                    result.addProperty("voiceDuration", record.getVoiceDuration());
+                }
+                if(record.getRefCommentId() != null) {
+                    int refCommentUserId = record.getRefUserId();
+                    result.addProperty("refUserId", refCommentUserId);
+                    UserProfile userProfile1 = kkUserService.getUserProfile(refCommentUserId);
+                    if(userProfile1 != null) {
+                        result.addProperty("refNickname", userProfile1.getNickName());
+                    }
+                    result.addProperty("refCommentId", record.getRefCommentId());
+                    result.addProperty("refCommentMode", record.getRefCommentMode());
+                    result.addProperty("refCommentContent", record.getRefCommentContent());
+                    if(record.getRefCommentMode() == CommentModeEnum.VOICE) {
+                        result.addProperty("refVoiceDuration", record.getRefVoiceDuration());
+                    }
+                }
+                result.addProperty("praiseNum", record.getPraiseNum());
+                result.addProperty("isPraise", record.getPraise());
+                result.addProperty("commentTime", changeTimeToString(record.getCommentTime()));
+            }
+
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error getCommentInfo()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
 }
