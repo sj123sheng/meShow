@@ -9,6 +9,7 @@ import java.util.Map;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import com.google.gson.JsonParser;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -307,4 +308,21 @@ public class UserLevelFunctions {
             return result;
         }
     }
+
+    public JsonObject getSpecialLevel(JsonObject jsonObject, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        String str = configService.getUserLevelString();
+        try{
+            result.add("userLevelList",new JsonParser().parse(str).getAsJsonArray());
+            result.addProperty("level",configService.getSpecialLevel());
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+            return result;
+        }catch (Exception e) {
+            logger.error("userLevelRedEvelopeService.getSpecialLevel", e);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
 }

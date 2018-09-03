@@ -169,6 +169,10 @@ public class ConfigService {
 
     private String roundTimeStart;
 
+    private Integer specialLevel;
+
+    private String userLevelString;
+
     @DisconfFileItem(name = "nearbyStartDistance", associateField = "nearbyStartDistance")
     public int getNearbyStartDistance() {
         return nearbyStartDistance;
@@ -418,5 +422,23 @@ public class ConfigService {
 
     public void setRoundTimeStart(String roundTimeStart) {
         this.roundTimeStart = roundTimeStart;
+    }
+
+    @DisconfFileItem(name = "specialLevel", associateField = "specialLevel")
+    public Integer getSpecialLevel() {
+        return specialLevel;
+    }
+
+    public void setSpecialLevel(Integer specialLevel) {
+        this.specialLevel = specialLevel;
+    }
+
+    @DisconfFileItem(name = "userLevelString", associateField = "userLevelString")
+    public String getUserLevelString() {
+        return userLevelString;
+    }
+
+    public void setUserLevelString(String userLevelString) {
+        this.userLevelString = userLevelString;
     }
 }

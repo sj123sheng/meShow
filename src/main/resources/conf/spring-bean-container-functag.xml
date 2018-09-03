@@ -2950,6 +2950,11 @@
         <constructor-arg name="methodName" value="getRedEvelopeRecords" />
     </bean>
 
+	<bean id="51010904" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="userLevelFunctions" />
+		<constructor-arg name="methodName" value="getSpecialLevel" />
+	</bean>
+
 	<bean id="86010001" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="otherFunction" />
 		<constructor-arg name="methodName" value="getLaunchedVideoList" />
