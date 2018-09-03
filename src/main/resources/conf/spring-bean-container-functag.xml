@@ -17,7 +17,7 @@
 	
 	<!-- 通用过期接口 -->
 	<bean id="10006005"
-		name="10001040,10004010,10004011,40000013,20010308,20010502,20010503,20010504,20010506,20010507,20010508,50001015,10002039,10002040,20010403,20010402,10002072,10001042,10002009,10002010"
+		name="10002072,10001042,10002009,10002010,51030101"
 		class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="otherFunction" />
 		<constructor-arg name="methodName" value="lowVersionExcute" />
@@ -695,16 +695,6 @@
 	<bean id="10008018" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="familyFunction" />
 		<constructor-arg name="methodName" value="getFamilyMatchUserResult" />
-	</bean>
-	<!-- 获取家族擂台赛冠军榜 -->
-	<bean id="10008019" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="familyFunction" />
-		<constructor-arg name="methodName" value="getFamilyMatchChampion" />
-	</bean>
-	<!-- 获取家族擂台赛蝉联冠军 -->
-	<bean id="10008020" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="familyFunction" />
-		<constructor-arg name="methodName" value="getFamilyMatchContinueChampion" />
 	</bean>
 	<!-- 购买家族勋章 -->
 	<bean id="10008021" class="com.melot.sdk.core.function.GenericFunction">
@@ -2394,10 +2384,10 @@
 
     <!-- 钻石商城 -->
     <!-- 购买游戏勋章 -->
-    <bean id="51030101" class="com.melot.sdk.core.function.GenericFunction">
+<!--     <bean id="51030101" class="com.melot.sdk.core.function.GenericFunction">
         <constructor-arg name="t" ref="mallFunctions" />
         <constructor-arg name="methodName" value="buyGameMedal" />
-    </bean>
+    </bean> -->
     <!-- 获取商城栏目列表  -->
     <bean id="51030102" class="com.melot.sdk.core.function.GenericFunction">
         <constructor-arg name="t" ref="mallFunctions" />
@@ -2959,6 +2949,11 @@
         <constructor-arg name="t" ref="userLevelFunctions" />
         <constructor-arg name="methodName" value="getRedEvelopeRecords" />
     </bean>
+
+	<bean id="51010904" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="userLevelFunctions" />
+		<constructor-arg name="methodName" value="getSpecialLevel" />
+	</bean>
 
 	<bean id="86010001" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="otherFunction" />
