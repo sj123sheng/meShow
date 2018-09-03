@@ -61,16 +61,16 @@ public class LocationFunctions {
         try {
 
             AddressComponentDTO addressComponentDTO =  locationService.getAddressComponentByCoordinate(lat, lng);
-            if(addressComponentDTO != null && StringUtils.isNotEmpty(addressComponentDTO.getTown())
-                    && StringUtils.isNotEmpty(addressComponentDTO.getTownAreaCode())){
+            if(addressComponentDTO != null) {
+
+                result.addProperty("province", addressComponentDTO.getProvince());
+                result.addProperty("city", addressComponentDTO.getCity());
+                result.addProperty("district", addressComponentDTO.getDistrict());
+                result.addProperty("town", addressComponentDTO.getTown());
+                result.addProperty("adcode", addressComponentDTO.getAdcode());
 
                 String townAreaCode = addressComponentDTO.getTownAreaCode();
-
                 if(StringUtils.isNotEmpty(townAreaCode)) {
-                    result.addProperty("province", addressComponentDTO.getProvince());
-                    result.addProperty("city", addressComponentDTO.getCity());
-                    result.addProperty("district", addressComponentDTO.getDistrict());
-                    result.addProperty("town", addressComponentDTO.getTown());
                     result.addProperty("townAreaCode", townAreaCode);
                     if (userId > 0 && isOwner) {
                         TownUserInfoParam userInfoParam = new TownUserInfoParam();
