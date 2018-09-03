@@ -251,7 +251,8 @@ public class TownProjectFunctions {
                 if(StringUtils.isNotEmpty(townTopicDTO.getTopicDesc())) {
                     result.addProperty("topicDesc", townTopicDTO.getTopicDesc());
                 }
-                result.addProperty("coverUrl", townTopicDTO.getCoverUrl());
+                // todo 默认话题图片 暂时没有 后续需要加入
+                String coverUrl = townTopicDTO.getCoverUrl();
                 Integer sponsorUserId = townTopicDTO.getSponsorUserId();
                 if(sponsorUserId != null) {
                     UserProfile userProfile = kkUserService.getUserProfile(sponsorUserId);
@@ -276,8 +277,10 @@ public class TownProjectFunctions {
                         sponsorFirstWork.addProperty("praiseNum", townWorkDTO.getPraiseNum());
                         sponsorFirstWork.addProperty("coverUrl", townWorkDTO.getCoverUrl());
                         result.add("sponsorFirstWork", sponsorFirstWork);
+                        coverUrl = townTopicDTO.getCoverUrl();
                     }
                 }
+                result.addProperty("coverUrl", coverUrl);
             }
             result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
@@ -1236,6 +1239,7 @@ public class TownProjectFunctions {
                 int checkStatus = townWorkDTO.getCheckStatus();
                 boolean isOffShelf = townWorkDTO.getIsOffShelf();
                 int workUserId = townWorkDTO.getUserId();
+                int workType = townWorkDTO.getWorkType();
                 if((isOwner && userId == workUserId) || (checkStatus == WorkCheckStatusEnum.CHECK_PASS && !isOffShelf)) {
                     result.addProperty("workStatus", 1);
                 } else if(checkStatus == WorkCheckStatusEnum.WAIT_CHECK) {
@@ -1243,7 +1247,17 @@ public class TownProjectFunctions {
                 } else {
                     result.addProperty("workStatus", 3);
                 }
-                result.addProperty("workType", townWorkDTO.getWorkType());
+                result.addProperty("workType", workType);
+                if(workType == WorkTypeEnum.VIDEO) {
+                    String resourceIds = townWorkDTO.getResourceIds();
+                    if(StringUtils.isNotEmpty(resourceIds)) {
+                        com.melot.kk.module.resource.domain.Resource resource = resourceNewService.getResourceById(Integer.parseInt(resourceIds)).getData();
+                        if(resource != null && resource.getFileHeight() != null && resource.getFileWidth() != null) {
+                            result.addProperty("videoHeight", resource.getFileHeight());
+                            result.addProperty("videoWidth", resource.getFileWidth());
+                        }
+                    }
+                }
                 result.addProperty("isRecommend", townWorkDTO.getIsRecommend());
                 result.addProperty("coverUrl", townWorkDTO.getCoverUrl());
                 if(StringUtils.isNotEmpty(townWorkDTO.getVideoUrl())) {
@@ -2519,4 +2533,73 @@ public class TownProjectFunctions {
             return result;
         }
     }
+
+    /**
+     * 	获取评论信息【51120141】
+     */
+    public JsonObject getCommentInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        int userId, workId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, USER_ID.getId(), 0, null, 1, Integer.MAX_VALUE);
+            workId = CommonUtil.getJsonParamInt(jsonObject, COMMENT_ID.getId(), 0, COMMENT_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+
+            TownWorkCommentDTO record = townCommentService.getCommentInfo(userId, workId);
+            if(record != null) {
+                int commentUserId = record.getUserId();
+                result.addProperty("userId", commentUserId);
+                UserProfile userProfile = kkUserService.getUserProfile(commentUserId);
+                if(userProfile != null) {
+                    if(userProfile.getPortrait() != null) {
+                        result.addProperty("portrait", getPortrait(userProfile));
+                    }
+                    result.addProperty("nickname", userProfile.getNickName());
+                }
+                if(StringUtils.isNotEmpty(record.getIdentity())) {
+                    result.addProperty("identity", record.getIdentity());
+                }
+                result.addProperty("commentId", record.getCommentId());
+                result.addProperty("commentType", record.getCommentType());
+                result.addProperty("commentMode", record.getCommentMode());
+                result.addProperty("commentContent", record.getCommentContent());
+                if(record.getCommentMode() == CommentModeEnum.VOICE) {
+                    result.addProperty("voiceDuration", record.getVoiceDuration());
+                }
+                if(record.getRefCommentId() != null) {
+                    int refCommentUserId = record.getRefUserId();
+                    result.addProperty("refUserId", refCommentUserId);
+                    UserProfile userProfile1 = kkUserService.getUserProfile(refCommentUserId);
+                    if(userProfile1 != null) {
+                        result.addProperty("refNickname", userProfile1.getNickName());
+                    }
+                    result.addProperty("refCommentId", record.getRefCommentId());
+                    result.addProperty("refCommentMode", record.getRefCommentMode());
+                    result.addProperty("refCommentContent", record.getRefCommentContent());
+                    if(record.getRefCommentMode() == CommentModeEnum.VOICE) {
+                        result.addProperty("refVoiceDuration", record.getRefVoiceDuration());
+                    }
+                }
+                result.addProperty("praiseNum", record.getPraiseNum());
+                result.addProperty("isPraise", record.getPraise());
+                result.addProperty("commentTime", changeTimeToString(record.getCommentTime()));
+            }
+
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error getCommentInfo()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
 }
