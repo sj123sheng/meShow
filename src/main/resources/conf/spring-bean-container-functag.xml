@@ -3180,7 +3180,19 @@
 	</bean>
 
 	<bean id="51120301" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="WechatProjectFunctions" />
+		<constructor-arg name="t" ref="wechatProjectFunctions" />
 		<constructor-arg name="methodName" value="addPromoteHistByChannel" />
+	</bean>
+	<bean id="51120302" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="wechatProjectFunctions" />
+		<constructor-arg name="methodName" value="getAccessToken" />
+	</bean>
+	<bean id="51120303" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="wechatProjectFunctions" />
+		<constructor-arg name="methodName" value="uploadFormId" />
+	</bean>
+	<bean id="51120304" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="wechatProjectFunctions" />
+		<constructor-arg name="methodName" value="uploadUserInfo" />
 	</bean>
 </beans>
