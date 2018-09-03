@@ -251,7 +251,8 @@ public class TownProjectFunctions {
                 if(StringUtils.isNotEmpty(townTopicDTO.getTopicDesc())) {
                     result.addProperty("topicDesc", townTopicDTO.getTopicDesc());
                 }
-                result.addProperty("coverUrl", townTopicDTO.getCoverUrl());
+                // todo 默认话题图片 暂时没有 后续需要加入
+                String coverUrl = townTopicDTO.getCoverUrl();
                 Integer sponsorUserId = townTopicDTO.getSponsorUserId();
                 if(sponsorUserId != null) {
                     UserProfile userProfile = kkUserService.getUserProfile(sponsorUserId);
@@ -276,8 +277,10 @@ public class TownProjectFunctions {
                         sponsorFirstWork.addProperty("praiseNum", townWorkDTO.getPraiseNum());
                         sponsorFirstWork.addProperty("coverUrl", townWorkDTO.getCoverUrl());
                         result.add("sponsorFirstWork", sponsorFirstWork);
+                        coverUrl = townTopicDTO.getCoverUrl();
                     }
                 }
+                result.addProperty("coverUrl", coverUrl);
             }
             result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
