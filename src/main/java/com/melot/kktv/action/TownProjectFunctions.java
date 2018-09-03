@@ -1236,6 +1236,7 @@ public class TownProjectFunctions {
                 int checkStatus = townWorkDTO.getCheckStatus();
                 boolean isOffShelf = townWorkDTO.getIsOffShelf();
                 int workUserId = townWorkDTO.getUserId();
+                int workType = townWorkDTO.getWorkType();
                 if((isOwner && userId == workUserId) || (checkStatus == WorkCheckStatusEnum.CHECK_PASS && !isOffShelf)) {
                     result.addProperty("workStatus", 1);
                 } else if(checkStatus == WorkCheckStatusEnum.WAIT_CHECK) {
@@ -1243,7 +1244,17 @@ public class TownProjectFunctions {
                 } else {
                     result.addProperty("workStatus", 3);
                 }
-                result.addProperty("workType", townWorkDTO.getWorkType());
+                result.addProperty("workType", workType);
+                if(workType == WorkTypeEnum.VIDEO) {
+                    String resourceIds = townWorkDTO.getResourceIds();
+                    if(StringUtils.isNotEmpty(resourceIds)) {
+                        com.melot.kk.module.resource.domain.Resource resource = resourceNewService.getResourceById(Integer.parseInt(resourceIds)).getData();
+                        if(resource != null && resource.getFileHeight() != null && resource.getFileWidth() != null) {
+                            result.addProperty("videoHeight", resource.getFileHeight());
+                            result.addProperty("videoWidth", resource.getFileWidth());
+                        }
+                    }
+                }
                 result.addProperty("isRecommend", townWorkDTO.getIsRecommend());
                 result.addProperty("coverUrl", townWorkDTO.getCoverUrl());
                 if(StringUtils.isNotEmpty(townWorkDTO.getVideoUrl())) {
