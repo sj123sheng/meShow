@@ -115,8 +115,7 @@ public class NewsV2Functions {
 
             mediaUrl = CommonUtil.getJsonParamString(jsonObject, "mediaUrl", null, null, 1, Integer.MAX_VALUE);
             if (!StringUtil.strIsNull(mediaUrl)) {
-                mediaUrl = mediaUrl.replaceFirst(ConfigHelper.getMediahttpdir(), "");
-                mediaUrl = mediaUrl.replaceFirst("/kktv", "");
+                mediaUrl = mediaUrl.replaceFirst(ConfigHelper.getVideoURL(), "");
             }
             mediaMd5 = CommonUtil.getJsonParamString(jsonObject, "mediaMd5", null, null, 1, Integer.MAX_VALUE);
 
@@ -206,15 +205,8 @@ public class NewsV2Functions {
                 resource.setFileHeight(videoInfo.getHeight());
                 resource.setFileWidth(videoInfo.getWidth());
             }
-            if (!StringUtil.strIsNull(imageUrl)) {
-                imageUrl = imageUrl.replaceFirst(ConfigHelper.getHttpdir(), "");
-                if(!imageUrl.startsWith(SEPARATOR)) {
-                    imageUrl = SEPARATOR + imageUrl;
-                }
-                imageUrl = imageUrl.replaceFirst("/kktv", "");
-            }
             resource.seteCloudType(ECloudTypeConstant.qiniu);
-            resource.setImageUrl(imageUrl != null ? imageUrl : Pattern.compile("mp4$").matcher(mediaUrl).replaceAll("jpg"));
+            resource.setImageUrl(Pattern.compile("mp4$").matcher(mediaUrl).replaceAll("jpg"));
             Result<Integer> resIdResult = resourceNewService.addResource(resource);
             if(resIdResult != null && resIdResult.getCode() != null && resIdResult.getCode().equals(CommonStateCode.SUCCESS)){
                 Integer resId = resIdResult.getData();
@@ -765,6 +757,7 @@ public class NewsV2Functions {
                 news.addProperty("newsId",newsInfo.getNewsId());
                 news.addProperty("userId",newsInfo.getUserId());
                 news.addProperty("praiseNum",newsInfo.getNewsPraise());
+                news.addProperty("content",newsInfo.getContent());
                 RoomInfo actorInfo = RoomService.getRoomInfo(newsInfo.getUserId());
                 if (actorInfo != null) {
                     news.addProperty("nickname", actorInfo.getNickname());
@@ -783,6 +776,59 @@ public class NewsV2Functions {
             jsonArray.add(topic);
         }
         result.add("topicList", jsonArray);
+        result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());// 七牛前缀
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+
+    /**
+     * 根据话题名获取话题及相关视频动态（51100109）
+     * @param jsonObject
+     * @param checkTag
+     * @return
+     */
+    public JsonObject getTopicByTitle(JsonObject jsonObject, boolean checkTag) {
+        JsonObject result = new JsonObject();
+        // 定义所需参数
+        int appId,pageNum;
+        String title;
+        // 解析参数
+        try {
+            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, TagCodeEnum.APPID_MISSING, 1, Integer.MAX_VALUE);
+            pageNum = CommonUtil.getJsonParamInt(jsonObject, "pageNum", 8, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            title = CommonUtil.getJsonParamString(jsonObject, "title", null, "5110010901", 1, 10);
+        } catch (ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+        NewsTopic newsTopic = NewsService.getTopicByContent(appId,title);
+        if(newsTopic != null && newsTopic.getTopicId()!= null){
+            result.addProperty("topicId",newsTopic.getTopicId());
+            result.addProperty("content",newsTopic.getContent());
+            List<NewsInfo> newsList = NewsService.getNewsListsByTopicId(newsTopic.getTopicId(),0,pageNum);
+            JsonArray newsJsonArray = new JsonArray();
+            for(NewsInfo newsInfo:newsList){
+                JsonObject news = new JsonObject();
+                news.addProperty("newsId",newsInfo.getNewsId());
+                news.addProperty("userId",newsInfo.getUserId());
+                news.addProperty("praiseNum",newsInfo.getNewsPraise());
+                news.addProperty("content",newsInfo.getContent());
+                RoomInfo actorInfo = RoomService.getRoomInfo(newsInfo.getUserId());
+                if (actorInfo != null) {
+                    news.addProperty("nickname", actorInfo.getNickname());
+                }
+                if(newsInfo.getRefVideo()!=null){
+                    int resId = Integer.valueOf(Pattern.compile("\\{|\\}").matcher(newsInfo.getRefVideo()).replaceAll(""));
+                    Resource resVideo = resourceNewService.getResourceById(resId).getData();
+                    if(resVideo != null){
+                        news.addProperty("imageUrl", resVideo.getImageUrl());
+                        news.addProperty("mediaUrl", resVideo.getSpecificUrl());
+                    }
+                }
+                newsJsonArray.add(news);
+            }
+            result.add("newsList",newsJsonArray);
+        }
         result.addProperty("videoPathPrefix", ConfigHelper.getVideoURL());// 七牛前缀
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;

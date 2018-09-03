@@ -19,13 +19,17 @@ import com.melot.kktv.util.TagCodeEnum;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import com.opensymphony.xwork2.ActionContext;
 import org.apache.log4j.Logger;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.struts2.ServletActionContext;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
+import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
@@ -46,9 +50,9 @@ public class GembinderFunctions {
     /** 日志记录对象 */
     private Logger logger = Logger.getLogger(GembinderFunctions.class);
 
-    private static final String key = "kkxiaoxiaole";
+    private static final String KEY = "kkxiaoxiaole";
 
-    private static final String openkey = "kktv5";
+    private static final String OPENKEY = "kktv5";
 
     @Resource
     private KkUserService kkUserService;
@@ -88,7 +92,7 @@ public class GembinderFunctions {
         }
 
         try {
-            String userIdString = SecretKeyUtil.encodeDES(Integer.toString(userId),key);
+            String userIdString = SecretKeyUtil.encodeDES(Integer.toString(userId),KEY);
             String tokenString = encryptToken(token);
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             result.addProperty("userId", userIdString);
@@ -235,6 +239,7 @@ public class GembinderFunctions {
         }
         GameMoneyHistory gameMoneyHistory = new GameMoneyHistory();
         gameMoneyHistory.setUserId(userId);
+        gameMoneyHistory.setToUserId(0);
         gameMoneyHistory.setType(62);
         gameMoneyHistory.setDtime(new Date());
         gameMoneyHistory.setConsumeAmount((int)usedDiamonds);
@@ -409,7 +414,7 @@ public class GembinderFunctions {
 
 
     private Integer getRealUserId(String userIdString) throws Exception {
-        return Integer.parseInt(SecretKeyUtil.decodeDES(userIdString,key));
+        return Integer.parseInt(SecretKeyUtil.decodeDES(userIdString,KEY));
     }
 
     private String encryptToken(String token){
@@ -417,7 +422,7 @@ public class GembinderFunctions {
             return null;
         }
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(token.substring(0,2)).append(CommonUtil.md5(token.substring(2)+key));
+        stringBuilder.append(token.substring(0,2)).append(CommonUtil.md5(token.substring(2)+KEY));
         return stringBuilder.toString();
     }
 
@@ -447,8 +452,29 @@ public class GembinderFunctions {
                 }
             }
         }
-        stringBuilder.append(userId).append(token).append(time).append(openkey);
+        stringBuilder.append(userId).append(token).append(time).append(OPENKEY);
         return ckeckSignString.equals(CommonUtil.md5(stringBuilder.toString()).toUpperCase());
+    }
+
+    public static void main(String[] args) throws Exception {
+        FileInputStream excelFileInputStream = new FileInputStream("D:\\xxxx.xlsx");
+        XSSFWorkbook workbook = new XSSFWorkbook(excelFileInputStream);
+        excelFileInputStream.close();
+        XSSFSheet sheet = workbook.getSheetAt(0);
+        DecimalFormat df = new DecimalFormat("0");
+        for (int i = 1; i < sheet.getLastRowNum() + 1; i++) {
+            XSSFRow rowData = sheet.getRow(i);
+            String s = df.format(rowData.getCell(4).getNumericCellValue());
+            if(s.equals("0")){
+                s = df.format(rowData.getCell(5).getNumericCellValue());
+            }
+            XSSFCell xssfCell = rowData.createCell(12);
+            xssfCell.setCellValue(SecretKeyUtil.encodeDES(s,KEY));
+        }
+        FileOutputStream fileOut = new FileOutputStream(
+                "D:\\xxxx.xlsx");
+        workbook.write(fileOut);
+        fileOut.close();
     }
 
 

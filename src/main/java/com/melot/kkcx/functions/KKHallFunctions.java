@@ -704,7 +704,7 @@ public class KKHallFunctions {
         // 获取HD主播
         HallPartConfDTO sysMenu = null;
         try {
-            Result<HallPartConfDTO> sysMenuResult = hallPartService.getPartList(486, 0, 0, 0, 0, 3 + recommendedRoomCount);
+            Result<HallPartConfDTO> sysMenuResult = hallPartService.getPartList(486, 0, 0, 0, appId, 0, 3 + recommendedRoomCount);
             if (sysMenuResult != null && CommonStateCode.SUCCESS.equals(sysMenuResult.getCode())) {
                 sysMenu = sysMenuResult.getData();
             }
@@ -840,7 +840,7 @@ public class KKHallFunctions {
         // 获取HD主播
         HallPartConfDTO sysMenu = null;
         try {
-            Result<HallPartConfDTO> sysMenuResult = hallPartService.getPartList(486, 0, 0, 0, 0, 9);
+            Result<HallPartConfDTO> sysMenuResult = hallPartService.getPartList(486, 0, 0, 0, appId, 0, 9);
             if (sysMenuResult != null && CommonStateCode.SUCCESS.equals(sysMenuResult.getCode())) {
                 sysMenu = sysMenuResult.getData();
             }

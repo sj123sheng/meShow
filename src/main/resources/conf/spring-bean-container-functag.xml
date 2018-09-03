@@ -17,7 +17,7 @@
 	
 	<!-- 通用过期接口 -->
 	<bean id="10006005"
-		name="10001040,10004010,10004011,40000013,20010308,20010502,20010503,20010504,20010506,20010507,20010508,50001015,10002039,10002040,20010403,20010402,10002072,10001042,10002009,10002010,51030101"
+		name="10002072,10001042,10002009,10002010,51030101"
 		class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="otherFunction" />
 		<constructor-arg name="methodName" value="lowVersionExcute" />
@@ -1064,6 +1064,11 @@
 	<bean id="51100108" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="newsV2Function" />
 		<constructor-arg name="methodName" value="getHallTopicList" />
+	</bean>
+
+	<bean id="51100109" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="newsV2Function" />
+		<constructor-arg name="methodName" value="getTopicByTitle" />
 	</bean>
 	
 	<!-- 其他接口类 -->

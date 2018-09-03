@@ -110,11 +110,13 @@ public class PlayTogetherFunction {
         JsonObject result = new JsonObject();
 
         int cataId, platform, pageIndex, countPerPage;
+        int appId;
         try {
             cataId = CommonUtil.getJsonParamInt(jsonObject, "cataId", 0, null, 1, Integer.MAX_VALUE);
             platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, TagCodeEnum.PLATFORM_MISSING, 1, Integer.MAX_VALUE);
             pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
             countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 10, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 0, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -128,7 +130,7 @@ public class PlayTogetherFunction {
             DollMachineService dollMachineService = (DollMachineService) MelotBeanFactory.getBean("dollMachineService");
 
             int start = (pageIndex <= 1 ? 0 : pageIndex - 1) * countPerPage;
-            Result<HallPartConfDTO> partListResult = hallPartService.getPartList(cataId, 0, 0, 0, start, countPerPage);
+            Result<HallPartConfDTO> partListResult = hallPartService.getPartList(cataId, 0, 0, 0, appId, start, countPerPage);
             JsonArray roomArray = new JsonArray();
             int roomTotal = 0;
             if (ResultUtils.checkResultNotNull(partListResult)) {

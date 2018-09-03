@@ -103,8 +103,6 @@
 	
 	<!-- 动态模块 -->
 	<kkrpc:reference id="newsCenter" interface="com.melot.news.service.NewsService" version="1.2.3"></kkrpc:reference>
-	<!-- 资源模块 -->
-	<kkrpc:reference id="resourceCenter" interface="com.melot.resource.service.ResourceService" version="1.0.0"/>
 	<!-- 1v1视频聊天服务 -->
 	<kkrpc:reference id="singleChatService" interface="com.melot.singlechat.driver.service.SingleChatService" version="1.0.0"/>
  	<kkrpc:reference id="singleChatServerService" interface="com.melot.singlechat.driver.service.SingleChatServerService" version="1.0.1"/>
@@ -193,7 +191,7 @@
 	<kkrpc:reference id="openPageService" interface="com.melot.kk.config.api.service.OpenPageService" version="1.0.0"/>
 	<!-- 大厅模块 -->
 	<kkrpc:reference id="hallRoomService" interface="com.melot.kk.hall.api.service.HallRoomService" version="1.0.0"/>
-	<kkrpc:reference id="hallPartService" interface="com.melot.kk.hall.api.service.SysMenuService" version="1.0.0"/>
+	<kkrpc:reference id="hallPartService" interface="com.melot.kk.hall.api.service.SysMenuService" version="1.0.1"/>
 	<kkrpc:reference id="hallHomeService" interface="com.melot.kk.hall.api.service.HomeService" version="1.0.0"/>
 
     <!-- 竞猜模块 -->
@@ -220,6 +218,9 @@
 
     <!-- 用户官方信息模块 -->
     <kkrpc:reference id="adminDataService" interface="com.melot.cms.admin.api.service.AdminDataService" version="1.0.0"></kkrpc:reference>
+
+	<!-- 活动API服务 -->
+	<kkrpc:reference id="newMissionService" interface="com.melot.kk.activityAPI.api.service.NewMissionService" version="1.0.0"></kkrpc:reference>
 	
 	<kkrpc:reference id="recommendedMsgService" interface="com.melot.kk.message.api.service.RecommendedMsgService" version="1.0.0"/>
 	<kkrpc:reference id="messageService" interface="com.melot.common.driver.service.MessageService" version="1.0.0"/>
