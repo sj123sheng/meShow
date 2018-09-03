@@ -309,7 +309,7 @@ public class UserLevelFunctions {
         }
     }
 
-    public JsonObject getSpecialLevel(JsonObject jsonObject, HttpServletRequest request) {
+    public JsonObject getSpecialLevel(JsonObject jsonObject,boolean checkTag,HttpServletRequest request) {
         JsonObject result = new JsonObject();
         String str = configService.getUserLevelString();
         try{
@@ -319,8 +319,8 @@ public class UserLevelFunctions {
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
             return result;
         }catch (Exception e) {
-            logger.error("userLevelRedEvelopeService.getSpecialLevel", e);
-            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            logger.error("getSpecialLevel", e);
+            result.addProperty(ParameterKeys.TAG_CODE, "20001001");
             return result;
         }
     }
