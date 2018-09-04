@@ -2620,10 +2620,18 @@ public class TownProjectFunctions {
                     townWork.addProperty("praiseNum", townWorkDTO.getPraiseNum());
                     townWork.addProperty("viewsNum", townWorkDTO.getViewsNum());
                     townWork.addProperty("coverUrl", townWorkDTO.getCoverUrl());
+                    UserProfile userProfile = kkUserService.getUserProfile(townWorkDTO.getUserId());
+                    if(userProfile != null) {
+                        townWork.addProperty("nickname", userProfile.getNickName());
+                        if (userProfile.getPortrait() != null) {
+                            townWork.addProperty("portrait", this.getPortrait(userProfile));
+                        }
+                    }
                     workList.add(townWork);
                 }
             }
             result.add("workList", workList);
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
         } catch (Exception e) {
