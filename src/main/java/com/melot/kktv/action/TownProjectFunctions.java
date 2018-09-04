@@ -2627,6 +2627,7 @@ public class TownProjectFunctions {
                             townWork.addProperty("portrait", this.getPortrait(userProfile));
                         }
                     }
+                    townWork.addProperty("publishTime", changeTimeToString(townWorkDTO.getCheckTime()));
                     workList.add(townWork);
                 }
             }
