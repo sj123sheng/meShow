@@ -2602,4 +2602,35 @@ public class TownProjectFunctions {
         }
     }
 
+    /**
+     * 	获取推荐作品列表【51120142】
+     */
+    public JsonObject getRecommendWorkList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        try {
+
+            List<ResTownWorkDTO> recommendWorkList = townWorkService.getRecommendWorkList();
+            JsonArray workList = new JsonArray();
+            if(recommendWorkList != null && recommendWorkList.size() > 0) {
+                for(ResTownWorkDTO townWorkDTO : recommendWorkList) {
+                    JsonObject townWork = new JsonObject();
+                    townWork.addProperty("workId", townWorkDTO.getWorkId());
+                    townWork.addProperty("praiseNum", townWorkDTO.getPraiseNum());
+                    townWork.addProperty("viewsNum", townWorkDTO.getViewsNum());
+                    townWork.addProperty("coverUrl", townWorkDTO.getCoverUrl());
+                    workList.add(townWork);
+                }
+            }
+            result.add("workList", workList);
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error getRecommendWorkList()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
 }
