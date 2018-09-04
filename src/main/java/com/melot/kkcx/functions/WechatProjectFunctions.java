@@ -8,6 +8,7 @@ import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.GeneralService;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ParameterKeys;
+import com.melot.kktv.util.SecurityFunctions;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.cache.EhCache;
 import com.melot.module.api.exceptions.MelotModuleException;
@@ -200,14 +201,14 @@ public class WechatProjectFunctions {
         JsonObject result = new JsonObject();
 
         // 安全sv验证
-//        try {
-//            JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
-//            if (rtJO != null)
-//                return rtJO;
-//        } catch (Exception e) {
-//            result.addProperty(ParameterKeys.TAG_CODE, "40010002");
-//            return result;
-//        }
+        try {
+            JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
+            if (rtJO != null)
+                return rtJO;
+        } catch (Exception e) {
+            result.addProperty(ParameterKeys.TAG_CODE, "40010002");
+            return result;
+        }
 
         int userId;
         String appType;
