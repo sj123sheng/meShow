@@ -173,6 +173,11 @@ public class ConfigService {
 
     private String userLevelString;
 
+    /**
+     * 微信小程序appId定义
+     */
+    private String wechatProjectAppIds;
+
     @DisconfFileItem(name = "nearbyStartDistance", associateField = "nearbyStartDistance")
     public int getNearbyStartDistance() {
         return nearbyStartDistance;
@@ -440,5 +445,10 @@ public class ConfigService {
 
     public void setUserLevelString(String userLevelString) {
         this.userLevelString = userLevelString;
+    }
+    
+    @DisconfFileItem(name = "wechatProjectAppIds", associateField = "wechatProjectAppIds")
+    public String getWechatProjectAppIds() {
+        return wechatProjectAppIds; 
     }
 }
