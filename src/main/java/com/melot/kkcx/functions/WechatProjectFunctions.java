@@ -1,16 +1,25 @@
 package com.melot.kkcx.functions;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import com.melot.kk.wechatProject.api.Service.WechatCommonService;
+import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.GeneralService;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ParameterKeys;
+import com.melot.kktv.util.SecurityFunctions;
 import com.melot.kktv.util.TagCodeEnum;
+import com.melot.kktv.util.cache.EhCache;
 import com.melot.module.api.exceptions.MelotModuleException;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+
+import java.util.Map;
+
 
 /**
  * Title: WechatProjectFunctions
@@ -25,6 +34,9 @@ import javax.servlet.http.HttpServletRequest;
 public class WechatProjectFunctions {
 
     private static Logger log = Logger.getLogger(WechatProjectFunctions.class);
+
+    @Autowired
+    private ConfigService configService;
 
     @Resource
     private WechatCommonService wechatCommonService;
@@ -148,29 +160,94 @@ public class WechatProjectFunctions {
         }
 
         int userId;
-        String appId;
+        String appType;
         String openId;
         try {
-            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.PARAMETER_PARSE_ERROR, 1, Integer.MAX_VALUE);
-            appId = CommonUtil.getJsonParamString(jsonObject, "appId", null, TagCodeEnum.PARAMETER_PARSE_ERROR, 1, Integer.MAX_VALUE);
-            openId = CommonUtil.getJsonParamString(jsonObject, "openId", null, TagCodeEnum.PARAMETER_PARSE_ERROR, 1, Integer.MAX_VALUE);
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.INVALID_PARAMETERS, 1, Integer.MAX_VALUE);
+            appType = CommonUtil.getJsonParamString(jsonObject, "appType", null, TagCodeEnum.INVALID_PARAMETERS, 1, 512);
+            openId = CommonUtil.getJsonParamString(jsonObject, "openId", null, TagCodeEnum.INVALID_PARAMETERS, 1, 512);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
             return result;
         } catch (Exception e) {
-            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.INVALID_PARAMETERS);
             return result;
         }
 
+
         String tagCode = TagCodeEnum.MODULE_UNKNOWN_RESPCODE;
         try {
-            if (wechatCommonService.addUserInfo(userId, appId, openId)) {
-                tagCode = TagCodeEnum.SUCCESS;
-            } else {
-                tagCode = "5112030401";
+            Map<String, String> appIds = new Gson().fromJson(configService.getWechatProjectAppIds(), new TypeToken<java.util.Map<String, String>>() {}.getType());
+            String appId = appIds.get(appType);
+            if (appId == null) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.INVALID_PARAMETERS);
+                return result;
+            }
+            if (EhCache.getFromCache(String.format("wx_openId_%s_%s", userId, appId)) == null) {
+                tagCode = wechatCommonService.addUserInfo(userId, openId, appId) ? TagCodeEnum.SUCCESS : "5112030401";
             }
         } catch (Exception e) {
-            log.error(String.format("uploadFormId error: userId=%s, appId=%s, openId=%s)", userId, appId, openId), e);
+            log.error(String.format("uploadFormId error: userId=%s, appType=%s, openId=%s)", userId, appType, openId), e);
+        }
+        result.addProperty(ParameterKeys.TAG_CODE, tagCode);
+        return result;
+    }
+
+    /**
+     * 52120305
+     * 获取用户的openId
+     */
+    public JsonObject getOpenId(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        // 安全sv验证
+        try {
+            JsonObject rtJO = SecurityFunctions.checkSignedValue(jsonObject);
+            if (rtJO != null)
+                return rtJO;
+        } catch (Exception e) {
+            result.addProperty(ParameterKeys.TAG_CODE, "40010002");
+            return result;
+        }
+
+        int userId;
+        String appType;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.INVALID_PARAMETERS, 1, Integer.MAX_VALUE);
+            appType = CommonUtil.getJsonParamString(jsonObject, "appType", null, TagCodeEnum.INVALID_PARAMETERS, 1, 512);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.INVALID_PARAMETERS);
+            return result;
+        }
+
+
+        String tagCode = TagCodeEnum.MODULE_UNKNOWN_RESPCODE;
+        try {
+            Map<String, String> appIds = new Gson().fromJson(configService.getWechatProjectAppIds(), new TypeToken<java.util.Map<String, String>>() {}.getType());
+            String appId = appIds.get(appType);
+            if (appId == null) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.INVALID_PARAMETERS);
+                return result;
+            }
+            // 查询缓存
+            String key = String.format("wx_openId_%s_%s", userId, appId);
+            String openId = (String) EhCache.getFromCache(key);
+            if (openId == null) {
+                // 调模块查询
+                openId = wechatCommonService.getOpenIdByUserIdAndAppId(userId, appId);
+                if (openId == null) {
+                    result.addProperty(ParameterKeys.TAG_CODE, "5112030501");
+                    return result;
+                }
+                EhCache.putInCacheByLive(key, openId, 60);
+            }
+            result.addProperty("openId", openId);
+            tagCode = TagCodeEnum.SUCCESS;
+        } catch (Exception e) {
+            log.error(String.format("getOpenId error: userId=%s, appType=%s)", userId, appType), e);
         }
         result.addProperty(ParameterKeys.TAG_CODE, tagCode);
         return result;

@@ -3199,4 +3199,8 @@
 		<constructor-arg name="t" ref="wechatProjectFunctions" />
 		<constructor-arg name="methodName" value="uploadUserInfo" />
 	</bean>
+	<bean id="52120305" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="wechatProjectFunctions" />
+		<constructor-arg name="methodName" value="getOpenId" />
+	</bean>
 </beans>
