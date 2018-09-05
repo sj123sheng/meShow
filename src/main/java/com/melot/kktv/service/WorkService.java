@@ -70,19 +70,53 @@ public class WorkService {
                 }
             }
         } catch (IOException e) {
-            logger.error("NewsV2Functions.getVideoInfoByHttp(" + "videoUrl:" + videoUrl + ") execute exception.", e);
+            logger.error("getVideoInfoByHttp(" + "videoUrl:" + videoUrl + ") execute exception.", e);
         } catch (IllegalStateException e) {
-            logger.error("NewsV2Functions.getVideoInfoByHttp(" + "videoUrl:" + videoUrl + ") execute exception.", e);
+            logger.error("getVideoInfoByHttp(" + "videoUrl:" + videoUrl + ") execute exception.", e);
         } finally {
             if (httpClient != null) {
                 try {
                     httpClient.close();
                 } catch (IOException e) {
-                    logger.error("NewsV2Functions.getVideoInfoByHttp(" + "videoUrl:" + videoUrl + ") execute exception.", e);
+                    logger.error("getVideoInfoByHttp(" + "videoUrl:" + videoUrl + ") execute exception.", e);
                 }
             }
         }
         return videoInfo;
+    }
+
+    public static WorkVideoInfo getImageInfoByHttp(String imageUrl) {
+        WorkVideoInfo imageInfo = null;
+        imageUrl = imageUrl + "?x-oss-process=image/info";
+        @SuppressWarnings("deprecation")
+        CloseableHttpClient httpClient = new DefaultHttpClient();
+        HttpGet get = new HttpGet(imageUrl);
+        HttpResponse res;
+        try {
+            res = httpClient.execute(get);
+            if (res.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+                String result = EntityUtils.toString(res.getEntity());
+                JSONObject jObject = JSON.parseObject(result);
+                if (jObject.containsKey("ImageHeight")) {
+                    imageInfo = new WorkVideoInfo();
+                    imageInfo.setHeight(jObject.getJSONObject("ImageHeight").getIntValue("value"));
+                    imageInfo.setWidth(jObject.getJSONObject("ImageWidth").getIntValue("value"));
+                }
+            }
+        } catch (IOException e) {
+            logger.error("getImageInfoByHttp(" + "imageUrl:" + imageUrl + ") execute exception.", e);
+        } catch (IllegalStateException e) {
+            logger.error("getImageInfoByHttp(" + "imageUrl:" + imageUrl + ") execute exception.", e);
+        } finally {
+            if (httpClient != null) {
+                try {
+                    httpClient.close();
+                } catch (IOException e) {
+                    logger.error("NewsV2Functions.getVideoInfoByHttp(" + "imageUrl:" + imageUrl + ") execute exception.", e);
+                }
+            }
+        }
+        return imageInfo;
     }
 
 }
