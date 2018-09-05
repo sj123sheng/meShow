@@ -1249,6 +1249,7 @@ public class TownProjectFunctions {
                     result.addProperty("workStatus", 3);
                 }
                 result.addProperty("workType", workType);
+                // 查询资源表获取资源的宽高字段
                 String resourceIds = townWorkDTO.getResourceIds();
                 if(StringUtils.isNotEmpty(resourceIds)) {
                     if(workType == WorkTypeEnum.VIDEO) {
