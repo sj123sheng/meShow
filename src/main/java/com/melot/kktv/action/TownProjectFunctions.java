@@ -1234,6 +1234,7 @@ public class TownProjectFunctions {
 
         try {
 
+            String pathPrefix = ConfigHelper.getHttpdir();
             ResTownWorkDTO townWorkDTO = townWorkService.getWorkInfo(workId);
             if(townWorkDTO != null) {
                 int checkStatus = townWorkDTO.getCheckStatus();
@@ -1248,13 +1249,29 @@ public class TownProjectFunctions {
                     result.addProperty("workStatus", 3);
                 }
                 result.addProperty("workType", workType);
-                if(workType == WorkTypeEnum.VIDEO) {
-                    String resourceIds = townWorkDTO.getResourceIds();
-                    if(StringUtils.isNotEmpty(resourceIds)) {
+                // 查询资源表获取资源的宽高字段
+                String resourceIds = townWorkDTO.getResourceIds();
+                if(StringUtils.isNotEmpty(resourceIds)) {
+                    if(workType == WorkTypeEnum.VIDEO) {
                         com.melot.kk.module.resource.domain.Resource resource = resourceNewService.getResourceById(Integer.parseInt(resourceIds)).getData();
                         if(resource != null && resource.getFileHeight() != null && resource.getFileWidth() != null) {
                             result.addProperty("videoHeight", resource.getFileHeight());
                             result.addProperty("videoWidth", resource.getFileWidth());
+                        }
+                    } else {
+                        List<com.melot.kk.module.resource.domain.Resource> resources = resourceNewService.getResourcesByIds(resourceIds).getData();
+                        if (resources != null && resources.size() > 0) {
+                            JsonArray imageList = new JsonArray();
+                            for (com.melot.kk.module.resource.domain.Resource resource : resources) {
+                                JsonObject imageInfo = new JsonObject();
+                                imageInfo.addProperty("imageUrl", pathPrefix + resource.getImageUrl());
+                                if(resource.getFileHeight() != null) {
+                                    imageInfo.addProperty("imageHeight", resource.getFileHeight());
+                                    imageInfo.addProperty("imageWidth", resource.getFileWidth());
+                                }
+                                imageList.add(imageInfo);
+                            }
+                            result.add("imageList", imageList);
                         }
                     }
                 }
@@ -1300,7 +1317,7 @@ public class TownProjectFunctions {
                 result.addProperty("workStatus", 3);
             }
 
-            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+            result.addProperty("pathPrefix", pathPrefix);
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
         } catch (Exception e) {
@@ -1488,6 +1505,12 @@ public class TownProjectFunctions {
                     resource.setState(ResourceStateConstant.uncheck);
                     resource.setMimeType(FileTypeConstant.image);
                     resource.setResType(14);
+                    // 获取分辨率,添加分辨率信息
+                    WorkVideoInfo videoInfo = WorkService.getImageInfoByHttp(tempUrl);
+                    if (videoInfo != null) {
+                        resource.setFileHeight(videoInfo.getHeight());
+                        resource.setFileWidth(videoInfo.getWidth());
+                    }
                     resource.seteCloudType(ECloudTypeConstant.aliyun);
                     resource.setUserId(userId);
                     if (!StringUtil.strIsNull(tempUrl)) {
@@ -2597,6 +2620,46 @@ public class TownProjectFunctions {
             return result;
         } catch (Exception e) {
             logger.error("Error getCommentInfo()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 	获取推荐作品列表【51120142】
+     */
+    public JsonObject getRecommendWorkList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        try {
+
+            List<ResTownWorkDTO> recommendWorkList = townWorkService.getRecommendWorkList();
+            JsonArray workList = new JsonArray();
+            if(recommendWorkList != null && recommendWorkList.size() > 0) {
+                for(ResTownWorkDTO townWorkDTO : recommendWorkList) {
+                    JsonObject townWork = new JsonObject();
+                    townWork.addProperty("workId", townWorkDTO.getWorkId());
+                    townWork.addProperty("praiseNum", townWorkDTO.getPraiseNum());
+                    townWork.addProperty("viewsNum", townWorkDTO.getViewsNum());
+                    townWork.addProperty("coverUrl", townWorkDTO.getCoverUrl());
+                    UserProfile userProfile = kkUserService.getUserProfile(townWorkDTO.getUserId());
+                    if(userProfile != null) {
+                        townWork.addProperty("nickname", userProfile.getNickName());
+                        if (userProfile.getPortrait() != null) {
+                            townWork.addProperty("portrait", this.getPortrait(userProfile));
+                        }
+                    }
+                    townWork.addProperty("publishTime", changeTimeToString(townWorkDTO.getCheckTime()));
+                    workList.add(townWork);
+                }
+            }
+            result.add("workList", workList);
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error getRecommendWorkList()", e);
             result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             return result;
         }
