@@ -7,7 +7,9 @@ import com.melot.asset.driver.domain.ConfVirtualId;
 import com.melot.asset.driver.service.VirtualIdService;
 import com.melot.kk.liveshop.api.constant.LiveShopErrorMsg;
 import com.melot.kk.liveshop.api.constant.LiveShopTransactionType;
+import com.melot.kk.liveshop.api.constant.SellerApplyCheckStatusEnum;
 import com.melot.kk.liveshop.api.dto.*;
+import com.melot.kk.liveshop.api.service.SellerApplyInfoService;
 import com.melot.kktv.util.*;
 import com.melot.module.api.exceptions.MelotModuleException;
 import com.melot.module.packagegift.driver.service.XmanService;
@@ -31,6 +33,7 @@ import com.melot.kkcx.transform.LiveShopTF;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Page;
 import com.melot.kktv.base.Result;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,6 +59,9 @@ public class LiveShopFunctions {
     
     @Resource
     KkUserService kkUserService;
+
+    @Resource
+    private SellerApplyInfoService sellerApplyInfoService;
     
     /**
      * 主播生成订单【51060502】
@@ -1527,6 +1533,126 @@ public class LiveShopFunctions {
             logger.error(String.format("Error:getOrderCount(userId=%s)", userId), e);
         }
         result.addProperty(ParameterKeys.TAG_CODE, tagCode);
+        return result;
+    }
+
+    /**
+     * 获取申请状态(51060529)
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getSellerApplyStatus(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int  userId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "03040002", 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        SellerApplyInfoDTO sellerApplyInfoDTO = sellerApplyInfoService.getSellerApplyInfoByUserId(userId);
+        if(sellerApplyInfoDTO == null){
+            result.addProperty("status",-2);
+        } else {
+            result.addProperty("status",sellerApplyInfoDTO.getCheckStatus());
+            if(sellerApplyInfoDTO.getCheckStatus() == SellerApplyCheckStatusEnum.UN_PASS.value()){
+                if(!StringUtils.isEmpty(sellerApplyInfoDTO.getAuditReason())){
+                    result.addProperty("errorReason",sellerApplyInfoDTO.getAuditReason());
+                }
+            }
+        }
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+
+    /**
+     * 入驻申请(51060530)
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject applyForSeller(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int  userId;
+        int inviter;
+        int applyType;
+        String name;
+        String mobilePhone;
+        String idCardFront;
+        String idCardReverse;
+        int mainCategoryId;
+        String lessCategoryIds;
+        String businessLicense;
+        String foodLicense;
+        String itemImg;
+        String shopImg;
+
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "03040002", 1, Integer.MAX_VALUE);
+            inviter = CommonUtil.getJsonParamInt(jsonObject, "inviter", 0, null, 1, Integer.MAX_VALUE);
+            applyType = CommonUtil.getJsonParamInt(jsonObject, "applyType", 1, TagCodeEnum.INVALID_PARAMETERS, 1, 2);
+            name = CommonUtil.getJsonParamString(jsonObject, "name", null, TagCodeEnum.INVALID_PARAMETERS, 1, 200);
+            mobilePhone = CommonUtil.getJsonParamString(jsonObject, "mobilePhone", null, TagCodeEnum.MOBILENUM_MISSING, 11, 11);
+            idCardFront = CommonUtil.getJsonParamString(jsonObject, "idCardFront", null, TagCodeEnum.INVALID_PARAMETERS, 1, 100);
+            idCardReverse = CommonUtil.getJsonParamString(jsonObject, "idCardReverse", null, TagCodeEnum.INVALID_PARAMETERS, 1, 100);
+            mainCategoryId = CommonUtil.getJsonParamInt(jsonObject, "mainCategoryId", 0, TagCodeEnum.INVALID_PARAMETERS, 1, 1000);
+            lessCategoryIds = CommonUtil.getJsonParamString(jsonObject, "lessCategoryIds", null, null, 1, 200);
+            businessLicense = CommonUtil.getJsonParamString(jsonObject, "businessLicense", null, TagCodeEnum.INVALID_PARAMETERS, 1, 100);
+            foodLicense = CommonUtil.getJsonParamString(jsonObject, "foodLicense", null, null, 1, 100);
+            itemImg = CommonUtil.getJsonParamString(jsonObject, "itemImg", null, null, 1, 100);
+            shopImg = CommonUtil.getJsonParamString(jsonObject, "shopImg", null, null, 1, 100);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        SellerApplyInfoDTO sellerApplyInfoDTO = new SellerApplyInfoDTO();
+        sellerApplyInfoDTO.setUserId(userId);
+        sellerApplyInfoDTO.setInviter(inviter);
+        sellerApplyInfoDTO.setApplyType(applyType);
+        sellerApplyInfoDTO.setApplyName(name);
+        sellerApplyInfoDTO.setMobilePhone(mobilePhone);
+        sellerApplyInfoDTO.setIdcardFront(idCardFront);
+        sellerApplyInfoDTO.setIdcardReverse(idCardReverse);
+        sellerApplyInfoDTO.setBusinesslicense(businessLicense);
+        if(!StringUtils.isEmpty(itemImg)){
+            sellerApplyInfoDTO.setItemImg(itemImg);
+        }
+        if(!StringUtils.isEmpty(shopImg)){
+            sellerApplyInfoDTO.setShopImg(shopImg);
+        }
+
+        sellerApplyInfoDTO.setMainCategory("1");
+        sellerApplyInfoDTO.setLessCategoryIds(lessCategoryIds);
+
+        Result<Boolean> resultCode  = sellerApplyInfoService.sellerApply(sellerApplyInfoDTO);
+        if(!CommonStateCode.SUCCESS.equals(resultCode.getCode())){
+            if("APPLY_EXIST".equals(resultCode.getCode())){
+                result.addProperty("TagCode",TagCodeEnum.APPLY_INFO_EXIST);
+                return result;
+            } else if("PARAMETERS_ERROR".equals(resultCode.getCode())){
+                result.addProperty("TagCode",TagCodeEnum.PARAMETER_MISSING);
+                return result;
+            } else if("SQL_ERROR".equals(resultCode.getCode())){
+                result.addProperty("TagCode",TagCodeEnum.EXECSQL_EXCEPTION);
+                return result;
+            }
+        }
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
 }

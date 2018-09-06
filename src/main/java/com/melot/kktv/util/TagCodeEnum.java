@@ -586,6 +586,9 @@ public class TagCodeEnum {
 	/** 商家信息不存在 */
 	public static final String NOT_EXIST_SALE_ACTOR = "5106051903";
 
+	/** 申请信息已存在 */
+	public static final String APPLY_INFO_EXIST = "5106051904";
+
 
 	/*------小镇错误码 -------*/
 	/**
