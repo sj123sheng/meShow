@@ -1558,19 +1558,43 @@ public class LiveShopFunctions {
             return result;
         }
 
-        SellerApplyInfoDTO sellerApplyInfoDTO = sellerApplyInfoService.getSellerApplyInfoByUserId(userId);
-        if(sellerApplyInfoDTO == null){
-            result.addProperty("status",-2);
-        } else {
-            result.addProperty("status",sellerApplyInfoDTO.getCheckStatus());
-            if(sellerApplyInfoDTO.getCheckStatus() == SellerApplyCheckStatusEnum.UN_PASS.value()){
-                if(!StringUtils.isEmpty(sellerApplyInfoDTO.getAuditReason())){
-                    result.addProperty("errorReason",sellerApplyInfoDTO.getAuditReason());
+        List<SellerApplyInfoDTO> list = sellerApplyInfoService.getUserSellerApplyInfoList(userId);
+        if(!CollectionUtils.isEmpty(list)){
+            if(this.isExistApplyStatus(list, SellerApplyCheckStatusEnum.PASS.value())){
+                result.addProperty("status",1);
+            } else if(this.isExistApplyStatus(list,SellerApplyCheckStatusEnum.IN_REVIEW.value())){
+                result.addProperty("status",0);
+            } else if(this.isExistApplyStatus(list,SellerApplyCheckStatusEnum.UN_PASS.value())){
+                result.addProperty("status",-1);
+                String errorReason = this.getLatestErrorReason(list);
+                if(!StringUtils.isEmpty(errorReason)){
+                    result.addProperty("errorReason",errorReason);
                 }
             }
+        } else {
+            result.addProperty("status",-2);
         }
+
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
+    }
+
+    private boolean isExistApplyStatus(List<SellerApplyInfoDTO> list,int checkStatus){
+        for(SellerApplyInfoDTO item : list){
+            if(item.getCheckStatus() == checkStatus){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String getLatestErrorReason(List<SellerApplyInfoDTO> list){
+        for(SellerApplyInfoDTO item : list){
+            if(item.getCheckStatus() == SellerApplyCheckStatusEnum.UN_PASS.value()){
+                return item.getAuditReason();
+            }
+        }
+        return "";
     }
 
     /**
@@ -1637,7 +1661,9 @@ public class LiveShopFunctions {
         }
 
         sellerApplyInfoDTO.setMainCategory("1");
-        sellerApplyInfoDTO.setLessCategoryIds(lessCategoryIds);
+        if(!StringUtils.isEmpty(lessCategoryIds)){
+            sellerApplyInfoDTO.setLessCategoryIds(lessCategoryIds);
+        }
 
         Result<Boolean> resultCode  = sellerApplyInfoService.sellerApply(sellerApplyInfoDTO);
         if(!CommonStateCode.SUCCESS.equals(resultCode.getCode())){
