@@ -1438,6 +1438,8 @@ public class LiveShopFunctions {
                 tagCode = TagCodeEnum.INVALID_PARAMETERS;
             } else if (e.getErrCode() == 102) {
                 tagCode = "5106052501";
+            } else if (e.getErrCode() == 103) {
+                tagCode = "5106052503";
             }
         } catch (Exception e) {
             logger.error(String.format("Error:registerSaleActorInfo(userId=%s, phoneNo=%s)", userId, phoneNo), e);
@@ -1528,6 +1530,39 @@ public class LiveShopFunctions {
                 result.addProperty("orderId", firstWaitPayOrder.getOrderId());
                 result.addProperty("expireTime", firstWaitPayOrder.getExpiryTime().getTime());
             }
+            tagCode = TagCodeEnum.SUCCESS;
+        } catch (Exception e) {
+            logger.error(String.format("Error:getOrderCount(userId=%s)", userId), e);
+        }
+        result.addProperty(ParameterKeys.TAG_CODE, tagCode);
+        return result;
+    }
+
+    /**
+     * 判断用户是否可以在小程序上登记商家信息[52060531]
+     */
+    public JsonObject canRegisterInProject(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        // 检验token
+        if (!checkTag) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_INCORRECT);
+            return result;
+        }
+        int userId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, TagCodeEnum.INVALID_PARAMETERS, 0, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.INVALID_PARAMETERS);
+            return result;
+        }
+
+        String tagCode = TagCodeEnum.MODULE_UNKNOWN_RESPCODE;
+        try {
+            boolean canRegister = liveShopService.canRegister(userId);
+            result.addProperty("canRegister", canRegister);
             tagCode = TagCodeEnum.SUCCESS;
         } catch (Exception e) {
             logger.error(String.format("Error:getOrderCount(userId=%s)", userId), e);

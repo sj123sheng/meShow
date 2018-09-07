@@ -2867,6 +2867,11 @@
 		<constructor-arg name="methodName" value="getFirstWaitPayOrder" />
 	</bean>
 
+	<bean id="51060531" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="canRegisterInProject" />
+	</bean>
+
 	<bean id="51060529" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="liveShopFunctions" />
 		<constructor-arg name="methodName" value="getSellerApplyStatus" />
