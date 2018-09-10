@@ -2881,7 +2881,14 @@
 		<constructor-arg name="t" ref="liveShopFunctions" />
 		<constructor-arg name="methodName" value="applyForSeller" />
 	</bean>
-	
+
+	<bean id="51060528" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getItemCatList" />
+        <constructor-arg name="cacheType" value="60" />
+        <constructor-arg name="cacheKeyExcluedUserId" value="1" />
+	</bean>
+
 	<!-- 获取积分礼物列表 -->
 	<bean id="51010406" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="nobilityFunctions" />
