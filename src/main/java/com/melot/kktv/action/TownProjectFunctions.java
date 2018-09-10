@@ -1280,6 +1280,7 @@ public class TownProjectFunctions {
                 if(StringUtils.isNotEmpty(townWorkDTO.getVideoUrl())) {
                     result.addProperty("videoUrl", townWorkDTO.getVideoUrl());
                 }
+                // todo 兼容老版本 新版本发布后需要去掉
                 if(StringUtils.isNotEmpty(townWorkDTO.getImageUrls())) {
                     result.addProperty("imageUrls", townWorkDTO.getImageUrls());
                 }
