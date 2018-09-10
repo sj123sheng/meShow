@@ -1,8 +1,8 @@
 package com.melot.kkcx.functions;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-
+import com.google.common.collect.Lists;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.melot.asset.driver.domain.ConfVirtualId;
 import com.melot.asset.driver.service.VirtualIdService;
 import com.melot.kk.liveshop.api.constant.LiveShopErrorMsg;
@@ -19,10 +19,7 @@ import com.melot.sdk.core.util.MelotBeanFactory;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.log4j.Logger;
-
-import com.google.common.collect.Lists;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import com.melot.kk.liveshop.api.service.ConfItemCatService;
 import com.melot.kk.liveshop.api.service.LiveShopService;
 import com.melot.kk.logistics.api.domain.UserAddressDO;
 import com.melot.kk.logistics.api.service.UserAddressService;
@@ -37,6 +34,8 @@ import com.melot.kktv.base.Page;
 import com.melot.kktv.base.Result;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -66,7 +65,7 @@ public class LiveShopFunctions {
     private SellerApplyInfoService sellerApplyInfoService;
 
     @Resource
-    private ConfItemCatService confItemCatService;
+    ConfItemCatService confItemCatService;
     
     /**
      * 主播生成订单【51060502】
@@ -1836,5 +1835,47 @@ public class LiveShopFunctions {
             }
             return null;
         }
+    }
+
+    public JsonObject getItemCatList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        try {
+            List<ConfItemCatDTO> list = confItemCatService.getItemCatList();
+            if (CollectionUtils.isEmpty(list)) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            JsonArray itemCatList = new JsonArray();
+            JsonArray secondItemCatList;
+            List<ConfItemCatDTO> secondList;
+            for (ConfItemCatDTO record : list) {
+                JsonObject itemCatJson = new JsonObject();
+                itemCatJson.addProperty("catId", record.getCatId());
+                itemCatJson.addProperty("catName", record.getCatName());
+                itemCatJson.addProperty("specialPermission", record.getSpecialPermission());
+                secondList = record.getSecondLevelItemCatList();
+                if(CollectionUtils.isNotEmpty(secondList)) {
+                    secondItemCatList = new JsonArray();
+                    for(ConfItemCatDTO secondRecord : secondList) {
+                        JsonObject secondItemCatJson = new JsonObject();
+                        secondItemCatJson.addProperty("catId", secondRecord.getCatId());
+                        secondItemCatJson.addProperty("catName", secondRecord.getCatName());
+                        secondItemCatList.add(secondItemCatJson);
+                    }
+                    itemCatJson.add("secondItemCatList", secondItemCatList);
+                }
+
+                itemCatList.add(itemCatJson);
+            }
+
+            result.add("itemCatList", itemCatList);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+        } catch (Exception e) {
+            logger.error("Module Error：getItemCatList()", e);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+        }
+        return result;
     }
 }
