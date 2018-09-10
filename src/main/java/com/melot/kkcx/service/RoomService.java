@@ -132,18 +132,8 @@ public class RoomService {
 						fansRank.setPortrait(userProfile.getPortrait());
 					}
 				}
-				// 更新REDIS中房间粉丝榜缓存数据
-				// 每日0点自动过期
-				// 每1小时自动过期
-				int seconds = 3600;
-				Date now = new Date();
-				Date nextDay = DateUtil.getNextDay(now);
-				int diffSeconds = (int) ((nextDay.getTime() - now.getTime()) / 1000);
-				if (diffSeconds < seconds) {
-					seconds = diffSeconds;
-				}
 				MatchSource.setRoomFansRankCache(String.valueOf(slotType), String.valueOf(roomId), String.valueOf(roomSource),
-						new Gson().toJson(fansList), seconds);
+						new Gson().toJson(fansList), 3600);
 			}
     	} else {
     		try {
