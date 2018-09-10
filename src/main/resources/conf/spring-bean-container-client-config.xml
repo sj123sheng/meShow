@@ -181,7 +181,8 @@
 	
 	<!-- 直播购服务 -->
 	<kkrpc:reference id="liveShopService" interface="com.melot.kk.liveshop.api.service.LiveShopService" version="1.0.3"/>
-	
+	<kkrpc:reference id="confItemCatService" interface="com.melot.kk.liveshop.api.service.ConfItemCatService" version="1.0.0"/>
+
 	<kkrpc:reference id="rechargeService" interface="com.melot.kk.recharge.api.service.RechargeService" version="1.0.1"/>
 
 	<!-- 贵族积分礼物服务 -->
