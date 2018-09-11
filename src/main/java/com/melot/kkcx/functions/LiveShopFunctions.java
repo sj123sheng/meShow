@@ -1719,7 +1719,9 @@ public class LiveShopFunctions {
         if(!StringUtils.isEmpty(lessCategoryName)){
             String trimLessCategoryId = this.trimEnd(lessCategoryIds,",");
             sellerApplyInfoDTO.setLessCategoryId(trimLessCategoryId);
-            sellerApplyInfoDTO.setLessCategoryName(lessCategoryName);
+
+            String trimLessCategoryName = this.trimEnd(lessCategoryName,",");
+            sellerApplyInfoDTO.setLessCategoryName(trimLessCategoryName);
         }
 
         Result<Boolean> resultCode  = sellerApplyInfoService.sellerApply(sellerApplyInfoDTO);
@@ -1732,6 +1734,9 @@ public class LiveShopFunctions {
                 return result;
             } else if("SQL_ERROR".equals(resultCode.getCode())){
                 result.addProperty("TagCode",TagCodeEnum.EXECSQL_EXCEPTION);
+                return result;
+            } else if("IS_CUSTOMER_SERVICE".equals(resultCode.getCode())){
+                result.addProperty("TagCode",TagCodeEnum.CUSTOMER_SERVICE_CAN_NOT_APPLY);
                 return result;
             }
         }
