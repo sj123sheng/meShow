@@ -10,6 +10,7 @@ import com.melot.kk.liveshop.api.constant.LiveShopTransactionType;
 import com.melot.kk.liveshop.api.constant.SellerApplyCheckStatusEnum;
 import com.melot.kk.liveshop.api.dto.*;
 import com.melot.kk.liveshop.api.service.ConfItemCatService;
+import com.melot.kk.liveshop.api.service.ConfSubShopService;
 import com.melot.kk.liveshop.api.service.LiveShopService;
 import com.melot.kk.liveshop.api.service.SellerApplyInfoService;
 import com.melot.kk.logistics.api.domain.UserAddressDO;
@@ -64,6 +65,9 @@ public class LiveShopFunctions {
 
     @Resource
     ConfItemCatService confItemCatService;
+
+    @Resource
+    ConfSubShopService confSubShopService;
     
     /**
      * 主播生成订单【51060502】
@@ -1592,6 +1596,12 @@ public class LiveShopFunctions {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "03040002", 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        boolean isCustomerService = confSubShopService.isCustomerService(userId);
+        if(isCustomerService){
+            result.addProperty("TagCode",TagCodeEnum.CUSTOMER_SERVICE_CAN_NOT_APPLY);
             return result;
         }
 
