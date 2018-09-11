@@ -10,17 +10,8 @@ import com.melot.kk.liveshop.api.constant.LiveShopTransactionType;
 import com.melot.kk.liveshop.api.constant.SellerApplyCheckStatusEnum;
 import com.melot.kk.liveshop.api.dto.*;
 import com.melot.kk.liveshop.api.service.ConfItemCatService;
-import com.melot.kk.liveshop.api.service.SellerApplyInfoService;
-import com.melot.kktv.util.*;
-import com.melot.module.api.exceptions.MelotModuleException;
-import com.melot.module.packagegift.driver.service.XmanService;
-import com.melot.sdk.core.util.MelotBeanFactory;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.log4j.Logger;
-import com.melot.kk.liveshop.api.service.ConfItemCatService;
 import com.melot.kk.liveshop.api.service.LiveShopService;
+import com.melot.kk.liveshop.api.service.SellerApplyInfoService;
 import com.melot.kk.logistics.api.domain.UserAddressDO;
 import com.melot.kk.logistics.api.service.UserAddressService;
 import com.melot.kk.recharge.api.dto.ConfPaymentInfoDto;
@@ -32,6 +23,13 @@ import com.melot.kkcx.transform.LiveShopTF;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Page;
 import com.melot.kktv.base.Result;
+import com.melot.kktv.util.*;
+import com.melot.module.api.exceptions.MelotModuleException;
+import com.melot.module.packagegift.driver.service.XmanService;
+import com.melot.sdk.core.util.MelotBeanFactory;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.log4j.Logger;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
@@ -1855,6 +1853,10 @@ public class LiveShopFunctions {
         }
     }
 
+    /**
+     * 获取商品品类列表(51060528)
+     * @return
+     */
     public JsonObject getItemCatList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 
         JsonObject result = new JsonObject();
@@ -1872,7 +1874,6 @@ public class LiveShopFunctions {
                 JsonObject itemCatJson = new JsonObject();
                 itemCatJson.addProperty("catId", record.getCatId());
                 itemCatJson.addProperty("catName", record.getCatName());
-                itemCatJson.addProperty("specialPermission", record.getSpecialPermission());
                 secondList = record.getSecondLevelItemCatList();
                 if(CollectionUtils.isNotEmpty(secondList)) {
                     secondItemCatList = new JsonArray();
@@ -1880,6 +1881,7 @@ public class LiveShopFunctions {
                         JsonObject secondItemCatJson = new JsonObject();
                         secondItemCatJson.addProperty("catId", secondRecord.getCatId());
                         secondItemCatJson.addProperty("catName", secondRecord.getCatName());
+                        secondItemCatJson.addProperty("specialPermission", secondRecord.getSpecialPermission());
                         secondItemCatList.add(secondItemCatJson);
                     }
                     itemCatJson.add("secondItemCatList", secondItemCatList);
