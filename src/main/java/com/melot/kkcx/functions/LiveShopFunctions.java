@@ -1700,6 +1700,7 @@ public class LiveShopFunctions {
         sellerApplyInfoDTO.setIdcardFront(idCardFront);
         sellerApplyInfoDTO.setIdcardReverse(idCardReverse);
         sellerApplyInfoDTO.setBusinesslicense(businessLicense);
+
         if(!StringUtils.isEmpty(itemImg)){
             sellerApplyInfoDTO.setItemImg(itemImg);
         }
@@ -1716,23 +1717,11 @@ public class LiveShopFunctions {
             sellerApplyInfoDTO.setMainCategoryName(mainCategory.getCatName());
         }
 
-        if(!StringUtils.isEmpty(lessCategoryIds)){
-            String[] array = lessCategoryIds.split(",");
-            if(array!=null && array.length > 0){
-                StringBuilder categoryName = new StringBuilder();
-                for(String item : array){
-                    if(NumberUtils.isDigits(item)){
-                        ConfItemCatDTO category = confItemCatService.getConfItemCategory(Integer.parseInt(item));
-                        if(category != null){
-                            categoryName.append(category.getCatName()).append(",");
-                        }
-                    }
-                }
-                String trimLessCategoryId = this.trimEnd(lessCategoryIds,",");
-                sellerApplyInfoDTO.setLessCategoryId(trimLessCategoryId);
-                String lessCategoryName = this.trimEnd(categoryName.toString(),",");
-                sellerApplyInfoDTO.setLessCategoryName(lessCategoryName);
-            }
+        String lessCategoryName = this.getLessCategoryName(lessCategoryIds);
+        if(!StringUtils.isEmpty(lessCategoryName)){
+            String trimLessCategoryId = this.trimEnd(lessCategoryIds,",");
+            sellerApplyInfoDTO.setLessCategoryId(trimLessCategoryId);
+            sellerApplyInfoDTO.setLessCategoryName(lessCategoryName);
         }
 
         Result<Boolean> resultCode  = sellerApplyInfoService.sellerApply(sellerApplyInfoDTO);
@@ -1750,6 +1739,27 @@ public class LiveShopFunctions {
         }
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
+    }
+
+    private String getLessCategoryName(String lessCategoryIds){
+        if(StringUtils.isEmpty(lessCategoryIds)){
+            return "";
+        }
+        String[] array = lessCategoryIds.split(",");
+        if(array!=null && array.length > 0){
+            StringBuilder categoryName = new StringBuilder();
+            for(String item : array){
+                if(NumberUtils.isDigits(item)){
+                    ConfItemCatDTO category = confItemCatService.getConfItemCategory(Integer.parseInt(item));
+                    if(category != null){
+                        categoryName.append(category.getCatName()).append(",");
+                    }
+                }
+            }
+            return categoryName.toString();
+        }else{
+            return "";
+        }
     }
 
     private  String trimEnd(String target, String separator) {
