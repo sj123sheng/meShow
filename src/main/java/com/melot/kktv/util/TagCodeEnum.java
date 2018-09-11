@@ -589,6 +589,9 @@ public class TagCodeEnum {
 	/** 申请信息已存在 */
 	public static final String APPLY_INFO_EXIST = "5106051904";
 
+	/** 企业必须上传营业执照 */
+	public static final String BUSINESSLICENSE_IS_EMPTY = "5106051905";
+
 
 	/*------小镇错误码 -------*/
 	/**

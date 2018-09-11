@@ -1674,13 +1674,21 @@ public class LiveShopFunctions {
             idCardReverse = CommonUtil.getJsonParamString(jsonObject, "idCardReverse", null, TagCodeEnum.INVALID_PARAMETERS, 1, 100);
             mainCategoryId = CommonUtil.getJsonParamInt(jsonObject, "mainCategoryId", 0, TagCodeEnum.INVALID_PARAMETERS, 1, 1000);
             lessCategoryIds = CommonUtil.getJsonParamString(jsonObject, "lessCategoryIds", null, null, 0, 200);
-            businessLicense = CommonUtil.getJsonParamString(jsonObject, "businessLicense", null, TagCodeEnum.INVALID_PARAMETERS, 1, 100);
+            businessLicense = CommonUtil.getJsonParamString(jsonObject, "businessLicense", null, null, 1, 100);
             foodLicense = CommonUtil.getJsonParamString(jsonObject, "foodLicense", null, null, 1, 100);
             itemImg = CommonUtil.getJsonParamString(jsonObject, "itemImg", null, null, 0, 100);
             shopImg = CommonUtil.getJsonParamString(jsonObject, "shopImg", null, null, 0, 100);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
+        }
+
+        int businessType = 2;
+        if(applyType == businessType){
+            if(StringUtils.isEmpty(businessLicense)){
+                result.addProperty("TagCode",TagCodeEnum.BUSINESSLICENSE_IS_EMPTY);
+                return result;
+            }
         }
 
         SellerApplyInfoDTO sellerApplyInfoDTO = new SellerApplyInfoDTO();
