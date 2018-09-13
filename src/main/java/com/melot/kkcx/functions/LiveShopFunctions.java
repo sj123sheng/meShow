@@ -1825,24 +1825,24 @@ public class LiveShopFunctions {
             result.addProperty("applyName",sellerApplyInfoDTO.getApplyName());
             result.addProperty("applyType",sellerApplyInfoDTO.getApplyType());
             if(!StringUtils.isEmpty(sellerApplyInfoDTO.getBusinesslicense())){
-                result.addProperty("businesslicense",sellerApplyInfoDTO.getBusinesslicense());
+                result.addProperty("businesslicense",this.getImgPath(sellerApplyInfoDTO.getBusinesslicense()));
             }
             if(!StringUtils.isEmpty(sellerApplyInfoDTO.getFoodLicense())){
-                result.addProperty("foodLicense",sellerApplyInfoDTO.getFoodLicense());
+                result.addProperty("foodLicense", this.getImgPath(sellerApplyInfoDTO.getFoodLicense()));
             }
             if(!StringUtils.isEmpty(sellerApplyInfoDTO.getIdcardFront())){
-                result.addProperty("idcardFront",sellerApplyInfoDTO.getIdcardFront());
+                result.addProperty("idcardFront",this.getImgPath(sellerApplyInfoDTO.getIdcardFront()));
             }
             if(!StringUtils.isEmpty(sellerApplyInfoDTO.getIdcardReverse())){
-                result.addProperty("idcardReverse",sellerApplyInfoDTO.getIdcardReverse());
+                result.addProperty("idcardReverse", this.getImgPath(sellerApplyInfoDTO.getIdcardReverse()));
             }
             result.addProperty("createTime",sellerApplyInfoDTO.getCreateTime().getTime());
             result.addProperty("inviter",sellerApplyInfoDTO.getInviter());
             if(!StringUtils.isEmpty(sellerApplyInfoDTO.getItemImg())){
-                result.addProperty("itemImg",sellerApplyInfoDTO.getItemImg());
+                result.addProperty("itemImg", this.getImgPath(sellerApplyInfoDTO.getItemImg()));
             }
             if(!StringUtils.isEmpty(sellerApplyInfoDTO.getShopImg())){
-                result.addProperty("shopImg",sellerApplyInfoDTO.getShopImg());
+                result.addProperty("shopImg", this.getImgPath(sellerApplyInfoDTO.getShopImg()));
             }
             result.addProperty("mainCategoryId",sellerApplyInfoDTO.getMainCategoryId());
             if(!StringUtils.isEmpty(sellerApplyInfoDTO.getLessCategoryId())){
@@ -1850,8 +1850,17 @@ public class LiveShopFunctions {
             }
             result.addProperty("mobilePhone",sellerApplyInfoDTO.getMobilePhone());
         }
+        result.addProperty("pathPrefix",ConfigHelper.getHttpdir());
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
+    }
+
+    private String getImgPath(String url){
+       if(StringUtils.isEmpty(url)){
+           return "";
+       }else{
+           return url.replaceFirst(ConfigHelper.getHttpdir(),"");
+       }
     }
 
     private SellerApplyInfoDTO getUserLatestUnPassApply(int userId){
