@@ -178,6 +178,10 @@ public class ConfigService {
      */
     private String wechatProjectAppIds;
 
+    private Integer baiduChannel;
+
+    private String baiduChannelUrl;
+
     @DisconfFileItem(name = "nearbyStartDistance", associateField = "nearbyStartDistance")
     public int getNearbyStartDistance() {
         return nearbyStartDistance;
@@ -450,5 +454,23 @@ public class ConfigService {
     @DisconfFileItem(name = "wechatProjectAppIds", associateField = "wechatProjectAppIds")
     public String getWechatProjectAppIds() {
         return wechatProjectAppIds; 
+    }
+
+    @DisconfFileItem(name = "baiduChannel", associateField = "baiduChannel")
+    public Integer getBaiduChannel() {
+        return baiduChannel;
+    }
+
+    public void setBaiduChannel(Integer baiduChannel) {
+        this.baiduChannel = baiduChannel;
+    }
+
+    @DisconfFileItem(name = "baiduChannelUrl", associateField = "baiduChannelUrl")
+    public String getBaiduChannelUrl() {
+        return baiduChannelUrl;
+    }
+
+    public void setBaiduChannelUrl(String baiduChannelUrl) {
+        this.baiduChannelUrl = baiduChannelUrl;
     }
 }
