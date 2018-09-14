@@ -1533,7 +1533,7 @@ public class LiveShopFunctions {
             // 获取首个待支付手动发送订单
             LiveShopOrderDTO firstWaitPayOrder = liveShopService.getFirstWaitPayOrder(userId, actorId, 3);
             if (firstWaitPayOrder != null) {
-                result.addProperty("orderId", firstWaitPayOrder.getOrderId());
+                result.addProperty("orderNo", firstWaitPayOrder.getOrderNo());
                 result.addProperty("expireTime", firstWaitPayOrder.getExpiryTime().getTime());
             }
             tagCode = TagCodeEnum.SUCCESS;
