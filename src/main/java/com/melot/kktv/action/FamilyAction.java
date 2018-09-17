@@ -76,17 +76,23 @@ public class FamilyAction {
     private static String REGEX = ",";
     
     /**
-	 * 获取家族列表(10008001 ok)
+	 * 获取家族列表(10008001)
 	 * @param jsonObject
 	 * @return
 	 */
 	public JsonObject getFamilyList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws UnsupportedEncodingException {
 
-        String[] annualFamilyArr = configService.getAnnualFamily().trim().split(REGEX);
-        String[] annualFamilyIdsArr = configService.getAnnualFamilyIds().trim().split(REGEX);
+        String[] trumpFamilyArr = configService.getTrumpFamily().trim().split(REGEX);
+        String[] trumpFamilyIdsArr = configService.getTrumpFamilyIds().trim().split(REGEX);
+        
+        String[] goldFamilyArr = configService.getGoldFamily().trim().split(REGEX);
+        String[] goldFamilyIdsArr = configService.getGoldFamilyIds().trim().split(REGEX);
 
-        String annualFamilyName = annualFamilyArr[0];
-        String annualFamilyBackground = annualFamilyArr[1];
+        String trumpFamilyName = trumpFamilyArr[0];
+        String trumpFamilyBackground = trumpFamilyArr[1];
+        
+        String goldFamilyName = goldFamilyArr[0];
+        String goldFamilyBackground = trumpFamilyArr[1];
 
         // 定义使用的参数
 		int platform = 0;
@@ -191,14 +197,22 @@ public class FamilyAction {
                         boolean showCorner = false;
 						String cornerName = "";
 						String cornerBackground = "";
-                        int index = 0;
-                        for (String annualFamilyStr : annualFamilyIdsArr) { //年度盛典
-                            index++;
-                            if (annualFamilyStr.equals(String.valueOf(familyId))) {
+                        for (String trumpFamilyStr : trumpFamilyIdsArr) { //王牌家族
+                            if (trumpFamilyStr.equals(String.valueOf(familyId))) {
                                 showCorner = true;
-                                cornerName = annualFamilyName + index;
-                                cornerBackground = annualFamilyBackground;
+                                cornerName = trumpFamilyName;
+                                cornerBackground = trumpFamilyBackground;
                                 break;
+                            }
+                        }
+                        if (!showCorner) {
+                            for (String goldFamilyStr : goldFamilyIdsArr) { //金牌家族
+                                if (goldFamilyStr.equals(String.valueOf(familyId))) {
+                                    showCorner = true;
+                                    cornerName = goldFamilyName ;
+                                    cornerBackground = goldFamilyBackground;
+                                    break;
+                                }
                             }
                         }
                         familyObj.addProperty("showCorner", showCorner);

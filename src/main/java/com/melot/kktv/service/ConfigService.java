@@ -27,6 +27,14 @@ public class ConfigService {
 
     private String annualFamilyIds;
     
+    private String goldFamily;
+
+    private String goldFamilyIds;
+    
+    private String trumpFamily;
+
+    private String trumpFamilyIds;
+    
     //限制渠道及版本号
     private String limitCvs;
 
@@ -269,6 +277,26 @@ public class ConfigService {
         this.annualFamilyIds = annualFamilyIds;
     }
     
+    @DisconfFileItem(name = "goldMedal.family", associateField = "goldFamily")
+    public String getGoldFamily() {
+        return goldFamily;
+    }
+
+    @DisconfFileItem(name = "goldMedal.familyIds", associateField = "goldFamilyIds")
+    public String getGoldFamilyIds() {
+        return goldFamilyIds;
+    }
+    
+    @DisconfFileItem(name = "trump.family", associateField = "trumpFamily")
+    public String getTrumpFamily() {
+        return trumpFamily;
+    }
+
+    @DisconfFileItem(name = "trump.familyIds", associateField = "trumpFamilyIds")
+    public String getTrumpFamilyIds() {
+        return trumpFamilyIds;
+    }
+
     @DisconfFileItem(name = "global.limitCvs", associateField = "limitCvs")
     public String getLimitCvs() {
         return limitCvs;
