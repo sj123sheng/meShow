@@ -1672,20 +1672,21 @@ public class LiveShopFunctions {
         String itemImg;
         String shopImg;
 
+
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "03040002", 1, Integer.MAX_VALUE);
             inviter = CommonUtil.getJsonParamInt(jsonObject, "inviter", 0, null, 1, Integer.MAX_VALUE);
             applyType = CommonUtil.getJsonParamInt(jsonObject, "applyType", 1, TagCodeEnum.INVALID_PARAMETERS, 1, 2);
             name = CommonUtil.getJsonParamString(jsonObject, "name", null, TagCodeEnum.INVALID_PARAMETERS, 1, 200);
             mobilePhone = CommonUtil.getJsonParamString(jsonObject, "mobilePhone", null, TagCodeEnum.MOBILENUM_MISSING, 11, 11);
-            idCardFront = CommonUtil.getJsonParamString(jsonObject, "idCardFront", null, TagCodeEnum.INVALID_PARAMETERS, 1, 100);
-            idCardReverse = CommonUtil.getJsonParamString(jsonObject, "idCardReverse", null, TagCodeEnum.INVALID_PARAMETERS, 1, 100);
+            idCardFront = CommonUtil.getJsonParamString(jsonObject, "idCardFront", null, TagCodeEnum.INVALID_PARAMETERS, 1, 1000);
+            idCardReverse = CommonUtil.getJsonParamString(jsonObject, "idCardReverse", null, TagCodeEnum.INVALID_PARAMETERS, 1, 1000);
             mainCategoryId = CommonUtil.getJsonParamInt(jsonObject, "mainCategoryId", 0, TagCodeEnum.INVALID_PARAMETERS, 1, 1000);
             lessCategoryIds = CommonUtil.getJsonParamString(jsonObject, "lessCategoryIds", null, null, 0, 200);
-            businessLicense = CommonUtil.getJsonParamString(jsonObject, "businessLicense", null, null, 1, 100);
-            foodLicense = CommonUtil.getJsonParamString(jsonObject, "foodLicense", null, null, 1, 100);
-            itemImg = CommonUtil.getJsonParamString(jsonObject, "itemImg", null, null, 0, 100);
-            shopImg = CommonUtil.getJsonParamString(jsonObject, "shopImg", null, null, 0, 100);
+            businessLicense = CommonUtil.getJsonParamString(jsonObject, "businessLicense", null, null, 1, 1000);
+            foodLicense = CommonUtil.getJsonParamString(jsonObject, "foodLicense", null, null, 1, 1000);
+            itemImg = CommonUtil.getJsonParamString(jsonObject, "itemImg", null, null, 0, 1000);
+            shopImg = CommonUtil.getJsonParamString(jsonObject, "shopImg", null, null, 0, 1000);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
