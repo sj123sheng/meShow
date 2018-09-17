@@ -92,7 +92,7 @@ public class FamilyAction {
         String trumpFamilyBackground = trumpFamilyArr[1];
         
         String goldFamilyName = goldFamilyArr[0];
-        String goldFamilyBackground = trumpFamilyArr[1];
+        String goldFamilyBackground = goldFamilyArr[1];
 
         // 定义使用的参数
 		int platform = 0;
