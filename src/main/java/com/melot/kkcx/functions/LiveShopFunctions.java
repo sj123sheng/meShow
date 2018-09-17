@@ -1860,7 +1860,7 @@ public class LiveShopFunctions {
        if(StringUtils.isEmpty(url)){
            return "";
        }else{
-           return url.replaceFirst(ConfigHelper.getHttpdir(),"");
+           return url.replaceAll(ConfigHelper.getHttpdir(),"");
        }
     }
 
