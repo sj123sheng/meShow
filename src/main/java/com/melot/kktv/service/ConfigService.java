@@ -27,6 +27,14 @@ public class ConfigService {
 
     private String annualFamilyIds;
     
+    private String goldFamily;
+
+    private String goldFamilyIds;
+    
+    private String trumpFamily;
+
+    private String trumpFamilyIds;
+    
     //限制渠道及版本号
     private String limitCvs;
 
@@ -178,6 +186,10 @@ public class ConfigService {
      */
     private String wechatProjectAppIds;
 
+    private Integer baiduChannel;
+
+    private String baiduChannelUrl;
+
     @DisconfFileItem(name = "nearbyStartDistance", associateField = "nearbyStartDistance")
     public int getNearbyStartDistance() {
         return nearbyStartDistance;
@@ -265,6 +277,26 @@ public class ConfigService {
         this.annualFamilyIds = annualFamilyIds;
     }
     
+    @DisconfFileItem(name = "goldMedal.family", associateField = "goldFamily")
+    public String getGoldFamily() {
+        return goldFamily;
+    }
+
+    @DisconfFileItem(name = "goldMedal.familyIds", associateField = "goldFamilyIds")
+    public String getGoldFamilyIds() {
+        return goldFamilyIds;
+    }
+    
+    @DisconfFileItem(name = "trump.family", associateField = "trumpFamily")
+    public String getTrumpFamily() {
+        return trumpFamily;
+    }
+
+    @DisconfFileItem(name = "trump.familyIds", associateField = "trumpFamilyIds")
+    public String getTrumpFamilyIds() {
+        return trumpFamilyIds;
+    }
+
     @DisconfFileItem(name = "global.limitCvs", associateField = "limitCvs")
     public String getLimitCvs() {
         return limitCvs;
@@ -450,5 +482,23 @@ public class ConfigService {
     @DisconfFileItem(name = "wechatProjectAppIds", associateField = "wechatProjectAppIds")
     public String getWechatProjectAppIds() {
         return wechatProjectAppIds; 
+    }
+
+    @DisconfFileItem(name = "baiduChannel", associateField = "baiduChannel")
+    public Integer getBaiduChannel() {
+        return baiduChannel;
+    }
+
+    public void setBaiduChannel(Integer baiduChannel) {
+        this.baiduChannel = baiduChannel;
+    }
+
+    @DisconfFileItem(name = "baiduChannelUrl", associateField = "baiduChannelUrl")
+    public String getBaiduChannelUrl() {
+        return baiduChannelUrl;
+    }
+
+    public void setBaiduChannelUrl(String baiduChannelUrl) {
+        this.baiduChannelUrl = baiduChannelUrl;
     }
 }
