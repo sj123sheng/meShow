@@ -1847,7 +1847,7 @@ public class LiveShopFunctions {
             }
             result.addProperty("mainCategoryId",sellerApplyInfoDTO.getMainCategoryId());
             if(!StringUtils.isEmpty(sellerApplyInfoDTO.getLessCategoryId())){
-                result.addProperty("lessCategoryId",sellerApplyInfoDTO.getLessCategoryId());
+                result.addProperty("lessCategoryIds",sellerApplyInfoDTO.getLessCategoryId());
             }
             result.addProperty("mobilePhone",sellerApplyInfoDTO.getMobilePhone());
         }
