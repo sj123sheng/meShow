@@ -1723,11 +1723,8 @@ public class LiveShopFunctions {
         ConfItemCatDTO mainCategory = confItemCatService.getConfItemCategory(mainCategoryId);
         if(mainCategory != null){
             sellerApplyInfoDTO.setMainCategoryId(mainCategory.getCatId());
-            if(mainCategory.getCatLevel() == 1){
-                sellerApplyInfoDTO.setMainCategoryName(mainCategory.getCatName().concat("(1级)"));
-            } else if(mainCategory.getCatLevel() == 2){
-                sellerApplyInfoDTO.setMainCategoryName(mainCategory.getCatName().concat("(2级)"));
-            }
+            sellerApplyInfoDTO.setMainCategoryName(mainCategory.getCatName().concat("(")
+                    .concat(mainCategory.getCatLevel().toString()).concat("级)"));
         }
 
         String lessCategoryName = this.getLessCategoryName(lessCategoryIds);
@@ -1770,11 +1767,8 @@ public class LiveShopFunctions {
                 if(NumberUtils.isDigits(item)){
                     ConfItemCatDTO category = confItemCatService.getConfItemCategory(Integer.parseInt(item));
                     if(category != null){
-                        if(category.getCatLevel() == 1){
-                            categoryName.append(category.getCatName()).append("(1级)").append(",");
-                        } else if(category.getCatLevel() == 2){
-                            categoryName.append(category.getCatName()).append("(2级)").append(",");
-                        }
+                        categoryName.append(category.getCatName()).append("(")
+                                .append(category.getCatLevel()).append("级)").append(",");
                     }
                 }
             }
