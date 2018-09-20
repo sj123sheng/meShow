@@ -1723,8 +1723,15 @@ public class LiveShopFunctions {
         ConfItemCatDTO mainCategory = confItemCatService.getConfItemCategory(mainCategoryId);
         if(mainCategory != null){
             sellerApplyInfoDTO.setMainCategoryId(mainCategory.getCatId());
-            sellerApplyInfoDTO.setMainCategoryName(mainCategory.getCatName().concat("(")
-                    .concat(mainCategory.getCatLevel().toString()).concat("级)"));
+            if(mainCategory.getCatLevel() > 1){
+                ConfItemCatDTO parentCategory = confItemCatService.getConfItemCategory(mainCategory.getParentCatId());
+                if(parentCategory != null){
+                    sellerApplyInfoDTO.setMainCategoryName(parentCategory.getCatName().concat("(")
+                            .concat(mainCategory.getCatName()).concat(")"));
+                }
+            } else {
+                sellerApplyInfoDTO.setMainCategoryName(mainCategory.getCatName());
+            }
         }
 
         String lessCategoryName = this.getLessCategoryName(lessCategoryIds);
@@ -1767,8 +1774,16 @@ public class LiveShopFunctions {
                 if(NumberUtils.isDigits(item)){
                     ConfItemCatDTO category = confItemCatService.getConfItemCategory(Integer.parseInt(item));
                     if(category != null){
-                        categoryName.append(category.getCatName()).append("(")
-                                .append(category.getCatLevel()).append("级)").append(",");
+                        if(category.getCatLevel() > 1){
+                            ConfItemCatDTO parentCategory =
+                                    confItemCatService.getConfItemCategory(category.getParentCatId());
+                            if(parentCategory != null){
+                                categoryName.append(parentCategory.getCatName()).append("(")
+                                        .append(category.getCatName()).append(")").append(",");
+                            }
+                        } else {
+                            categoryName.append(category.getCatName()).append(",");
+                        }
                     }
                 }
             }
