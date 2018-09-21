@@ -218,4 +218,7 @@
 
 	<!-- 微信小程序接口 -->
 	<bean id="wechatProjectFunctions" class="com.melot.kkcx.functions.WechatProjectFunctions" />
+	
+	<!-- K玩大厅接口 -->
+	<bean id="kkPlayFunctions" class="com.melot.kktv.action.KKPlayFunctions" />
 </beans>
