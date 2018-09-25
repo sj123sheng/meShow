@@ -592,6 +592,11 @@ public class TagCodeEnum {
 	/** 企业必须上传营业执照 */
 	public static final String BUSINESSLICENSE_IS_EMPTY = "5106051905";
 
+    /** 商家id非法 */
+    public static final String ERROR_MERCHANT_ID = "5106052006";
+    /** 商家id不存在 */
+    public static final String NOT_MERCHANT_ID = "5106052007";
+
 
 	/*------小镇错误码 -------*/
 	/**
