@@ -2850,7 +2850,50 @@
 		<constructor-arg name="t" ref="liveShopFunctions" />
 		<constructor-arg name="methodName" value="canAddSubShop" />
 	</bean>
-	
+
+	<bean id="51060525" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="registerSaleActorInfo" />
+	</bean>
+
+	<bean id="51060526" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getOrderCount" />
+		<constructor-arg name="cacheType" value="30" />
+	</bean>
+
+	<bean id="51060527" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getFirstWaitPayOrder" />
+	</bean>
+
+	<bean id="51060531" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="canRegisterInProject" />
+	</bean>
+
+	<bean id="51060529" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getSellerApplyStatus" />
+	</bean>
+
+	<bean id="51060530" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="applyForSeller" />
+	</bean>
+
+	<bean id="51060532" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getUserLatestUnPassApply" />
+	</bean>
+
+	<bean id="51060528" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getItemCatList" />
+        <constructor-arg name="cacheType" value="60" />
+        <constructor-arg name="cacheKeyExcluedUserId" value="1" />
+	</bean>
+
 	<!-- 获取积分礼物列表 -->
 	<bean id="51010406" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="nobilityFunctions" />
