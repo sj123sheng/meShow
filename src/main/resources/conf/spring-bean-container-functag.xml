@@ -2887,6 +2887,16 @@
 		<constructor-arg name="methodName" value="getUserLatestUnPassApply" />
 	</bean>
 
+	<bean id="51060533" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getProductsByMerchantId" />
+	</bean>
+
+	<bean id="51060534" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="addH5DistributorOrder" />
+	</bean>
+
 	<bean id="51060528" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="liveShopFunctions" />
 		<constructor-arg name="methodName" value="getItemCatList" />

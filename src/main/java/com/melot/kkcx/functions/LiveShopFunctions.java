@@ -1940,4 +1940,110 @@ public class LiveShopFunctions {
         }
         return result;
     }
+
+    /**
+     * 根据卖家ID获取商品列表(51060533)
+     * @return
+     */
+    public JsonObject getProductsByMerchantId(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        int merchantId;
+        try {
+            merchantId = CommonUtil.getJsonParamInt(jsonObject, "merchantId", 0, TagCodeEnum.ERROR_MERCHANT_ID, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        try {
+
+            List<LiveShopProductDTO> list = liveShopService.getProductsByMerchantId(merchantId);
+
+            if (CollectionUtils.isEmpty(list)) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+
+            JsonArray products = new JsonArray();
+            for (LiveShopProductDTO productDTO : list) {
+                JsonObject productJson = new JsonObject();
+                productJson.addProperty("productId", productDTO.getProductId());
+                productJson.addProperty("productName", productDTO.getProductName());
+                products.add(productJson);
+            }
+
+            result.add("products", products);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error(String.format("Module Error：liveShopService.getProductsByMerchantId(%s)", merchantId), e);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 生成H5分销商品订单【51060534】
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject addH5DistributorOrder(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        if (!checkTag) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_INCORRECT);
+            return result;
+        }
+        int userId;
+        int productId;
+        long orderMoney;
+        int addressId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, "5106051301", 1, Integer.MAX_VALUE);
+            productId = CommonUtil.getJsonParamInt(jsonObject, "productId", 0, "5106051303", 1, Integer.MAX_VALUE);
+            orderMoney = CommonUtil.getJsonParamLong(jsonObject, "orderMoney", 0l, TagCodeEnum.ERROR_ORDER_MONEY, 1, Long.MAX_VALUE);
+            addressId = CommonUtil.getJsonParamInt(jsonObject, "addressId", 0, "5106051305", 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        try {
+            // 订单渠道只有h5
+            Result<String> addOrderResult = liveShopService.addH5DistributorOrder(userId, productId, orderMoney, addressId);
+            if (addOrderResult == null) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            String code = addOrderResult.getCode();
+            if (LiveShopErrorMsg.NOT_MATCH_DISTRIBUTOR_PRODUCT_CODE.equals(code)) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.NOT_MATCH_DISTRIBUTOR_PRODUCT);
+                return result;
+            } else if (LiveShopErrorMsg.NOT_VALID_PRODUCT_CODE.equals(code)) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.NOT_VALID_PRODUCT);
+                return result;
+            } else if (!CommonStateCode.SUCCESS.equals(code)){
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+                return result;
+            }
+            result.addProperty(PARAM_ORDER_NO, addOrderResult.getData());
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error(String.format("Module Error：liveShopService.addH5DistributorOrder(userId=%s, productId=%s, orderMoney=%s, addressId=%s)", userId, productId, orderMoney, addressId), e);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
 }

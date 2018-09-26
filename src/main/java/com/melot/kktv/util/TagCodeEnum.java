@@ -595,10 +595,12 @@ public class TagCodeEnum {
 	/** 客服无法申请 */
 	public static final String CUSTOMER_SERVICE_CAN_NOT_APPLY = "5106051906";
 
-    /** 商家id非法 */
+    /** 商家id非法  */
     public static final String ERROR_MERCHANT_ID = "5106052006";
     /** 商家id不存在 */
     public static final String NOT_MERCHANT_ID = "5106052007";
+    /** 订单金额非法 */
+    public static final String ERROR_ORDER_MONEY = "5106052008";
 
 	/*------小镇错误码 -------*/
 	/**
