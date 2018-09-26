@@ -10,6 +10,7 @@ import com.melot.kk.liveshop.api.constant.LiveShopTransactionType;
 import com.melot.kk.liveshop.api.constant.SellerApplyCheckStatusEnum;
 import com.melot.kk.liveshop.api.dto.*;
 import com.melot.kk.liveshop.api.service.ConfItemCatService;
+import com.melot.kk.liveshop.api.service.ConfSubShopService;
 import com.melot.kk.liveshop.api.service.LiveShopService;
 import com.melot.kk.liveshop.api.service.SellerApplyInfoService;
 import com.melot.kk.logistics.api.domain.UserAddressDO;
@@ -64,6 +65,9 @@ public class LiveShopFunctions {
 
     @Resource
     ConfItemCatService confItemCatService;
+
+    @Resource
+    ConfSubShopService confSubShopService;
     
     /**
      * 主播生成订单【51060502】
@@ -1529,7 +1533,7 @@ public class LiveShopFunctions {
             // 获取首个待支付手动发送订单
             LiveShopOrderDTO firstWaitPayOrder = liveShopService.getFirstWaitPayOrder(userId, actorId, 3);
             if (firstWaitPayOrder != null) {
-                result.addProperty("orderId", firstWaitPayOrder.getOrderId());
+                result.addProperty("orderNo", firstWaitPayOrder.getOrderNo());
                 result.addProperty("expireTime", firstWaitPayOrder.getExpiryTime().getTime());
             }
             tagCode = TagCodeEnum.SUCCESS;
@@ -1592,6 +1596,12 @@ public class LiveShopFunctions {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "03040002", 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        boolean isCustomerService = confSubShopService.isCustomerService(userId);
+        if(isCustomerService){
+            result.addProperty("TagCode",TagCodeEnum.CUSTOMER_SERVICE_CAN_NOT_APPLY);
             return result;
         }
 
@@ -1662,20 +1672,21 @@ public class LiveShopFunctions {
         String itemImg;
         String shopImg;
 
+
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "03040002", 1, Integer.MAX_VALUE);
             inviter = CommonUtil.getJsonParamInt(jsonObject, "inviter", 0, null, 1, Integer.MAX_VALUE);
             applyType = CommonUtil.getJsonParamInt(jsonObject, "applyType", 1, TagCodeEnum.INVALID_PARAMETERS, 1, 2);
             name = CommonUtil.getJsonParamString(jsonObject, "name", null, TagCodeEnum.INVALID_PARAMETERS, 1, 200);
             mobilePhone = CommonUtil.getJsonParamString(jsonObject, "mobilePhone", null, TagCodeEnum.MOBILENUM_MISSING, 11, 11);
-            idCardFront = CommonUtil.getJsonParamString(jsonObject, "idCardFront", null, TagCodeEnum.INVALID_PARAMETERS, 1, 100);
-            idCardReverse = CommonUtil.getJsonParamString(jsonObject, "idCardReverse", null, TagCodeEnum.INVALID_PARAMETERS, 1, 100);
+            idCardFront = CommonUtil.getJsonParamString(jsonObject, "idCardFront", null, TagCodeEnum.INVALID_PARAMETERS, 1, 1000);
+            idCardReverse = CommonUtil.getJsonParamString(jsonObject, "idCardReverse", null, TagCodeEnum.INVALID_PARAMETERS, 1, 1000);
             mainCategoryId = CommonUtil.getJsonParamInt(jsonObject, "mainCategoryId", 0, TagCodeEnum.INVALID_PARAMETERS, 1, 1000);
             lessCategoryIds = CommonUtil.getJsonParamString(jsonObject, "lessCategoryIds", null, null, 0, 200);
-            businessLicense = CommonUtil.getJsonParamString(jsonObject, "businessLicense", null, null, 1, 100);
-            foodLicense = CommonUtil.getJsonParamString(jsonObject, "foodLicense", null, null, 1, 100);
-            itemImg = CommonUtil.getJsonParamString(jsonObject, "itemImg", null, null, 0, 100);
-            shopImg = CommonUtil.getJsonParamString(jsonObject, "shopImg", null, null, 0, 100);
+            businessLicense = CommonUtil.getJsonParamString(jsonObject, "businessLicense", null, null, 1, 1000);
+            foodLicense = CommonUtil.getJsonParamString(jsonObject, "foodLicense", null, null, 1, 1000);
+            itemImg = CommonUtil.getJsonParamString(jsonObject, "itemImg", null, null, 0, 1000);
+            shopImg = CommonUtil.getJsonParamString(jsonObject, "shopImg", null, null, 0, 1000);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -1712,14 +1723,24 @@ public class LiveShopFunctions {
         ConfItemCatDTO mainCategory = confItemCatService.getConfItemCategory(mainCategoryId);
         if(mainCategory != null){
             sellerApplyInfoDTO.setMainCategoryId(mainCategory.getCatId());
-            sellerApplyInfoDTO.setMainCategoryName(mainCategory.getCatName());
+            if(mainCategory.getCatLevel() > 1){
+                ConfItemCatDTO parentCategory = confItemCatService.getConfItemCategory(mainCategory.getParentCatId());
+                if(parentCategory != null){
+                    sellerApplyInfoDTO.setMainCategoryName(parentCategory.getCatName().concat("(")
+                            .concat(mainCategory.getCatName()).concat(")"));
+                }
+            } else {
+                sellerApplyInfoDTO.setMainCategoryName(mainCategory.getCatName());
+            }
         }
 
         String lessCategoryName = this.getLessCategoryName(lessCategoryIds);
         if(!StringUtils.isEmpty(lessCategoryName)){
             String trimLessCategoryId = this.trimEnd(lessCategoryIds,",");
             sellerApplyInfoDTO.setLessCategoryId(trimLessCategoryId);
-            sellerApplyInfoDTO.setLessCategoryName(lessCategoryName);
+
+            String trimLessCategoryName = this.trimEnd(lessCategoryName,",");
+            sellerApplyInfoDTO.setLessCategoryName(trimLessCategoryName);
         }
 
         Result<Boolean> resultCode  = sellerApplyInfoService.sellerApply(sellerApplyInfoDTO);
@@ -1732,6 +1753,9 @@ public class LiveShopFunctions {
                 return result;
             } else if("SQL_ERROR".equals(resultCode.getCode())){
                 result.addProperty("TagCode",TagCodeEnum.EXECSQL_EXCEPTION);
+                return result;
+            } else if("IS_CUSTOMER_SERVICE".equals(resultCode.getCode())){
+                result.addProperty("TagCode",TagCodeEnum.CUSTOMER_SERVICE_CAN_NOT_APPLY);
                 return result;
             }
         }
@@ -1750,7 +1774,16 @@ public class LiveShopFunctions {
                 if(NumberUtils.isDigits(item)){
                     ConfItemCatDTO category = confItemCatService.getConfItemCategory(Integer.parseInt(item));
                     if(category != null){
-                        categoryName.append(category.getCatName()).append(",");
+                        if(category.getCatLevel() > 1){
+                            ConfItemCatDTO parentCategory =
+                                    confItemCatService.getConfItemCategory(category.getParentCatId());
+                            if(parentCategory != null){
+                                categoryName.append(parentCategory.getCatName()).append("(")
+                                        .append(category.getCatName()).append(")").append(",");
+                            }
+                        } else {
+                            categoryName.append(category.getCatName()).append(",");
+                        }
                     }
                 }
             }
@@ -1810,33 +1843,42 @@ public class LiveShopFunctions {
             result.addProperty("applyName",sellerApplyInfoDTO.getApplyName());
             result.addProperty("applyType",sellerApplyInfoDTO.getApplyType());
             if(!StringUtils.isEmpty(sellerApplyInfoDTO.getBusinesslicense())){
-                result.addProperty("businesslicense",sellerApplyInfoDTO.getBusinesslicense());
+                result.addProperty("businesslicense",this.getImgPath(sellerApplyInfoDTO.getBusinesslicense()));
             }
             if(!StringUtils.isEmpty(sellerApplyInfoDTO.getFoodLicense())){
-                result.addProperty("foodLicense",sellerApplyInfoDTO.getFoodLicense());
+                result.addProperty("foodLicense", this.getImgPath(sellerApplyInfoDTO.getFoodLicense()));
             }
             if(!StringUtils.isEmpty(sellerApplyInfoDTO.getIdcardFront())){
-                result.addProperty("idcardFront",sellerApplyInfoDTO.getIdcardFront());
+                result.addProperty("idcardFront",this.getImgPath(sellerApplyInfoDTO.getIdcardFront()));
             }
             if(!StringUtils.isEmpty(sellerApplyInfoDTO.getIdcardReverse())){
-                result.addProperty("idcardReverse",sellerApplyInfoDTO.getIdcardReverse());
+                result.addProperty("idcardReverse", this.getImgPath(sellerApplyInfoDTO.getIdcardReverse()));
             }
             result.addProperty("createTime",sellerApplyInfoDTO.getCreateTime().getTime());
             result.addProperty("inviter",sellerApplyInfoDTO.getInviter());
             if(!StringUtils.isEmpty(sellerApplyInfoDTO.getItemImg())){
-                result.addProperty("itemImg",sellerApplyInfoDTO.getItemImg());
+                result.addProperty("itemImg", this.getImgPath(sellerApplyInfoDTO.getItemImg()));
             }
             if(!StringUtils.isEmpty(sellerApplyInfoDTO.getShopImg())){
-                result.addProperty("shopImg",sellerApplyInfoDTO.getShopImg());
+                result.addProperty("shopImg", this.getImgPath(sellerApplyInfoDTO.getShopImg()));
             }
             result.addProperty("mainCategoryId",sellerApplyInfoDTO.getMainCategoryId());
             if(!StringUtils.isEmpty(sellerApplyInfoDTO.getLessCategoryId())){
-                result.addProperty("lessCategoryId",sellerApplyInfoDTO.getLessCategoryId());
+                result.addProperty("lessCategoryIds",sellerApplyInfoDTO.getLessCategoryId());
             }
             result.addProperty("mobilePhone",sellerApplyInfoDTO.getMobilePhone());
         }
+        result.addProperty("pathPrefix",ConfigHelper.getHttpdir());
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
+    }
+
+    private String getImgPath(String url){
+       if(StringUtils.isEmpty(url)){
+           return "";
+       }else{
+           return url.replaceAll(ConfigHelper.getHttpdir(),"");
+       }
     }
 
     private SellerApplyInfoDTO getUserLatestUnPassApply(int userId){

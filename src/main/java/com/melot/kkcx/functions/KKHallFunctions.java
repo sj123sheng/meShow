@@ -1,5 +1,7 @@
 package com.melot.kkcx.functions;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gson.JsonArray;
@@ -26,6 +28,7 @@ import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Page;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.redis.RecommendAlgorithmSource;
+import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.UserRelationService;
 import com.melot.kktv.util.*;
 import com.melot.kktv.util.db.DB;
@@ -33,9 +36,19 @@ import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -54,6 +67,8 @@ public class KKHallFunctions {
 
     private static final String KK_USER_ROOM_CACHE_KEY = "KKHallFunctions.getKKUserRelationRoomList.%s.%s";
 
+    private static final String KK_BAIDU_ACTOR_CACHE_KEY = "baidu_actor";
+
     @Resource
     FamilyTopConfService familyTopConfService;
 
@@ -65,6 +80,9 @@ public class KKHallFunctions {
     
     @Resource
     private SysMenuService hallPartService;
+
+    @Autowired
+    private ConfigService configService;
 
     /**
      * 获取用户有关的房间列表接口（55000001）：守护+管理+关注
@@ -307,11 +325,63 @@ public class KKHallFunctions {
             return result;
         }
 
-        getRecommendAlgorithmB(result, appId, start, offset, platform, userId, firstView, roomListIndex);
+        if(configService.getBaiduChannel()!=null && channel == configService.getBaiduChannel()){
+            getRecommendAlgorithmBaidu(result, appId, start, offset, platform, userId, firstView, roomListIndex);
+        }
+        else {
+            getRecommendAlgorithmB(result, appId, start, offset, platform, userId, firstView, roomListIndex);
+        }
         result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 
         return result;
+    }
+
+    private void getRecommendAlgorithmBaidu(JsonObject result, int appId, int start, int offset, int platform, int userId, int firstView, int roomListIndex) throws IOException {
+        JsonArray roomArray = new JsonArray();
+        int roomCount = KKHallSource.countSortedSet(KK_BAIDU_ACTOR_CACHE_KEY);
+        if(roomCount == 0){
+            String url = configService.getBaiduChannelUrl();
+            if(!StringUtil.strIsNull(url)){
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+                url += "dt="+dateFormat.format(new Date());
+                CloseableHttpClient httpClient = new DefaultHttpClient();
+                HttpGet get = new HttpGet(url);
+                HttpResponse res = null;
+                res = httpClient.execute(get);
+                if (res.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+                    String str = EntityUtils.toString(res.getEntity());
+                    if(!("None").equals(str)){
+                        JsonArray jsonArray = new JsonParser().parse(str).getAsJsonArray();
+                        roomCount = jsonArray.size();
+                        List<String> actors = Lists.newArrayList();
+                        for(int i =0;i<roomCount;i++){
+                            actors.add(jsonArray.get(i).getAsJsonObject().get("actorid").getAsString());
+                        }
+                        KKHallSource.addSortedSet(KK_BAIDU_ACTOR_CACHE_KEY,actors,60);
+                    }
+                }
+            }
+        }
+        if(roomCount == 0){
+            getRecommendAlgorithmB(result, appId, start, offset, platform, userId, firstView, roomListIndex);
+        }else {
+            Set<String> actors = KKHallSource.rangeSortedSet(KK_BAIDU_ACTOR_CACHE_KEY,start,start + offset - 1);
+            if (CollectionUtils.isNotEmpty(actors)) {
+                String roomIds = StringUtils.join(actors.toArray(), ",");
+                Result<List<HallRoomInfoDTO>> roomInfosResult = hallRoomService.getRoomListByRoomIds(roomIds);
+                if (roomInfosResult != null && CommonStateCode.SUCCESS.equals(roomInfosResult.getCode())
+                        && CollectionUtils.isNotEmpty(roomInfosResult.getData())) {
+                    List<HallRoomInfoDTO> roomInfos = roomInfosResult.getData();
+                    for (HallRoomInfoDTO roomInfo : roomInfos) {
+                        roomArray.add(HallRoomTF.roomInfoToJson(roomInfo, platform));
+                    }
+                }
+            }
+            result.addProperty("roomListIndex", roomListIndex);
+            result.add("roomList", roomArray);
+            result.addProperty("roomTotal", roomCount);
+        }
     }
 
     // 推荐算法A
@@ -929,6 +999,13 @@ public class KKHallFunctions {
         }
         
         JsonArray roomArray = new JsonArray();
+
+        if(configService.getBaiduChannel()!=null && channel == configService.getBaiduChannel()){
+            result.add("roomList", roomArray);
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+            return result;
+        }
         List<ResRoomInfoDO> resRoomInfoDOS;
         
         try {

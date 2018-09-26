@@ -2,6 +2,7 @@ package com.melot.kktv.action;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.melot.common.melot_utils.StringUtils;
 import com.melot.kk.nationalPK.api.domain.DO.*;
 import com.melot.kk.nationalPK.api.service.ConfLadderMatchService;
@@ -12,6 +13,7 @@ import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.service.ProfileServices;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
+import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConfigHelper;
@@ -19,6 +21,7 @@ import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.confdynamic.SystemConfig;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -52,6 +55,9 @@ public class HappyPKFunction {
     @Resource
     private KkUserService kkUserService;
     
+    @Autowired
+    ConfigService configService;
+    
     /**
      * 获取天梯赛当前赛季信息【51060401】
      */
@@ -70,6 +76,16 @@ public class HappyPKFunction {
                 result.addProperty("seasonName", confLadderMatchDO.getSeasonName());
                 result.addProperty("remainingTime", confLadderMatchDO.getRemainingTime());
                 result.addProperty("goldPool", confLadderMatchDO.getBonusPool());
+                
+                //K玩大厅相关显示信息
+                String kkPlaySeasonConf = configService.getKkPlaySeasonConf();
+                JsonObject kkPlayJson = new JsonParser().parse(kkPlaySeasonConf).getAsJsonObject();
+                String title = kkPlayJson.get("title").getAsString();
+                result.addProperty("title", title);
+                result.addProperty("subTitle", confLadderMatchDO.getSeasonName().replace(title, ""));
+                result.addProperty("position", kkPlayJson.get("position").getAsString());
+                result.addProperty("title_poster", kkPlayJson.get("title_poster").getAsString());
+                result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
                 result.addProperty("TagCode", TagCodeEnum.SUCCESS);
                 return result;
             }else {

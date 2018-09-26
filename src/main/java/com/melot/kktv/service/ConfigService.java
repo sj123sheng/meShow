@@ -27,6 +27,14 @@ public class ConfigService {
 
     private String annualFamilyIds;
     
+    private String goldFamily;
+
+    private String goldFamilyIds;
+    
+    private String trumpFamily;
+
+    private String trumpFamilyIds;
+    
     //限制渠道及版本号
     private String limitCvs;
 
@@ -178,6 +186,30 @@ public class ConfigService {
      */
     private String wechatProjectAppIds;
 
+    private Integer baiduChannel;
+
+    private String baiduChannelUrl;
+    
+    /**
+     * K玩大厅游戏规则
+     */
+    private String kkPlayRule;
+    
+    /**
+     * K玩大厅天梯赛配置
+     */
+    private String kkPlaySeasonConf;
+    
+    /**
+     * K玩大厅栏目
+     */
+    private String kkPlayConfig;
+    
+    /**
+     * pk游戏配置
+     */
+    private String kkPlayGameConf;
+
     @DisconfFileItem(name = "nearbyStartDistance", associateField = "nearbyStartDistance")
     public int getNearbyStartDistance() {
         return nearbyStartDistance;
@@ -265,6 +297,26 @@ public class ConfigService {
         this.annualFamilyIds = annualFamilyIds;
     }
     
+    @DisconfFileItem(name = "goldMedal.family", associateField = "goldFamily")
+    public String getGoldFamily() {
+        return goldFamily;
+    }
+
+    @DisconfFileItem(name = "goldMedal.familyIds", associateField = "goldFamilyIds")
+    public String getGoldFamilyIds() {
+        return goldFamilyIds;
+    }
+    
+    @DisconfFileItem(name = "trump.family", associateField = "trumpFamily")
+    public String getTrumpFamily() {
+        return trumpFamily;
+    }
+
+    @DisconfFileItem(name = "trump.familyIds", associateField = "trumpFamilyIds")
+    public String getTrumpFamilyIds() {
+        return trumpFamilyIds;
+    }
+
     @DisconfFileItem(name = "global.limitCvs", associateField = "limitCvs")
     public String getLimitCvs() {
         return limitCvs;
@@ -451,4 +503,43 @@ public class ConfigService {
     public String getWechatProjectAppIds() {
         return wechatProjectAppIds; 
     }
+
+    @DisconfFileItem(name = "baiduChannel", associateField = "baiduChannel")
+    public Integer getBaiduChannel() {
+        return baiduChannel;
+    }
+
+    public void setBaiduChannel(Integer baiduChannel) {
+        this.baiduChannel = baiduChannel;
+    }
+
+    @DisconfFileItem(name = "baiduChannelUrl", associateField = "baiduChannelUrl")
+    public String getBaiduChannelUrl() {
+        return baiduChannelUrl;
+    }
+
+    public void setBaiduChannelUrl(String baiduChannelUrl) {
+        this.baiduChannelUrl = baiduChannelUrl;
+    }
+    
+    @DisconfFileItem(name = "kkPlayRule", associateField = "kkPlayRule")
+    public String getKkPlayRule() {
+        return kkPlayRule;
+    }
+    
+    @DisconfFileItem(name = "kkPlayConfig", associateField = "kkPlayConfig")
+    public String getKkPlayConfig() {
+        return kkPlayConfig;
+    }
+    
+    @DisconfFileItem(name = "kkPlaySeasonConf", associateField = "kkPlaySeasonConf")
+    public String getKkPlaySeasonConf() {
+        return kkPlaySeasonConf;
+    }
+    
+    @DisconfFileItem(name = "kkPlayGameConf", associateField = "kkPlayGameConf")
+    public String getKkPlayGameConf() {
+        return kkPlayGameConf;
+    }
+    
 }
