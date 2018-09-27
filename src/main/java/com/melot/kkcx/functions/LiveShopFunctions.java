@@ -657,7 +657,7 @@ public class LiveShopFunctions {
                 JsonObject productJson = new JsonObject();
                 productJson.addProperty("productId", productDTO.getProductId());
                 if (productDTO.getResourceUrl() != null) {
-                    productJson.addProperty("pictureUrl", productDTO.getResourceUrl() + "!174");
+                    productJson.addProperty("pictureUrl", productDTO.getResourceUrl());
                 }
                 orders.add(productJson);
             }
