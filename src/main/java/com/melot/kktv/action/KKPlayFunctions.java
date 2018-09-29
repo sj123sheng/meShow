@@ -15,13 +15,22 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.kk.hall.api.domain.HallPartConfDTO;
 import com.melot.kk.hall.api.domain.HallRoomInfoDTO;
 import com.melot.kk.hall.api.service.SysMenuService;
+import com.melot.kk.pkgame.api.dto.GameConfDTO;
+import com.melot.kk.pkgame.api.dto.GamePropDTO;
+import com.melot.kk.pkgame.api.dto.MultipleConfDTO;
+import com.melot.kk.pkgame.api.dto.UserKKPlayRank;
+import com.melot.kk.pkgame.api.dto.UserKkplayScoreDTO;
+import com.melot.kk.pkgame.api.service.PKGameService;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcx.service.UserService;
 import com.melot.kkcx.transform.HallRoomTF;
@@ -53,6 +62,9 @@ public class KKPlayFunctions {
     @Resource
     private SysMenuService hallPartService;
     
+    @Resource
+    private PKGameService pkGameService;
+    
     /**
      * 获取K玩大厅栏目列表(51070301)
      */
@@ -77,6 +89,11 @@ public class KKPlayFunctions {
             if (configArray.size() > 0) {
                 for (int i=0; i < configArray.size(); i++) {
                     JsonObject jsonObj = (JsonObject) configArray.get(i);
+                    //置顶时显示大海报
+                    if (jsonObj.get("isTop").getAsBoolean()) {
+                        jsonObj.addProperty("title_poster", jsonObj.get("full_title_poster").getAsString());
+                    }
+                    jsonObj.remove("full_title_poster");
                     Result<HallPartConfDTO> sysMenuResult = hallPartService.getPartList(jsonObj.get("cataId").getAsInt(), 0, 0, 0, AppIdEnum.AMUSEMENT, 0, 3);
                     if (sysMenuResult != null && CommonStateCode.SUCCESS.equals(sysMenuResult.getCode())) {
                         HallPartConfDTO sysMenu = sysMenuResult.getData();
@@ -131,17 +148,27 @@ public class KKPlayFunctions {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-        UserProfile userProfile = UserService.getUserInfoNew(userId);
-        if (userProfile != null) {
-            result.addProperty("nickname", userProfile.getNickName());
-            result.addProperty("portrait", userProfile.getPortrait());
+        
+        try {
+            UserProfile userProfile = UserService.getUserInfoNew(userId);
+            if (userProfile != null) {
+                result.addProperty("nickname", userProfile.getNickName());
+                result.addProperty("portrait", userProfile.getPortrait());
+            }
+            UserKkplayScoreDTO userKkplayScoreDTO = pkGameService.getUserKkplayScore(userId);
+            if (userKkplayScoreDTO != null) {
+                result.addProperty("score", userKkplayScoreDTO.getTotalScore());
+            }
+            result.addProperty("goldCoin", UserService.getUserGoldCoin(userId));
+            result.addProperty("showMoney", UserService.getUserMoney(userId));
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        } catch (Exception e) {
+            logger.error("Error getUserKKPlayInfo()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
         }
-        result.addProperty("goldCoin", UserService.getUserGoldCoin(userId));
-        result.addProperty("showMoney", UserService.getUserMoney(userId));
-        //TODO
-        result.addProperty("score", 777);
-        result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
-        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        
         return result;
     }
     
@@ -170,8 +197,54 @@ public class KKPlayFunctions {
             return result;
         }
         
-        //TODO 排行榜
-        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        
+        try {
+            List<UserKKPlayRank> userKKPlayRankList = pkGameService.getUserKKPlayRankList(rankType, slotType, count);
+            if (!CollectionUtils.isEmpty(userKKPlayRankList)) {
+                JsonArray rankList = new JsonArray();
+                boolean flag = false;
+                for (UserKKPlayRank userKKPlayRank : userKKPlayRankList) {
+                    JsonObject jsonObj = new JsonObject();
+                    int rankUserId = userKKPlayRank.getUserId();
+                    jsonObj.addProperty("userId", rankUserId);
+                    jsonObj.addProperty("position", userKKPlayRank.getPosition());
+                    jsonObj.addProperty("score", userKKPlayRank.getScore());
+                    UserProfile userProfile = UserService.getUserInfoNew(rankUserId);
+                    if (userProfile != null) {
+                        jsonObj.addProperty("nickname", userProfile.getNickName());
+                        jsonObj.addProperty("portrait_path_original", userProfile.getPortrait());
+                    }
+                    if (userId > 0 && userId == rankUserId) {
+                        result = jsonObj;
+                        flag = true;
+                    }
+                    rankList.add(jsonObj);
+                }
+                
+                if (!flag) {
+                    result.addProperty("userId", userId);
+                    Integer position = pkGameService.getUserKKplayRanking(userId, rankType, slotType);
+                    result.addProperty("position", position == null ? -1 : position);
+                    UserKkplayScoreDTO userKkplayScoreDTO = pkGameService.getUserKkplayScore(userId);
+                    if (userKkplayScoreDTO != null) {
+                        result.addProperty("score", userKkplayScoreDTO.getTotalScore());
+                    }
+                    UserProfile userProfile = UserService.getUserInfoNew(userId);
+                    if (userProfile != null) {
+                        result.addProperty("nickname", userProfile.getNickName());
+                        result.addProperty("portrait_path_original", userProfile.getPortrait());
+                    }
+                }
+            }
+            
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        } catch (Exception e) {
+            logger.error("Error getRankList()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+        
         return result;
     }
     
@@ -203,7 +276,6 @@ public class KKPlayFunctions {
         }
 
         //TODO
-        
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
@@ -300,14 +372,54 @@ public class KKPlayFunctions {
                 JsonObject jObj = (JsonObject) ruleArray.get(i);
                 if (jObj.get("gameId").getAsInt() == gameId) {
                     result.addProperty("gameRule", jObj.get("gameRule").getAsString());
-                    result.addProperty("gameDetail", jObj.get("gameDetail").getAsString());
                     result.addProperty("TagCode", TagCodeEnum.SUCCESS);
                     return result;
-                };
+                }
             }
+        } 
+        result.addProperty("TagCode", "5107030802");
+        return result;
+    }
+    
+    /**
+     * 获取游戏倍数及道具配置详情(51070309)
+     * 
+     * @param jsonObject 请求对象
+     * @param checkTag 是否验证token标记
+     * @return 
+     */
+    public JsonObject getMultipleConf(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        int gameId;
+        try {
+            gameId = CommonUtil.getJsonParamInt(jsonObject, "gameId", 0, "5107030901", 1, Integer.MAX_VALUE);
+        } catch(CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch(Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+    
+        try {
+            List<MultipleConfDTO> multipleConfList = pkGameService.getMultipleConfList(gameId);
+            if (!CollectionUtils.isEmpty(multipleConfList)) {
+                result.add("multipleConf", new JsonParser().parse(JSON.toJSONString(multipleConfList)).getAsJsonArray());
+                List<GamePropDTO> gamePropList = pkGameService.getGamePropList(gameId);
+                if (!CollectionUtils.isEmpty(gamePropList)) {
+                    result.add("gamePropConf", new JsonParser().parse(JSON.toJSONString(gamePropList)).getAsJsonArray());
+                }
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            } else {
+                result.addProperty("TagCode", "5107030902");
+            }
+        } catch (Exception e) {
+            logger.error("Error getMultipleConf()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
         }
         
-        result.addProperty("TagCode", "5107030802");
         return result;
     }
     
@@ -321,37 +433,20 @@ public class KKPlayFunctions {
     public JsonObject getPKGameList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
         
-        String kkPlayGameConf = configService.getKkPlayGameConf();
-        JsonArray gameConfList = new JsonParser().parse(kkPlayGameConf).getAsJsonArray();
-        result.add("gameConfList", gameConfList);
-        result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
-        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        return result;
-    }
-    
-    public static void main(String[] args) {
-        JsonArray jsonArray = new JsonArray();
-        JsonObject jsonObj = new JsonObject();
-//        jsonObj.addProperty("cataId", 3961);
-//        jsonObj.addProperty("title", "骰子游戏");
-//        jsonObj.addProperty("subTitle", "4v4团战");
-//        jsonObj.addProperty("title_poster", "/poster/offical/national_pk_test.jpg");
-//        jsonObj.addProperty("position", 1);
-//        jsonObj.addProperty("gameId", 1);
+        try {
+            List<GameConfDTO> gameConfList = pkGameService.getGameConfList();
+            if (!CollectionUtils.isEmpty(gameConfList)) {
+                result.add("gameConfList", new JsonParser().parse(JSON.toJSONString(gameConfList)).getAsJsonArray()); 
+            }
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        } catch (Exception e) {
+            logger.error("Error getPKGameList()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
         
-        jsonObj.addProperty("title", "斗地主");
-        jsonObj.addProperty("desc", "三人PK，经典玩法");
-        jsonObj.addProperty("icon", "sssss");
-        jsonObj.addProperty("roomMode", 111);
-        JsonObject jsonObj1 = new JsonObject();
-        jsonObj1.addProperty("gameId", 1);
-        jsonObj1.addProperty("title", "骰子团战");
-        jsonObj1.addProperty("desc", "4V4团队PK");
-        jsonObj1.addProperty("icon", "ttt");
-        jsonObj1.addProperty("roomMode", 112);
-        jsonArray.add(jsonObj);
-        jsonArray.add(jsonObj1);
-        System.out.println(jsonArray.toString());
+        return result;
     }
 
 }

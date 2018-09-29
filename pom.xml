@@ -357,11 +357,6 @@
 			<version>1.0.5</version> 
 		</dependency>
 		<dependency>
-  			<groupId>com.melot</groupId>
-  			<artifactId>kk-activity-api-driver</artifactId>
-  			<version>1.0.12</version>
-		</dependency>
-		<dependency>
 		  	<groupId>com.melot.module</groupId>
 		  	<artifactId>kkcore-user-api</artifactId>
 		  	<version>1.2.1-SNAPSHOT</version>
@@ -742,6 +737,13 @@
 			<artifactId>kk-wechatProject-api</artifactId>
 			<version>1.0.3</version>
 		</dependency>
+		
+		<!-- PK游戏模块-->
+		<dependency>
+            <groupId>com.melot.kk</groupId>
+            <artifactId>kk-pkgame-api</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
  	
 </project>

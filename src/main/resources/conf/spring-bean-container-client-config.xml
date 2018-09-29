@@ -42,7 +42,6 @@
 	<kkrpc:reference id="feedbackService" interface="com.melot.feedback.driver.service.FeedbackService" version="1.0.5"></kkrpc:reference>
 	<kkrpc:reference id="blacklistService" interface="com.melot.blacklist.service.BlacklistService" version="1.0.4"></kkrpc:reference>
 	<kkrpc:reference id="sunshineService" interface="com.melot.sunshine.service.SunshineService" version="1.0.1"></kkrpc:reference>
-	<kkrpc:reference id="missionService" interface="com.melot.kk.activity.driver.MissionService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="familyDefineActivityService" interface="com.melot.kk.activity.service.FamilyDefineActivityService" version="1.0.18"></kkrpc:reference>
 	<kkrpc:reference id="giftHistoryBoardService" interface="com.melot.kk.activity.service.GiftHistoryBoardService" version="1.0.18"></kkrpc:reference>
 	<kkrpc:reference id="liveStreamConfigService" interface="com.melot.stream.driver.service.LiveStreamConfigService" version="1.0.0"></kkrpc:reference>
@@ -247,5 +246,8 @@
 	<kkrpc:reference id="liveProjectService" interface="com.melot.kk.liveproject.api.service.LiveProjectService" version="1.0.0"/>
 
 	<!-- 微信小程序服务 -->
-	<kkrpc:reference id="wechatCommonService" interface="com.melot.kk.wechatProject.api.service.WechatCommonService" version="1.0.1"/>
+	<kkrpc:reference id="wechatCommonService" interface="com.melot.kk.wechatProject.api.Service.WechatCommonService" version="1.0.0"/>
+	
+	<!-- k玩大厅 -->
+	<kkrpc:reference id="pkGameService" interface="com.melot.kk.pkgame.api.service.PKGameService" version="1.0.0"/>
 </beans>

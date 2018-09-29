@@ -3278,6 +3278,11 @@
 		<constructor-arg name="t" ref="kkPlayFunctions" />
 		<constructor-arg name="methodName" value="getGameRule" />
 	</bean>
+	<!-- 获取游戏倍数及道具配置详情 -->
+	<bean id="51070309" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kkPlayFunctions" />
+		<constructor-arg name="methodName" value="getMultipleConf" />
+	</bean>
 	<!-- 获取pk游戏配置 -->
 	<bean id="51070310" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="kkPlayFunctions" />

@@ -79,12 +79,22 @@ public class HappyPKFunction {
                 
                 //K玩大厅相关显示信息
                 String kkPlaySeasonConf = configService.getKkPlaySeasonConf();
-                JsonObject kkPlayJson = new JsonParser().parse(kkPlaySeasonConf).getAsJsonObject();
-                String title = kkPlayJson.get("title").getAsString();
-                result.addProperty("title", title);
-                result.addProperty("subTitle", confLadderMatchDO.getSeasonName().replace(title, ""));
-                result.addProperty("position", kkPlayJson.get("position").getAsString());
-                result.addProperty("title_poster", kkPlayJson.get("title_poster").getAsString());
+                if (!StringUtils.isEmpty(kkPlaySeasonConf)) {
+                    JsonObject kkPlayJson = new JsonParser().parse(kkPlaySeasonConf).getAsJsonObject();
+                    boolean isTop = kkPlayJson.get("isTop").getAsBoolean();
+                    String title = kkPlayJson.get("title").getAsString();
+                    //置顶时显示大海报
+                    if (isTop) {
+                        result.addProperty("title_poster", kkPlayJson.get("full_title_poster").getAsString());
+                    } else {
+                        result.addProperty("title_poster", kkPlayJson.get("title_poster").getAsString());
+                    }
+                    result.addProperty("isTop", isTop);
+                    result.addProperty("title", title);
+                    result.addProperty("subTitle", confLadderMatchDO.getSeasonName().replace(title, ""));
+                    result.addProperty("position", kkPlayJson.get("position").getAsString());
+                    result.addProperty("desc", kkPlayJson.get("desc").getAsString());
+                }
                 result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
                 result.addProperty("TagCode", TagCodeEnum.SUCCESS);
                 return result;

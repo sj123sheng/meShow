@@ -204,11 +204,6 @@ public class ConfigService {
      * K玩大厅栏目
      */
     private String kkPlayConfig;
-    
-    /**
-     * pk游戏配置
-     */
-    private String kkPlayGameConf;
 
     @DisconfFileItem(name = "nearbyStartDistance", associateField = "nearbyStartDistance")
     public int getNearbyStartDistance() {
@@ -535,11 +530,6 @@ public class ConfigService {
     @DisconfFileItem(name = "kkPlaySeasonConf", associateField = "kkPlaySeasonConf")
     public String getKkPlaySeasonConf() {
         return kkPlaySeasonConf;
-    }
-    
-    @DisconfFileItem(name = "kkPlayGameConf", associateField = "kkPlayGameConf")
-    public String getKkPlayGameConf() {
-        return kkPlayGameConf;
     }
     
 }
