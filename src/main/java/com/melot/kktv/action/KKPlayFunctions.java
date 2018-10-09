@@ -18,18 +18,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.kk.hall.api.domain.HallPartConfDTO;
 import com.melot.kk.hall.api.domain.HallRoomInfoDTO;
 import com.melot.kk.hall.api.service.SysMenuService;
+import com.melot.kk.pkgame.api.constant.ReturnResultCode;
 import com.melot.kk.pkgame.api.dto.GameConfDTO;
 import com.melot.kk.pkgame.api.dto.GamePropDTO;
 import com.melot.kk.pkgame.api.dto.MultipleConfDTO;
+import com.melot.kk.pkgame.api.dto.ReturnResult;
 import com.melot.kk.pkgame.api.dto.UserKKPlayRank;
 import com.melot.kk.pkgame.api.dto.UserKkplayScoreDTO;
+import com.melot.kk.pkgame.api.enums.GameEnum;
+import com.melot.kk.pkgame.api.enums.UserTypeEnum;
+import com.melot.kk.pkgame.api.service.MatchService;
 import com.melot.kk.pkgame.api.service.PKGameService;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcx.service.UserService;
@@ -40,6 +44,7 @@ import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConfigHelper;
+import com.melot.kktv.util.DateUtil;
 import com.melot.kktv.util.TagCodeEnum;
 
 /**
@@ -64,6 +69,9 @@ public class KKPlayFunctions {
     
     @Resource
     private PKGameService pkGameService;
+    
+    @Resource
+    private MatchService matchService;
     
     /**
      * 获取K玩大厅栏目列表(51070301)
@@ -200,8 +208,8 @@ public class KKPlayFunctions {
         
         try {
             List<UserKKPlayRank> userKKPlayRankList = pkGameService.getUserKKPlayRankList(rankType, slotType, count);
+            JsonArray rankList = new JsonArray();
             if (!CollectionUtils.isEmpty(userKKPlayRankList)) {
-                JsonArray rankList = new JsonArray();
                 boolean flag = false;
                 for (UserKKPlayRank userKKPlayRank : userKKPlayRankList) {
                     JsonObject jsonObj = new JsonObject();
@@ -237,6 +245,7 @@ public class KKPlayFunctions {
                 }
             }
             
+            result.add("rankList", rankList);
             result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         } catch (Exception e) {
@@ -275,8 +284,25 @@ public class KKPlayFunctions {
             return result;
         }
 
-        //TODO
-        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        try {
+            if (!checkMatchOpenStatus(gameId)) {
+                result.addProperty("TagCode", "5107030404");
+            } else {
+                if (gameId == GameEnum.ANSWER_PK_FOUR.getCode() || gameId == GameEnum.ANSWER_PK_DOUBLE.getCode()) {
+                    ReturnResult<Integer> matchResp = matchService.startMatch(userId, UserTypeEnum.USER.getCode(), gameId);
+                    if (ReturnResultCode.SUCCESS.getCode().equals(matchResp.getCode())) {
+                        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                    } else {
+                        result.addProperty("TagCode", "5107030403");
+                    }
+                } else {
+                    result.addProperty("TagCode", "5107030402");
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Error getMatchGameUser, userId: " + userId + ", gameId: " + gameId, e);
+        }
+        
         return result;
     }
     
@@ -339,7 +365,11 @@ public class KKPlayFunctions {
             return result;
         }
 
-        //TODO
+        try {
+            matchService.endMatch(userId, UserTypeEnum.USER.getCode(), gameId);
+        } catch (Exception e) {
+            logger.error("cancelMatchGameUser execute exception, userId: " + userId + "gameId: " + gameId, e);
+        }
         
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
@@ -446,6 +476,28 @@ public class KKPlayFunctions {
             return result;
         }
         
+        return result;
+    }
+    
+    private boolean checkMatchOpenStatus(int gameId) {
+        boolean result = false;
+        try {
+            List<GameConfDTO> gameConfList = pkGameService.getGameConfList();
+            for (GameConfDTO gameConfDTO : gameConfList) {
+                if (gameId == gameConfDTO.getGameId()) {
+                    long currentTime = System.currentTimeMillis();
+                    long dayBeginTime = DateUtil.getDayBeginTime(currentTime);
+                    if (gameConfDTO.getStartTime() == null || (((dayBeginTime 
+                            + gameConfDTO.getStartTime()*1000) < currentTime) 
+                            && (dayBeginTime + gameConfDTO.getEndTime()*1000) > currentTime)) {
+                        result = true;
+                    }
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Error checkMatchOpenStatus(), gameId: " + gameId, e);
+        }
         return result;
     }
 

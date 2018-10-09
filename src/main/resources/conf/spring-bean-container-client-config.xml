@@ -250,4 +250,5 @@
 	
 	<!-- k玩大厅 -->
 	<kkrpc:reference id="pkGameService" interface="com.melot.kk.pkgame.api.service.PKGameService" version="1.0.0"/>
+	<kkrpc:reference id="matchService" interface="com.melot.kk.pkgame.api.service.MatchService" version="1.0.0"/>
 </beans>
