@@ -423,6 +423,46 @@ public class GeneralService {
     }
     
     /**
+     * 替换昵称中的敏感词为* 
+     */
+    public static String replaceNicknameSensitiveWords(String word){
+        if (!StringUtil.strIsNull(word)) {
+            try {
+                ChatAnalyzerService chatAnalyzerService = (ChatAnalyzerService) MelotBeanFactory.getBean("chatAnalyzerService");
+                PrivateLetter privateLetter = chatAnalyzerService.checkNickName(word);
+                if (privateLetter != null && !StringUtil.strIsNull(privateLetter.getNewWord())) {
+                    return privateLetter.getNewWord();
+                }
+            } catch (Exception e) {
+                logger.error("ChatAnalyzerService.replaceNicknameSensitiveWords(" + word + ") execute exception.", e);
+            }
+        }
+        
+        return word;
+    }
+    
+    /**
+     * 判断昵称中是否包含敏感词 
+     */
+    public static boolean nicknameHasSensitiveWords(String word){
+        if (!StringUtil.strIsNull(word)) {
+            try {
+                ChatAnalyzerService chatAnalyzerService = (ChatAnalyzerService) MelotBeanFactory.getBean("chatAnalyzerService");
+                if (chatAnalyzerService != null) {
+                    PrivateLetter privateLetter = chatAnalyzerService.checkNickName(word);
+                    if (privateLetter != null && !StringUtil.strIsNull(privateLetter.getSensitiveWord())) {
+                        return true;
+                    }
+                }
+            } catch (Exception e) {
+                logger.error("ChatAnalyzerService.nicknameHasSensitiveWords(" + word + ") execute exception.", e);
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
      * 判断字符串中是否包含敏感词 
      */
     public static boolean hasSensitiveWords(int userId, String word){

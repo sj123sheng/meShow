@@ -210,7 +210,6 @@ public class KKPlayFunctions {
             List<UserKKPlayRank> userKKPlayRankList = pkGameService.getUserKKPlayRankList(rankType, slotType, count);
             JsonArray rankList = new JsonArray();
             if (!CollectionUtils.isEmpty(userKKPlayRankList)) {
-                boolean flag = false;
                 for (UserKKPlayRank userKKPlayRank : userKKPlayRankList) {
                     JsonObject jsonObj = new JsonObject();
                     int rankUserId = userKKPlayRank.getUserId();
@@ -222,31 +221,25 @@ public class KKPlayFunctions {
                         jsonObj.addProperty("nickname", userProfile.getNickName());
                         jsonObj.addProperty("portrait_path_original", userProfile.getPortrait());
                     }
-                    if (userId > 0 && userId == rankUserId) {
-                        result = jsonObj;
-                        flag = true;
-                    }
                     rankList.add(jsonObj);
                 }
                 
-                if (!flag) {
-                    result.addProperty("userId", userId);
-                    Integer position = pkGameService.getUserKKplayRanking(userId, rankType, slotType);
-                    result.addProperty("position", position == null ? -1 : position);
-                    UserKkplayScoreDTO userKkplayScoreDTO = pkGameService.getUserKkplayScore(userId);
-                    if (userKkplayScoreDTO != null) {
-                        result.addProperty("score", userKkplayScoreDTO.getTotalScore());
-                    }
-                    UserProfile userProfile = UserService.getUserInfoNew(userId);
-                    if (userProfile != null) {
-                        result.addProperty("nickname", userProfile.getNickName());
-                        result.addProperty("portrait_path_original", userProfile.getPortrait());
-                    }
+                result.addProperty("userId", userId);
+                Integer position = pkGameService.getUserKKplayRanking(userId, rankType, slotType);
+                result.addProperty("position", position == null ? -1 : position);
+                UserKkplayScoreDTO userKkplayScoreDTO = pkGameService.getUserKkplayScore(userId);
+                if (userKkplayScoreDTO != null) {
+                    result.addProperty("score", userKkplayScoreDTO.getTotalScore());
+                }
+                UserProfile userProfile = UserService.getUserInfoNew(userId);
+                if (userProfile != null) {
+                    result.addProperty("nickname", userProfile.getNickName());
+                    result.addProperty("portrait_path_original", userProfile.getPortrait());
                 }
             }
             
-            result.add("rankList", rankList);
             result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+            result.add("rankList", rankList);
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         } catch (Exception e) {
             logger.error("Error getRankList()", e);

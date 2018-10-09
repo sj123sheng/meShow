@@ -298,7 +298,7 @@ public class HallRoomTF {
         roomObject.addProperty("userId", roomInfo.getActorId());
 
         if (!StringUtil.strIsNull(roomInfo.getNickname())) {
-            roomObject.addProperty("nickname", GeneralService.replaceSensitiveWords(roomInfo.getActorId(), roomInfo.getNickname()));
+            roomObject.addProperty("nickname", GeneralService.replaceNicknameSensitiveWords(roomInfo.getNickname()));
         }
 
         if (roomInfo.getActorLevel() != null) {
