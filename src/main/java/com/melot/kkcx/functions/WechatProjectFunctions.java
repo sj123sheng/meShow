@@ -3,6 +3,7 @@ package com.melot.kkcx.functions;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
+import com.melot.common.melot_utils.StringUtils;
 import com.melot.kk.wechatProject.api.service.WechatCommonService;
 import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.GeneralService;
@@ -16,8 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-
 import java.util.Map;
+
+import static com.melot.kktv.util.ParamCodeEnum.ROOM_ID;
 
 
 /**
@@ -189,6 +191,34 @@ public class WechatProjectFunctions {
             log.error(String.format("uploadFormId error: userId=%s, appType=%s, openId=%s)", userId, appType, openId), e);
         }
         result.addProperty(ParameterKeys.TAG_CODE, tagCode);
+        return result;
+    }
+
+    /**
+     * 51120305
+     * 获取直播购小程序分享直播间二维码url
+     */
+    public JsonObject getLiveShopShareRoomUrl(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        int roomId;
+        try {
+            roomId = CommonUtil.getJsonParamInt(jsonObject, ROOM_ID.getId(), 0, ROOM_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
+            return result;
+        }
+
+
+        try {
+            String shopProjectShareUrl = wechatCommonService.getLiveShopProjectShareUrl(roomId);
+            if(StringUtils.isNotEmpty(shopProjectShareUrl)) {
+                result.addProperty("shareUrl", shopProjectShareUrl);
+            }
+        } catch (Exception e) {
+            log.error(String.format("getLiveShopShareRoomUrl error: roomId=%s)", roomId), e);
+        }
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
 }
