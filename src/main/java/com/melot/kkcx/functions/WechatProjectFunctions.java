@@ -224,5 +224,5 @@ public class WechatProjectFunctions {
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
-    
+
 }
