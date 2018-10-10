@@ -8,6 +8,7 @@ import com.melot.kk.wechatProject.api.service.WechatCommonService;
 import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.GeneralService;
 import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.ParameterKeys;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.cache.EhCache;
@@ -213,7 +214,7 @@ public class WechatProjectFunctions {
         try {
             String shopProjectShareUrl = wechatCommonService.getLiveShopProjectShareUrl(roomId);
             if(StringUtils.isNotEmpty(shopProjectShareUrl)) {
-                result.addProperty("shareUrl", shopProjectShareUrl);
+                result.addProperty("shareUrl", ConfigHelper.getHttpdir() + shopProjectShareUrl);
             }
         } catch (Exception e) {
             log.error(String.format("getLiveShopShareRoomUrl error: roomId=%s)", roomId), e);
