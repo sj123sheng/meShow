@@ -735,7 +735,7 @@
 		<dependency>
 			<groupId>com.melot.kk</groupId>
 			<artifactId>kk-wechatProject-api</artifactId>
-			<version>1.0.3</version>
+			<version>1.0.5</version>
 		</dependency>
 		
 		<!-- PK游戏模块-->

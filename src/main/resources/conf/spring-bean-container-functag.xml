@@ -3234,7 +3234,11 @@
 		<constructor-arg name="t" ref="wechatProjectFunctions" />
 		<constructor-arg name="methodName" value="uploadUserInfo" />
 	</bean>
-	
+	<bean id="51120305" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="wechatProjectFunctions" />
+		<constructor-arg name="methodName" value="getLiveShopShareRoomUrl" />
+	</bean>
+
 	<!-- K玩大厅 -->
 	<!-- 获取K玩大厅栏目列表 -->
 	<bean id="51070301" class="com.melot.sdk.core.function.GenericFunction">
