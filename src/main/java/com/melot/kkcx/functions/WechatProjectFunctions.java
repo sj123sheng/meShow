@@ -214,7 +214,9 @@ public class WechatProjectFunctions {
         try {
             String shopProjectShareUrl = wechatCommonService.getLiveShopProjectShareUrl(roomId);
             if(StringUtils.isNotEmpty(shopProjectShareUrl)) {
-                result.addProperty("shareUrl", ConfigHelper.getHttpdir() + shopProjectShareUrl);
+                String urlPath = ConfigHelper.getHttpdir();
+                urlPath = urlPath.substring(0, urlPath.lastIndexOf("kktv"));
+                result.addProperty("shareUrl", urlPath + shopProjectShareUrl);
             }
         } catch (Exception e) {
             log.error(String.format("getLiveShopShareRoomUrl error: roomId=%s)", roomId), e);
@@ -222,4 +224,5 @@ public class WechatProjectFunctions {
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
+    
 }
