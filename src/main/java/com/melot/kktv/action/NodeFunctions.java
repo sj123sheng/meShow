@@ -349,7 +349,7 @@ public class NodeFunctions {
 			    //非官方号需昵称过滤
 		        Integer adminType = ProfileServices.getUserAdminType(userId);
 		        if (adminType == null || adminType == -1) {
-		            nickname = GeneralService.replaceSensitiveWords(userId, nickname);
+		            nickname = GeneralService.replaceNicknameSensitiveWords(nickname);
 		        }
 				result.addProperty("nickname", nickname);
 			}

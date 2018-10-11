@@ -14,20 +14,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.api.menu.sdk.service.RoomInfoService;
-import com.melot.singlechat.driver.base.Result;
-import com.melot.singlechat.driver.base.ResultCode;
-import com.melot.singlechat.driver.domain.HistSingleChatInfo;
-import com.melot.singlechat.driver.domain.PageSingleChatLabel;
-import com.melot.singlechat.driver.domain.PageSingleChatServer;
-import com.melot.singlechat.driver.domain.SingleChatActorInfo;
-import com.melot.singlechat.driver.domain.SingleChatLabel;
-import com.melot.singlechat.driver.domain.SingleChatRoomInfo;
-import com.melot.singlechat.driver.domain.SingleChatServer;
-import com.melot.singlechat.driver.domain.SingleChatServerPrice;
-import com.melot.singlechat.driver.domain.SingleChatUserInfo;
-import com.melot.singlechat.driver.service.SingleChatServerService;
-import com.melot.singlechat.driver.service.SingleChatService;
-import com.melot.kk.activity.driver.MissionService;
 import com.melot.kkcore.user.api.UserAssets;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.service.KkUserService;
@@ -42,6 +28,19 @@ import com.melot.kktv.util.TagCodeEnum;
 import com.melot.module.packagegift.driver.domain.UserTicketInfo;
 import com.melot.module.packagegift.driver.service.TicketService;
 import com.melot.sdk.core.util.MelotBeanFactory;
+import com.melot.singlechat.driver.base.Result;
+import com.melot.singlechat.driver.base.ResultCode;
+import com.melot.singlechat.driver.domain.HistSingleChatInfo;
+import com.melot.singlechat.driver.domain.PageSingleChatLabel;
+import com.melot.singlechat.driver.domain.PageSingleChatServer;
+import com.melot.singlechat.driver.domain.SingleChatActorInfo;
+import com.melot.singlechat.driver.domain.SingleChatLabel;
+import com.melot.singlechat.driver.domain.SingleChatRoomInfo;
+import com.melot.singlechat.driver.domain.SingleChatServer;
+import com.melot.singlechat.driver.domain.SingleChatServerPrice;
+import com.melot.singlechat.driver.domain.SingleChatUserInfo;
+import com.melot.singlechat.driver.service.SingleChatServerService;
+import com.melot.singlechat.driver.service.SingleChatService;
 
 /**
  * Title: SingleChatFunction
@@ -488,25 +487,25 @@ public class SingleChatFunction {
             json.addProperty("type", 148);
             json.addProperty("userId", userId );
             json.addProperty("key", "451a1sd8asd1asda6fdas89aw9");
-            MissionService missionService = MelotBeanFactory.getBean("missionService", MissionService.class);
-            JsonObject activeInfo = missionService.doActivityService(json);
-            logger.info("MissionService.doActivityService(" + json + "):" + activeInfo);
-            if (activeInfo != null) {
-                if (!activeInfo.get("flag").isJsonNull()) {
-                    flag = activeInfo.get("flag").getAsInt();
-                }
-                if (!activeInfo.get("url").isJsonNull()) {
-                    url = activeInfo.get("url").getAsString();
-                }
-                if (!activeInfo.get("desc").isJsonNull()) {
-                    desc = activeInfo.get("desc").getAsString();
-                }
-            }
+//            MissionService missionService = MelotBeanFactory.getBean("missionService", MissionService.class);
+//            JsonObject activeInfo = missionService.doActivityService(json);
+//            logger.info("MissionService.doActivityService(" + json + "):" + activeInfo);
+//            if (activeInfo != null) {
+//                if (!activeInfo.get("flag").isJsonNull()) {
+//                    flag = activeInfo.get("flag").getAsInt();
+//                }
+//                if (!activeInfo.get("url").isJsonNull()) {
+//                    url = activeInfo.get("url").getAsString();
+//                }
+//                if (!activeInfo.get("desc").isJsonNull()) {
+//                    desc = activeInfo.get("desc").getAsString();
+//                }
+//            }
             if (!StringUtil.strIsNull(url)) {
                 if (StringUtil.strIsNull(desc)) {
                     desc = MelotBeanFactory.getBean("singleChatActiveDefaultDesc", String.class);
                 }
-                result.addProperty("desc", desc);
+                result.addProperty("desc", desc); 
                 result.addProperty("url", url);
             }
         } catch (Exception e) {

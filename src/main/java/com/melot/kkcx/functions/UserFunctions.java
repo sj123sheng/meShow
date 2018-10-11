@@ -159,7 +159,7 @@ public class UserFunctions {
 				return result;
 			}
 			// 普通注册 若含敏感词词或短连接 直接返回异常码
-			if (GeneralService.hasSensitiveWords(0, nickname) || TextFilter.isShortUrl(nickname)
+			if (GeneralService.nicknameHasSensitiveWords(nickname) || TextFilter.isShortUrl(nickname)
 					|| !TextFilter.checkSpecialUnicode(nickname)) {
 				result.addProperty("TagCode", "01020001");
 				return result;
@@ -744,7 +744,7 @@ public class UserFunctions {
 					return result;
 				}
 				// 第三方注册 若含敏感词词或短连接 重命名为"新人+6位随机数"
-				if (GeneralService.hasSensitiveWords(userId, nickname) || TextFilter.isShortUrl(nickname)
+				if (GeneralService.nicknameHasSensitiveWords(nickname) || TextFilter.isShortUrl(nickname)
 						|| !TextFilter.checkSpecialUnicode(nickname)) {
 					nickname = "新人" + CommonUtil.getRandomDigit(6);
 				}
@@ -2443,7 +2443,7 @@ public class UserFunctions {
                 String nickname = userInfoDetail.getProfile().getNickName();
                 Integer adminType = ProfileServices.getUserAdminType(userId);
                 if (adminType == null || adminType == -1) {
-                    nickname = GeneralService.replaceSensitiveWords(userId, nickname);
+                    nickname = GeneralService.replaceNicknameSensitiveWords(nickname);
                 }
                 result.addProperty("nickname", nickname);
                 t.setStatus(Transaction.SUCCESS);

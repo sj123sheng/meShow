@@ -178,7 +178,7 @@ public class UserRelationService {
 		//非官方号需昵称过滤
         Integer adminType = ProfileServices.getUserAdminType(roomInfo.getActorId());
         if (adminType == null || adminType == -1) {
-            nickname = GeneralService.replaceSensitiveWords(roomInfo.getActorId(), nickname);
+            nickname = GeneralService.replaceNicknameSensitiveWords(nickname);
         }
 		
 		jObject.addProperty("nickname", nickname);

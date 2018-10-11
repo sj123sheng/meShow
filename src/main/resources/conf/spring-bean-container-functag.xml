@@ -1495,13 +1495,11 @@
 	<bean id="20031003" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="guardFunction" />
 		<constructor-arg name="methodName" value="getActorGuardInfos" />
-		<constructor-arg name="cacheType" value="60" />
 	</bean>
 	<!-- 获取主播拥有的守护数量 -->
 	<bean id="51010501" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="guardFunction" />
 		<constructor-arg name="methodName" value="getActorGuardCount" />
-		<constructor-arg name="cacheType" value="60" />
 	</bean>
 	<!-- 获取黄金赛周榜 -->
 	<bean id="20031004" class="com.melot.sdk.core.function.GenericFunction">
@@ -3281,6 +3279,11 @@
 	<bean id="51070308" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="kkPlayFunctions" />
 		<constructor-arg name="methodName" value="getGameRule" />
+	</bean>
+	<!-- 获取游戏倍数及道具配置详情 -->
+	<bean id="51070309" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kkPlayFunctions" />
+		<constructor-arg name="methodName" value="getMultipleConf" />
 	</bean>
 	<!-- 获取pk游戏配置 -->
 	<bean id="51070310" class="com.melot.sdk.core.function.GenericFunction">
