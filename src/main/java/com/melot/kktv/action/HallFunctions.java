@@ -374,12 +374,17 @@ public class HallFunctions {
 					json.addProperty("cataId", temp.getTitleId());
 					json.addProperty("cataName", temp.getTitleName());
 					json.addProperty("cdnState", temp.getCdnState());
-					json.addProperty("icon", temp.getIcon());
-					json.addProperty("webIcon", temp.getWebIcon());
+					if (!StringUtil.strIsNull(temp.getIcon())) {
+					    json.addProperty("icon", temp.getIcon());
+                    }
+					if (!StringUtil.strIsNull(temp.getWebIcon())) {
+                        json.addProperty("webIcon", temp.getWebIcon());
+                    }
 					cataList.add(json);
 				}
 			}
 			result.add("cataList", cataList);
+			result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
 			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 		} else {
 			result.addProperty("TagCode", TagCodeEnum.FAIL_TO_CALL_API_MENU_MODULE);
