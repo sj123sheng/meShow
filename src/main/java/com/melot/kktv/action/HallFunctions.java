@@ -374,6 +374,8 @@ public class HallFunctions {
 					json.addProperty("cataId", temp.getTitleId());
 					json.addProperty("cataName", temp.getTitleName());
 					json.addProperty("cdnState", temp.getCdnState());
+					json.addProperty("icon", temp.getIcon());
+					json.addProperty("webIcon", temp.getWebIcon());
 					cataList.add(json);
 				}
 			}
