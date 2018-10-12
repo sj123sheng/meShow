@@ -364,7 +364,7 @@ public class KKPlayFunctions {
         int userId, gameId;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-            gameId = CommonUtil.getJsonParamInt(jsonObject, "gameId", 0, "5107030401", 1, Integer.MAX_VALUE);
+            gameId = CommonUtil.getJsonParamInt(jsonObject, "gameId", 0, "5107030701", 1, Integer.MAX_VALUE);
         } catch(CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
