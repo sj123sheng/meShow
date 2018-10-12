@@ -287,18 +287,18 @@ public class KKPlayFunctions {
         }
 
         try {
+            if (gameId != GameEnum.ANSWER_PK_FOUR.getCode() && gameId != GameEnum.ANSWER_PK_DOUBLE.getCode()) {
+                result.addProperty("TagCode", "5107030402");
+                return result;
+            }
             if (!checkMatchOpenStatus(gameId)) {
                 result.addProperty("TagCode", "5107030404");
             } else {
-                if (gameId == GameEnum.ANSWER_PK_FOUR.getCode() || gameId == GameEnum.ANSWER_PK_DOUBLE.getCode()) {
-                    ReturnResult<Integer> matchResp = matchService.startMatch(userId, UserTypeEnum.USER.getCode(), gameId);
-                    if (ReturnResultCode.SUCCESS.getCode().equals(matchResp.getCode())) {
-                        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-                    } else {
-                        result.addProperty("TagCode", "5107030403");
-                    }
+                ReturnResult<Integer> matchResp = matchService.startMatch(userId, UserTypeEnum.USER.getCode(), gameId);
+                if (ReturnResultCode.SUCCESS.getCode().equals(matchResp.getCode())) {
+                    result.addProperty("TagCode", TagCodeEnum.SUCCESS);
                 } else {
-                    result.addProperty("TagCode", "5107030402");
+                    result.addProperty("TagCode", "5107030403");
                 }
             }
         } catch (Exception e) {
