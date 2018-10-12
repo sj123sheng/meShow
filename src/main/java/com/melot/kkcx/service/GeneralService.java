@@ -434,7 +434,7 @@ public class GeneralService {
                     return privateLetter.getNewWord();
                 }
             } catch (Exception e) {
-                logger.error("ChatAnalyzerService.replaceNicknameSensitiveWords(" + word + ") execute exception.", e);
+                logger.error("ChatAnalyzerService.checkNickName(" + word + ") execute exception.", e);
             }
         }
         

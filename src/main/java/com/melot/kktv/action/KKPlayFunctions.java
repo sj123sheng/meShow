@@ -21,6 +21,7 @@ import com.alibaba.fastjson.JSON;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.kk.hall.api.domain.HallPartConfDTO;
 import com.melot.kk.hall.api.domain.HallRoomInfoDTO;
 import com.melot.kk.hall.api.service.SysMenuService;
@@ -28,6 +29,7 @@ import com.melot.kk.pkgame.api.constant.ReturnResultCode;
 import com.melot.kk.pkgame.api.dto.GameConfDTO;
 import com.melot.kk.pkgame.api.dto.GamePropDTO;
 import com.melot.kk.pkgame.api.dto.MultipleConfDTO;
+import com.melot.kk.pkgame.api.dto.QuziPKUserDTO;
 import com.melot.kk.pkgame.api.dto.ReturnResult;
 import com.melot.kk.pkgame.api.dto.UserKKPlayRank;
 import com.melot.kk.pkgame.api.dto.UserKkplayScoreDTO;
@@ -35,9 +37,12 @@ import com.melot.kk.pkgame.api.enums.GameEnum;
 import com.melot.kk.pkgame.api.enums.UserTypeEnum;
 import com.melot.kk.pkgame.api.service.MatchService;
 import com.melot.kk.pkgame.api.service.PKGameService;
+import com.melot.kk.pkgame.api.service.QuizPKService;
 import com.melot.kkcore.user.api.UserProfile;
+import com.melot.kkcx.service.RoomService;
 import com.melot.kkcx.service.UserService;
 import com.melot.kkcx.transform.HallRoomTF;
+import com.melot.kkcx.transform.RoomTF;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.service.ConfigService;
@@ -45,6 +50,7 @@ import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.DateUtil;
+import com.melot.kktv.util.PlatformEnum;
 import com.melot.kktv.util.TagCodeEnum;
 
 /**
@@ -72,6 +78,9 @@ public class KKPlayFunctions {
     
     @Resource
     private MatchService matchService;
+    
+    @Resource
+    QuizPKService quizPKService;
     
     /**
      * 获取K玩大厅栏目列表(51070301)
@@ -325,8 +334,14 @@ public class KKPlayFunctions {
             return result;
         }
 
-        //TODO
-        
+        QuziPKUserDTO quziPKUserDTO = quizPKService.getUserDTO(userId);
+        if (quziPKUserDTO != null) {
+            result.addProperty("seatId", quziPKUserDTO.getSeatId());
+            RoomInfo roomInfo = RoomService.getRoomInfo(quziPKUserDTO.getActorId());
+            if (roomInfo != null) {
+                result.add("roomInfo", RoomTF.roomInfoToJson(roomInfo, PlatformEnum.WEB, true)); 
+            }
+        }
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
@@ -477,7 +492,7 @@ public class KKPlayFunctions {
         try {
             List<GameConfDTO> gameConfList = pkGameService.getGameConfList();
             for (GameConfDTO gameConfDTO : gameConfList) {
-                if (gameId == gameConfDTO.getGameId()) {
+                if (gameConfDTO.getGameId() != null && gameId == gameConfDTO.getGameId()) {
                     long currentTime = System.currentTimeMillis();
                     long dayBeginTime = DateUtil.getDayBeginTime(currentTime);
                     if (gameConfDTO.getStartTime() == null || (((dayBeginTime 
