@@ -4,6 +4,7 @@ import java.util.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import com.melot.kk.hall.api.constant.QueryHallRoomInfoParam;
 import com.melot.kk.hall.api.domain.*;
 import com.melot.kk.hall.api.service.HallRoomService;
 import com.melot.kk.hall.api.service.HomeService;
@@ -937,5 +938,78 @@ public class HallFunctions {
         
         return result;
     }
-    
+
+	/**
+	 * 根据栏目id获取房间列表，按照weight权重排序
+	 */
+	public JsonObject getRoomListByCataIdOrderWeight(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+		JsonObject result = new JsonObject();
+		int cataId, start, num, platform;
+		try {
+			cataId = CommonUtil.getJsonParamInt(jsonObject, "cataId", 0, TagCodeEnum.PARAMETER_PARSE_ERROR, 0, Integer.MAX_VALUE);
+			start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, null, 0, Integer.MAX_VALUE);
+			num = CommonUtil.getJsonParamInt(jsonObject, "num", 10, null, 0, Integer.MAX_VALUE);
+			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, 1, Integer.MAX_VALUE);
+		} catch (Exception e) {
+			result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
+			return result;
+		}
+
+		result.addProperty("isdownload", 1);
+
+		HallPartConfDTO sysMenu = null;
+
+		//查询栏目
+		QueryHallRoomInfoParam params = new QueryHallRoomInfoParam();
+		params.setCataId(cataId);
+		params.setStart(start);
+		params.setNum(num);
+		try {
+			Result<HallPartConfDTO> hallPartConfDTOResult = hallPartService.queryRoomList(params);
+			if (Objects.equals(CommonStateCode.SUCCESS, hallPartConfDTOResult.getCode())) {
+				sysMenu = hallPartConfDTOResult.getData();
+			}
+		} catch(Exception e) {
+			logger.error(String.format("Error: hallPartService.queryRoomList(params=%s)", params), e);
+		}
+
+		if (sysMenu != null) {
+			if(sysMenu.getTitleName() != null) {
+				result.addProperty("titleName", sysMenu.getTitleName());
+			}
+			String subTitle = sysMenu.getSubTitle();
+			int roomTotal = 0;
+			if (sysMenu.getLiveTotal() != null) {
+				result.addProperty("liveTotal", sysMenu.getLiveTotal());
+			}
+			if (sysMenu.getRoomCount() != null) {
+				roomTotal = sysMenu.getRoomCount();
+			}
+			if(subTitle != null) {
+				result.addProperty("subTitle", subTitle);
+			}
+			result.addProperty("roomTotal", roomTotal);
+
+			JsonArray roomArray = new JsonArray();
+			JsonObject json;
+			List<HallRoomInfoDTO> roomList = sysMenu.getRooms();
+			HallRoomInfoDTO roomInfo;
+			if (roomList != null) {
+				int i = 0;
+				while (i < roomList.size()) {
+					roomInfo = roomList.get(i++);
+					json = HallRoomTF.roomInfoToJson(roomInfo, platform);
+					json.addProperty("weight", roomInfo.getWeight());
+					roomArray.add(json);
+				}
+			}
+
+			result.add("roomList", roomArray);
+			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+			result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+		} else {
+			result.addProperty("TagCode", TagCodeEnum.FAIL_TO_CALL_API_MENU_MODULE);
+		}
+		return result;
+	}
 }
