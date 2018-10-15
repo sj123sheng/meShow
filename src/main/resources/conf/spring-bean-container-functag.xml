@@ -73,6 +73,11 @@
 		<constructor-arg name="cacheType" value="60" />
 		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
 	</bean>
+	<bean id="20010308" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="hallFunction" />
+		<constructor-arg name="methodName" value="getRoomListByCataIdOrderWeight" />
+		<constructor-arg name="cacheType" value="60" />
+	</bean>
 	<!-- 获取看过的房间列表 -->
 	<bean id="10002033" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="hallFunction" />
