@@ -42,7 +42,6 @@
 	<kkrpc:reference id="feedbackService" interface="com.melot.feedback.driver.service.FeedbackService" version="1.0.5"></kkrpc:reference>
 	<kkrpc:reference id="blacklistService" interface="com.melot.blacklist.service.BlacklistService" version="1.0.4"></kkrpc:reference>
 	<kkrpc:reference id="sunshineService" interface="com.melot.sunshine.service.SunshineService" version="1.0.1"></kkrpc:reference>
-	<kkrpc:reference id="missionService" interface="com.melot.kk.activity.driver.MissionService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="familyDefineActivityService" interface="com.melot.kk.activity.service.FamilyDefineActivityService" version="1.0.18"></kkrpc:reference>
 	<kkrpc:reference id="giftHistoryBoardService" interface="com.melot.kk.activity.service.GiftHistoryBoardService" version="1.0.18"></kkrpc:reference>
 	<kkrpc:reference id="liveStreamConfigService" interface="com.melot.stream.driver.service.LiveStreamConfigService" version="1.0.0"></kkrpc:reference>

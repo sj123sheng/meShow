@@ -367,7 +367,7 @@ public class ProfileFunctions {
 				    String nickname = userInfoDetail.getProfile().getNickName();
 				    //非官方号昵称需敏感词过滤
 				    if (adminType == null || adminType == -1) {
-				        nickname = GeneralService.replaceSensitiveWords(userId, nickname);
+				        nickname = GeneralService.replaceNicknameSensitiveWords(nickname);
 				    }
 					result.addProperty("nickname", nickname);
 					t.setStatus(Transaction.SUCCESS);
@@ -1160,7 +1160,7 @@ public class ProfileFunctions {
 			// filter matchXSSTag,sensitive word,short url
 			if (CommonUtil.matchXSSTag(nickname)
 					||TextFilter.isShortUrl(nickname)
-					|| !TextFilter.checkSpecialUnicode(nickname) || GeneralService.hasSensitiveWords(userId, nickname)) {
+					|| !TextFilter.checkSpecialUnicode(nickname) || GeneralService.nicknameHasSensitiveWords(nickname)) {
 				result.addProperty("TagCode", "05020004");
 				return result;
 			}

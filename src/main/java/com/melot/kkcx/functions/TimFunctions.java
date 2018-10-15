@@ -86,7 +86,7 @@ public class TimFunctions {
         //非官方号需昵称过滤
         Integer adminType = ProfileServices.getUserAdminType(userId);
         if (adminType == null || adminType == -1) {
-            nickname = GeneralService.replaceSensitiveWords(userId, nickname);
+            nickname = GeneralService.replaceNicknameSensitiveWords(nickname);
         }
         // 腾讯云IM账号注册
         boolean ret = TimService.registerTim(userId + "", nickname);
@@ -193,7 +193,7 @@ public class TimFunctions {
                     	jsonObj.addProperty("siteAdmin", adminType);
                     } else {
                         //非官方号需过滤昵称
-                        nickname = GeneralService.replaceSensitiveWords(userInfoDetail.getProfile().getUserId(), nickname);
+                        nickname = GeneralService.replaceNicknameSensitiveWords(nickname);
                     }
                     jsonObj.addProperty("nickName", nickname);
                     

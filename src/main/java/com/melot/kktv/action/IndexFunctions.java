@@ -1149,7 +1149,7 @@ public class IndexFunctions {
 						// 从redis热点数据中读取昵称
 						String nickname = HotDataSource.getHotFieldValue(upUidInt.toString(), "nickname");
 						if (nickname != null) {
-							jsonObj.addProperty("upNick", GeneralService.replaceSensitiveWords(upUidInt, nickname));
+							jsonObj.addProperty("upNick", GeneralService.replaceNicknameSensitiveWords(nickname));
 						}
 					}
 					if (rankInfo.containsKey("downUid") && rankInfo.get("downUid")!=null) {
@@ -1158,7 +1158,7 @@ public class IndexFunctions {
 						// 从redis热点数据中读取昵称
 						String nickname = HotDataSource.getHotFieldValue(downUidInt.toString(), "nickname");
 						if (nickname != null) {
-							jsonObj.addProperty("downNick", GeneralService.replaceSensitiveWords(downUidInt, nickname));
+							jsonObj.addProperty("downNick", GeneralService.replaceNicknameSensitiveWords(nickname));
 						}
 					}
 					for (int i = 1; i < 4; i++) {
