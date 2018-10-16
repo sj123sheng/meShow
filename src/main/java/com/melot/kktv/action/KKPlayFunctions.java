@@ -447,6 +447,7 @@ public class KKPlayFunctions {
                 List<GamePropDTO> gamePropList = pkGameService.getGamePropList(gameId);
                 if (!CollectionUtils.isEmpty(gamePropList)) {
                     result.add("gamePropConf", new JsonParser().parse(JSON.toJSONString(gamePropList)).getAsJsonArray());
+                    result.addProperty("maxPropTimes", gamePropList.size());
                 }
                 result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             } else {
