@@ -233,21 +233,20 @@ public class KKPlayFunctions {
                     }
                     rankList.add(jsonObj);
                 }
-                
-                result.addProperty("userId", userId);
-                Integer position = pkGameService.getUserKKplayRanking(userId, rankType, slotType);
-                result.addProperty("position", position == null ? -1 : position);
-                UserKkplayScoreDTO userKkplayScoreDTO = pkGameService.getUserKkplayScore(userId);
-                if (userKkplayScoreDTO != null) {
-                    result.addProperty("score", userKkplayScoreDTO.getTotalScore());
-                }
-                UserProfile userProfile = UserService.getUserInfoNew(userId);
-                if (userProfile != null) {
-                    result.addProperty("nickname", userProfile.getNickName());
-                    result.addProperty("portrait_path_original", userProfile.getPortrait());
-                }
             }
             
+            result.addProperty("userId", userId);
+            Integer position = pkGameService.getUserKKplayRanking(userId, rankType, slotType);
+            result.addProperty("position", position == null ? -1 : position);
+            UserKkplayScoreDTO userKkplayScoreDTO = pkGameService.getUserKkplayScore(userId);
+            if (userKkplayScoreDTO != null) {
+                result.addProperty("score", userKkplayScoreDTO.getTotalScore());
+            }
+            UserProfile userProfile = UserService.getUserInfoNew(userId);
+            if (userProfile != null) {
+                result.addProperty("nickname", userProfile.getNickName());
+                result.addProperty("portrait_path_original", userProfile.getPortrait());
+            }
             result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
             result.add("rankList", rankList);
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
