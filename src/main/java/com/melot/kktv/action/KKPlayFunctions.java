@@ -169,6 +169,7 @@ public class KKPlayFunctions {
         try {
             UserProfile userProfile = UserService.getUserInfoNew(userId);
             if (userProfile != null) {
+                result.addProperty("gender", userProfile.getGender());
                 result.addProperty("nickname", userProfile.getNickName());
                 result.addProperty("portrait", userProfile.getPortrait());
             }
