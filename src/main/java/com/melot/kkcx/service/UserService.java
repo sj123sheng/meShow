@@ -993,7 +993,9 @@ public class UserService {
 	}
 	
 	public static boolean getUserSmsSwitchState(int userId) {
-		return getUserSmsSwitch(userId) == 0;
+//		return getUserSmsSwitch(userId) == 0;
+	    changeUserSmsSwitch(userId, 1);
+	    return false;
 	}
 	
 	public static boolean changeUserSmsSwitch(int userId, int state) {
