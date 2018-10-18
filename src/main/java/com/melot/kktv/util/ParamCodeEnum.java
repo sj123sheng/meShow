@@ -60,6 +60,13 @@ public enum ParamCodeEnum {
     COMMENT_ID("commentId","53000035"),
     WORK_LIST_TYPE("workListType","53000036"),
     ROOM_ID("roomId","53000037"),
+    PRODUCT_NAME("productName","53000038"),
+    PRODUCT_PRICE("productPrice","53000039"),
+    STOCK_NUM("stockNum","53000040"),
+    EXPRESS_PRICE("expressPrice","53000041"),
+    CAT_ID("catId","53000042"),
+    PRODUCT_BANNER_URLS("productBannerUrls","53000043"),
+    PRODUCT_ID("productId","53000044"),
 
     ;
 
