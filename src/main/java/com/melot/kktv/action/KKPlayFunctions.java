@@ -336,6 +336,7 @@ public class KKPlayFunctions {
 
         QuziPKUserDTO quziPKUserDTO = quizPKService.getUserDTO(userId);
         if (quziPKUserDTO != null) {
+            result.addProperty("gameId", quziPKUserDTO.getGameId());
             result.addProperty("seatId", quziPKUserDTO.getSeatId());
             RoomInfo roomInfo = RoomService.getRoomInfo(quziPKUserDTO.getActorId());
             if (roomInfo != null) {
