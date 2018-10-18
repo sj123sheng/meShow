@@ -1,5 +1,7 @@
 package com.melot.kktv.util.confdynamic;
 
+import com.melot.kktv.redis.HotDataSource;
+import com.melot.kktv.util.cache.EhCache;
 import org.apache.log4j.Logger;
 
 import com.melot.kk.config.api.domain.ConfSystemInfo;
@@ -51,16 +53,25 @@ public class SystemConfig {
 	public static final String fanFeedbackStartAmount = "fanFeedbackStartAmount";
 	
 	public static final String fanFeedbackEndAmount = "fanFeedbackEndAmount";
+
+	private static final String CACHE_KEY = "systemConfig_%s";
 	
 	public static String getValue(String key, int appId) {
 	    try {
-	        ConfigInfoService configInfoService = (ConfigInfoService) MelotBeanFactory.getBean("configInfoService");
+	    	String cacheKey = String.format(CACHE_KEY, key);
+			String fromCache = HotDataSource.getTempDataString(cacheKey);
+			if (fromCache != null) {
+				return fromCache;
+			}
+			ConfigInfoService configInfoService = (ConfigInfoService) MelotBeanFactory.getBean("configInfoService");
 	        ConfSystemInfo confSystemInfo = configInfoService.getConfSystemInfoByKeyAndAppID(key, appId);
 	        if (confSystemInfo == null) {
 	            return null;
 	        }
-	        return confSystemInfo.getcValue();
-        } catch (Exception e) {
+			String value = confSystemInfo.getcValue();
+	        EhCache.putInCacheByLive(cacheKey, value, 180);
+	        return value;
+		} catch (Exception e) {
             logger.error("getValue(key=" + key + ", appId=" + appId + ")", e);
             return null;
         }

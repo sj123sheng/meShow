@@ -1,7 +1,6 @@
 package com.melot.kkcx.transform;
 
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -34,7 +33,7 @@ public class HallRoomTF {
 
     private static PlaybackActorService playbackActorService;
 
-    public static final String PLATBACK_ACTORS_CACHE = "platback_actors_cache";
+    public static final String PLAYBACK_ACTORS_CACHE = "playback_actors_cache";
 
     static {
         playbackActorService = (PlaybackActorService) MelotBeanFactory.getBean("playbackActorService");
@@ -44,11 +43,11 @@ public class HallRoomTF {
         Set<String> playbackIds = new HashSet<>();
         try {
             // 查询缓存
-            playbackIds = (Set<String>) EhCache.getFromCache(PLATBACK_ACTORS_CACHE);
+            playbackIds = (Set<String>) EhCache.getFromCache(PLAYBACK_ACTORS_CACHE);
             // 缓存若不存在，查询服务
             if (CollectionUtils.isEmpty(playbackIds)) {
                 playbackIds = playbackActorService.getPlaybackActorIds();
-                EhCache.putInCacheByLive(PLATBACK_ACTORS_CACHE, playbackIds, 60);
+                EhCache.putInCacheByLive(PLAYBACK_ACTORS_CACHE, playbackIds, 60);
             }
         } catch (Exception e) {
             logger.error(String.format("module error：playbackActorService.isPlaybackActor(actorId=%s)", roomInfo.getActorId()), e);
