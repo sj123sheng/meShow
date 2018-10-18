@@ -8,6 +8,8 @@ import com.melot.kk.config.api.domain.ConfSystemInfo;
 import com.melot.kk.config.api.service.ConfigInfoService;
 import com.melot.sdk.core.util.MelotBeanFactory;
 
+import java.util.Objects;
+
 public class SystemConfig {
     
     private static Logger logger = Logger.getLogger(SystemConfig.class);
@@ -60,12 +62,20 @@ public class SystemConfig {
 	    try {
 	    	String cacheKey = String.format(CACHE_KEY, key);
 			String fromCache = HotDataSource.getTempDataString(cacheKey);
+			if (Objects.equals("", fromCache)) {
+				// 如果是本身配置不存在的，返回null
+				return null;
+			}
 			if (fromCache != null) {
+				// 如果缓存配置存在，返回缓存结果
 				return fromCache;
 			}
+			// 如果缓存失效
 			ConfigInfoService configInfoService = (ConfigInfoService) MelotBeanFactory.getBean("configInfoService");
 	        ConfSystemInfo confSystemInfo = configInfoService.getConfSystemInfoByKeyAndAppID(key, appId);
 	        if (confSystemInfo == null) {
+	        	// 配置不存在设置缓存特殊值
+				EhCache.putInCacheByLive(cacheKey, "", 180);
 	            return null;
 	        }
 			String value = confSystemInfo.getcValue();
