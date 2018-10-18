@@ -1,7 +1,6 @@
 package com.melot.kktv.util.confdynamic;
 
 import com.melot.kktv.redis.HotDataSource;
-import com.melot.kktv.util.cache.EhCache;
 import org.apache.log4j.Logger;
 
 import com.melot.kk.config.api.domain.ConfSystemInfo;
@@ -57,12 +56,14 @@ public class SystemConfig {
 	public static final String fanFeedbackEndAmount = "fanFeedbackEndAmount";
 
 	private static final String CACHE_KEY = "systemConfig_%s";
+
+	public static final String CACHE_NOT_EXIST_VALUE = "cache_not_exist_value";
 	
 	public static String getValue(String key, int appId) {
 	    try {
 	    	String cacheKey = String.format(CACHE_KEY, key);
 			String fromCache = HotDataSource.getTempDataString(cacheKey);
-			if (Objects.equals("", fromCache)) {
+			if (Objects.equals(CACHE_NOT_EXIST_VALUE, fromCache)) {
 				// 如果是本身配置不存在的，返回null
 				return null;
 			}
@@ -75,11 +76,11 @@ public class SystemConfig {
 	        ConfSystemInfo confSystemInfo = configInfoService.getConfSystemInfoByKeyAndAppID(key, appId);
 	        if (confSystemInfo == null) {
 	        	// 配置不存在设置缓存特殊值
-				EhCache.putInCacheByLive(cacheKey, "", 180);
+				HotDataSource.setTempDataString(cacheKey, CACHE_NOT_EXIST_VALUE, 180);
 	            return null;
 	        }
 			String value = confSystemInfo.getcValue();
-	        EhCache.putInCacheByLive(cacheKey, value, 180);
+			HotDataSource.setTempDataString(cacheKey, value, 180);
 	        return value;
 		} catch (Exception e) {
             logger.error("getValue(key=" + key + ", appId=" + appId + ")", e);
