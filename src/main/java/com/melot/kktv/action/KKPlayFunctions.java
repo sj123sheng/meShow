@@ -231,6 +231,7 @@ public class KKPlayFunctions {
                     jsonObj.addProperty("score", userKKPlayRank.getScore());
                     UserProfile userProfile = UserService.getUserInfoNew(rankUserId);
                     if (userProfile != null) {
+                        jsonObj.addProperty("gender", userProfile.getGender());
                         jsonObj.addProperty("nickname", userProfile.getNickName());
                         if (!StringUtil.strIsNull(userProfile.getPortrait())) {
                             jsonObj.addProperty("portrait_path_original", userProfile.getPortrait());
@@ -249,6 +250,7 @@ public class KKPlayFunctions {
             }
             UserProfile userProfile = UserService.getUserInfoNew(userId);
             if (userProfile != null) {
+                result.addProperty("gender", userProfile.getGender());
                 result.addProperty("nickname", userProfile.getNickName());
                 if (!StringUtil.strIsNull(userProfile.getPortrait())) {
                     result.addProperty("portrait_path_original", userProfile.getPortrait());
