@@ -729,7 +729,10 @@ public class IndexFunctions {
                         jsonObj.addProperty("endDate", kkActivity.getEndTime().getTime());
                     }
                     if (kkActivity.getImgURL() != null) {
-                        jsonObj.addProperty("imgURL", kkActivity.getImgURL() );
+                        jsonObj.addProperty("imgURL", kkActivity.getImgURL());
+                    }
+                    if (kkActivity.getAppActivityURL() != null) {
+                        jsonObj.addProperty("appActivityURL", kkActivity.getAppActivityURL());
                     }
                     activityList.add(jsonObj);
                 }
