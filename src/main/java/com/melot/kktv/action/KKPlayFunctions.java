@@ -51,6 +51,7 @@ import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.DateUtil;
 import com.melot.kktv.util.PlatformEnum;
+import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
 
 /**
@@ -171,7 +172,9 @@ public class KKPlayFunctions {
             if (userProfile != null) {
                 result.addProperty("gender", userProfile.getGender());
                 result.addProperty("nickname", userProfile.getNickName());
-                result.addProperty("portrait", userProfile.getPortrait());
+                if (!StringUtil.strIsNull(userProfile.getPortrait())) {
+                    result.addProperty("portrait", userProfile.getPortrait());
+                }
             }
             UserKkplayScoreDTO userKkplayScoreDTO = pkGameService.getUserKkplayScore(userId);
             if (userKkplayScoreDTO != null) {
@@ -229,7 +232,9 @@ public class KKPlayFunctions {
                     UserProfile userProfile = UserService.getUserInfoNew(rankUserId);
                     if (userProfile != null) {
                         jsonObj.addProperty("nickname", userProfile.getNickName());
-                        jsonObj.addProperty("portrait_path_original", userProfile.getPortrait());
+                        if (!StringUtil.strIsNull(userProfile.getPortrait())) {
+                            jsonObj.addProperty("portrait_path_original", userProfile.getPortrait());
+                        }
                     }
                     rankList.add(jsonObj);
                 }
@@ -245,7 +250,9 @@ public class KKPlayFunctions {
             UserProfile userProfile = UserService.getUserInfoNew(userId);
             if (userProfile != null) {
                 result.addProperty("nickname", userProfile.getNickName());
-                result.addProperty("portrait_path_original", userProfile.getPortrait());
+                if (!StringUtil.strIsNull(userProfile.getPortrait())) {
+                    result.addProperty("portrait_path_original", userProfile.getPortrait());
+                }
             }
             result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
             result.add("rankList", rankList);
