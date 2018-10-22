@@ -1,7 +1,6 @@
 package com.melot.kkcx.transform;
 
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -14,6 +13,7 @@ import com.melot.kk.hall.api.domain.HallRoomInfoDTO;
 import com.melot.kkcx.service.GeneralService;
 import com.melot.kkcx.service.UserAssetServices;
 import com.melot.kkcx.service.UserService;
+import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CityUtil;
 import com.melot.kktv.util.ConfigHelper;
@@ -34,7 +34,11 @@ public class HallRoomTF {
 
     private static PlaybackActorService playbackActorService;
 
-    public static final String PLATBACK_ACTORS_CACHE = "platback_actors_cache";
+    private static final String PLAYBACK_ACTORS_CACHE = "playback_actors_cache";
+
+    private static final String CACHE_KEY = "modeLabelPathConfig_%s";
+
+    private static final String CACHE_NOT_EXIST_VALUE = "cache_not_exist_value";
 
     static {
         playbackActorService = (PlaybackActorService) MelotBeanFactory.getBean("playbackActorService");
@@ -44,11 +48,11 @@ public class HallRoomTF {
         Set<String> playbackIds = new HashSet<>();
         try {
             // 查询缓存
-            playbackIds = (Set<String>) EhCache.getFromCache(PLATBACK_ACTORS_CACHE);
+            playbackIds = (Set<String>) EhCache.getFromCache(PLAYBACK_ACTORS_CACHE);
             // 缓存若不存在，查询服务
             if (CollectionUtils.isEmpty(playbackIds)) {
                 playbackIds = playbackActorService.getPlaybackActorIds();
-                EhCache.putInCacheByLive(PLATBACK_ACTORS_CACHE, playbackIds, 60);
+                EhCache.putInCacheByLive(PLAYBACK_ACTORS_CACHE, playbackIds, 60);
             }
         } catch (Exception e) {
             logger.error(String.format("module error：playbackActorService.isPlaybackActor(actorId=%s)", roomInfo.getActorId()), e);
@@ -298,7 +302,7 @@ public class HallRoomTF {
         roomObject.addProperty("userId", roomInfo.getActorId());
 
         if (!StringUtil.strIsNull(roomInfo.getNickname())) {
-            roomObject.addProperty("nickname", GeneralService.replaceSensitiveWords(roomInfo.getActorId(), roomInfo.getNickname()));
+            roomObject.addProperty("nickname", GeneralService.replaceNicknameSensitiveWords(roomInfo.getNickname()));
         }
 
         if (roomInfo.getActorLevel() != null) {
@@ -505,9 +509,21 @@ public class HallRoomTF {
             }
 
             if (roomInfo.getRoomMode() != null && roomInfo.getRoomMode() > 10) {
-                String modeLabelPath = SystemConfig.getValue(String.format("modeLabelPath_%d", roomInfo.getRoomMode()), AppIdEnum.AMUSEMENT);
-                if (modeLabelPath != null) {
-                    roomObject.addProperty("modeLabelPath", modeLabelPath);
+                String cacheKey = String.format(CACHE_KEY, roomInfo.getRoomMode());
+                String fromCache = HotDataSource.getTempDataString(cacheKey);
+                if (fromCache == null) {
+                    // 缓存不存在，则获取配置
+                    String modeLabelPath = SystemConfig.getValue(String.format("modeLabelPath_%d", roomInfo.getRoomMode()), AppIdEnum.AMUSEMENT);
+                    if (modeLabelPath != null) {
+                        roomObject.addProperty("modeLabelPath", modeLabelPath);
+                        HotDataSource.setTempDataString(cacheKey, modeLabelPath, 180);
+                    } else {
+                        // 配置不存在，设置无效缓存
+                        HotDataSource.setTempDataString(cacheKey, CACHE_NOT_EXIST_VALUE, 180);
+                    }
+                } else if (!fromCache.equals(CACHE_NOT_EXIST_VALUE)) {
+                    // 缓存有效，则设置
+                    roomObject.addProperty("modeLabelPath", fromCache);
                 }
             }
         }
