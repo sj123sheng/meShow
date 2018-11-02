@@ -67,7 +67,11 @@ public enum ParamCodeEnum {
     CAT_ID("catId","53000042"),
     PRODUCT_BANNER_URLS("productBannerUrls","53000043"),
     PRODUCT_ID("productId","53000044"),
-
+    SUPPORT_RETURN("supportReturn","53000044"),
+    SUPPORT_DISTRIBUTION("supportDistribution","53000045"),
+    SHOW_SHELF_STATUS("showShelfStatus","53000046"),
+    STATE("state","53000047"),
+    DISTRIBUTOR_COMMISSIONRATE("distributorCommissionRate","53000048"),
     ;
 
 

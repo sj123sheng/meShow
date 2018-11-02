@@ -1,22 +1,5 @@
 package com.melot.kktv.action;
 
-import java.sql.SQLException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-
-import com.melot.kk.hall.api.service.SysMenuService;
-import com.melot.kkactivity.driver.domain.NewUserBootPageConf;
-import com.melot.kkactivity.driver.service.NewUserTaskService;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.dianping.cat.Cat;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
@@ -34,12 +17,13 @@ import com.melot.content.config.facepack.service.GalleryOrderRecordService;
 import com.melot.content.config.live.upload.impl.YouPaiService;
 import com.melot.content.config.report.service.RecordProcessedRecordService;
 import com.melot.family.driver.constant.UserApplyActorStatusEnum;
-import com.melot.family.driver.domain.FamilyInfo;
 import com.melot.family.driver.domain.DO.BrokerageFirmDO;
 import com.melot.family.driver.domain.DO.UserApplyActorDO;
+import com.melot.family.driver.domain.FamilyInfo;
 import com.melot.family.driver.service.UserApplyActorService;
 import com.melot.kk.config.api.domain.OpenPageDO;
 import com.melot.kk.config.api.service.OpenPageService;
+import com.melot.kk.hall.api.service.SysMenuService;
 import com.melot.kk.module.report.dbo.ReportFlowRecord;
 import com.melot.kk.module.report.service.ReportFlowService;
 import com.melot.kk.module.report.util.CommonStateCode;
@@ -50,6 +34,10 @@ import com.melot.kk.userSecurity.api.constant.UserVerifyTypeEnum;
 import com.melot.kk.userSecurity.api.domain.DO.UserVerifyDO;
 import com.melot.kk.userSecurity.api.domain.param.UserVerifyParam;
 import com.melot.kk.userSecurity.api.service.UserVerifyService;
+import com.melot.kkactivity.driver.domain.NewUserBootPageConf;
+import com.melot.kkactivity.driver.service.NewUserTaskService;
+import com.melot.kkcore.actor.api.ActorInfo;
+import com.melot.kkcore.actor.service.ActorService;
 import com.melot.kkcore.user.api.ShowMoneyHistory;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.api.UserStaticInfo;
@@ -64,18 +52,7 @@ import com.melot.kktv.base.Page;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.UserService;
-import com.melot.kktv.util.AppChannelEnum;
-import com.melot.kktv.util.AppIdEnum;
-import com.melot.kktv.util.CommonUtil;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.Constant;
-import com.melot.kktv.util.DBEnum;
-import com.melot.kktv.util.DateUtil;
-import com.melot.kktv.util.ParameterKeys;
-import com.melot.kktv.util.PlatformEnum;
-import com.melot.kktv.util.SecretKeyUtil;
-import com.melot.kktv.util.StringUtil;
-import com.melot.kktv.util.TagCodeEnum;
+import com.melot.kktv.util.*;
 import com.melot.kktv.util.confdynamic.SystemConfig;
 import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.module.packagegift.driver.domain.LoudSpeakerHistory;
@@ -89,6 +66,14 @@ import com.melot.sdk.core.util.MelotBeanFactory;
 import com.melot.video.driver.domain.SearchVideoParams;
 import com.melot.video.driver.domain.VideoInfo;
 import com.melot.video.driver.service.VideoInfoServiceNew;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import java.sql.SQLException;
+import java.util.*;
 
 /**
  * 其他相关的接口类
@@ -134,6 +119,9 @@ public class OtherFunctions {
 
     @SuppressWarnings("unused")
     private ActorInfoSource actorInfoSource;
+
+    @Resource
+    ActorService actorService;
 
     public void setActorInfoSource(ActorInfoSource actorInfoSource) {
         this.actorInfoSource = actorInfoSource;
@@ -1345,6 +1333,16 @@ public class OtherFunctions {
         }
         
         try {
+
+            // 将自由主播开播权限取消
+            boolean freeActor = false;
+            if(configService.getIsCloseFreeApply()) {
+                ActorInfo actorInfo = actorService.getActorInfoById(actorId);
+                if (actorInfo != null && actorInfo.getFamilyId() == 11222) {
+                    freeActor = true;
+                }
+            }
+
             String broadcastTypeStr = SystemConfig.getValue("broadcastAuthority_type", AppIdEnum.AMUSEMENT);
             if (broadcastTypeStr != null) {
                 int roomType = ProfileServices.getRoomType(actorId);
@@ -1352,6 +1350,10 @@ public class OtherFunctions {
                 int isBroadcast = 0;
                 for (String broadcastType : broadcastAllType) {
                     isBroadcast = isBroadcastByType(broadcastType, roomType);
+                    if(freeActor) {
+                        result.addProperty(broadcastType, 0);
+                        continue;
+                    }
                     if (isBroadcast < 0) {
                         result.addProperty(broadcastType, isBroadcastBySource(actorId, Integer.valueOf(broadcastType)));
                     } else {

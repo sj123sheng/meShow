@@ -568,6 +568,8 @@ public class TagCodeEnum {
 	public static final String NOT_VALID_PRODUCT = "5106051307";
 	/** 商品库存不足 */
 	public static final String STOCK_NOT_FULL = "5106051308";
+	/** 商品已删除 */
+	public static final String DELETED_PRODUCT = "5106051309";
 
 	/** 该id不是商家，没有权限*/
 	public static final String NOT_SALE_ACTOR = "5106051406";
@@ -601,6 +603,21 @@ public class TagCodeEnum {
     public static final String NOT_MERCHANT_ID = "5106052007";
     /** 订单金额非法 */
     public static final String ERROR_ORDER_MONEY = "5106052008";
+
+    /** 分销比例错误 **/
+    public static final String RATE_ERROR="5106052009";
+
+    /** 无法分销自己的商品 **/
+    public static final String PROXY_USER_ERROR = "5106052010";
+
+    /** 没有操作权限 **/
+    public static final String PERMISSIONS_ERROR = "5106052011";
+
+    /** 商品已经代理 **/
+    public static final String PRODUCT_ALREADY_PROXY = "5106052012";
+
+    /** 商品不支持代理分销 **/
+    public static final String PRODUCT_NOT_SUPPORT_DISTRIBUTION = "5106052013";
 
 	/*------小镇错误码 -------*/
 	/**
