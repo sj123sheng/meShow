@@ -1296,6 +1296,7 @@ public class ActivityFunctions {
         		shareInfo.setUserId(userId);
         	}
         	shareInfo.setSharedPlatform(sharePlatform);
+        	shareInfo.setPlatform(platform);
         	shareInfo.setSharedType(shareType);
         	shareInfo.setSharedSourceId(shareSourceId);
         	

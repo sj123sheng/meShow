@@ -5,15 +5,12 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.melot.asset.driver.domain.ConfVirtualId;
 import com.melot.asset.driver.service.VirtualIdService;
-import com.melot.kk.liveshop.api.constant.LiveShopErrorMsg;
-import com.melot.kk.liveshop.api.constant.LiveShopTransactionType;
-import com.melot.kk.liveshop.api.constant.SellerApplyCheckStatusEnum;
+import com.melot.kk.liveshop.api.constant.*;
 import com.melot.kk.liveshop.api.dto.*;
-import com.melot.kk.liveshop.api.service.ConfItemCatService;
-import com.melot.kk.liveshop.api.service.ConfSubShopService;
-import com.melot.kk.liveshop.api.service.LiveShopService;
-import com.melot.kk.liveshop.api.service.SellerApplyInfoService;
+import com.melot.kk.liveshop.api.service.*;
+import com.melot.kk.logistics.api.domain.HistDeliveryDO;
 import com.melot.kk.logistics.api.domain.UserAddressDO;
+import com.melot.kk.logistics.api.service.HistDeliveryService;
 import com.melot.kk.logistics.api.service.UserAddressService;
 import com.melot.kk.recharge.api.dto.ConfPaymentInfoDto;
 import com.melot.kk.recharge.api.service.RechargeService;
@@ -24,6 +21,8 @@ import com.melot.kkcx.transform.LiveShopTF;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Page;
 import com.melot.kktv.base.Result;
+import com.melot.kktv.domain.WorkVideoInfo;
+import com.melot.kktv.service.WorkService;
 import com.melot.kktv.util.*;
 import com.melot.module.api.exceptions.MelotModuleException;
 import com.melot.module.packagegift.driver.service.XmanService;
@@ -68,6 +67,15 @@ public class LiveShopFunctions {
 
     @Resource
     ConfSubShopService confSubShopService;
+
+    @Resource
+    ProductService productService;
+
+    @Resource
+    OrderService orderService;
+
+    @Resource
+    HistDeliveryService histDeliveryService;
     
     /**
      * 主播生成订单【51060502】
@@ -694,22 +702,22 @@ public class LiveShopFunctions {
         }
         
         try {
-            Result<LiveShopProductDTO> moduleResult = liveShopService.getProductInfoByProductId(productId);
-            if (moduleResult == null) {
-                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
-                return result;
-            }
-            String code = moduleResult.getCode();
-            if (LiveShopErrorMsg.NOT_EXIST_PRODUCT_CODE.equals(code)) {
+            LiveShopProductDetailDTO productDetailDTO = productService.getProductDetail(productId);
+            if (productDetailDTO == null) {
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.NOT_EXIST_PRODUCT);
                 return result;
-            } else if (!CommonStateCode.SUCCESS.equals(code) || moduleResult.getData() == null){
-                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            }
+            Integer deleteFlag = productDetailDTO.getDeleteFlag();
+            if(deleteFlag != null && deleteFlag == 0) {
+                result.addProperty("isValid", -1);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
                 return result;
             }
-            LiveShopProductDTO productDTO = moduleResult.getData();
-            
-            LiveShopTF.product2Json(result, productDTO);
+            LiveShopTF.product2Json(result, productDetailDTO);
+            ConfItemCatDTO confItemCatDTO = confItemCatService.getConfItemCategory(productDetailDTO.getCatId());
+            if(confItemCatDTO != null) {
+                result.addProperty("catName", confItemCatDTO.getCatName());
+            }
             
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
             return result;
@@ -892,6 +900,10 @@ public class LiveShopFunctions {
             result.addProperty("waitPayBalance", balanceInfoDTO.getWaitPayBalance());
             result.addProperty("waitDeliverBalance", balanceInfoDTO.getWaitDeliverBalance());
             result.addProperty("waitReceiveBalance", balanceInfoDTO.getWaitReceiveBalance());
+
+            long waitSettleBalance = orderService.getWaitSettleBalance(userId);
+            result.addProperty("waitSettleBalance", waitSettleBalance);
+
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
         } catch (Exception e) {
             logger.error(String.format("Module Error：liveShopService.getMyBalance(userId=%s)", userId), e);
@@ -1011,10 +1023,27 @@ public class LiveShopFunctions {
             if (CollectionUtils.isNotEmpty(page.getList())) {
                 for (LiveShopTransactionDetailsDTO liveShopTransactionDetailsDTO : page.getList()) {
                     JsonObject ele = new JsonObject();
-                    ele.addProperty("transactionType", liveShopTransactionDetailsDTO.getTransactionType());
-                    if (LiveShopTransactionType.WITHDRAW.equals(liveShopTransactionDetailsDTO.getTransactionType())) {
+                    int transactionType = liveShopTransactionDetailsDTO.getTransactionType();
+                    String transactionDesc = null;
+                    if (transactionType == LiveShopTransactionType.WITHDRAW) {
                         ele.addProperty("status", liveShopTransactionDetailsDTO.getStatus());
+                        String bankcard = liveShopTransactionDetailsDTO.getBankAccount();
+                        String tailNumber = bankcard;
+                        if(bankcard.length() >= 4) {
+                            tailNumber = bankcard.substring(bankcard.length()-4);
+                        }
+                        transactionDesc = "提现到" + liveShopTransactionDetailsDTO.getBankName() + "(" + tailNumber +")";
+                    } else if(transactionType == LiveShopTransactionType.PAYMENT) {
+                        transactionDesc = "货款";
+                    } else if(transactionType == LiveShopTransactionType.REFUND) {
+                        transactionDesc = "退款";
+                    } else if(transactionType == LiveShopTransactionType.COMMISSION_EXPENSE) {
+                        transactionDesc = "佣金支出";
+                    } else if(transactionType == LiveShopTransactionType.COMMISSION_INCOME) {
+                        transactionDesc = "佣金收入";
                     }
+                    ele.addProperty("transactionType", transactionType);
+                    ele.addProperty("transactionDesc", transactionDesc);
                     ele.addProperty("money", liveShopTransactionDetailsDTO.getMoney());
                     ele.addProperty("change", liveShopTransactionDetailsDTO.getChange());
                     ele.addProperty("date", liveShopTransactionDetailsDTO.getAddTime().getTime());
@@ -2046,4 +2075,1196 @@ public class LiveShopFunctions {
         }
     }
 
+    /**
+     * 获取一级商品品类列表(51060539)
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getFirstLevelItemCats(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        int sellerId;
+
+        try {
+            sellerId = CommonUtil.getJsonParamInt(jsonObject, "sellerId", 0, "03040002", 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+        JsonArray jsonArray = new JsonArray();
+        List<ConfItemCatDTO> list = sellerApplyInfoService.getUserApplyCategoryList(sellerId);
+        if(!CollectionUtils.isEmpty(list)){
+            for(ConfItemCatDTO item : list){
+                JsonObject json = new JsonObject();
+                json.addProperty("catId",item.getCatId());
+                json.addProperty("catName",item.getCatName());
+                jsonArray.add(json);
+            }
+        }
+        result.add("itemCatList",jsonArray);
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+
+    /**
+     * 添加商品(51060540)
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject saveProduct(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId;
+        String productBannerUrls;
+        int catId;
+        String productName;
+        long productPrice;
+        int stockNum;
+        long expressPrice;
+        String productDetailDesc;
+        String productDetailUrls;
+        int supportReturn;
+        int supportDistribution;
+        int distributorCommissionRate;
+
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "03040002", 1, Integer.MAX_VALUE);
+
+            productBannerUrls = CommonUtil.getJsonParamString(jsonObject, "productBannerUrls", null,
+                    ParamCodeEnum.PRODUCT_BANNER_URLS.getErrorCode(), 1, 5000);
+
+            catId = CommonUtil.getJsonParamInt(jsonObject, "catId", 0,
+                    ParamCodeEnum.CAT_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+
+            productName = CommonUtil.getJsonParamString(jsonObject, "productName", null,
+                    ParamCodeEnum.PRODUCT_NAME.getErrorCode(), 1, 500);
+
+            productPrice = CommonUtil.getJsonParamLong(jsonObject, "productPrice", 0,
+                    ParamCodeEnum.PRODUCT_PRICE.getErrorCode(), 1, Long.MAX_VALUE);
+
+            stockNum = CommonUtil.getJsonParamInt(jsonObject, "stockNum", 0,
+                    ParamCodeEnum.STOCK_NUM.getErrorCode(), 1, Integer.MAX_VALUE);
+
+            expressPrice = CommonUtil.getJsonParamInt(jsonObject, "expressPrice", 0,
+                    ParamCodeEnum.EXPRESS_PRICE.getErrorCode(), 0, Integer.MAX_VALUE);
+
+            productDetailDesc = CommonUtil.getJsonParamString(jsonObject, "productDetailDesc", null,
+                    null, 0, 8000);
+
+            productDetailUrls = CommonUtil.getJsonParamString(jsonObject, "productDetailUrls",
+                    null, null, 0, 5000);
+
+            supportReturn = CommonUtil.getJsonParamInt(jsonObject, "supportReturn", 0,
+                    ParamCodeEnum.SUPPORT_RETURN.getErrorCode(), 0, 1);
+
+            supportDistribution = CommonUtil.getJsonParamInt(jsonObject, "supportDistribution", 0,
+                    ParamCodeEnum.SUPPORT_DISTRIBUTION.getErrorCode(), 0, 1);
+
+            distributorCommissionRate = CommonUtil.getJsonParamInt(jsonObject, "distributorCommissionRate",
+                    0, null, 0, 100);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        LiveShopProductDetailDTO liveShopProductDetailDTO = new LiveShopProductDetailDTO();
+        liveShopProductDetailDTO.setActorId(userId);
+        liveShopProductDetailDTO.setCatId(catId);
+        liveShopProductDetailDTO.setExpressPrice(expressPrice);
+        if(!StringUtils.isEmpty(productDetailDesc)){
+            liveShopProductDetailDTO.setProductDetailDesc(productDetailDesc);
+        }
+        liveShopProductDetailDTO.setProductPrice(productPrice);
+        liveShopProductDetailDTO.setStockNum(stockNum);
+        liveShopProductDetailDTO.setSupportReturn(supportReturn);
+        liveShopProductDetailDTO.setProductName(productName);
+        liveShopProductDetailDTO.setSupportDistribution(supportDistribution);
+        if(supportDistribution > 0){
+            if(distributorCommissionRate <= 0){
+                result.addProperty("TagCode", ParamCodeEnum.DISTRIBUTOR_COMMISSIONRATE.getErrorCode());
+                return result;
+            } else {
+                liveShopProductDetailDTO.setDistributorCommissionRate(distributorCommissionRate);
+            }
+        }
+        List<LiveShopProductPictureDTO> imgList = this.getProductImgList(productBannerUrls,1);
+        if(!CollectionUtils.isEmpty(imgList)){
+            liveShopProductDetailDTO.setResourceUrl(imgList.get(0).getResourceUrl());
+            liveShopProductDetailDTO.setProductPictureDTOList(imgList);
+        }
+        if(!StringUtils.isEmpty(productDetailUrls)){
+            List<LiveShopProductPictureDTO> detailList = this.getProductImgList(productDetailUrls,2);
+            if(!CollectionUtils.isEmpty(detailList)){
+                liveShopProductDetailDTO.setProductPictureDTODetailList(detailList);
+            }
+        }
+
+        Result<Boolean> proResult = productService.addProduct(liveShopProductDetailDTO);
+        if (CommonStateCode.SUCCESS.equals(proResult.getCode())){
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } else {
+            if ("RATE_ERROR".equals(proResult.getCode())){
+                result.addProperty("TagCode", TagCodeEnum.RATE_ERROR);
+                return result;
+            } else if ("NOT_SELLER".equals(proResult.getCode())) {
+                result.addProperty("TagCode", TagCodeEnum.NOT_EXIST_SALE_ACTOR);
+                return result;
+            } else if ("SQL_ERROR".equals(proResult.getCode())){
+                result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
+                return result;
+            } else {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+                return result;
+            }
+        }
+    }
+
+    private List<LiveShopProductPictureDTO> getProductImgList(String url,int picType){
+        if(StringUtils.isEmpty(url)){
+            return null;
+        }
+        List<LiveShopProductPictureDTO> list = new ArrayList<>();
+        String[] array = url.split(",");
+        if(array!=null && array.length>0){
+            for(int i=0; i<array.length;i++){
+                String item = array[i];
+                LiveShopProductPictureDTO liveShopProductPictureDTO = new LiveShopProductPictureDTO();
+                if(item.indexOf("!") > 0) {
+                    item = item.substring(0, item.lastIndexOf("!"));
+                }
+                liveShopProductPictureDTO.setResourceUrl(item);
+                liveShopProductPictureDTO.setPictureType(picType);
+                liveShopProductPictureDTO.setSortNo(i+1);
+                // 获取图片宽高信息
+                WorkVideoInfo imageInfo = WorkService.getImageInfoByHttp(item);
+                if (imageInfo != null) {
+                    liveShopProductPictureDTO.setPictureHeight(imageInfo.getHeight());
+                    liveShopProductPictureDTO.setPictureWidth(imageInfo.getWidth());
+                }
+
+                list.add(liveShopProductPictureDTO);
+            }
+        }
+        return list;
+    }
+
+    /**
+     * 修改商品(51060552)
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject updateProduct(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId;
+        int productId;
+        String productBannerUrls;
+        int catId;
+        String productName;
+        long productPrice;
+        int stockNum;
+        long expressPrice;
+        String productDetailDesc;
+        String productDetailUrls;
+        int supportReturn;
+        int distributorCommissionRate;
+
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "03040002", 1, Integer.MAX_VALUE);
+
+            productId = CommonUtil.getJsonParamInt(jsonObject, "productId", 0, ParamCodeEnum.PRODUCT_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+
+            productBannerUrls = CommonUtil.getJsonParamString(jsonObject, "productBannerUrls", null,
+                    null, 0, 5000);
+
+            catId = CommonUtil.getJsonParamInt(jsonObject, "catId", 0,
+                    null, 0, Integer.MAX_VALUE);
+
+            productName = CommonUtil.getJsonParamString(jsonObject, "productName", null,
+                    null, 0, 500);
+
+            productPrice = CommonUtil.getJsonParamLong(jsonObject, "productPrice", 0,
+                    null, 1, Long.MAX_VALUE);
+
+            stockNum = CommonUtil.getJsonParamInt(jsonObject, "stockNum", 0,
+                    null, 1, Integer.MAX_VALUE);
+
+            expressPrice = CommonUtil.getJsonParamInt(jsonObject, "expressPrice", -1,
+                    null, 0, Integer.MAX_VALUE);
+
+            productDetailDesc = CommonUtil.getJsonParamString(jsonObject, "productDetailDesc", null,
+                    null, 0, 8000);
+
+            productDetailUrls = CommonUtil.getJsonParamString(jsonObject, "productDetailUrls",
+                    null, null, 0, 5000);
+
+            supportReturn = CommonUtil.getJsonParamInt(jsonObject, "supportReturn", -1,
+                    null, 0, 1);
+
+            distributorCommissionRate = CommonUtil.getJsonParamInt(jsonObject, "distributorCommissionRate",
+                    0, null, 0, 100);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        LiveShopProductDetailDTO liveShopProductDetailDTO = productService.getProductDetail(productId);
+        if(liveShopProductDetailDTO == null){
+            result.addProperty("TagCode", TagCodeEnum.NOT_EXIST_PRODUCT);
+            return result;
+        }
+        if(userId != liveShopProductDetailDTO.getActorId()){
+            result.addProperty("TagCode", TagCodeEnum.PERMISSIONS_ERROR);
+            return result;
+        }
+
+        if(catId > 0){
+            liveShopProductDetailDTO.setCatId(catId);
+        }
+        if(expressPrice >= 0){
+            liveShopProductDetailDTO.setExpressPrice(expressPrice);
+        }
+        if(!StringUtils.isEmpty(productDetailDesc)){
+            liveShopProductDetailDTO.setProductDetailDesc(productDetailDesc);
+        }
+        if(productPrice > 0){
+            liveShopProductDetailDTO.setProductPrice(productPrice);
+        }
+        if(stockNum > 0){
+            liveShopProductDetailDTO.setStockNum(stockNum);
+        }
+        if(supportReturn >= 0){
+            liveShopProductDetailDTO.setSupportReturn(supportReturn);
+        }
+        if(!StringUtils.isEmpty(productName)){
+            liveShopProductDetailDTO.setProductName(productName);
+        }
+        if(distributorCommissionRate > 0 && liveShopProductDetailDTO.getSupportDistribution() == 1) {
+            liveShopProductDetailDTO.setDistributorCommissionRate(distributorCommissionRate);
+        }
+
+        List<LiveShopProductPictureDTO> imgList = this.getProductImgList(productBannerUrls,1);
+        if(!CollectionUtils.isEmpty(imgList)){
+            String url = imgList.get(0).getResourceUrl();
+            if(url.indexOf("!") > 0) {
+                url = url.substring(0, url.lastIndexOf("!"));
+            }
+            liveShopProductDetailDTO.setResourceUrl(url);
+            liveShopProductDetailDTO.setProductPictureDTOList(imgList);
+        }
+        if(!StringUtils.isEmpty(productDetailUrls)){
+            List<LiveShopProductPictureDTO> detailList = this.getProductImgList(productDetailUrls,2);
+            if(!CollectionUtils.isEmpty(detailList)){
+                liveShopProductDetailDTO.setProductPictureDTODetailList(detailList);
+            }
+        }
+
+        Result<Boolean> proResult = productService.updateProduct(productId, liveShopProductDetailDTO);
+        if(CommonStateCode.SUCCESS.equals(proResult.getCode())){
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } else {
+            if ("PRODUCT_NOT_EXIST".equals(proResult.getCode())){
+                result.addProperty("TagCode", TagCodeEnum.NOT_EXIST_PRODUCT);
+                return result;
+            } else if ("PRODUCT_NOT_AVAILABLE".equals(proResult.getCode())){
+                result.addProperty("TagCode", TagCodeEnum.NOT_VALID_PRODUCT);
+                return result;
+            } else if ("NOT_SELLER".equals(proResult.getCode())) {
+                result.addProperty("TagCode", TagCodeEnum.NOT_EXIST_SALE_ACTOR);
+                return result;
+            } else if ("SQL_ERROR".equals(proResult.getCode())){
+                result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
+                return result;
+            } else {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+                return result;
+            }
+        }
+    }
+
+    /**
+     * 代理商品(51060541)
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject proxyProduct(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId;
+        int productId;
+
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "03040002", 1, Integer.MAX_VALUE);
+            productId = CommonUtil.getJsonParamInt(jsonObject, "productId", 0, TagCodeEnum.INVALID_PARAMETERS, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        Result<Boolean> resultCode = productService.proxyProduct(userId,productId);
+        if("PRODUCT_NOT_EXIST".equals(resultCode.getCode())){
+            result.addProperty("TagCode", TagCodeEnum.NOT_EXIST_PRODUCT);
+            return result;
+        }
+        if("PRODUCT_NOT_AVAILABLE".equals(resultCode.getCode())){
+            result.addProperty("TagCode", TagCodeEnum.NOT_VALID_PRODUCT);
+            return result;
+        }
+        if("PRODUCT_NOT_SUPPORT_DISTRIBUTION".equals(resultCode.getCode())){
+            result.addProperty("TagCode", TagCodeEnum.PRODUCT_NOT_SUPPORT_DISTRIBUTION);
+            return result;
+        }
+        if("CAN_NOT_PROXY_SELF_PRODUCT".equals(resultCode.getCode())){
+            result.addProperty("TagCode", TagCodeEnum.PROXY_USER_ERROR);
+            return result;
+        }
+        if("PRODUCT_ALREADY_PROXY".equals(resultCode.getCode())){
+            result.addProperty("TagCode", TagCodeEnum.PRODUCT_ALREADY_PROXY);
+            return result;
+        }
+        if("SQL_ERROR".equals(resultCode.getCode())){
+            result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
+            return result;
+        }
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+
+    /**
+     * 获取货源商品列表【51060535】
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getSourceProducts(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        int userId;
+        int start;
+        int num;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParamCodeEnum.USER_ID.getId(), 0, ParamCodeEnum.USER_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+            start = CommonUtil.getJsonParamInt(jsonObject, PARAM_START, 0, null, 0, Integer.MAX_VALUE);
+            num = CommonUtil.getJsonParamInt(jsonObject, "num", 20, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        try {
+            Page<SourceProductInfoDTO> page = productService.getSourceProducts(userId, start, num);
+
+            if (page == null) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            result.addProperty("count", page.getCount());
+            JsonArray products = new JsonArray();
+            if (page.getList() == null) {
+                result.add("products", products);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+                return result;
+            }
+
+            for (SourceProductInfoDTO productDTO : page.getList()) {
+                JsonObject productJson = new JsonObject();
+                productJson.addProperty("productId", productDTO.getProductId());
+                productJson.addProperty("productName", productDTO.getProductName());
+                productJson.addProperty("productPrice", productDTO.getProductPrice());
+                productJson.addProperty("productUrl", productDTO.getProductUrl() + "!256");
+                productJson.addProperty("stockNum", productDTO.getStockNum());
+                productJson.addProperty("proxy", productDTO.getProxy());
+                productJson.addProperty("distributorCommissionRate", productDTO.getDistributorCommissionRate());
+                productJson.addProperty("distributorCommissionAmount", productDTO.getDistributorCommissionAmount());
+                productJson.addProperty("supplierId", productDTO.getSupplierId());
+                productJson.addProperty("supplierNickname", productDTO.getSupplierNickname());
+
+                products.add(productJson);
+            }
+
+            result.add("products", products);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error(String.format("Module Error：liveShopService.getSellingProducts(userId=%s, start=%s, num=%s)", userId, start, num), e);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+	/**
+     * 获取用户在售商品列表【51060536】
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getSellingProducts(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        int userId;
+        int start;
+        int num;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParamCodeEnum.USER_ID.getId(), 0, ParamCodeEnum.USER_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+            start = CommonUtil.getJsonParamInt(jsonObject, PARAM_START, 0, null, 0, Integer.MAX_VALUE);
+            num = CommonUtil.getJsonParamInt(jsonObject, "num", 20, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        try {
+            Page<LiveShopProductInfoDTO> page = productService.getProducts(userId, LiveShopProductState.IS_VALID, start, num);
+
+            if (page == null) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            result.addProperty("count", page.getCount());
+            JsonArray products = new JsonArray();
+            if (page.getList() == null) {
+                result.add("products", products);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+                return result;
+            }
+
+            for (LiveShopProductInfoDTO productDTO : page.getList()) {
+                JsonObject productJson = new JsonObject();
+                productJson.addProperty("productId", productDTO.getProductId());
+                productJson.addProperty("productName", productDTO.getProductName());
+                productJson.addProperty("productPrice", productDTO.getProductPrice());
+                productJson.addProperty("productUrl", productDTO.getProductUrl() + "!256");
+                productJson.addProperty("stockNum", productDTO.getStockNum());
+                productJson.addProperty("owner", productDTO.getOwner());
+                productJson.addProperty("supportReturn", productDTO.getSupportReturn());
+                if(productDTO.getDistributorCommissionRate() != null) {
+                    productJson.addProperty("distributorCommissionRate", productDTO.getDistributorCommissionRate());
+                    productJson.addProperty("distributorCommissionAmount", productDTO.getDistributorCommissionAmount());
+                }
+
+                products.add(productJson);
+            }
+
+            result.add("products", products);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error(String.format("Module Error：liveShopService.getSellingProducts(userId=%s, start=%s, num=%s)", userId, start, num), e);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+	/**
+     * 获取用户已下架商品列表【51060546】
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getOffShelvesProducts(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId;
+        int start;
+        int num;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParamCodeEnum.USER_ID.getId(), 0, ParamCodeEnum.USER_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+            start = CommonUtil.getJsonParamInt(jsonObject, PARAM_START, 0, null, 0, Integer.MAX_VALUE);
+            num = CommonUtil.getJsonParamInt(jsonObject, "num", 20, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        try {
+            Page<LiveShopProductInfoDTO> page = productService.getProducts(userId, LiveShopProductState.NOT_VALID, start, num);
+
+            if (page == null) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            result.addProperty("count", page.getCount());
+            JsonArray products = new JsonArray();
+            if (page.getList() == null) {
+                result.add("products", products);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+                return result;
+            }
+
+            for (LiveShopProductInfoDTO productDTO : page.getList()) {
+                JsonObject productJson = new JsonObject();
+                productJson.addProperty("productId", productDTO.getProductId());
+                productJson.addProperty("productName", productDTO.getProductName());
+                productJson.addProperty("productPrice", productDTO.getProductPrice());
+                productJson.addProperty("productUrl", productDTO.getProductUrl() + "!256");
+                productJson.addProperty("stockNum", productDTO.getStockNum());
+                productJson.addProperty("owner", productDTO.getOwner());
+                productJson.addProperty("supportReturn", productDTO.getSupportReturn());
+                if(productDTO.getDistributorCommissionRate() != null) {
+                    productJson.addProperty("distributorCommissionRate", productDTO.getDistributorCommissionRate());
+                    productJson.addProperty("distributorCommissionAmount", productDTO.getDistributorCommissionAmount());
+                }
+
+                products.add(productJson);
+            }
+
+            result.add("products", products);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error(String.format("Module Error：liveShopService.getOffShelvesProducts(userId=%s, start=%s, num=%s)", userId, start, num), e);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 获取用户是否显示货架【51060537】
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getShowShelfStatus(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        int userId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParamCodeEnum.USER_ID.getId(), 0, ParamCodeEnum.USER_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+            int showShelfStatus = productService.getShowShelfStatus(userId);
+
+            result.addProperty("showShelfStatus", showShelfStatus);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error(String.format("Module Error：liveShopService.getShowShelfStatus(userId=%s)", userId), e);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 设置用户是否显示货架【51060538】
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject setUpShowShelfStatus(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId, showShelfStatus;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParamCodeEnum.USER_ID.getId(), 0, ParamCodeEnum.USER_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+            showShelfStatus = CommonUtil.getJsonParamInt(jsonObject, ParamCodeEnum.SHOW_SHELF_STATUS.getId(), 0, ParamCodeEnum.SHOW_SHELF_STATUS.getErrorCode(), 0, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+            boolean setUpResult = productService.setUpShowShelfStatus(userId, showShelfStatus);
+
+            result.addProperty("setUpResult", setUpResult);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error(String.format("Module Error：liveShopService.getShowShelfStatus(userId=%s)", userId), e);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 获取用户商品管理页信息【51060545】
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getProductManagerInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParamCodeEnum.USER_ID.getId(), 0, ParamCodeEnum.USER_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+            ProductManagerInfoDTO productManagerInfoDTO = productService.getProductManagerInfo(userId);
+
+            if(productManagerInfoDTO != null) {
+                result.addProperty("sellingProjectNum", productManagerInfoDTO.getSellingProductCount());
+                result.addProperty("offShelvesProjectNum", productManagerInfoDTO.getOffShelvesProductCount());
+            }
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error(String.format("Module Error：liveShopService.getProductManagerInfo(userId=%s)", userId), e);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 获取用户订单管理页信息【51060547】
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getOrderManagerInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParamCodeEnum.USER_ID.getId(), 0, ParamCodeEnum.USER_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+            OrderManagerInfoDTO orderManagerInfoDTO = orderService.getOrderManagerInfo(userId);
+
+            if(orderManagerInfoDTO != null) {
+                result.addProperty("processingOrderNum", orderManagerInfoDTO.getProcessingOrderNum());
+                result.addProperty("waitShipOrderNum", orderManagerInfoDTO.getWaitShipOrderNum());
+                result.addProperty("waitPayOrderNum", orderManagerInfoDTO.getWaitPayOrderNum());
+                result.addProperty("waitReciveOrderNum", orderManagerInfoDTO.getWaitReciveOrderNum());
+                result.addProperty("refundingOrderNum", orderManagerInfoDTO.getRefundingOrderNum());
+            }
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error(String.format("Module Error：liveShopService.getOrderManagerInfo(userId=%s)", userId), e);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 获取用户分销订单明细【51060548】
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getDistributionOrders(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId, state, start, num;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParamCodeEnum.USER_ID.getId(), 0, ParamCodeEnum.USER_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+            state = CommonUtil.getJsonParamInt(jsonObject, ParamCodeEnum.STATE.getId(), 0, ParamCodeEnum.STATE.getErrorCode(), 0, Integer.MAX_VALUE);
+            start = CommonUtil.getJsonParamInt(jsonObject, PARAM_START, 0, null, 0, Integer.MAX_VALUE);
+            num = CommonUtil.getJsonParamInt(jsonObject, "num", 20, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+            Page<LiveShopOrderV2DTO> page = orderService.getDistributionOrders(state, userId, start, num);
+
+            if(page != null) {
+                result.addProperty("count", page.getCount());
+                List<LiveShopOrderV2DTO> list = page.getList();
+                JsonArray orders = new JsonArray();
+                if(CollectionUtils.isNotEmpty(list)) {
+                    for (LiveShopOrderV2DTO orderV2DTO : list) {
+                        JsonObject orderJson = new JsonObject();
+                        JsonArray products = new JsonArray();
+                        orderJson.addProperty("orderNo", orderV2DTO.getOrderNo());
+                        UserProfile userProfile = kkUserService.getUserProfile(orderV2DTO.getActorId());
+                        if(userProfile != null) {
+                            orderJson.addProperty("ownShopNickname", userProfile.getNickName());
+                        }
+                        orderJson.addProperty("payMoney", orderV2DTO.getPayMoney());
+                        orderJson.addProperty("orderState", orderV2DTO.getOrderState());
+                        orderJson.addProperty("settleStatus", orderV2DTO.getSettleStatus());
+                        orderJson.addProperty("addTime", orderV2DTO.getAddTime().getTime());
+                        for(LiveShopOrderItemV2DTO itemV2DTO : orderV2DTO.getOrderItems()) {
+                            JsonObject itemJson = new JsonObject();
+                            itemJson.addProperty("productId", itemV2DTO.getProductId());
+                            itemJson.addProperty("productName", itemV2DTO.getProductName());
+                            itemJson.addProperty("productUrl", itemV2DTO.getResourceUrl() + "!256");
+                            itemJson.addProperty("distributorCommissionRate", itemV2DTO.getDistributorCommissionRate());
+                            itemJson.addProperty("distributorCommissionAmount", itemV2DTO.getDistributorCommissionAmount());
+                            products.add(itemJson);
+                        }
+                        orderJson.add("products", products);
+
+                        orders.add(orderJson);
+                    }
+
+                    result.add("orders", orders);
+                }
+            }
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error(String.format("Module Error：liveShopService.getDistributionOrders(userId=%s, state=%s)", userId, state), e);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 提交订单【51060549】
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject submitOrder(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        if (!checkTag) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_INCORRECT);
+            return result;
+        }
+
+        int userId, sellerId, productId, count, addressId, orderChannel;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, "5106051301", 1, Integer.MAX_VALUE);
+            sellerId = CommonUtil.getJsonParamInt(jsonObject, "sellerId", 0, "5106051310", 0, Integer.MAX_VALUE);
+            productId = CommonUtil.getJsonParamInt(jsonObject, "productId", 0, "5106051303", 1, Integer.MAX_VALUE);
+            count = CommonUtil.getJsonParamInt(jsonObject, "count", 0, "5106051304", 1, Integer.MAX_VALUE);
+            addressId = CommonUtil.getJsonParamInt(jsonObject, "addressId", 0, "5106051305", 1, Integer.MAX_VALUE);
+            orderChannel = CommonUtil.getJsonParamInt(jsonObject, "orderChannel", 0, "5106051311", 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
+            return result;
+        }
+
+        try {
+
+            Result<String> addOrderResult = orderService.submitOrder(userId, sellerId, productId, count, addressId,orderChannel);
+            if (addOrderResult == null) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            String code = addOrderResult.getCode();
+            if (LiveShopErrorMsg.DELETED_PRODUCT_CODE.equals(code)) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.DELETED_PRODUCT);
+                return result;
+            } else if (LiveShopErrorMsg.NOT_VALID_PRODUCT_CODE.equals(code)) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.NOT_VALID_PRODUCT);
+                return result;
+            } else if (LiveShopErrorMsg.STOCK_NOT_FULL_CODE.equals(code)) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.STOCK_NOT_FULL);
+                return result;
+            } else if (!CommonStateCode.SUCCESS.equals(code)){
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+                return result;
+            }
+            result.addProperty(PARAM_ORDER_NO, addOrderResult.getData());
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error(String.format("Module Error：liveShopService.submitOrder(userId=%s, sellerId=%s, productId=%s, count=%s, addressId=%s, orderChannel=%s)",
+                    userId, sellerId, productId, count, addressId, orderChannel), e);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 获取订单列表V2【51060550】
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getOrdersV2(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId, state, start, num, type;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParamCodeEnum.USER_ID.getId(), 0, ParamCodeEnum.USER_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+            state = CommonUtil.getJsonParamInt(jsonObject, ParamCodeEnum.STATE.getId(), 0, null, 0, Integer.MAX_VALUE);
+            type = CommonUtil.getJsonParamInt(jsonObject, "type", 1, null, 0, Integer.MAX_VALUE);
+            start = CommonUtil.getJsonParamInt(jsonObject, PARAM_START, 0, null, 0, Integer.MAX_VALUE);
+            num = CommonUtil.getJsonParamInt(jsonObject, "num", 20, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+            Page<LiveShopOrderV2DTO> page = orderService.getOrders(state, userId, type, start, num);
+
+            if(page != null) {
+                result.addProperty("count", page.getCount());
+                List<LiveShopOrderV2DTO> list = page.getList();
+                JsonArray orders = new JsonArray();
+                if(CollectionUtils.isNotEmpty(list)) {
+                    for (LiveShopOrderV2DTO orderV2DTO : list) {
+                        JsonObject orderJson = new JsonObject();
+                        JsonArray products = new JsonArray();
+                        orderJson.addProperty("orderNo", orderV2DTO.getOrderNo());
+                        orderJson.addProperty("orderMoney", orderV2DTO.getOrderMoney());
+                        orderJson.addProperty("expressMoney", orderV2DTO.getExpressMoney());
+                        orderJson.addProperty("sellerNickname", orderV2DTO.getSellerNickname());
+                        orderJson.addProperty("orderType", orderV2DTO.getOrderType());
+                        orderJson.addProperty("orderState", orderV2DTO.getOrderState());
+                        orderJson.addProperty("waitPayMoney", orderV2DTO.getWaitPayMoney());
+                        orderJson.addProperty("payMoney", orderV2DTO.getPayMoney());
+                        orderJson.addProperty("refundMoney", orderV2DTO.getRefundMoney());
+
+                        for(LiveShopOrderItemV2DTO itemV2DTO : orderV2DTO.getOrderItems()) {
+                            JsonObject itemJson = new JsonObject();
+                            if(itemV2DTO.getProductId() != null) {
+                                itemJson.addProperty("productId", itemV2DTO.getProductId());
+                            }
+                            itemJson.addProperty("productName", itemV2DTO.getProductName());
+                            itemJson.addProperty("productUrl", itemV2DTO.getResourceUrl() + "!256");
+                            itemJson.addProperty("productPrice", itemV2DTO.getProductPrice());
+                            itemJson.addProperty("productCount", itemV2DTO.getProductCount());
+                            if(itemV2DTO.getSupportReturn() != null) {
+                                itemJson.addProperty("supportReturn", itemV2DTO.getSupportReturn());
+                            }
+                            if(itemV2DTO.getDistributorCommissionAmount() != null) {
+                                itemJson.addProperty("distributorCommissionAmount", itemV2DTO.getDistributorCommissionAmount());
+                            }
+                            products.add(itemJson);
+                        }
+                        orderJson.add("products", products);
+
+                        // 获取收货人姓名
+                        Result<HistDeliveryDO> deliveryDOResult = histDeliveryService.getHistDeliveryDO(orderV2DTO.getOrderId(), 3);
+                        if (deliveryDOResult != null && deliveryDOResult.getData() != null) {
+                            HistDeliveryDO histDeliveryDO = deliveryDOResult.getData();
+                            orderJson.addProperty("consigneeName", histDeliveryDO.getConsigneeName());
+                        }
+
+                        orders.add(orderJson);
+                    }
+
+                    result.add("orders", orders);
+                }
+            }
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error(String.format("Module Error：liveShopService.getOrdersV2(userId=%s, state=%s)", userId, state), e);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 获取订单详情V2【51060551】
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getOrderInfoV2(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        if (!checkTag) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_INCORRECT);
+            return result;
+        }
+        int userId;
+        String orderNo;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, "5106050301", 1, Integer.MAX_VALUE);
+            orderNo = CommonUtil.getJsonParamString(jsonObject, PARAM_ORDER_NO, "", "5106050302", 0, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        try {
+            LiveShopOrderV2DTO orderV2DTO = orderService.getOrderInfo(orderNo);
+            if (orderV2DTO == null) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            // 获取主播客服ID
+            List<Integer> subShopIds;
+            try {
+                subShopIds = liveShopService.getSubShopIds(orderV2DTO.getActorId());
+            } catch (Exception e) {
+                logger.error("liveShopService.getSubShopIds(" + orderV2DTO.getActorId() + ")", e);
+                subShopIds = Lists.newArrayList();
+            }
+            if (!orderV2DTO.getActorId().equals(userId)
+                    && !orderV2DTO.getUserId().equals(userId)
+                    && (subShopIds.isEmpty() || !subShopIds.contains(userId))) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5106050303");
+                return result;
+            }
+            UserAddressDO addressDO = null;
+            Result<UserAddressDO> addressResult = userAddressService.getUserDefaultAddressDOByUserId(orderV2DTO.getUserId());
+            if (addressResult != null && CommonStateCode.SUCCESS.equals(addressResult.getCode())) {
+                addressDO = addressResult.getData();
+            }
+
+            LiveShopTF.orderV2Info2Json(result, orderV2DTO, addressDO, subShopIds);
+
+            // 获取供货商手机号
+            Result<LiveShopInfoDTO> shopInfoResult = liveShopService.getShopInfo(orderV2DTO.getActorId(), LiveShopMode.AUCTION_SHOP);
+            if (shopInfoResult != null && shopInfoResult.getData() != null && shopInfoResult.getData().getMobileNo() != null) {
+                result.addProperty("supplierMobile", shopInfoResult.getData().getMobileNo());
+            }
+
+            // 支付方式
+            if (orderV2DTO.getPaymentMode() != null && orderV2DTO.getPaymentMode() > 0) {
+                Result<ConfPaymentInfoDto> rechargeResult = rechargeService.getConfPaymentInfoV2(1, orderV2DTO.getPaymentMode());
+                if (rechargeResult != null && CommonStateCode.SUCCESS.equals(rechargeResult.getCode())) {
+                    result.addProperty("paymentName", rechargeResult.getData().getPaymentName());
+                }
+            }
+
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error(String.format("Module Error：liveShopService.getOrderInfoV2(userId=%s, orderNo=%s)", userId, orderNo), e);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 获取商家服务页信息【51060553】
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getSellerManagerInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParamCodeEnum.USER_ID.getId(), 0, ParamCodeEnum.USER_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+            SellerManagerInfoDTO sellerManagerInfoDTO = orderService.getSellerManagerInfo(userId);
+
+            if(sellerManagerInfoDTO != null) {
+                result.addProperty("processingOrderNum", sellerManagerInfoDTO.getProcessingOrderNum());
+                result.addProperty("unreadMessageNum", sellerManagerInfoDTO.getUnreadMessageNum());
+            }
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error(String.format("Module Error：liveShopService.getSellerManagerInfo(userId=%s)", userId), e);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 下架商品(51060542)
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject offTheShelfProduct(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+        int userId;
+        int productId;
+
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "03040002", 1, Integer.MAX_VALUE);
+            productId = CommonUtil.getJsonParamInt(jsonObject, "productId", 0, TagCodeEnum.INVALID_PARAMETERS, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        Result<Boolean> resultCode = productService.offTheShelfProduct(userId,productId);
+        if("PRODUCT_NOT_EXIST".equals(resultCode.getCode())){
+            result.addProperty("TagCode", TagCodeEnum.NOT_EXIST_PRODUCT);
+            return result;
+        }
+        if("NO_PERMISSIONS".equals(resultCode.getCode())){
+            result.addProperty("TagCode", TagCodeEnum.PERMISSIONS_ERROR);
+            return result;
+        }
+        if("SQL_ERROR".equals(resultCode.getCode())){
+            result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
+            return result;
+        }
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+
+    /**
+     * 上架商品(51060543)
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject onTheShelfProduct(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+        int userId;
+        int productId;
+
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "03040002", 1, Integer.MAX_VALUE);
+            productId = CommonUtil.getJsonParamInt(jsonObject, "productId", 0, TagCodeEnum.INVALID_PARAMETERS, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        Result<Boolean> resultCode = productService.onTheShelfProduct(userId,productId);
+        if("PRODUCT_NOT_EXIST".equals(resultCode.getCode())){
+            result.addProperty("TagCode", TagCodeEnum.NOT_EXIST_PRODUCT);
+            return result;
+        }
+        if("NO_PERMISSIONS".equals(resultCode.getCode())){
+            result.addProperty("TagCode", TagCodeEnum.PERMISSIONS_ERROR);
+            return result;
+        }
+        if ("NOT_SELLER".equals(resultCode.getCode())) {
+            result.addProperty("TagCode", TagCodeEnum.NOT_EXIST_SALE_ACTOR);
+            return result;
+        }
+        if("SQL_ERROR".equals(resultCode.getCode())){
+            result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
+            return result;
+        }
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+
+    /**
+     * 删除商品(51060544)
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject removeProduct(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+        int userId;
+        int productId;
+
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "03040002", 1, Integer.MAX_VALUE);
+            productId = CommonUtil.getJsonParamInt(jsonObject, "productId", 0, TagCodeEnum.INVALID_PARAMETERS, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        LiveShopProductDetailDTO liveShopProductDetailDTO = productService.getProductDetail(productId);
+        if(liveShopProductDetailDTO == null){
+            result.addProperty("TagCode", TagCodeEnum.NOT_EXIST_PRODUCT);
+            return result;
+        }
+
+        Result<Boolean> resultCode = productService.deleteProduct(userId, productId);
+        if("SQL_ERROR".equals(resultCode.getCode())){
+            result.addProperty("TagCode", TagCodeEnum.EXECSQL_EXCEPTION);
+            return result;
+        }
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
 }

@@ -2900,6 +2900,101 @@
 		<constructor-arg name="methodName" value="addH5DistributorOrder" />
 	</bean>
 
+	<bean id="51060535" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getSourceProducts" />
+	</bean>
+
+	<bean id="51060536" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getSellingProducts" />
+	</bean>
+
+	<bean id="51060537" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getShowShelfStatus" />
+	</bean>
+
+	<bean id="51060538" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="setUpShowShelfStatus" />
+	</bean>
+
+	<bean id="51060539" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getFirstLevelItemCats" />
+	</bean>
+
+	<bean id="51060540" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="saveProduct" />
+	</bean>
+
+	<bean id="51060541" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="proxyProduct" />
+	</bean>
+
+	<bean id="51060542" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="offTheShelfProduct" />
+	</bean>
+
+	<bean id="51060543" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="onTheShelfProduct" />
+	</bean>
+
+	<bean id="51060544" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="removeProduct" />
+	</bean>
+
+	<bean id="51060545" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getProductManagerInfo" />
+	</bean>
+
+	<bean id="51060546" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getOffShelvesProducts" />
+	</bean>
+
+	<bean id="51060547" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getOrderManagerInfo" />
+	</bean>
+
+	<bean id="51060548" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getDistributionOrders" />
+	</bean>
+
+	<bean id="51060549" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="submitOrder" />
+	</bean>
+
+	<bean id="51060550" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getOrdersV2" />
+	</bean>
+
+	<bean id="51060551" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getOrderInfoV2" />
+	</bean>
+
+	<bean id="51060552" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="updateProduct" />
+	</bean>
+
+	<bean id="51060553" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getSellerManagerInfo" />
+	</bean>
+
 	<bean id="51060528" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="liveShopFunctions" />
 		<constructor-arg name="methodName" value="getItemCatList" />
@@ -3242,6 +3337,10 @@
 	<bean id="51120305" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="wechatProjectFunctions" />
 		<constructor-arg name="methodName" value="getLiveShopShareRoomUrl" />
+	</bean>
+	<bean id="51120306" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="wechatProjectFunctions" />
+		<constructor-arg name="methodName" value="getProjectShareUrl" />
 	</bean>
 
 </beans>

@@ -449,8 +449,11 @@ public class WithdrawFunctions {
                 }
                 ActorService actorService = (ActorService) MelotBeanFactory.getBean("actorService");
                 ActorInfo actorInfo = actorService.getActorInfoById(userId);
-                if(actorInfo != null && actorInfo.getFamilyId() == 11222 && payRoll == PayRollEnum.SELF_COLLAR) {
-                    showWithdraw = true;
+                if(actorInfo != null) {
+                    int familyId = actorInfo.getFamilyId();
+                    if((familyId == 11222 || familyId == 22137 || familyId == 22139) && payRoll == PayRollEnum.SELF_COLLAR) {
+                        showWithdraw = true;
+                    }
                 }
             }
             result.addProperty("showWithdraw", showWithdraw);

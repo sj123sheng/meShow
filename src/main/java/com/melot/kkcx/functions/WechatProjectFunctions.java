@@ -1,6 +1,7 @@
 package com.melot.kkcx.functions;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import com.melot.common.melot_utils.StringUtils;
@@ -20,6 +21,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
+import static com.melot.kktv.util.ParamCodeEnum.PROJECT_ID;
 import static com.melot.kktv.util.ParamCodeEnum.ROOM_ID;
 
 
@@ -220,6 +222,47 @@ public class WechatProjectFunctions {
             }
         } catch (Exception e) {
             log.error(String.format("getLiveShopShareRoomUrl error: roomId=%s)", roomId), e);
+        }
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+
+    /**
+     * 51120306
+     * 获取小程序分享二维码
+     */
+    public JsonObject getProjectShareUrl(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        int projectId, width;
+        boolean isHyaline = false;
+        String scene, page;
+        try {
+            projectId = CommonUtil.getJsonParamInt(jsonObject, PROJECT_ID.getId(), 0, PROJECT_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+            width = CommonUtil.getJsonParamInt(jsonObject, "width", 430, null, 280, 1280);
+            JsonElement booleanJe = jsonObject.get("isHyaline");
+            if (booleanJe != null && !booleanJe.isJsonNull()) {
+                isHyaline = booleanJe.getAsBoolean();
+            }
+            scene = CommonUtil.getJsonParamString(jsonObject, "scene", null, null, 0, 32);
+            page = CommonUtil.getJsonParamString(jsonObject, "page", null, null, 0, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
+            return result;
+        }
+
+
+        try {
+            String projectShareUrl = wechatCommonService.getProjectShareUrl(projectId, scene, page, width, isHyaline);
+            if(StringUtils.isNotEmpty(projectShareUrl)) {
+                String urlPath = ConfigHelper.getHttpdir();
+                urlPath = urlPath.substring(0, urlPath.lastIndexOf("kktv"));
+                result.addProperty("shareUrl", urlPath + projectShareUrl);
+            }
+        } catch (Exception e) {
+            log.error(String.format("getProjectShareUrl error: projectId=%s，scene=%s，page=%s，width=%s，isHyaline=%s)", projectId, scene, page, width, isHyaline), e);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
         }
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;

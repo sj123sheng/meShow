@@ -72,6 +72,7 @@ public enum ParamCodeEnum {
     SHOW_SHELF_STATUS("showShelfStatus","53000046"),
     STATE("state","53000047"),
     DISTRIBUTOR_COMMISSIONRATE("distributorCommissionRate","53000048"),
+    PROJECT_ID("projectId","53000049"),
     ;
 
 
