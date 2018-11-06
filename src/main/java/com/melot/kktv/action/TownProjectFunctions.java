@@ -1,5 +1,43 @@
 package com.melot.kktv.action;
 
+import static com.melot.kktv.util.ParamCodeEnum.AGE;
+import static com.melot.kktv.util.ParamCodeEnum.APPLY_TYPE;
+import static com.melot.kktv.util.ParamCodeEnum.AREA_CODE;
+import static com.melot.kktv.util.ParamCodeEnum.COMMENT_CONTENT;
+import static com.melot.kktv.util.ParamCodeEnum.COMMENT_ID;
+import static com.melot.kktv.util.ParamCodeEnum.EXPERIENCE;
+import static com.melot.kktv.util.ParamCodeEnum.GENDER;
+import static com.melot.kktv.util.ParamCodeEnum.HOME;
+import static com.melot.kktv.util.ParamCodeEnum.MOBILE_PHONE;
+import static com.melot.kktv.util.ParamCodeEnum.NAME;
+import static com.melot.kktv.util.ParamCodeEnum.PROFESSION;
+import static com.melot.kktv.util.ParamCodeEnum.REASON;
+import static com.melot.kktv.util.ParamCodeEnum.TOPIC_ID;
+import static com.melot.kktv.util.ParamCodeEnum.TOPIC_NAME;
+import static com.melot.kktv.util.ParamCodeEnum.USER_ID;
+import static com.melot.kktv.util.ParamCodeEnum.WORK_DESC;
+import static com.melot.kktv.util.ParamCodeEnum.WORK_ID;
+import static com.melot.kktv.util.ParamCodeEnum.WORK_LIST_TYPE;
+import static com.melot.kktv.util.ParamCodeEnum.WORK_SORT;
+import static com.melot.kktv.util.ParamCodeEnum.WORK_TYPE;
+import static com.melot.kktv.util.ParamCodeEnum.WORK_URL;
+
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.log4j.Logger;
+import org.springframework.util.CollectionUtils;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
@@ -10,12 +48,47 @@ import com.melot.kk.module.resource.constant.FileTypeConstant;
 import com.melot.kk.module.resource.constant.ResourceStateConstant;
 import com.melot.kk.module.resource.service.ResourceNewService;
 import com.melot.kk.opus.api.constant.OpusCostantEnum;
-import com.melot.kk.town.api.constant.*;
-import com.melot.kk.town.api.dto.*;
+import com.melot.kk.town.api.constant.CommentModeEnum;
+import com.melot.kk.town.api.constant.CommentTypeEnum;
+import com.melot.kk.town.api.constant.ItemTypeEnum;
+import com.melot.kk.town.api.constant.PraiseTypeEnum;
+import com.melot.kk.town.api.constant.TownArticleOperateTypeEnum;
+import com.melot.kk.town.api.constant.TownStarCheckStatusEnum;
+import com.melot.kk.town.api.constant.TownTaskStatusEnum;
+import com.melot.kk.town.api.constant.TownTaskTypeEnum;
+import com.melot.kk.town.api.constant.UserRoleTypeEnum;
+import com.melot.kk.town.api.constant.WorkCheckStatusEnum;
+import com.melot.kk.town.api.constant.WorkTypeEnum;
+import com.melot.kk.town.api.dto.ConfAreaBannerDTO;
+import com.melot.kk.town.api.dto.FreshItemDTO;
+import com.melot.kk.town.api.dto.HistTaskCompletionDTO;
+import com.melot.kk.town.api.dto.HistTownArticleOperateInoutDTO;
+import com.melot.kk.town.api.dto.ResTownStaffDTO;
+import com.melot.kk.town.api.dto.ResTownTopicDTO;
+import com.melot.kk.town.api.dto.ResTownWorkDTO;
+import com.melot.kk.town.api.dto.TownMessageInfoDTO;
+import com.melot.kk.town.api.dto.TownOfficialArticleDTO;
+import com.melot.kk.town.api.dto.TownStarApplyInfoDTO;
+import com.melot.kk.town.api.dto.TownStarDTO;
+import com.melot.kk.town.api.dto.TownSystemMessageDTO;
+import com.melot.kk.town.api.dto.TownUserInfoDTO;
+import com.melot.kk.town.api.dto.TownUserRoleDTO;
+import com.melot.kk.town.api.dto.TownWorkCommentDTO;
+import com.melot.kk.town.api.dto.UserFollowMessageDTO;
+import com.melot.kk.town.api.dto.UserPraiseMessageDTO;
+import com.melot.kk.town.api.dto.UserTagRelationDTO;
 import com.melot.kk.town.api.param.TownUserInfoParam;
 import com.melot.kk.town.api.param.TownWorkCommentParam;
 import com.melot.kk.town.api.param.TownWorkParam;
-import com.melot.kk.town.api.service.*;
+import com.melot.kk.town.api.service.AreaBannerService;
+import com.melot.kk.town.api.service.TagService;
+import com.melot.kk.town.api.service.TownCommentService;
+import com.melot.kk.town.api.service.TownMessageService;
+import com.melot.kk.town.api.service.TownStarApplyInfoService;
+import com.melot.kk.town.api.service.TownTaskService;
+import com.melot.kk.town.api.service.TownUserRoleService;
+import com.melot.kk.town.api.service.TownUserService;
+import com.melot.kk.town.api.service.TownWorkService;
 import com.melot.kkcore.actor.service.ActorService;
 import com.melot.kkcore.user.api.ProfileKeys;
 import com.melot.kkcore.user.api.UserProfile;
@@ -28,17 +101,11 @@ import com.melot.kktv.model.Room;
 import com.melot.kktv.service.LiveVideoService;
 import com.melot.kktv.service.UserRelationService;
 import com.melot.kktv.service.WorkService;
-import com.melot.kktv.util.*;
-import org.apache.log4j.Logger;
-import org.springframework.util.CollectionUtils;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import java.text.ParseException;
-import java.util.*;
-import java.util.regex.Pattern;
-
-import static com.melot.kktv.util.ParamCodeEnum.*;
+import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.ConfigHelper;
+import com.melot.kktv.util.DateUtils;
+import com.melot.kktv.util.StringUtil;
+import com.melot.kktv.util.TagCodeEnum;
 
 public class TownProjectFunctions {
 
@@ -79,15 +146,15 @@ public class TownProjectFunctions {
 
     @Resource
     private TownCommentService townCommentService;
+    
+    @Resource
+    TownTaskService townTaskService;
 
     private static String SEPARATOR = "/";
-    
-    private static final String AREA_FRESH_KEY = "areaFresh_%s"; 
 
     /**
      * 	获取本地新鲜的(作品、话题、直播间)列表【51120103】
      */
-    @SuppressWarnings("serial")
     public JsonObject getLocalFreshList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 
         JsonObject result = new JsonObject();
@@ -530,6 +597,13 @@ public class TownProjectFunctions {
 
         int receiveLike = townWorkService.getMyWorkPraiseNum(sourceUserId);
         result.addProperty("receiveLike",receiveLike);
+        
+        boolean hasTask = false;
+        ResTownStaffDTO resTownStaffDTO = townTaskService.getTownStaffInfo(userId);
+        if (resTownStaffDTO != null) {
+            hasTask = true;
+        }
+        result.addProperty("hasTask", hasTask);
 
         result.addProperty("pathPrefix",ConfigHelper.getHttpdir());
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
@@ -2660,6 +2734,473 @@ public class TownProjectFunctions {
             return result;
         } catch (Exception e) {
             logger.error("Error getRecommendWorkList()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+    
+    /**
+     *  获取公众号文章列表 (51120160)
+     */
+    public JsonObject getOfficialArticleList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        int pageIndex, countPerPage;
+        try {
+            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
+            countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 10, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+            JsonArray jsonArray = new JsonArray();
+            int count = 0;
+            Page<TownOfficialArticleDTO> resp = townTaskService.getTownOfficialArticleList(null, null, null, pageIndex, countPerPage);
+            if(resp != null) {
+                count = resp.getCount();
+                List<TownOfficialArticleDTO> list = resp.getList();
+                if (!CollectionUtils.isEmpty(list)) {
+                    for(TownOfficialArticleDTO townOfficialArticleDTO : list) {
+                        JsonObject jsonObj = new JsonObject();
+                        jsonObj.addProperty("articleId", townOfficialArticleDTO.getArticleId());
+                        jsonObj.addProperty("imgUrl", townOfficialArticleDTO.getImgUrl());
+                        jsonObj.addProperty("title", townOfficialArticleDTO.getTitle());
+                        jsonObj.addProperty("summary", townOfficialArticleDTO.getSummary());
+                        jsonObj.addProperty("articleUrl", townOfficialArticleDTO.getArticleUrl());
+                        jsonObj.addProperty("publishTime", changeTimeToString(townOfficialArticleDTO.getPublishTime()));
+                        jsonArray.add(jsonObj);
+                    }
+                }
+            }
+            
+            result.addProperty("count", count);
+            result.add("articleList", jsonArray);
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error getOfficialArticleList()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+    
+    /**
+     *  获取小镇用户任务列表 (51120161)
+     */
+    public JsonObject getTownTaskList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId, pageIndex, countPerPage;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, USER_ID.getId(), 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
+            countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 10, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+            JsonArray taskList = new JsonArray();
+            int count = 0;
+            List<Integer> stateList = Arrays.asList(TownTaskStatusEnum.UN_FINISH, TownTaskStatusEnum.COMPLETED); 
+            Page<HistTaskCompletionDTO> resp = townTaskService.getHistTaskCompletionList(null, userId, stateList, pageIndex, countPerPage);
+            if(resp != null) {
+                count = resp.getCount();
+                List<HistTaskCompletionDTO> list = resp.getList();
+                if (!CollectionUtils.isEmpty(list)) {
+                    for(HistTaskCompletionDTO histTaskCompletionDTO : list) {
+                        JsonObject jsonObj = new JsonObject();
+                        long endTime = histTaskCompletionDTO.getEndTime().getTime();
+                        jsonObj.addProperty("taskId", histTaskCompletionDTO.getTaskId());
+                        jsonObj.addProperty("taskTitle", histTaskCompletionDTO.getTaskTitle());
+                        jsonObj.addProperty("endTime", endTime);
+                        jsonObj.addProperty("completeCount", histTaskCompletionDTO.getCompletedCount());
+                        jsonObj.addProperty("requireCount", histTaskCompletionDTO.getDesignatedCount());
+                        int state = histTaskCompletionDTO.getState();
+                        if (state == TownTaskStatusEnum.UN_FINISH && histTaskCompletionDTO.getResubmit() > 0) {
+                            state = TownTaskStatusEnum.UN_PASS;
+                        }
+                        jsonObj.addProperty("state", state);
+                        jsonObj.addProperty("taskType", histTaskCompletionDTO.getTaskType());
+                        jsonObj.addProperty("isOverdue", endTime < System.currentTimeMillis());
+                        taskList.add(jsonObj);
+                    } 
+                }
+            }
+            
+            result.addProperty("count", count);
+            result.add("taskList", taskList);
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error getTownTaskList()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+    
+    /**
+     *  获取小镇任务详情 (51120162)
+     */
+    public JsonObject getTownTaskDetail(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId;
+        long taskId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, USER_ID.getId(), 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            taskId = CommonUtil.getJsonParamLong(jsonObject, "taskId", 1, "5112016201", 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+            HistTaskCompletionDTO histTaskCompletionDTO = townTaskService.getTaskCompletionDTO(taskId, userId, true);
+            if (histTaskCompletionDTO != null) {
+                result.addProperty("taskTitle", histTaskCompletionDTO.getTaskTitle());
+                result.addProperty("taskDesc", histTaskCompletionDTO.getTaskExplain());
+                result.addProperty("completeDesc", histTaskCompletionDTO.getTaskDesc());
+                result.addProperty("taskType", histTaskCompletionDTO.getTaskType());
+                result.addProperty("ownerId", histTaskCompletionDTO.getOwnerId());
+                result.addProperty("ownerName", histTaskCompletionDTO.getOwnerName());
+                int state = histTaskCompletionDTO.getState();
+                long endTime = histTaskCompletionDTO.getEndTime().getTime();
+                if (state != TownTaskStatusEnum.COMPLETED && endTime < System.currentTimeMillis()) {
+                    state = 3;
+                }
+                result.addProperty("state", state);
+                result.addProperty("endTime", endTime);
+                result.addProperty("completeCount", histTaskCompletionDTO.getCompletedCount());
+                result.addProperty("requireCount", histTaskCompletionDTO.getDesignatedCount());
+                result.addProperty("taskLevel", histTaskCompletionDTO.getTaskLevel());
+                JsonArray imgJsonArray = new JsonArray();
+                String imgUrls = histTaskCompletionDTO.getImgUrls();
+                if (!StringUtil.strIsNull(imgUrls)) {
+                    String[] imgUrlList = imgUrls.split(",");
+                    for (String imgUrl : imgUrlList) {
+                        JsonObject jsonObj = new JsonObject();
+                        jsonObj.addProperty("imgUrl", imgUrl);
+                        imgJsonArray.add(jsonObj);
+                    }
+                }
+                result.add("imgUrlList", imgJsonArray);
+                JsonArray requireNameList = new JsonArray();
+                JsonArray completeNameList = new JsonArray();
+                List<Integer> stateList = new ArrayList<>();
+                stateList.add(TownTaskStatusEnum.COMPLETED);
+                Page<HistTaskCompletionDTO> completeResp = townTaskService.getHistTaskCompletionList(taskId, null, stateList, 1, 3);
+                stateList.add(TownTaskStatusEnum.UN_FINISH);
+                Page<HistTaskCompletionDTO> requireResp = townTaskService.getHistTaskCompletionList(taskId, null, stateList, 1, 3);
+                if(requireResp != null) {
+                    List<HistTaskCompletionDTO> list = requireResp.getList();
+                    if (!CollectionUtils.isEmpty(list)) {
+                        for(HistTaskCompletionDTO taskCompletionDTO : list) {
+                            JsonObject jsonObj = new JsonObject();
+                            jsonObj.addProperty("name", taskCompletionDTO.getUserName());
+                            requireNameList.add(jsonObj);
+                        }
+                    }
+                }
+                if(completeResp != null) {
+                    List<HistTaskCompletionDTO> list = completeResp.getList();
+                    if (!CollectionUtils.isEmpty(list)) {
+                        for(HistTaskCompletionDTO taskCompletionDTO : list) {
+                            JsonObject jsonObj = new JsonObject();
+                            jsonObj.addProperty("name", taskCompletionDTO.getUserName());
+                            completeNameList.add(jsonObj);
+                        }
+                    }
+                }
+                result.add("requireNameList", requireNameList);
+                result.add("completeNameList", completeNameList);
+            }
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error getTownTaskDetail()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+    
+    /**
+     *  完成小镇任务(51120163)
+     */
+    public JsonObject finishTownTask(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId, taskId;
+        String imgUrl, taskDesc;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, USER_ID.getId(), 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            taskId = CommonUtil.getJsonParamInt(jsonObject, "taskId", 1, "5112016301", 1, Integer.MAX_VALUE);
+            imgUrl = CommonUtil.getJsonParamString(jsonObject, "imgUrl", null, null, 1, Integer.MAX_VALUE);
+            taskDesc = CommonUtil.getJsonParamString(jsonObject, "taskDesc", null, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+            HistTaskCompletionDTO histTaskCompletionDTO = townTaskService.getTaskCompletionDTO(taskId, userId, false);
+            if (histTaskCompletionDTO != null) {
+                if (!histTaskCompletionDTO.getState().equals(TownTaskStatusEnum.UN_FINISH)) {
+                    result.addProperty("TagCode", "5112016304");
+                    return result;
+                } else {
+                    //反馈任务需提交任务完成截图
+                    if (histTaskCompletionDTO.getTaskType() == TownTaskTypeEnum.FEEDBACK && StringUtil.strIsNull(imgUrl)) {
+                        result.addProperty("TagCode", "5112016302");
+                        return result;
+                    }
+                    histTaskCompletionDTO.setImgUrls(imgUrl);
+                    histTaskCompletionDTO.setTaskDesc(taskDesc);
+                    histTaskCompletionDTO.setState(TownTaskStatusEnum.COMPLETED);
+                    townTaskService.updateHistTaskCompletion(histTaskCompletionDTO);
+                    result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                    return result;
+                }
+            } else {
+                result.addProperty("TagCode", "5112016303");
+                return result;
+            }
+        } catch (Exception e) {
+            logger.error("Error finishTownTask()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+    
+    /**
+     *  获取任务指派人员列表 (51120164)
+     */
+    public JsonObject getDesignateTaskList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        long taskId;
+        int pageIndex, countPerPage;
+        try {
+            taskId = CommonUtil.getJsonParamLong(jsonObject, "taskId", 0, "5112016401", 1, Integer.MAX_VALUE);
+            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
+            countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 10, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+            JsonArray designateTaskList = new JsonArray();
+            int count = 0;
+            List<Integer> stateList = Arrays.asList(TownTaskStatusEnum.UN_FINISH, TownTaskStatusEnum.COMPLETED); 
+            Page<HistTaskCompletionDTO> resp = townTaskService.getHistTaskCompletionList(taskId, null, stateList, pageIndex, countPerPage);
+            if(resp != null) {
+                count = resp.getCount();
+                List<HistTaskCompletionDTO> list = resp.getList();
+                if (!CollectionUtils.isEmpty(list)) {
+                    for(HistTaskCompletionDTO histTaskCompletionDTO : list) {
+                        JsonObject jsonObj = new JsonObject();
+                        jsonObj.addProperty("name", histTaskCompletionDTO.getUserName());
+                        designateTaskList.add(jsonObj);
+                    }
+                }
+            }
+            
+            result.addProperty("count", count);
+            result.add("designateTaskList", designateTaskList);
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error getDesignateTaskList()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+    
+    /**
+     *  获取任务已完成人员列表 (51120165)
+     */
+    public JsonObject getCompleteTaskList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        long taskId;
+        int pageIndex, countPerPage;
+        try {
+            taskId = CommonUtil.getJsonParamLong(jsonObject, "taskId", 0, "5112016501", 1, Integer.MAX_VALUE);
+            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
+            countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 10, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+            JsonArray completeTaskList = new JsonArray();
+            int count = 0;
+            List<Integer> stateList = Arrays.asList(TownTaskStatusEnum.COMPLETED); 
+            Page<HistTaskCompletionDTO> resp = townTaskService.getHistTaskCompletionList(taskId, null, stateList, pageIndex, countPerPage);
+            if(resp != null) {
+                count = resp.getCount();
+                List<HistTaskCompletionDTO> list = resp.getList();
+                if (!CollectionUtils.isEmpty(list)) {
+                    for(HistTaskCompletionDTO histTaskCompletionDTO : list) {
+                        JsonObject jsonObj = new JsonObject();
+                        jsonObj.addProperty("name", histTaskCompletionDTO.getUserName());
+                        completeTaskList.add(jsonObj);
+                    }
+                }
+            }
+            
+            result.addProperty("count", count);
+            result.add("completeTaskList", completeTaskList);
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error getCompleteTaskList()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+    
+    /**
+     *  添加用户文章分享记录(51120166)
+     */
+    public JsonObject recordUserArticleShare(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId, articleId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, USER_ID.getId(), 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            articleId = CommonUtil.getJsonParamInt(jsonObject, "articleId", 1, "5112016601", 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+            TownOfficialArticleDTO townOfficialArticleDTO = townTaskService.getTownOfficialArticleDTO(articleId);
+            if (townOfficialArticleDTO == null) {
+                result.addProperty("TagCode", "5112016602");
+                return result;
+            } else {
+                HistTownArticleOperateInoutDTO histTownArticleOperateInoutDTO = new HistTownArticleOperateInoutDTO();
+                histTownArticleOperateInoutDTO.setArticleId(articleId);
+                histTownArticleOperateInoutDTO.setUserId(userId);
+                histTownArticleOperateInoutDTO.setOperateType(TownArticleOperateTypeEnum.RELAY);
+                townTaskService.addTownArticleOperateInoutDTO(histTownArticleOperateInoutDTO);
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                return result;
+            }
+        } catch (Exception e) {
+            logger.error("Error recordUserArticleShare()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+    
+    /**
+     *  添加用户文章阅读记录(51120167)
+     */
+    public JsonObject recordUserArticleView(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId, articleId, referId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, USER_ID.getId(), 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            articleId = CommonUtil.getJsonParamInt(jsonObject, "articleId", 1, "5112016701", 1, Integer.MAX_VALUE);
+            referId = CommonUtil.getJsonParamInt(jsonObject, "referId", 1, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+            TownOfficialArticleDTO townOfficialArticleDTO = townTaskService.getTownOfficialArticleDTO(articleId);
+            if (townOfficialArticleDTO == null) {
+                result.addProperty("TagCode", "5112016702");
+                return result;
+            } else {
+                HistTownArticleOperateInoutDTO histTownArticleOperateInoutDTO = new HistTownArticleOperateInoutDTO();
+                histTownArticleOperateInoutDTO.setArticleId(articleId);
+                histTownArticleOperateInoutDTO.setUserId(userId);
+                histTownArticleOperateInoutDTO.setOperateType(TownArticleOperateTypeEnum.VIEW);
+                histTownArticleOperateInoutDTO.setReferId(referId);;
+                townTaskService.addTownArticleOperateInoutDTO(histTownArticleOperateInoutDTO);
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                return result;
+            }
+        } catch (Exception e) {
+            logger.error("Error recordUserArticleView()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+    
+    /**
+     *  添加公众号文章(51120168)
+     */
+    public JsonObject addOfficialArticle(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        String title, summary, imgUrl, articleUrl;
+        long publisTime;
+        try {
+            title = CommonUtil.getJsonParamString(jsonObject, "title", null, "5112016801", 1, Integer.MAX_VALUE);
+            summary = CommonUtil.getJsonParamString(jsonObject, "summary", null, "5112016802", 1, Integer.MAX_VALUE);
+            imgUrl = CommonUtil.getJsonParamString(jsonObject, "imgUrl", null, "5112016803", 1, Integer.MAX_VALUE);
+            articleUrl = CommonUtil.getJsonParamString(jsonObject, "articleUrl", null, "5112016804", 1, Integer.MAX_VALUE);
+            publisTime = CommonUtil.getJsonParamLong(jsonObject, "publisTime", 0l, "5112016805", 1, Long.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+            TownOfficialArticleDTO townOfficialArticleDTO = new TownOfficialArticleDTO();
+            townOfficialArticleDTO.setTitle(title);
+            townOfficialArticleDTO.setSummary(summary);
+            townOfficialArticleDTO.setImgUrl(imgUrl);
+            townOfficialArticleDTO.setArticleUrl(articleUrl);
+            townOfficialArticleDTO.setPublishTime(new Date(publisTime));
+            townTaskService.addTownOfficialArticle(townOfficialArticleDTO);
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error addOfficialArticle()", e);
             result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             return result;
         }

@@ -3275,6 +3275,42 @@
         <constructor-arg name="t" ref="townProjectFunctions" />
         <constructor-arg name="methodName" value="getRecommendWorkList" />
     </bean>
+    <bean id="51120160" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="townProjectFunctions" />
+        <constructor-arg name="methodName" value="getOfficialArticleList" />
+    </bean>
+    <bean id="51120161" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="townProjectFunctions" />
+        <constructor-arg name="methodName" value="getTownTaskList" />
+    </bean>
+    <bean id="51120162" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="townProjectFunctions" />
+        <constructor-arg name="methodName" value="getTownTaskDetail" />
+    </bean>
+    <bean id="51120163" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="townProjectFunctions" />
+        <constructor-arg name="methodName" value="finishTownTask" />
+    </bean>
+    <bean id="51120164" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="townProjectFunctions" />
+        <constructor-arg name="methodName" value="getDesignateTaskList" />
+    </bean>
+    <bean id="51120165" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="townProjectFunctions" />
+        <constructor-arg name="methodName" value="getCompleteTaskList" />
+    </bean>
+    <bean id="51120166" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="townProjectFunctions" />
+        <constructor-arg name="methodName" value="recordUserArticleShare" />
+    </bean>
+    <bean id="51120167" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="townProjectFunctions" />
+        <constructor-arg name="methodName" value="recordUserArticleView" />
+    </bean>
+    <bean id="51120168" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="townProjectFunctions" />
+        <constructor-arg name="methodName" value="addOfficialArticle" />
+    </bean>
 
 	<!-- 微信直播小程序API -->
 	<bean id="51120201" class="com.melot.sdk.core.function.GenericFunction">
