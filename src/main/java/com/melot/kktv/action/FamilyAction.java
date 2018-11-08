@@ -82,17 +82,23 @@ public class FamilyAction {
 	 */
 	public JsonObject getFamilyList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws UnsupportedEncodingException {
 
+	    //王牌家族
         String[] trumpFamilyArr = configService.getTrumpFamily().trim().split(REGEX);
         String[] trumpFamilyIdsArr = configService.getTrumpFamilyIds().trim().split(REGEX);
-        
-        String[] goldFamilyArr = configService.getGoldFamily().trim().split(REGEX);
-        String[] goldFamilyIdsArr = configService.getGoldFamilyIds().trim().split(REGEX);
-
         String trumpFamilyName = trumpFamilyArr[0];
         String trumpFamilyBackground = trumpFamilyArr[1];
         
+        //金牌家族
+        String[] goldFamilyArr = configService.getGoldFamily().trim().split(REGEX);
+        String[] goldFamilyIdsArr = configService.getGoldFamilyIds().trim().split(REGEX);
         String goldFamilyName = goldFamilyArr[0];
         String goldFamilyBackground = goldFamilyArr[1];
+        
+        //晋级家族
+        String[] promotionFamilyArr = configService.getPromotionFamily().trim().split(REGEX);
+        String[] promotionFamilyIdsArr = configService.getPromotionFamilyIds().trim().split(REGEX);
+        String promotionFamilyName = promotionFamilyArr[0];
+        String promotionFamilyBackground = promotionFamilyArr[1];
 
         // 定义使用的参数
 		int platform = 0;
@@ -209,8 +215,18 @@ public class FamilyAction {
                             for (String goldFamilyStr : goldFamilyIdsArr) { //金牌家族
                                 if (goldFamilyStr.equals(String.valueOf(familyId))) {
                                     showCorner = true;
-                                    cornerName = goldFamilyName ;
+                                    cornerName = goldFamilyName;
                                     cornerBackground = goldFamilyBackground;
+                                    break;
+                                }
+                            }
+                        }
+                        if (!showCorner) {
+                            for (String promotionFamilyStr : promotionFamilyIdsArr) { //晋级家族
+                                if (promotionFamilyStr.equals(String.valueOf(familyId))) {
+                                    showCorner = true;
+                                    cornerName = promotionFamilyName;
+                                    cornerBackground = promotionFamilyBackground;
                                     break;
                                 }
                             }

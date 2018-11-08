@@ -1662,19 +1662,24 @@ public class OtherFunctions {
         }
 
         boolean isComplete = false;
-        if (userId > 0) {
-            int count = 0;
-            List<RechargePackage> userRechargePackage = packageInfoService.getUserRechargePackageList(userId, AppIdEnum.AMUSEMENT);
-            if (!CollectionUtils.isEmpty(userRechargePackage)) {
-                for (RechargePackage rechargePackage : userRechargePackage) {
-                    if (rechargePackage.getStatus() > 0) {
-                        count ++;
+        //是否显示充值banner
+        if (configService.getIsShowChargeBanner()) {
+            if (userId > 0) {
+                int count = 0;
+                List<RechargePackage> userRechargePackage = packageInfoService.getUserRechargePackageList(userId, AppIdEnum.AMUSEMENT);
+                if (!CollectionUtils.isEmpty(userRechargePackage)) {
+                    for (RechargePackage rechargePackage : userRechargePackage) {
+                        if (rechargePackage.getStatus() > 0) {
+                            count ++;
+                        }
+                    }
+                    if (count == 4) {
+                        isComplete = true;
                     }
                 }
-                if (count == 4) {
-                    isComplete = true;
-                }
             }
+        } else {
+            isComplete = true;
         }
         
         if (!isComplete) {

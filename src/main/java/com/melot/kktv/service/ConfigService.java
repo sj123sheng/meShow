@@ -35,6 +35,12 @@ public class ConfigService {
 
     private String trumpFamilyIds;
     
+    //晋级家族角标名称和底色
+    private String promotionFamily;
+
+    //晋级家族id
+    private String promotionFamilyIds;
+    
     //限制渠道及版本号
     private String limitCvs;
 
@@ -189,6 +195,10 @@ public class ConfigService {
     private Integer baiduChannel;
 
     private String baiduChannelUrl;
+    /**
+     * 是否显示充值banner
+     */
+    private Boolean isShowChargeBanner;
 
     @DisconfFileItem(name = "nearbyStartDistance", associateField = "nearbyStartDistance")
     public int getNearbyStartDistance() {
@@ -285,6 +295,16 @@ public class ConfigService {
     @DisconfFileItem(name = "goldMedal.familyIds", associateField = "goldFamilyIds")
     public String getGoldFamilyIds() {
         return goldFamilyIds;
+    }
+    
+    @DisconfFileItem(name = "promotion.family", associateField = "promotionFamily")
+    public String getPromotionFamily() {
+        return promotionFamily;
+    }
+
+    @DisconfFileItem(name = "promotion.familyIds", associateField = "promotionFamilyIds")
+    public String getPromotionFamilyIds() {
+        return promotionFamilyIds;
     }
     
     @DisconfFileItem(name = "trump.family", associateField = "trumpFamily")
@@ -501,4 +521,10 @@ public class ConfigService {
     public void setBaiduChannelUrl(String baiduChannelUrl) {
         this.baiduChannelUrl = baiduChannelUrl;
     }
+
+    @DisconfFileItem(name = "isShowChargeBanner", associateField = "isShowChargeBanner")
+    public Boolean getIsShowChargeBanner() {
+        return isShowChargeBanner;
+    }
+    
 }

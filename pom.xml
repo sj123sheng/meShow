@@ -10,7 +10,7 @@
 	
 	<artifactId>meShow</artifactId>
 	<packaging>war</packaging>
-	<version>2.12.60</version>
+	<version>2.12.61</version>
 	<name>meShow</name>
 	<url>http://maven.apache.org</url>
 	
@@ -661,7 +661,7 @@
 		<dependency>
   		 	<groupId>com.melot.module</groupId>
   			<artifactId>room-live-record-module-api</artifactId>
-  			<version>1.0.2</version>
+  			<version>1.0.5</version>
 		</dependency>
 
 		<dependency>

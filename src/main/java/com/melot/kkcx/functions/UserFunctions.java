@@ -1,7 +1,6 @@
 
 package com.melot.kkcx.functions;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -82,8 +81,6 @@ import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.TextFilter;
 import com.melot.kktv.util.confdynamic.MedalConfig;
-import com.melot.kktv.util.db.DB;
-import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.module.iprepository.driver.domain.IpInfo;
 import com.melot.module.iprepository.driver.service.IpRepositoryService;
 import com.melot.module.medal.driver.domain.ConfMedal;
@@ -1970,6 +1967,7 @@ public class UserFunctions {
 					
 					//添加常用设备
 					ProfileServices.setUserCommonDevice(userId, deviceUId, deviceName, deviceModel);
+					result.addProperty("isNew", true);
 					result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 
 				} else if (TagCode.equals("03") || TagCode.equals("02") || TagCode.equals("04") || TagCode.equals("05") || TagCode.equals("06")) {
