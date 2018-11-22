@@ -195,6 +195,22 @@ public class ConfigService {
     private Integer baiduChannel;
 
     private String baiduChannelUrl;
+    
+    /**
+     * K玩大厅游戏规则
+     */
+    private String kkPlayRule;
+    
+    /**
+     * K玩大厅天梯赛配置
+     */
+    private String kkPlaySeasonConf;
+    
+    /**
+     * K玩大厅栏目
+     */
+    private String kkPlayConfig;
+    
     /**
      * 是否显示充值banner
      */
@@ -520,6 +536,21 @@ public class ConfigService {
 
     public void setBaiduChannelUrl(String baiduChannelUrl) {
         this.baiduChannelUrl = baiduChannelUrl;
+    }
+    
+    @DisconfFileItem(name = "kkPlayRule", associateField = "kkPlayRule")
+    public String getKkPlayRule() {
+        return kkPlayRule;
+    }
+    
+    @DisconfFileItem(name = "kkPlayConfig", associateField = "kkPlayConfig")
+    public String getKkPlayConfig() {
+        return kkPlayConfig;
+    }
+    
+    @DisconfFileItem(name = "kkPlaySeasonConf", associateField = "kkPlaySeasonConf")
+    public String getKkPlaySeasonConf() {
+        return kkPlaySeasonConf;
     }
 
     @DisconfFileItem(name = "isShowChargeBanner", associateField = "isShowChargeBanner")

@@ -3379,4 +3379,55 @@
 		<constructor-arg name="methodName" value="getProjectShareUrl" />
 	</bean>
 
+	<!-- K玩大厅 -->
+	<!-- 获取K玩大厅栏目列表 -->
+	<bean id="51070301" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kkPlayFunctions" />
+		<constructor-arg name="methodName" value="getPartList" />
+	</bean>
+	<!-- 获取K玩用户信息-->
+	<bean id="51070302" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kkPlayFunctions" />
+		<constructor-arg name="methodName" value="getUserKKPlayInfo" />
+	</bean>
+	<!-- 获取K玩排行榜 -->
+	<bean id="51070303" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kkPlayFunctions" />
+		<constructor-arg name="methodName" value="getRankList" />
+	</bean>
+	<!-- 快速匹配 -->
+	<bean id="51070304" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kkPlayFunctions" />
+		<constructor-arg name="methodName" value="getMatchGameUser" />
+	</bean>
+	<!-- 获取匹配结果 -->
+	<bean id="51070305" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kkPlayFunctions" />
+		<constructor-arg name="methodName" value="getGameMatchInfo" />
+	</bean>
+	<!-- 结束匹配-->
+	<bean id="51070306" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kkPlayFunctions" />
+		<constructor-arg name="methodName" value="endMatchGameUser" />
+	</bean>
+	<!-- 取消匹配 -->
+	<bean id="51070307" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kkPlayFunctions" />
+		<constructor-arg name="methodName" value="cancelMatchGameUser" />
+	</bean>
+	<!-- 游戏规则 -->
+	<bean id="51070308" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kkPlayFunctions" />
+		<constructor-arg name="methodName" value="getGameRule" />
+	</bean>
+	<!-- 获取游戏倍数及道具配置详情 -->
+	<bean id="51070309" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kkPlayFunctions" />
+		<constructor-arg name="methodName" value="getMultipleConf" />
+	</bean>
+	<!-- 获取pk游戏配置 -->
+	<bean id="51070310" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kkPlayFunctions" />
+		<constructor-arg name="methodName" value="getPKGameList" />
+	</bean>
 </beans>

@@ -73,6 +73,16 @@ public enum ParamCodeEnum {
     STATE("state","53000047"),
     DISTRIBUTOR_COMMISSIONRATE("distributorCommissionRate","53000048"),
     PROJECT_ID("projectId","53000049"),
+    COUPON_TYPE("couponType","53000050"),
+    COUPON_AMOUNT("couponAmount","53000051"),
+    USER_LIMIT_COUNT("user_limit_count","53000052"),
+    REDUCTION_AMOUNT("reductionAmount","53000053"),
+    START_TIME("startTime","53000054"),
+    END_TIME("endTime","53000055"),
+    RECEIVE_START_TIME("receiveStartTime","53000056"),
+    RECEIVE_END_TIME("receiveEndTime","53000057"),
+    USING_TYPE("usingType","53000058"),
+    COUPON_COUNT("couponCount","53000059")
     ;
 
 

@@ -250,4 +250,9 @@
 
 	<!-- 微信小程序服务 -->
 	<kkrpc:reference id="wechatCommonService" interface="com.melot.kk.wechatProject.api.service.WechatCommonService" version="1.0.1"/>
+	
+	<!-- k玩大厅 -->
+	<kkrpc:reference id="pkGameService" interface="com.melot.kk.pkgame.api.service.PKGameService" version="1.0.0"/>
+	<kkrpc:reference id="matchService" interface="com.melot.kk.pkgame.api.service.MatchService" version="1.0.0"/>
+	<kkrpc:reference id="quizPKService" interface="com.melot.kk.pkgame.api.service.QuizPKService" version="1.0.0"/>
 </beans>

@@ -619,6 +619,45 @@ public class TagCodeEnum {
     /** 商品不支持代理分销 **/
     public static final String PRODUCT_NOT_SUPPORT_DISTRIBUTION = "5106052013";
 
+    /** 时间转换错误 **/
+    public static final String PARSE_TIME_ERROR = "5106052014";
+
+	/** 时间错误 **/
+	public static final String TIME_ERROR = "5106052015";
+
+	/** 金额错误 **/
+	public static final String AMOUNT_ERROR = "5106052016";
+
+	/** 已过期 **/
+	public static final String EXPIRED = "5106052017";
+
+	/** 无法领取自己的优惠券 **/
+	public static final String CAN_NOT_RECEIVE_SELF_COUPON = "5106052018";
+
+	/** 超出领取数量或已领完 **/
+	public static final String EXCEED_COUNT = "5106052019";
+
+	/** 超出用户限制数量 **/
+	public static final String EXCEED_USER_LIMIT_COUNT = "5106052020";
+
+	/** 优惠券id不存在 **/
+	public static final String NOT_EXIST_COUPON = "5106052021";
+
+	/** 优惠券和主播未对应 **/
+	public static final String NOT_ACTOR_COUPON = "5106052022";
+
+	/** 优惠券过期或金额错误 **/
+	public static final String COUPON_EXPIRED_OR_AMOUNT_ERROR = "5106052023";
+
+	/** 请求过于频繁 **/
+	public static final String REPEAT_RECEIVE = "5106052024";
+
+	/** 数量错误 **/
+	public static final String COUNT_ERROR = "5106052025";
+
+	/** 已停用 **/
+	public static final String COUPON_DISABLE = "5106052026";
+
 	/*------小镇错误码 -------*/
 	/**
 	 * 申请红人数据已存在
