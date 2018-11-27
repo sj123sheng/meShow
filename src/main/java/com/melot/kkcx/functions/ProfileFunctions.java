@@ -1,6 +1,5 @@
 package com.melot.kkcx.functions;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -12,10 +11,6 @@ import java.util.Set;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
-import com.melot.kk.showmoney.api.dto.PageGameMoneyHistory;
-import com.melot.kk.showmoney.api.dto.PageShowMoneyHistory;
-import com.melot.kk.showmoney.api.dto.ShowMoneyHistory;
-import com.melot.kk.showmoney.api.service.ShowMoneyService;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -40,6 +35,10 @@ import com.melot.kk.module.report.util.CommonStateCode;
 import com.melot.kk.opus.api.constant.OpusCostantEnum;
 import com.melot.kk.recharge.api.dto.HistBuyProductRechargeDto;
 import com.melot.kk.recharge.api.service.RechargeService;
+import com.melot.kk.showmoney.api.dto.PageGameMoneyHistory;
+import com.melot.kk.showmoney.api.dto.PageShowMoneyHistory;
+import com.melot.kk.showmoney.api.dto.ShowMoneyHistory;
+import com.melot.kk.showmoney.api.service.ShowMoneyService;
 import com.melot.kk.userSecurity.api.domain.DO.UserVerifyDO;
 import com.melot.kk.userSecurity.api.service.UserVerifyService;
 import com.melot.kkcore.actor.api.RoomInfoKeys;
@@ -62,10 +61,8 @@ import com.melot.kkcx.service.UserAssetServices;
 import com.melot.kkcx.service.UserService;
 import com.melot.kkgame.redis.LiveTypeSource;
 import com.melot.kktv.base.Result;
-import com.melot.kktv.model.ConsumerRecord;
 import com.melot.kktv.model.Family;
 import com.melot.kktv.model.MedalInfo;
-import com.melot.kktv.model.WinLotteryRecord;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.MedalSource;
 import com.melot.kktv.redis.QQVipSource;
@@ -83,8 +80,6 @@ import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.TextFilter;
 import com.melot.kktv.util.confdynamic.MedalConfig;
-import com.melot.kktv.util.db.DB;
-import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.module.medal.driver.domain.ConfMedal;
 import com.melot.module.medal.driver.domain.UserActivityMedal;
 import com.melot.module.medal.driver.service.ActivityMedalService;

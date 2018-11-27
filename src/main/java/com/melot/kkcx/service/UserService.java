@@ -9,25 +9,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.melot.blacklist.service.BlacklistService;
-import com.melot.cms.admin.api.bean.OfficialIdInfo;
-import com.melot.cms.admin.api.constant.AdminApiTagCodes;
-import com.melot.cms.admin.api.constant.OperatorInfoEnum;
-import com.melot.cms.admin.api.service.AdminDataService;
-import com.melot.cms.admin.api.service.OperatorService;
-import com.melot.cms.api.base.Result;
-import com.melot.kk.otherlogin.api.service.OtherLoginService;
-import com.melot.kkcore.actor.api.ActorInfo;
-import com.melot.kkcore.actor.service.ActorService;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.log4j.Logger;
 
 import com.esotericsoftware.reflectasm.MethodAccess;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
+import com.melot.blacklist.service.BlacklistService;
+import com.melot.cms.admin.api.bean.OfficialIdInfo;
+import com.melot.cms.admin.api.bean.UserViolationDto;
+import com.melot.cms.admin.api.constant.AdminApiTagCodes;
+import com.melot.cms.admin.api.constant.OperatorInfoEnum;
+import com.melot.cms.admin.api.service.AdminDataService;
+import com.melot.cms.admin.api.service.OperatorService;
+import com.melot.cms.api.base.Result;
 import com.melot.common.driver.service.StarService;
 import com.melot.goldcoin.domain.UserGoldAssets;
 import com.melot.goldcoin.service.GoldcoinService;
+import com.melot.kk.otherlogin.api.service.OtherLoginService;
 import com.melot.kkcore.account.service.AccountSecurityService;
+import com.melot.kkcore.actor.api.ActorInfo;
+import com.melot.kkcore.actor.service.ActorService;
 import com.melot.kkcore.user.api.UserAssets;
 import com.melot.kkcore.user.api.UserGameAssets;
 import com.melot.kkcore.user.api.UserInfoDetail;
@@ -41,13 +42,11 @@ import com.melot.kkcx.model.ActorProfit;
 import com.melot.kkcx.model.RichLevel;
 import com.melot.kkcx.model.StarInfo;
 import com.melot.kktv.domain.UserInfo;
-import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConstantEnum;
 import com.melot.kktv.util.LoginTypeEnum;
 import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
-import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
 import com.melot.module.packagegift.driver.service.VipService;
 import com.melot.sdk.core.util.MelotBeanFactory;
@@ -810,6 +809,34 @@ public class UserService {
             logger.error("UserService.getUserAdminType(" + "userId:" + userId + ") execute exception.", e);
         }
         return adminType;
+    }
+    
+    /**
+     * 获取用户上次封号原因
+     * 
+     * @param userId 用户id
+     * @return
+     */
+    public static UserViolationDto getLastUserViolationInfo(int userId) {
+        UserViolationDto result = null;
+        try {
+            AdminDataService adminDataService = (AdminDataService) MelotBeanFactory.getBean("adminDataService");
+            Result<UserViolationDto> resp = adminDataService.getLastUserViolationInfo(userId);
+            if (resp != null && AdminApiTagCodes.SUCCESS.equals(resp.getCode())){
+                if (resp.getData() != null) {
+                    result = resp.getData();
+                    //解封已失效不返回
+                    if (result.getReOpenTime() != null && result.getReOpenTime().getTime() < System.currentTimeMillis()) {
+                        result = null;
+                    }
+                }
+            }else {
+                logger.error("AdminDataService.getLastUserViolationInfo execute exception, msg:" + resp.getMsg() + " code:" + resp.getCode());
+            }
+        } catch (Exception e) {
+            logger.error("UserService.getLastUserViolationInfo(" + "userId:" + userId + ") execute exception.", e);
+        }
+        return result;
     }
     
     /**

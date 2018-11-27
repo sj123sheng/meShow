@@ -25,6 +25,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.blacklist.service.BlacklistService;
+import com.melot.cms.admin.api.bean.UserViolationDto;
 import com.melot.kk.logistics.api.domain.UserAddressDO;
 import com.melot.kk.logistics.api.domain.UserAddressParam;
 import com.melot.kk.logistics.api.service.UserAddressService;
@@ -71,6 +72,7 @@ import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.Constant;
 import com.melot.kktv.util.DateUtil;
+import com.melot.kktv.util.DateUtils;
 import com.melot.kktv.util.HadoopLogger;
 import com.melot.kktv.util.LoginTypeEnum;
 import com.melot.kktv.util.ParameterKeys;
@@ -108,6 +110,12 @@ public class UserFunctions {
 	private static final String DEFAULT_NICKNAME = "北京爷们儿";
 	
 	private static String REGEX = ",";
+	
+	//封号处理结果
+	private static final String LOCK_DESC = "冻结%s天（截至%s）";
+	
+	//封号提示
+	private static final String LOCK_TIP = "冻结期间账号不能登录";
 	
 	/**
 	 * 用户注册(10001002)
@@ -1113,7 +1121,7 @@ public class UserFunctions {
 	    
         int loginType, appId, channel, inviterId, userId = 0, platform = 0, roomFrom;
         int gpsCityId;// 客户端通过GPS拿到的城市定位ID【参数里面是city】
-        String isSafe, username = null, phoneNum = null, psword = null, token = null, uuid = null, unionid = null, deviceUId = null, clientIp = null, sessionId = null;
+        String isSafe, username = null, phoneNum = null, psword = null, token = null, uuid = null, unionid = null, deviceUId = null, clientIp = null;
         try {
             loginType = CommonUtil.getJsonParamInt(jsonObject, "loginType", 0, "01130001", Integer.MIN_VALUE, Integer.MAX_VALUE);
             isSafe = CommonUtil.getJsonParamString(jsonObject, "isSafe", null, null, 0, 256);
@@ -1160,11 +1168,8 @@ public class UserFunctions {
                     unionid = CommonUtil.getJsonParamString(jsonObject, "unionid", null, null, 0, 512);
                 }
                 if (loginType == LoginTypeEnum.QQ) {
-                    sessionId = CommonUtil.getJsonParamString(jsonObject, "sessionId", null, null, 0, 512);
-                    if (sessionId != null) {
-                        QQService qqService = (QQService) MelotBeanFactory.getBean("qqService");
-                        unionid = qqService.getUnionID(sessionId);
-                    }
+                    QQService qqService = (QQService) MelotBeanFactory.getBean("qqService");
+                    unionid = qqService.getUnionID(uuid);
                 }
                 if (loginType == LoginTypeEnum.DIDA) {
                     //70091 固定channelid
@@ -1229,6 +1234,7 @@ public class UserFunctions {
         }
         
         Integer defPwd = null;
+        KkUserService userService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
         // loginType != -1 时,调用存储过程得到userId,token
         if (loginType != -1) {
             if (resLogin != null && resLogin.getTagCode() != null) {
@@ -1262,19 +1268,59 @@ public class UserFunctions {
                     // 注册日志
                     HadoopLogger.loginLog(userId, new Date(), platform, ipAddr, loginType, appId, SecurityFunctions.decodeED(jsonObject));
                     
-                } else if (TagCode.equals("02") || TagCode.equals("07")) {
-                    // '02'; 无对应用户记录,该用户未注册
+                } else if (TagCode.equals("07")) {
+                    // '07'; 无对应用户记录,该用户未注册
                     result.addProperty("TagCode", "01070103");
                     return result;
-                } else if (TagCode.equals("04") || TagCode.equals("05") || TagCode.equals("06")) {
-                    // '04'; /*用户黑名单*/
+                } else if (TagCode.equals("05") || TagCode.equals("06")) {
                     // '05'; /*设备黑名单*/
                     // '06'; /*IP黑名单*/
                     result.addProperty("TagCode", "011301" + TagCode);
                     return result;
-                } else if (TagCode.equals("08")) {
-                    //封号
-                    result.addProperty("TagCode", "011301" + TagCode);
+                } else if (TagCode.equals("02") || TagCode.equals("04") || TagCode.equals("08")) {
+                    // '02'; 无对应用户记录,该用户未注册
+                    // '04'; /*用户黑名单*/
+                    // '08'; /*封号*/
+                    if (TagCode.equals("02")) {
+                        result.addProperty("TagCode", "01070103");
+                    } else {
+                        result.addProperty("TagCode", "011301" + TagCode);
+                    }
+                    
+                    if (userId == 0) {
+                        if (loginType == LoginTypeEnum.NAMEPASSWORD) {
+                            UserRegistry userRegistry = userService.getUserRegistryOutQuest(0, username);
+                            if (userRegistry != null) {
+                                userId = userRegistry.getUserId();
+                            }
+                        } else if (loginType == LoginTypeEnum.PHONE) {
+                            userId = userService.getUserIdByPhoneNumber(phoneNum);
+                        } else {
+                            if (loginType == LoginTypeEnum.WEIXIN) {
+                                userId = accountService.isUnionIdValid(unionid, loginType);
+                            } else {
+                                userId = accountService.isUuidValid(uuid, loginType);
+                            }
+                        }
+                    }
+                    
+                    if (userId > 0) {
+                        UserViolationDto userViolationDto = com.melot.kkcx.service.UserService.getLastUserViolationInfo(userId);
+                        if (userViolationDto != null) {
+                            String lockDesc = "永久封号";
+                            int days = userViolationDto.getStopTime();
+                            if (days > 0) {
+                                lockDesc = String.format(LOCK_DESC, days, DateUtils.format(userViolationDto.getReOpenTime(), "yyyy-MM-dd HH:mm:ss"));
+                            }
+                            result.addProperty("lockDesc", lockDesc);
+                            result.addProperty("lockTip", LOCK_TIP);
+                            result.addProperty("violationNote", userViolationDto.getViolationNote());
+                            result.addProperty("note", userViolationDto.getNote());
+                            //兼容封号账户没绑定第三方TagCode返回'04' 问题
+                            result.addProperty("TagCode", "01130108");
+                        }
+                    }
+                    
                     return result;
                 } else if (TagCode.equals("11")) {
                     // 手机号黑名单
@@ -1330,7 +1376,6 @@ public class UserFunctions {
             if (cityMap != null && cityMap.get("area") != null && cityMap.get("city") != null) {
                 Integer city = null;
                 try {
-                    KkUserService userService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
                     UserRegistry userRegistry = userService.getUserRegistry(userId);
                     city = userRegistry.getCityId();
                     
@@ -2155,7 +2200,7 @@ public class UserFunctions {
 					+ ", username : " + username + ", deviceUId : " + deviceUId + ", ipAddr : " + ipAddr + ", phoneNum : " + phoneNum
 					+ ", psword : " + psword, e);
 		}
-		if (checkLogin(result, resLogin, loginType, jsonObject) != null) {
+		if (checkLogin(userId, username, phoneNum, result, resLogin, loginType, jsonObject) != null) {
 			return result;
 		}
 		userId = resLogin.getUserId();
@@ -2204,7 +2249,7 @@ public class UserFunctions {
 					+ ", platform : " + platform + ", deviceUId : " + deviceUId + ", ipAddr : " + ipAddr + ", appId : " + appId
 					+ ", channel : " + channel + ", port : " + port + ", extendData : " + new Gson().toJson(extendData), e);
 		}
-		if (checkLogin(result, resLogin, loginType, jsonObject) != null) {
+		if (checkLogin(userId, username, phoneNum, result, resLogin, loginType, jsonObject) != null) {
 			return result;
 		}
 		
@@ -2779,7 +2824,8 @@ public class UserFunctions {
             return result;
         }
     }
-	private static JsonObject checkLogin(JsonObject result, ResLogin resLogin, int loginType, JsonObject jsonObject) {
+    
+	private static JsonObject checkLogin(int userId, String username, String phoneNum, JsonObject result, ResLogin resLogin, int loginType, JsonObject jsonObject) {
 		if (loginType != -1 && resLogin != null && resLogin.getTagCode() != null) {
         	String TagCode = resLogin.getTagCode();
         	if (TagCode.equals(TagCodeEnum.SUCCESS)) {
@@ -2788,15 +2834,46 @@ public class UserFunctions {
                 // '02'; 无对应用户记录,该用户未注册
                 result.addProperty("TagCode", "01070103");
                 return result;
-            } else if (TagCode.equals("04") || TagCode.equals("05") || TagCode.equals("06")) {
-                // '04'; /*用户黑名单*/
+            } else if (TagCode.equals("05") || TagCode.equals("06")) {
                 // '05'; /*设备黑名单*/
                 // '06'; /*IP黑名单*/
                 result.addProperty("TagCode", "011301" + TagCode);
                 return result;
-            } else if (TagCode.equals("08")) {
-                //封号
+            } else if (TagCode.equals("04") || TagCode.equals("08")) {
+                // '04'; /*用户黑名单*/
+                // '08'; /*封号*/
                 result.addProperty("TagCode", "011301" + TagCode);
+                
+                if (userId == 0) {
+                    KkUserService userService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
+                    if (loginType == LoginTypeEnum.NAMEPASSWORD) {
+                        UserRegistry userRegistry = userService.getUserRegistryOutQuest(0, username);
+                        if (userRegistry != null) {
+                            userId = userRegistry.getUserId();
+                        }
+                    } else if (loginType == LoginTypeEnum.PHONE) {
+                        userId = userService.getUserIdByPhoneNumber(phoneNum);
+                    }
+                }
+                
+                if (userId > 0) {
+                    UserViolationDto userViolationDto = com.melot.kkcx.service.UserService.getLastUserViolationInfo(userId);
+                    if (userViolationDto != null) {
+                        String lockDesc = "永久封号";
+                        int days = userViolationDto.getStopTime();
+                        if (days > 0) {
+                            lockDesc = String.format(LOCK_DESC, days, DateUtils.format(userViolationDto.getReOpenTime(), "yyyy-MM-dd HH:mm:ss"));
+                        }
+                        result.addProperty("lockDesc", lockDesc);
+                        result.addProperty("lockTip", LOCK_TIP);
+                        result.addProperty("violationNote", userViolationDto.getViolationNote());
+                        result.addProperty("note", userViolationDto.getNote());
+                        
+                        //兼容封号账户没绑定第三方TagCode返回'04' 问题
+                        result.addProperty("TagCode", "01130108");
+                    }
+                }
+                
                 return result;
             } else if (TagCode.equals("11")) {
                 // 手机号黑名单
