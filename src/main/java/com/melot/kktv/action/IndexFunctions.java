@@ -821,16 +821,16 @@ public class IndexFunctions {
                 if (kkActivity.getAppShareContent() != null) {
                     result.addProperty("appShareContent", kkActivity.getAppShareContent());
                 }
-                if (kkActivity.getAppActivityURL() != null) {
+                if (kkActivity.getAppSharePicture() != null) {
                     result.addProperty("appSharePicture", kkActivity.getAppSharePicture());
                 }
-                if (kkActivity.getAppActivityURL() != null) {
+                if (kkActivity.getWebShareTitle() != null) {
                     result.addProperty("webShareTitle", kkActivity.getWebShareTitle());
                 }
                 if (kkActivity.getWebShareContent() != null) {
                     result.addProperty("webShareContent", kkActivity.getWebShareContent());
                 }
-                if (kkActivity.getAppActivityURL() != null) {
+                if (kkActivity.getWebSharePicture() != null) {
                     result.addProperty("webSharePicture", kkActivity.getWebSharePicture());
                 }
             }
