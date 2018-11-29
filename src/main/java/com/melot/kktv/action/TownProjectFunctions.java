@@ -35,6 +35,7 @@ import java.util.regex.Pattern;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import com.melot.kk.town.api.dto.*;
 import org.apache.log4j.Logger;
 import org.springframework.util.CollectionUtils;
 
@@ -59,24 +60,6 @@ import com.melot.kk.town.api.constant.TownTaskTypeEnum;
 import com.melot.kk.town.api.constant.UserRoleTypeEnum;
 import com.melot.kk.town.api.constant.WorkCheckStatusEnum;
 import com.melot.kk.town.api.constant.WorkTypeEnum;
-import com.melot.kk.town.api.dto.ConfAreaBannerDTO;
-import com.melot.kk.town.api.dto.FreshItemDTO;
-import com.melot.kk.town.api.dto.HistTaskCompletionDTO;
-import com.melot.kk.town.api.dto.HistTownArticleOperateInoutDTO;
-import com.melot.kk.town.api.dto.ResTownStaffDTO;
-import com.melot.kk.town.api.dto.ResTownTopicDTO;
-import com.melot.kk.town.api.dto.ResTownWorkDTO;
-import com.melot.kk.town.api.dto.TownMessageInfoDTO;
-import com.melot.kk.town.api.dto.TownOfficialArticleDTO;
-import com.melot.kk.town.api.dto.TownStarApplyInfoDTO;
-import com.melot.kk.town.api.dto.TownStarDTO;
-import com.melot.kk.town.api.dto.TownSystemMessageDTO;
-import com.melot.kk.town.api.dto.TownUserInfoDTO;
-import com.melot.kk.town.api.dto.TownUserRoleDTO;
-import com.melot.kk.town.api.dto.TownWorkCommentDTO;
-import com.melot.kk.town.api.dto.UserFollowMessageDTO;
-import com.melot.kk.town.api.dto.UserPraiseMessageDTO;
-import com.melot.kk.town.api.dto.UserTagRelationDTO;
 import com.melot.kk.town.api.param.TownUserInfoParam;
 import com.melot.kk.town.api.param.TownWorkCommentParam;
 import com.melot.kk.town.api.param.TownWorkParam;
@@ -3201,6 +3184,39 @@ public class TownProjectFunctions {
             return result;
         } catch (Exception e) {
             logger.error("Error addOfficialArticle()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     *  获取奖励活动榜单(51120169)
+     */
+    public JsonObject getRewardActivityRankList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+
+        try {
+            JsonArray rewardActivityRankList = new JsonArray();
+            List<RewardRankDTO> rewardRankDTOList = townWorkService.getRewardRankList();
+            if(rewardRankDTOList != null && rewardRankDTOList.size() > 0) {
+                for(RewardRankDTO rewardRankDTO : rewardRankDTOList) {
+                    JsonObject rewardJsonObject=new JsonObject();
+                    rewardJsonObject.addProperty("nickName",rewardRankDTO.getNickName());
+                    rewardJsonObject.addProperty("userId",rewardRankDTO.getUserId());
+                    rewardJsonObject.addProperty("fiftyVideo",rewardRankDTO.getFiftyVideo());
+                    rewardJsonObject.addProperty("oneHundredVideo",rewardRankDTO.getOneHundredVideo());
+                    rewardJsonObject.addProperty("threeHundredVideo",rewardRankDTO.getThreeHundredVideo());
+                    rewardJsonObject.addProperty("totalAmount",rewardRankDTO.getTotalAmount());
+                    rewardActivityRankList.add(rewardJsonObject);
+                }
+            }
+
+            result.add("rewardActivityRankList", rewardActivityRankList);
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error getRewardActivityRankList()", e);
             result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             return result;
         }

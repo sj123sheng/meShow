@@ -537,6 +537,8 @@ public class TagCodeEnum {
     public static final String GET_VERIFY_INFO_ERROR = "5202010202";
     /**获取bizNo错误*/
     public static final String GET_BIZNO_ERROR = "5202010203";
+    /**用户不是直播购商家，无法加入直播购家族*/
+    public static final String NOT_SELLER_ERROR = "5202010204";
 
     /*------提现接口 -------*/
     /**未实名认证*/

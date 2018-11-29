@@ -734,6 +734,25 @@ public class IndexFunctions {
                     if (kkActivity.getAppActivityURL() != null) {
                         jsonObj.addProperty("appActivityURL", kkActivity.getAppActivityURL());
                     }
+                    if (kkActivity.getAppShareTitle() != null) {
+                        jsonObj.addProperty("appShareTitle", kkActivity.getAppShareTitle());
+                    }
+                    if (kkActivity.getAppShareContent() != null) {
+                        jsonObj.addProperty("appShareContent", kkActivity.getAppShareContent());
+                    }
+                    if (kkActivity.getAppActivityURL() != null) {
+                        jsonObj.addProperty("appSharePicture", kkActivity.getAppSharePicture());
+                    }
+                    if (kkActivity.getAppActivityURL() != null) {
+                        jsonObj.addProperty("webShareTitle", kkActivity.getWebShareTitle());
+                    }
+                    if (kkActivity.getWebShareContent() != null) {
+                        jsonObj.addProperty("webShareContent", kkActivity.getWebShareContent());
+                    }
+                    if (kkActivity.getAppActivityURL() != null) {
+                        jsonObj.addProperty("webSharePicture", kkActivity.getWebSharePicture());
+                    }
+                    
                     activityList.add(jsonObj);
                 }
             }
@@ -749,6 +768,81 @@ public class IndexFunctions {
 
         return result;		
 	}
+	
+	/**
+     * 获取活动详情(51050901)
+     * 
+     * @param jsonObject
+     * @return jsonObject
+     */
+    public JsonObject getActivityInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+        JsonObject result = new JsonObject();
+        
+        int activityId;
+        try {
+            activityId = CommonUtil.getJsonParamInt(jsonObject, "activityId", 0, "5105090101", 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        try {
+            KkActivityService kkActivityService = (KkActivityService) MelotBeanFactory .getBean("kkActivityService");
+            KkActivity kkActivity = kkActivityService.getKKActivityById(activityId);
+            if (kkActivity != null) {
+                result.addProperty("activityId", kkActivity.getActivityId());
+                if (kkActivity.getActivityURL() != null) {
+                    result.addProperty("activityURL", kkActivity.getActivityURL());
+                }
+                if (kkActivity.getActTitle() != null) {
+                    result.addProperty("activityTitle", kkActivity.getActTitle());
+                }
+                if (kkActivity.getActDesc() != null) {
+                    result.addProperty("activityDesc", kkActivity.getActDesc() );
+                }
+                if (kkActivity.getStartTime() != null) {
+                    result.addProperty("startDate", kkActivity.getStartTime().getTime());
+                }
+                if (kkActivity.getEndTime() != null) {
+                    result.addProperty("endDate", kkActivity.getEndTime().getTime());
+                }
+                if (kkActivity.getImgURL() != null) {
+                    result.addProperty("imgURL", kkActivity.getImgURL());
+                }
+                if (kkActivity.getAppActivityURL() != null) {
+                    result.addProperty("appActivityURL", kkActivity.getAppActivityURL());
+                }
+                if (kkActivity.getAppShareTitle() != null) {
+                    result.addProperty("appShareTitle", kkActivity.getAppShareTitle());
+                }
+                if (kkActivity.getAppShareContent() != null) {
+                    result.addProperty("appShareContent", kkActivity.getAppShareContent());
+                }
+                if (kkActivity.getAppActivityURL() != null) {
+                    result.addProperty("appSharePicture", kkActivity.getAppSharePicture());
+                }
+                if (kkActivity.getAppActivityURL() != null) {
+                    result.addProperty("webShareTitle", kkActivity.getWebShareTitle());
+                }
+                if (kkActivity.getWebShareContent() != null) {
+                    result.addProperty("webShareContent", kkActivity.getWebShareContent());
+                }
+                if (kkActivity.getAppActivityURL() != null) {
+                    result.addProperty("webSharePicture", kkActivity.getWebSharePicture());
+                }
+            }
+
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        } catch (Exception e) {
+            logger.error("KkActivityService.getKKActivityById(" + activityId + ") return exception.", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+        }
+
+        return result;      
+    }
 	
 	/**
 	 * 关键词搜索房间(接口10002008)

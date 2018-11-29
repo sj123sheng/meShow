@@ -118,6 +118,13 @@
 		<constructor-arg name="cacheType" value="60" />
 		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
 	</bean>
+	<!-- 获取活动详情 -->
+	<bean id="51050901" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="indexFunction" />
+		<constructor-arg name="methodName" value="getActivityInfo" />
+		<constructor-arg name="cacheType" value="60" />
+		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
+	</bean>
 	<!-- 关键词搜索房间 -->
 	<bean id="10002008" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="indexFunction" />
@@ -3311,6 +3318,10 @@
         <constructor-arg name="t" ref="townProjectFunctions" />
         <constructor-arg name="methodName" value="addOfficialArticle" />
     </bean>
+	<bean id="51120169" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="townProjectFunctions" />
+		<constructor-arg name="methodName" value="getRewardActivityRankList" />
+	</bean>
 
 	<!-- 微信直播小程序API -->
 	<bean id="51120201" class="com.melot.sdk.core.function.GenericFunction">
