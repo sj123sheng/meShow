@@ -558,6 +558,8 @@ public class TagCodeEnum {
 	public static final String ERROR_DISTRIBUTOR_ID = "5106051101";
 	/** 分销id不存在 */
 	public static final String NOT_DISTRIBUTOR = "5106051102";
+    /** 分销商品不支持使用优惠券 */
+    public static final String DISTRIBUTOR_PRODUCT_NOT_SUPPORT_COUPON = "5106051103";
 
 	/** 商品id非法 */
 	public static final String ERROR_PRODUCT_ID = "5106051201";

@@ -160,7 +160,7 @@ public class LiveShopTF {
         result.add("subShopIds", subShopArray);
     }
 
-    public static void orderV2Info2Json(JsonObject result, LiveShopOrderV2DTO orderDTO, UserAddressDO addressDO, List<Integer> subShopIds) {
+    public static void orderV2Info2Json(JsonObject result, LiveShopOrderV3DTO orderDTO, UserAddressDO addressDO, List<Integer> subShopIds) {
         orderV2Info2Json(result, orderDTO, addressDO);
         JsonArray subShopArray = new JsonArray();
         if (CollectionUtils.isNotEmpty(subShopIds)) {
@@ -172,7 +172,7 @@ public class LiveShopTF {
         result.add("subShopIds", subShopArray);
     }
 
-    public static void orderV2Info2Json(JsonObject result, LiveShopOrderV2DTO orderDTO, UserAddressDO addressDO) {
+    public static void orderV2Info2Json(JsonObject result, LiveShopOrderV3DTO orderDTO, UserAddressDO addressDO) {
 
         result.addProperty("buyerId", orderDTO.getUserId());
         result.addProperty("sellerId", orderDTO.getSellerId());
@@ -186,6 +186,10 @@ public class LiveShopTF {
         result.addProperty("waitPayMoney", orderDTO.getWaitPayMoney());
         result.addProperty("payMoney", orderDTO.getPayMoney());
         result.addProperty("refundMoney", orderDTO.getRefundMoney());
+
+        if(orderDTO.getCouponAmount() != null){
+            result.addProperty("couponAmount",orderDTO.getCouponAmount());
+        }
 
         if (orderDTO.getOrderState().equals(LiveShopOrderState.WAIT_RETURN)) {
             // 管理后台挂起的订单，做为申请退款的订单处理

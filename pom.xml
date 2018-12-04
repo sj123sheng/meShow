@@ -10,7 +10,7 @@
 	
 	<artifactId>meShow</artifactId>
 	<packaging>war</packaging>
-	<version>2.12.63</version>
+	<version>2.12.64</version>
 	<name>meShow</name>
 	<url>http://maven.apache.org</url>
 	
@@ -299,10 +299,6 @@
 			<artifactId>melot-monitor-soa</artifactId>
 			<version>1.1.0</version><!--$NO-MVN-MAN-VER$-->
 	    </dependency>
-	    <dependency>
-			<groupId>com.melot</groupId>
-			<artifactId>melot-game-config-sdk</artifactId>
-		</dependency>
 		<dependency>
 		  <groupId>com.melot</groupId>
 		  <artifactId>game-stream-live-driver</artifactId>
@@ -621,7 +617,7 @@
 		<dependency>
 		  <groupId>com.melot.kk</groupId>
 		  <artifactId>kk-liveshop-api</artifactId>
-		  <version>1.0.9</version>
+		  <version>1.1.0</version>
 		</dependency>
 		
 		<!-- 充值模块 -->

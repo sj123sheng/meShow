@@ -316,8 +316,9 @@ public class KKPlayFunctions {
                         result.addProperty("TagCode", "5107030405");
                     } else if(ReturnResultCode.ERROR_MATCH_IN_CD.getCode().equals(macthCode)) {
                         result.addProperty("TagCode", "5107030406");
-                    }
-                    else{
+                    } else if(ReturnResultCode.ERROR_MATCH_REPEAT.getCode().equals(macthCode)) {
+                        result.addProperty("TagCode", "5107030407");
+                    } else {
                         result.addProperty("TagCode", "5107030403");
                     }
                 }

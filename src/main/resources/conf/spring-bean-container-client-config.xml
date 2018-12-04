@@ -185,6 +185,7 @@
 	<kkrpc:reference id="confSubShopService" interface="com.melot.kk.liveshop.api.service.ConfSubShopService" version="1.0.0"/>
 	<kkrpc:reference id="productService" interface="com.melot.kk.liveshop.api.service.ProductService" version="1.0.0"/>
 	<kkrpc:reference id="orderService" interface="com.melot.kk.liveshop.api.service.OrderService" version="1.0.0"/>
+	<kkrpc:reference id="couponService" interface="com.melot.kk.liveshop.api.service.CouponService" version="1.0.0"/>
 
 	<kkrpc:reference id="rechargeService" interface="com.melot.kk.recharge.api.service.RechargeService" version="1.0.1"/>
 

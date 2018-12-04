@@ -3009,6 +3009,76 @@
         <constructor-arg name="cacheKeyExcluedUserId" value="1" />
 	</bean>
 
+	<bean id="51060554" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="addShopCoupon" />
+	</bean>
+
+	<bean id="51060555" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getShopCouponDetail" />
+	</bean>
+
+	<bean id="51060556" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="receiveCoupon" />
+	</bean>
+
+	<bean id="51060557" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getUserAllCouponCount" />
+	</bean>
+
+	<bean id="51060558" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getUserCoupon" />
+	</bean>
+
+	<bean id="51060559" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getSellerCouponManageList" />
+	</bean>
+
+	<bean id="51060560" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="disableCoupon" />
+	</bean>
+
+	<bean id="51060561" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getSellerCoupon" />
+	</bean>
+
+	<bean id="51060562" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getLiveRoomUserCouponAmount" />
+	</bean>
+
+	<bean id="51060563" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getSellerAllCouponManageCount" />
+	</bean>
+
+	<bean id="51060564" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getProductDetailCouponList" />
+	</bean>
+
+	<bean id="51060565" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getOrderCouponList" />
+	</bean>
+
+    <bean id="51060566" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="liveShopFunctions" />
+        <constructor-arg name="methodName" value="getOrderCouponUserUsableCount" />
+    </bean>
+
+	<bean id="51060567" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="isFirstTimeToBuy" />
+	</bean>
+
 	<!-- 获取积分礼物列表 -->
 	<bean id="51010406" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="nobilityFunctions" />
