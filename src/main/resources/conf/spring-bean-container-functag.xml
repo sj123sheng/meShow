@@ -2982,6 +2982,11 @@
 		<constructor-arg name="methodName" value="submitOrder" />
 	</bean>
 
+    <bean id="51060599" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="liveShopFunctions" />
+        <constructor-arg name="methodName" value="payOrder" />
+    </bean>
+
 	<bean id="51060550" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="liveShopFunctions" />
 		<constructor-arg name="methodName" value="getOrdersV2" />

@@ -226,7 +226,8 @@ public class LiveShopTF {
             result.add("expressInfo", expressInfo);
         }
 
-        if (orderDTO.getApplyRefundMoney() > 0) {
+        int orderState = orderDTO.getOrderState();
+        if (orderDTO.getApplyRefundMoney() > 0 || orderState == 5 || orderState == 6 || orderState == 8) {
             JsonObject refundInfo = new JsonObject();
             refundInfo.addProperty("refundPrice", orderDTO.getApplyRefundMoney());
             if (orderDTO.getApplyRefundDesc() != null) {

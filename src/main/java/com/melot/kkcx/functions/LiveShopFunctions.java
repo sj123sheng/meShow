@@ -2979,6 +2979,60 @@ public class LiveShopFunctions {
     }
 
     /**
+     * 支付订单(校验收货地址是否填写 0元订单直接支付【51060599】
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject payOrder(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        if (!checkTag) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_INCORRECT);
+            return result;
+        }
+
+        int userId;
+        String orderNo;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.USER_ID, 0, "5106051301", 1, Integer.MAX_VALUE);
+            orderNo = CommonUtil.getJsonParamString(jsonObject, "orderNo", "", "5106050302", 0, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
+            return result;
+        }
+
+        try {
+
+            Result<Integer> payOrderResult = orderService.payOrder(userId, orderNo);
+            if (payOrderResult == null) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            String code = payOrderResult.getCode();
+            if("2".equals(code)) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5106050303");
+                return result;
+            } else if("4".equals(code)) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5106050304");
+                return result;
+            } else if (!CommonStateCode.SUCCESS.equals(code)){
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+                return result;
+            }
+            result.addProperty("orderState", payOrderResult.getData());
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error(String.format("Module Error：liveShopService.payOrder(userId=%s, orderNo=%s)",
+                    userId, orderNo), e);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
      * 获取订单列表V2【51060550】
      * @param jsonObject
      * @param checkTag
@@ -3535,6 +3589,8 @@ public class LiveShopFunctions {
         Result<Boolean> couponResult = couponService.receiveCoupon(userId,couponId);
         if (CommonStateCode.SUCCESS.equals(couponResult.getCode())) {
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            int status = couponService.getUserReceiveCouponStatus(couponId,userId);
+            result.addProperty("status",status);
             return result;
         } else {
             if("NOT_EXIST".equals(couponResult.getCode())) {

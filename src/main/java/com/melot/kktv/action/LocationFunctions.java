@@ -97,8 +97,10 @@ public class LocationFunctions {
         JsonObject result = new JsonObject();
 
         String areaCode;
+        int inOperation;
         try {
             areaCode = CommonUtil.getJsonParamString(jsonObject, AREA_CODE.getId(), null, AREA_CODE.getErrorCode(), 1, Integer.MAX_VALUE);
+            inOperation = CommonUtil.getJsonParamInt(jsonObject, "inOperation", 1, null, 0, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -106,7 +108,12 @@ public class LocationFunctions {
 
         try {
 
-            List<AreaCodeDTO> areaCodeDTOList = locationService.getNextAreaCodeListByAreaCode(areaCode);
+            List<AreaCodeDTO> areaCodeDTOList;
+            if(inOperation == 1) {
+                areaCodeDTOList = locationService.getNextAreaCodeListByAreaCode(areaCode);
+            } else {
+                areaCodeDTOList = locationService.getNextAreaCodeList(areaCode, null);
+            }
             JsonArray areaCodeList = new JsonArray();
             if(areaCodeDTOList != null){
                 for(AreaCodeDTO areaCodeDTO : areaCodeDTOList) {
