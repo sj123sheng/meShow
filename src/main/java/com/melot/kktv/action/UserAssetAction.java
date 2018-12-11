@@ -1,19 +1,24 @@
 package com.melot.kktv.action;
 
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 
+import com.alibaba.fastjson.JSON;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
+import com.melot.api.menu.sdk.utils.Collectionutils;
 import com.melot.asset.driver.domain.ConfVirtualId;
 import com.melot.asset.driver.domain.PageConfVirtualId;
 import com.melot.asset.driver.domain.ReletVirtualIdConfig;
@@ -24,12 +29,14 @@ import com.melot.kkcore.user.api.ResourceType;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.api.UserResource;
 import com.melot.kkcore.user.service.KkUserService;
-import com.melot.kkcx.service.ActivityExchangeService;
+import com.melot.kkcx.model.UserProp;
+import com.melot.kkcx.service.ProfileServices;
 import com.melot.kkcx.service.StorehouseService;
 import com.melot.kkcx.service.UserAssetServices;
+import com.melot.kkcx.util.PropTypeEnum;
+import com.melot.kkcx.util.ValidTypeEnum;
 import com.melot.kktv.domain.CarConfigInfo;
 import com.melot.kktv.domain.CarPriceInfo;
-import com.melot.kktv.domain.ExpConfInfo;
 import com.melot.kktv.domain.StorehouseInfo;
 import com.melot.kktv.model.MedalInfo;
 import com.melot.kktv.redis.HotDataSource;
@@ -49,9 +56,14 @@ import com.melot.module.medal.driver.service.UserMedalService;
 import com.melot.module.packagegift.driver.domain.CarPrice;
 import com.melot.module.packagegift.driver.domain.Prop;
 import com.melot.module.packagegift.driver.domain.UserCarInfo;
+import com.melot.module.packagegift.driver.domain.UserChatBubbleDTO;
 import com.melot.module.packagegift.driver.domain.UserVip;
 import com.melot.module.packagegift.driver.service.CarService;
+import com.melot.module.packagegift.driver.service.ChatBubbleService;
 import com.melot.module.packagegift.driver.service.VipService;
+import com.melot.room.pendant.domain.ReturnResult;
+import com.melot.room.pendant.dto.UserPendantDTO;
+import com.melot.room.pendant.service.PendantService;
 import com.melot.sdk.core.util.MelotBeanFactory;
 
 /**
@@ -60,37 +72,104 @@ import com.melot.sdk.core.util.MelotBeanFactory;
  *
  */
 public class UserAssetAction {
-	
+
 	/** 日志记录对象 */
 	private static Logger logger = Logger.getLogger(UserAssetAction.class);
-    
+
 	private static String luckyIdKey = "UserAssetAction.getVirtualIdlist.luckyIdList";
-	
+
 	private static String userValidIdCache = "UserAssetAction.userValidIdCache.";
 	
+	@Resource
+	ChatBubbleService chatBubbleService;
+
 	/**
 	 * 获取用户所拥有的财产列表(VIP 车 门票)(10005019)
-	 * 
+	 *
 	 * @param paramJsonObject
 	 * @return 用户财产列表
 	 */
 	public JsonObject getUserAssetList(JsonObject paramJsonObject, boolean checkTag, HttpServletRequest request) {
 		JsonObject result = new JsonObject();
+		
+        Integer userId;
+
+        try {
+            userId = CommonUtil.getJsonParamInt(paramJsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        List<UserProp> userPropList = new ArrayList<>();
+        try {
+            PendantService pendantService = (PendantService) MelotBeanFactory.getBean("pendantService");
+            ReturnResult<List<UserPendantDTO>> pendantDTOResult = pendantService.listByUserId(userId);
+
+            if ("0".equals(pendantDTOResult.getCode())) {
+                List<UserPendantDTO> userPendantDTOList = pendantDTOResult.getData();
+                for (UserPendantDTO userPendantDTO : userPendantDTOList) {
+                    UserProp userProp = new UserProp();
+                    userProp.setId(userPendantDTO.getPendantId());
+                    userProp.setDesc(userPendantDTO.getPendantDescribe());
+                    userProp.setIsLight(userPendantDTO.getUsed() ? 1 : 0);
+                    userProp.setAppLargeUrl(userPendantDTO.getPendantBigUrl());
+                    userProp.setWebLargeUrl(userPendantDTO.getPendantBigUrl());
+                    userProp.setSmallUrl(userPendantDTO.getPendantSmallUrl());
+                    userProp.setValidType(userPendantDTO.getValidType());
+                    if (userPendantDTO.getValidTime() != null) {
+                        Calendar calendar = Calendar.getInstance();
+                        calendar.setTimeInMillis(userPendantDTO.getValidTime().getTime());
+                        calendar.set(Calendar.HOUR_OF_DAY, 0);
+                        calendar.set(Calendar.MINUTE, 0);
+                        calendar.set(Calendar.SECOND, 0);
+                        calendar.set(Calendar.MILLISECOND, 0);
+                        userProp.setLeftTime(calendar.getTimeInMillis() - System.currentTimeMillis());
+                    }
+                    userProp.setLevel(userPendantDTO.getLevel());
+                    userProp.setName(userPendantDTO.getPendantName());
+                    userProp.setType(PropTypeEnum.PENDANT.getCode());
+                    userPropList.add(userProp);
+                }
+            }
+        } catch (Exception e) {
+            logger.error("pendantService.listByUserId(" + userId + ") return exception.", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+        }
+        
+        try {
+            //获取用户聊天气泡
+            List<UserChatBubbleDTO> userChatBubbleDTOList = chatBubbleService.getUserChatBubbleList(userId, null);
+            if (!Collectionutils.isEmpty(userChatBubbleDTOList)) {
+                for (UserChatBubbleDTO userChatBubbleDTO : userChatBubbleDTOList) {
+                    userPropList.add(ProfileServices.switchBubbleToUserProp(userChatBubbleDTO));
+                }
+            }
+        } catch (Exception e) {
+            logger.error("NodeFunctions.getUserInfoForNode execute pendantService.getUserPendant(" + userId + ") exception.", e);
+        }
+
+        result.add("userPropList", new JsonParser().parse(new Gson().toJson(userPropList)).getAsJsonArray());
+        
 		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 		result.add("props", getUserPropList(paramJsonObject, checkTag, request));
 		result.add("cars", getUserCarList(paramJsonObject, checkTag, request));
-		return result;
-	}
-	
+        result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+        return result;
+    }
+
 	/**
      * 获取用户道具列表 (10005009)
-	 * 
+	 *
 	 * @param jsonObject 请求对象
 	 * @return json对象形式的返回结果
 	 */
 	public JsonObject getUserPropList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 		JsonObject result = new JsonObject();
-		
+
 		int userId, platform;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
@@ -102,7 +181,7 @@ public class UserAssetAction {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-        
+
         List<Prop> propList = null;
         Prop prop = null;
         JsonArray jUserPropList = new JsonArray();
@@ -156,7 +235,7 @@ public class UserAssetAction {
 
 	/**
 	 * 获取用户所拥有的车辆列表(10005013)
-	 * 
+	 *
 	 * @param paramJsonObject
 	 * @return 用户的车辆列表
 	 */
@@ -174,7 +253,7 @@ public class UserAssetAction {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-		
+
 		CarService carService = (CarService) MelotBeanFactory.getBean("carService");
 		// 从redis中获取用户车辆列表
 		JsonArray jsonArray = new JsonArray();
@@ -195,7 +274,7 @@ public class UserAssetAction {
 			    jsonObject.addProperty("origPrice", userCarMap.getPrice());
 			    if (carInfo != null) {
 			        jsonObject.addProperty("nowPrice", carInfo.getMonthPrice() != null ? carInfo.getMonthPrice() : 0);
-			    } 
+			    }
 				if (platform == PlatformEnum.ANDROID) {
 				    jsonObject.addProperty("icon", ConfigHelper.getParkLogoAndroidResURL() + userCarMap.getIcon());
 				} else if (platform == PlatformEnum.IPHONE) {
@@ -216,7 +295,7 @@ public class UserAssetAction {
 				}
 				jsonArray.add(jsonObject);
 			}
-			
+
 			// 获取汽车月供价格
 			List<CarPrice> carList = carService.getCarDiscountList();
 			if (carList != null) {
@@ -234,7 +313,7 @@ public class UserAssetAction {
 			    }
 			    result.add("carPriceList", priceJsonArr);
 			}
-			
+
 			// 从redis中获取进场车辆
 			String ucId = carService.getEnterRoomCar(userId);
             result.addProperty("ucId", StringUtil.parseFromStr(ucId, -1));
@@ -243,7 +322,7 @@ public class UserAssetAction {
 		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 		return result;
 	}
-	
+
 	/**
 	 * 设置用户进入房间显示的座驾(10005033)
 	 * @param jsonObject
@@ -252,7 +331,7 @@ public class UserAssetAction {
 	 */
 	public JsonObject setUserEntranceCar(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 		JsonObject result = new JsonObject();
-		
+
 		// 该接口需要验证token,未验证的返回错误码
 		if (!checkTag) {
 			result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
@@ -277,21 +356,21 @@ public class UserAssetAction {
 			// user car not exist
 			result.addProperty("TagCode", "05330102");
 		}
-		
+
 		return result;
 	}
 
 	/**
 	 * 查询虚拟号列表（10005059）
-	 * 
+	 *
 	 * @param paramJsonObject
 	 * @return
 	 */
     public JsonObject getVirtualIdlist(JsonObject paramJsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
-        
+
         int count, startNum, endNum;
-        
+
         try {
             count = CommonUtil.getJsonParamInt(paramJsonObject, "count", 10, "05590001", 1, Integer.MAX_VALUE);
             startNum = CommonUtil.getJsonParamInt(paramJsonObject, "startNum", 1, "05590002", 1, Integer.MAX_VALUE);
@@ -303,13 +382,13 @@ public class UserAssetAction {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-        
+
         Gson gson = new Gson();
-        
+
         List<String> luckyIdList = HotDataSource.srandmember(luckyIdKey + "." + startNum + "-" + endNum, count);
-        if (luckyIdList == null || luckyIdList.size() < count ) {
+        if (luckyIdList == null || luckyIdList.size() < count) {
             HotDataSource.del(luckyIdKey + "." + startNum + "-" + endNum);
-            
+
             /*
              * 每次从模块获取靓号500个，然后存入缓存5分钟，再接口调用时随机返回count个
              */
@@ -327,52 +406,52 @@ public class UserAssetAction {
                     values[i++] = gson.toJson(confVirtualId);
                 }
                 HotDataSource.sadd(luckyIdKey + "." + startNum + "-" + endNum, 5 * 60, values);
-                
+
                 luckyIdList = HotDataSource.srandmember(luckyIdKey + "." + startNum + "-" + endNum, count);
             }
         }
-        
+
         JsonArray luckyIdArray = new JsonArray();
         if (luckyIdList != null && luckyIdList.size() > 0) {
             JsonObject jsonObject;
             for (String str : luckyIdList) {
                 ConfVirtualId confVirtualId = gson.fromJson(str, TypeToken.get(ConfVirtualId.class).getType());
-                
+
                 jsonObject = new JsonObject();
                 jsonObject.addProperty("id", confVirtualId.getLuckyId());
                 jsonObject.addProperty("idType", confVirtualId.getLuckidType());
                 jsonObject.addProperty("price", confVirtualId.getPrice());
                 jsonObject.addProperty("useTicket", confVirtualId.getUseTicket());
-                
+
                 // 返回靓号背景icon
                 jsonObject.addProperty("backIcon", confVirtualId.getBackIcon());
-                
+
                 luckyIdArray.add(jsonObject);
             }
         }
-        
+
         result.add("luckyIdList", luckyIdArray);
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        
+
         return result;
     }
-    
+
     /**
      * 查询用户号券余额接口（10005037）
-     * 
+     *
      * @param paramJsonObject
      * @param checkTag
      * @return
      */
     public JsonObject getIdTicketCount(JsonObject paramJsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
-        
+
         // 该接口需要验证token,未验证的返回错误码
         if (!checkTag) {
             result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
             return result;
         }
-        
+
         int userId;
         try {
             userId = CommonUtil.getJsonParamInt(paramJsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
@@ -383,12 +462,12 @@ public class UserAssetAction {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-        
+
         String cacheResult = HotDataSource.getTempDataString("UserAssetAction.getIdTicketCount." + userId);
         if (!StringUtil.strIsNull(cacheResult)) {
             return new JsonParser().parse(cacheResult).getAsJsonObject();
         }
-        
+
         // 调用虚拟号模块
         com.melot.asset.driver.domain.ResGetIdTicketCount resGetIdTicketCount = null;
         try {
@@ -406,30 +485,30 @@ public class UserAssetAction {
             result.addProperty("goldTicketCount", 0);
             result.addProperty("silverTicketCount", 0);
         }
-        
+
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        
+
         HotDataSource.setTempDataString("UserAssetAction.getIdTicketCount." + userId, result.toString(), 15);
-        
+
         return result;
     }
-    
+
     /**
      * 购买号码接口（10005040）
-     * 
+     *
      * @param paramJsonObject
      * @param checkTag
      * @return
      */
     public JsonObject buyVirtualId(JsonObject paramJsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
-        
+
         // 该接口需要验证token,未验证的返回错误码
         if (!checkTag) {
             result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
             return result;
         }
-        
+
         int userId, virtualId, ticketType, sendUserId;
         try {
             userId = CommonUtil.getJsonParamInt(paramJsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
@@ -443,7 +522,7 @@ public class UserAssetAction {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-        
+
         //如果赠送他人，检验被赠送人id的有效性
         if (sendUserId > 0) {
             UserProfile sendUser = com.melot.kktv.service.UserService.getUserInfoV2(sendUserId);
@@ -452,26 +531,26 @@ public class UserAssetAction {
                 return result;
             }
         }
-        
+
         // 调用虚拟号模块
         try {
             VirtualIdService virtualIdService = MelotBeanFactory.getBean("virtualIdService", VirtualIdService.class);
             long endTime = virtualIdService.buyVirtualId(userId, virtualId, ticketType, sendUserId);
-            
+
             result.addProperty("endTime", endTime);
             result.addProperty("showMoney", UserService.getUserShowMoney(userId));
-            
+
             com.melot.asset.driver.domain.ResVirtualIdInfo resVirtualIdInfo = new com.melot.asset.driver.domain.ResVirtualIdInfo();
             resVirtualIdInfo.setVirtualId(virtualId);
             resVirtualIdInfo.setIdType(1);
-            
+
             int virtualIdLength = String.valueOf(virtualId).length();
             long startNum = Long.valueOf("1" + "000000000000000000000000".substring(0, virtualIdLength - 1));
             long endNum = Long.valueOf("1" + "000000000000000000000000".substring(0, virtualIdLength)) - 1;
-            
+
             // 删除redis中已被购买的虚拟号缓存
             HotDataSource.del(luckyIdKey + "." + startNum + "-" + endNum);
-            
+
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         } catch (MelotModuleException e) {
             int errCode = e.getErrCode();
@@ -486,26 +565,26 @@ public class UserAssetAction {
             result.addProperty("TagCode", "05400006");
             return result;
         }
-        
+
         return result;
     }
-    
+
     /**
      * 保号接口（10005041）
-     * 
+     *
      * @param paramJsonObject
      * @param checkTag
      * @return
      */
     public JsonObject reletVirtualId(JsonObject paramJsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
-        
+
         // 该接口需要验证token,未验证的返回错误码
         if (!checkTag) {
             result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
             return result;
         }
-        
+
         int userId, virtualId, periodCount, type;
         try {
             userId = CommonUtil.getJsonParamInt(paramJsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
@@ -519,15 +598,15 @@ public class UserAssetAction {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-        
+
         // 调用虚拟号模块
         try {
             VirtualIdService virtualIdService = MelotBeanFactory.getBean("virtualIdService", VirtualIdService.class);
             long endTime = virtualIdService.reletVirtualId(userId, virtualId, periodCount, type);
-            
+
             // 删除有效靓号缓存
             HotDataSource.del(userValidIdCache + userId);
-            
+
             result.addProperty("endTime", endTime);
             result.addProperty("showMoney", UserService.getUserShowMoney(userId));
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
@@ -542,19 +621,19 @@ public class UserAssetAction {
             result.addProperty("TagCode", "05410007");
             return result;
         }
-        
+
         return result;
     }
-	
+
 	/**
 	 * 获取用户所拥有的靓号列表(10005045)
-	 * 
+	 *
 	 * @param paramJsonObject
 	 * @return 用户的靓号列表
 	 */
 	public JsonObject getUserLuckyIdList(JsonObject paramJsonObject, boolean checkTag, HttpServletRequest request) {
 	    JsonObject result = new JsonObject();
-        
+
         int userId;
         try {
             userId = CommonUtil.getJsonParamInt(paramJsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
@@ -565,7 +644,7 @@ public class UserAssetAction {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-        
+
         String cacheResult = HotDataSource.getTempDataString("UserAssetAction.getUserLuckyIdList." + userId);
         if (!StringUtil.strIsNull(cacheResult)) {
             return new JsonParser().parse(cacheResult).getAsJsonObject();
@@ -573,7 +652,7 @@ public class UserAssetAction {
 
         JsonArray jsonArray = new JsonArray();
         long leftTime;
-        
+
         // 调用虚拟号模块
         List<com.melot.asset.driver.domain.ResVirtualIdInfo> list = null;
         try {
@@ -582,7 +661,7 @@ public class UserAssetAction {
         } catch (Exception e) {
             logger.error("assetService.getUserVirtualIdList failed, userId: " + userId, e);
         }
-        
+
         // 获取靓号续费配置信息
         ReletVirtualIdConfig reletVirtualIdConfig = null;
         try {
@@ -591,27 +670,27 @@ public class UserAssetAction {
         } catch (Exception e) {
             logger.error("virtualIdService.getReletVirtualIdConfig failed", e);
         }
-        
+
         if (list != null && list.size() > 0) {
             for (com.melot.asset.driver.domain.ResVirtualIdInfo resVirtualIdInfo : list) {
                 if (resVirtualIdInfo.getIdType() == 2 || resVirtualIdInfo.getIdType() > 4) {
                     continue;
                 }
-                
+
                 JsonObject luckyIdJson = new JsonObject();
                 luckyIdJson.addProperty("luckyId", resVirtualIdInfo.getVirtualId());
-                
+
                 leftTime = resVirtualIdInfo.getEndTime() * 1000 - System.currentTimeMillis();
                 leftTime = leftTime < 1 ? 0 : leftTime;
                 luckyIdJson.addProperty("leftTime", leftTime);
-                
+
                 luckyIdJson.addProperty("isLight", resVirtualIdInfo.getIsLight());
                 luckyIdJson.addProperty("idType", resVirtualIdInfo.getIdType());
                 luckyIdJson.addProperty("endTime", resVirtualIdInfo.getEndTime());
                 luckyIdJson.addProperty("idState", resVirtualIdInfo.getIdState());
                 luckyIdJson.addProperty("isEnable", resVirtualIdInfo.getIsEnable());
                 luckyIdJson.addProperty("remainDays", resVirtualIdInfo.getRemainDays());
-                
+
                 // 该靓号续费的配置信息
                 if (reletVirtualIdConfig != null) {
                     if (resVirtualIdInfo.getVirtualId() >= 100000 && resVirtualIdInfo.getVirtualId() < 1000000) {
@@ -628,38 +707,38 @@ public class UserAssetAction {
                         luckyIdJson.addProperty("reletTicket", reletVirtualIdConfig.getLucky5ReletTicket());
                     } else if (resVirtualIdInfo.getVirtualId() >= 1000 && resVirtualIdInfo.getVirtualId() < 10000) {
                         luckyIdJson.addProperty("reletPrice", reletVirtualIdConfig.getLucky4ReletPrice());
-                        luckyIdJson.addProperty("reletTicket", reletVirtualIdConfig.getLucky4ReletTicket());                        
+                        luckyIdJson.addProperty("reletTicket", reletVirtualIdConfig.getLucky4ReletTicket());
                     }
                 }
-                
+
                 // 返回靓号背景icon
                 luckyIdJson.addProperty("backIcon", resVirtualIdInfo.getBackIcon());
-                
+
                 jsonArray.add(luckyIdJson);
-                
+
                 if (resVirtualIdInfo.getIsEnable() == 2) {
                     result.addProperty("validLuckyId", resVirtualIdInfo.getVirtualId());
                 }
             }
         }
-	    
+
 		result.add("luckyIdList", jsonArray);
 		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-		
+
         HotDataSource.setTempDataString("UserAssetAction.getUserLuckyIdList." + userId, result.toString(), 15);
 		return result;
 	}
-    
+
     /** 获取用户所拥有的登陆账号（靓号、尊号、帝号...）(10005052)
-     * 
+     *
      * @param paramJsonObject 请求json对象
      * @return 用户关联的虚拟账号
      * @throws Exception
-     * 
-     */ 
+     *
+     */
     public JsonObject getUserVirtualIdList(JsonObject paramJsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
-        
+
         int userId;
         try {
             userId = CommonUtil.getJsonParamInt(paramJsonObject, "userId", 0, "05520002", 1, Integer.MAX_VALUE);
@@ -670,7 +749,7 @@ public class UserAssetAction {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-        
+
         String cacheResult = HotDataSource.getTempDataString("UserAssetAction.getUserVirtualIdList." + userId);
         if (!StringUtil.strIsNull(cacheResult)) {
             return new JsonParser().parse(cacheResult).getAsJsonObject();
@@ -678,7 +757,7 @@ public class UserAssetAction {
 
         JsonArray jsonArray = new JsonArray();
         long leftTime;
-        
+
         // 调用虚拟号模块
         List<com.melot.asset.driver.domain.ResVirtualIdInfo> list = null;
         try {
@@ -687,7 +766,7 @@ public class UserAssetAction {
         } catch (Exception e) {
             logger.error("assetService.getUserVirtualIdList failed, userId: " + userId, e);
         }
-        
+
         // 获取靓号续费配置信息
         ReletVirtualIdConfig reletVirtualIdConfig = null;
         try {
@@ -696,18 +775,18 @@ public class UserAssetAction {
         } catch (Exception e) {
             logger.error("virtualIdService.getReletVirtualIdConfig failed", e);
         }
-        
+
         if (list != null && list.size() > 0) {
             for (com.melot.asset.driver.domain.ResVirtualIdInfo resVirtualIdInfo : list) {
                 JsonObject luckyIdJson = new JsonObject();
                 luckyIdJson.addProperty("id", resVirtualIdInfo.getVirtualId());
-                
+
                 leftTime = resVirtualIdInfo.getEndTime() * 1000 - System.currentTimeMillis();
                 leftTime = leftTime < 1 ? 0 : leftTime;
                 luckyIdJson.addProperty("leftTime", leftTime);
-                
+
                 luckyIdJson.addProperty("isLight", resVirtualIdInfo.getIsLight());
-                
+
                 if (resVirtualIdInfo.getIdType() == 2 || resVirtualIdInfo.getIdType() > 4) {
                     luckyIdJson.addProperty("idType", 2);
                 } else {
@@ -723,8 +802,8 @@ public class UserAssetAction {
                 } else {
                     luckyIdJson.addProperty("isRenew", 1);
                 }
-                
-                
+
+
                 // 该靓号续费的配置信息
                 if (reletVirtualIdConfig != null) {
                     if (resVirtualIdInfo.getVirtualId() >= 100000 && resVirtualIdInfo.getVirtualId() < 1000000) {
@@ -733,7 +812,7 @@ public class UserAssetAction {
                     } else if (resVirtualIdInfo.getVirtualId() >= 1000000 && resVirtualIdInfo.getVirtualId() < 10000000) {
                         luckyIdJson.addProperty("reletPrice", reletVirtualIdConfig.getLucky7ReletPrice());
                         luckyIdJson.addProperty("reletTicket", reletVirtualIdConfig.getLucky7ReletTicket());
-                        
+
                     } else if (resVirtualIdInfo.getVirtualId() >= 10000000 && resVirtualIdInfo.getVirtualId() < 100000000) {
                         luckyIdJson.addProperty("reletPrice", reletVirtualIdConfig.getLucky8ReletPrice());
                         luckyIdJson.addProperty("reletTicket", reletVirtualIdConfig.getLucky8ReletTicket());
@@ -742,31 +821,31 @@ public class UserAssetAction {
                         luckyIdJson.addProperty("reletTicket", reletVirtualIdConfig.getLucky5ReletTicket());
                     } else if (resVirtualIdInfo.getVirtualId() >= 1000 && resVirtualIdInfo.getVirtualId() < 10000) {
                         luckyIdJson.addProperty("reletPrice", reletVirtualIdConfig.getLucky4ReletPrice());
-                        luckyIdJson.addProperty("reletTicket", reletVirtualIdConfig.getLucky4ReletTicket());                        
+                        luckyIdJson.addProperty("reletTicket", reletVirtualIdConfig.getLucky4ReletTicket());
                     }
                 }
-                
+
                 // 返回靓号背景icon
                 luckyIdJson.addProperty("backIcon", resVirtualIdInfo.getBackIcon());
                 luckyIdJson.addProperty("iconType", resVirtualIdInfo.getIconType());
-                
+
                 jsonArray.add(luckyIdJson);
-                
+
                 if (resVirtualIdInfo.getIsEnable() == 2) {
                     // 获取激活虚拟账号
                     result.add("validId", luckyIdJson);
                 }
             }
         }
-        
+
         result.add("idList", jsonArray);
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        
+
         HotDataSource.setTempDataString("UserAssetAction.getUserVirtualIdList." + userId, result.toString(), 15);
-        
+
         return result;
     }
-	
+
 	/**
 	 * 激活用户虚拟号(靓号/尊号)(10005046)
 	 * @param paramJsonObject
@@ -775,13 +854,13 @@ public class UserAssetAction {
 	 */
 	public JsonObject enableUserLuckyId(JsonObject paramJsonObject, boolean checkTag, HttpServletRequest request) {
 	    JsonObject result = new JsonObject();
-        
+
         // 该接口需要验证token,未验证的返回错误码
         if (!checkTag) {
             result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
             return result;
         }
-        
+
         int userId, virtualId;
         try {
             userId = CommonUtil.getJsonParamInt(paramJsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
@@ -793,16 +872,16 @@ public class UserAssetAction {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-        
+
         // 调用虚拟号模块
         try {
             AssetService assetService = MelotBeanFactory.getBean("assetService", AssetService.class);
             assetService.enableUserLuckyId(userId, virtualId);
-            
+
             HotDataSource.del(userValidIdCache + userId);
             HotDataSource.del("UserAssetAction.getUserVirtualIdList." + userId);
             HotDataSource.del("UserAssetAction.getUserLuckyIdList." + userId);
-            
+
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         } catch (MelotModuleException e) {
             int errCode = e.getErrCode();
@@ -815,10 +894,10 @@ public class UserAssetAction {
             result.addProperty("TagCode", "05460004");
             return result;
         }
-	    
+
 		return result;
 	}
-	
+
 	/**
 	 * 用户靓号转化为用户编号(10005047)
 	 * @param paramJsonObject
@@ -826,7 +905,7 @@ public class UserAssetAction {
 	 */
 	public JsonObject luckyIdToUserId(JsonObject paramJsonObject, boolean checkTag, HttpServletRequest request) {
 	    JsonObject result = new JsonObject();
-        
+
         int virtualId;
         try {
             virtualId = CommonUtil.getJsonParamInt(paramJsonObject, "luckyId", 0, "05470001", 1, Integer.MAX_VALUE);
@@ -837,22 +916,22 @@ public class UserAssetAction {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-        
+
         // 调用虚拟号模块
         Integer userId = UserAssetServices.luckyIdToUserId(virtualId);
-        
+
         if (userId == null || userId < 1) {
             result.addProperty("userId", virtualId);
         } else {
             result.addProperty("userId", userId);
         }
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        
+
         return result;
 	}
-		
+
 	/**
-	 * 获取用户库存信息 10005053 
+	 * 获取用户库存信息 10005053
 	 * @param jsonObject
 	 * @return
 	 */
@@ -894,7 +973,7 @@ public class UserAssetAction {
      */
     public JsonObject getRandomVirtualIdlist(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
     	JsonObject result = new JsonObject();
-    	
+
     	int idType, count = 0;
     	try{
     		idType = CommonUtil.getJsonParamInt(jsonObject, "idType", 0, "05600001", 1, Integer.MAX_VALUE);
@@ -906,9 +985,9 @@ public class UserAssetAction {
 			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
 			return result;
 		}
-    	
+
     	JsonArray idList = new JsonArray();
-    	
+
     	// 调用模块模块虚拟号列表
     	List<ResVirtualIdInfo> list = null;
     	try {
@@ -925,20 +1004,20 @@ public class UserAssetAction {
     	        jObject.addProperty("price", resVirtualIdInfo.getPrice());
     	        jObject.addProperty("discount", resVirtualIdInfo.getDiscount());
     	        jObject.addProperty("useTicket", resVirtualIdInfo.getUseTicket());
-    	        
+
     	        // 返回靓号背景icon
     	        jObject.addProperty("backIcon", resVirtualIdInfo.getBackIcon());
-    	        
+
     	        idList.add(jObject);
     	    }
     	}
-    	
+
     	result.add("idList", idList);
     	result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-    	
+
     	return result;
     }
-    
+
     /**
      * 校验虚拟号是否可以购买(10005061)
      * @param jsonObject
@@ -946,7 +1025,7 @@ public class UserAssetAction {
      */
     public JsonObject checkVirtualIdCanSell(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
     	JsonObject result = new JsonObject();
-    	
+
     	int virtualId = 0;
     	try{
     		virtualId = CommonUtil.getJsonParamInt(jsonObject, "virtualId", 0, "05610001", 1, Integer.MAX_VALUE);
@@ -957,7 +1036,7 @@ public class UserAssetAction {
 			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
 			return result;
 		}
-    	
+
     	// 调用模块查询 virtualId 是否可以购买
     	ResVirtualIdInfo resVirtualIdInfo = null;
     	try {
@@ -971,13 +1050,13 @@ public class UserAssetAction {
             result.addProperty("TagCode", "05610002");
             return result;
         }
-    	
+
     	// 已售出
     	if (resVirtualIdInfo.getIsEnable() != null && resVirtualIdInfo.getIsEnable() == 1) {
     	    result.addProperty("TagCode", "05610003");
             return result;
         }
-        
+
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         result.addProperty("virtualId", virtualId);
         result.addProperty("idType", resVirtualIdInfo.getIdType());
@@ -985,10 +1064,10 @@ public class UserAssetAction {
         result.addProperty("price", resVirtualIdInfo.getPrice());
         result.addProperty("discount", resVirtualIdInfo.getDiscount());
         result.addProperty("useTicket", resVirtualIdInfo.getUseTicket());
-    	
+
     	return result;
     }
-    
+
     /**
      * 新版购买虚拟号接口(10005062)
      * @param jsonObject
@@ -1105,7 +1184,7 @@ public class UserAssetAction {
         result.addProperty("luckyTicketCount", luckyTicketCount);
         result.addProperty("goldTicketCount", goldTicketCount);*/
         result.addProperty("TagCode", TagCodeEnum.FUNCTAG_INVALID_EXCEPTION);
-		
+
     	return result;
     }
 
@@ -1116,11 +1195,11 @@ public class UserAssetAction {
      */
     public JsonObject fuzzyQueryVirtualId(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
-        
+
         String virtualId;
         int pageNum, pageCount;
         int len, low, high, order;
-        
+
         try {
             virtualId = CommonUtil.getJsonParamString(jsonObject, "virtualId", null, null, 0, 32);
             len = CommonUtil.getJsonParamInt(jsonObject, "length", 0, null, 0, Integer.MAX_VALUE);
@@ -1129,29 +1208,29 @@ public class UserAssetAction {
             order = CommonUtil.getJsonParamInt(jsonObject, "order", 0, null, 0, Integer.MAX_VALUE);
             pageNum = CommonUtil.getJsonParamInt(jsonObject, "pageNum", 1, "05630002", 1, Integer.MAX_VALUE);
             pageCount = CommonUtil.getJsonParamInt(jsonObject, "pageCount", 1, "05630003", 1, Integer.MAX_VALUE);
-        } catch(CommonUtil.ErrorGetParameterException e) {
+        } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
-        } catch(Exception e) {
+        } catch (Exception e) {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-        
+
         if (virtualId != null && virtualId.replace(" ", "").length() < 3) {
             result.addProperty("TagCode", "05630004");
             return result;
         }
-        
+
         //调用模块的模糊搜索虚拟号列表
         PageConfVirtualId pageConfVirtualId = null;
-        
+
         try {
             VirtualIdService virtualIdService = MelotBeanFactory.getBean("virtualIdService", VirtualIdService.class);
             pageConfVirtualId = virtualIdService.getFuzzyVirtualIds(virtualId, 1, len, low * 1000, high * 1000, order, pageNum, pageCount);
         } catch (Exception e) {
-            logger.error("virtualIdService.getFuzzyVirtualIds failed, param: [" + virtualId + ", 1, "+ len + ", " + low * 1000 + ", " + high * 1000 + ", " + order + ", " + pageNum + ", " + pageCount + "]", e);
+            logger.error("virtualIdService.getFuzzyVirtualIds failed, param: [" + virtualId + ", 1, " + len + ", " + low * 1000 + ", " + high * 1000 + ", " + order + ", " + pageNum + ", " + pageCount + "]", e);
         }
-        
+
         JsonArray jsonArray = new JsonArray();
         int pageTotal = 0;
         if (pageConfVirtualId != null && pageConfVirtualId.getList() != null && pageConfVirtualId.getList().size() > 0) {
@@ -1163,22 +1242,22 @@ public class UserAssetAction {
                 jsonObject.addProperty("price", confVirtualId.getPrice());
                 jsonObject.addProperty("rmb", confVirtualId.getPrice() / 1000);
                 jsonObject.addProperty("useTicket", confVirtualId.getUseTicket());
-                
+
                 // 返回靓号背景icon
                 jsonObject.addProperty("backIcon", confVirtualId.getBackIcon());
                 jsonObject.addProperty("iconType", confVirtualId.getIconType());
-                
-                jsonArray.add(jsonObject);                
+
+                jsonArray.add(jsonObject);
             }
         }
-        
+
         result.add("idList", jsonArray);
         result.addProperty("pageTotal", pageTotal);
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        
+
         return result;
     }
-    
+
     /**
      * 根据虚拟号id获取靓号详细信息(10005067)
      * @param jsonObject
@@ -1188,7 +1267,7 @@ public class UserAssetAction {
      */
     public JsonObject getVirtualIdDetail(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
-        
+
         int virtualId;
         try {
             virtualId = CommonUtil.getJsonParamInt(jsonObject, "virtualId", 0, "05670001", 0, Integer.MAX_VALUE);
@@ -1199,12 +1278,12 @@ public class UserAssetAction {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-        
+
         // 调用模块的搜索虚拟号
         ConfVirtualId confVirtualId = null;
         // 该靓号续费的配置信息
         ReletVirtualIdConfig reletVirtualIdConfig = null;
-        
+
         try {
             VirtualIdService virtualIdService = MelotBeanFactory.getBean("virtualIdService", VirtualIdService.class);
             confVirtualId = virtualIdService.getConfVirtualIdById(virtualId);
@@ -1212,7 +1291,7 @@ public class UserAssetAction {
         } catch (Exception e) {
             logger.error("virtualIdService.getConfVirtualIdById or virtualIdService.getReletVirtualIdConfig failed, virtualId" + virtualId, e);
         }
-        
+
         if (confVirtualId != null) {
             result.addProperty("id", confVirtualId.getLuckyId());
             result.addProperty("idType", confVirtualId.getLuckidType());
@@ -1236,16 +1315,16 @@ public class UserAssetAction {
                     result.addProperty("reletTicket", reletVirtualIdConfig.getLucky5ReletTicket());
                 } else if (confVirtualId.getLuckyId() >= 1000 && confVirtualId.getLuckyId() < 10000) {
                     result.addProperty("reletPrice", reletVirtualIdConfig.getLucky4ReletPrice());
-                    result.addProperty("reletTicket", reletVirtualIdConfig.getLucky4ReletTicket());                        
+                    result.addProperty("reletTicket", reletVirtualIdConfig.getLucky4ReletTicket());
                 }
             }
         }
-        
+
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        
+
         return result;
     }
-    
+
     /**
      * 取消默认虚拟号(10005064)
      * @param jsonObject
@@ -1254,15 +1333,15 @@ public class UserAssetAction {
      */
     public JsonObject cancelDefaultVirtualId(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
-        
+
         // 该接口需要验证token,未验证的返回错误码
         if (!checkTag) {
             result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
             return result;
         }
-        
+
         int userId, virtualId;
-        
+
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
             virtualId = CommonUtil.getJsonParamInt(jsonObject, "virtualId", 0, "05640001", 1, Integer.MAX_VALUE);
@@ -1273,13 +1352,13 @@ public class UserAssetAction {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-        
+
         // 调用模块方法，将用户虚拟号改为未激活状态
         String tagCode = null;
         try {
             VirtualIdService virtualIdService = MelotBeanFactory.getBean("virtualIdService", VirtualIdService.class);
             tagCode = virtualIdService.updateVirtualIdEnable(userId, virtualId, 1);
-            
+
             HotDataSource.del(userValidIdCache + userId);
             HotDataSource.del("UserAssetAction.getUserVirtualIdList." + userId);
             HotDataSource.del("UserAssetAction.getUserLuckyIdList." + userId);
@@ -1296,12 +1375,12 @@ public class UserAssetAction {
             result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             return result;
         }
-        
+
         result.addProperty("TagCode", tagCode);
-        
+
         return result;
     }
-    
+
     /**
      * 佩戴/取消佩戴用户活动勋章或充值勋章(10005065)
      * @param jsonObject
@@ -1316,7 +1395,7 @@ public class UserAssetAction {
             result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
             return result;
         }
-        
+
         int userId, medalId;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
@@ -1328,25 +1407,25 @@ public class UserAssetAction {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-        
+
         // 调用模块
         ActivityMedalService activityMedalService = (ActivityMedalService) MelotBeanFactory.getBean("activityMedalService");
-        
+
         try {
             //贵族勋章不允许取消佩戴
             if (medalId >= 157 && medalId <= 163) {
                 result.addProperty("TagCode", "05650004");
                 return result;
             }
-            
+
             UserWearMedalListModel userWearMedalListModel = activityMedalService.updateOperatorUserMedal(userId, medalId);
-            
+
             List<UserActivityMedal> wearList = userWearMedalListModel.getWearList();
             List<UserActivityMedal> noWearList = userWearMedalListModel.getNoWearList();
-            
+
             JsonArray wears = new JsonArray();
             JsonArray nowears = new JsonArray();
-            
+
             try {
                 //添加充值勋章信息
                 UserMedalService userMedalService = (UserMedalService) MelotBeanFactory.getBean("userMedalService");
@@ -1356,7 +1435,7 @@ public class UserAssetAction {
                     if (medal.getEndTime() > now.getTime()) { // 如果没有过期的话，才显示出来
                         JsonObject jObject = new JsonObject();
                         MedalInfo medalInfo = MedalConfig.getMedal(medal.getMedalId());
-                        
+
                         jObject.addProperty("medalId", medalInfo.getMedalId());
                         jObject.addProperty("medalTitle", medalInfo.getMedalTitle());
                         jObject.addProperty("medalType", medalInfo.getMedalType());
@@ -1365,19 +1444,19 @@ public class UserAssetAction {
                         jObject.addProperty("medalRefId", medalInfo.getMedalRefId());
                         jObject.addProperty("endTime", medal.getEndTime());
                         jObject.addProperty("lightState", medal.getLightState());
-                        
+
                         //充值勋章不点亮放入可配置勋章列表
                         if (medal.getLightState() == 0) {
                             nowears.add(jObject);
                         } else {
-                            wears.add(jObject);  
+                            wears.add(jObject);
                         }
                     }
                 }
             } catch (Exception e) {
                 logger.error("Get user[" + userId + "] medal execute exception.", e);
             }
-            
+
             if (wearList != null && wearList.size() > 0) {
                 for (UserActivityMedal userActivityMedal : wearList) {
                     JsonObject jObject = new JsonObject();
@@ -1392,7 +1471,7 @@ public class UserAssetAction {
                     wears.add(jObject);
                 }
             }
-            
+
             if (noWearList != null && noWearList.size() > 0) {
                 for (UserActivityMedal userActivityMedal : noWearList) {
                     JsonObject jObject = new JsonObject();
@@ -1407,7 +1486,7 @@ public class UserAssetAction {
                     nowears.add(jObject);
                 }
             }
-            
+
             result.add("wearMedalList", wears);
             result.add("noWearMedalList", nowears);
             result.addProperty("userId", userWearMedalListModel.getUserId());
@@ -1432,10 +1511,10 @@ public class UserAssetAction {
             result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             logger.error("ActivityMedalService.updateOperatorUserMedal(" + userId + ", " + medalId + ") execute exception.", e);
         }
-        
+
         return result;
     }
-    
+
     /**
      * 获取房间荣誉墙(10005066)
      * @param jsonObject
@@ -1445,7 +1524,7 @@ public class UserAssetAction {
      */
     public JsonObject getRoomHonorWall(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
-        
+
         int roomId;
         try {
             roomId = CommonUtil.getJsonParamInt(jsonObject, "roomId", 0, TagCodeEnum.ROOMID_MISSING, 1, Integer.MAX_VALUE);
@@ -1456,11 +1535,11 @@ public class UserAssetAction {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-        
+
         // 调用模块
         KkUserService userService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
         List<UserResource> list = userService.getUserResourceForType(roomId, ResourceType.KK_MEDAL.typeId());
-        
+
         JsonArray honors = new JsonArray();
         if (list != null && list.size() > 0) {
             // 先按获得时间倒序
@@ -1473,7 +1552,7 @@ public class UserAssetAction {
                     }
                 });
             }
-            
+
             for (UserResource userActivityMedal : list) {
                 MedalInfo medalInfo = MedalConfig.getMedal(userActivityMedal.getResourceId());
                 if (medalInfo != null && medalInfo.getMedalType() == 4 && userActivityMedal.getEndTime() > System.currentTimeMillis()) {
@@ -1494,8 +1573,8 @@ public class UserAssetAction {
         result.add("medalList", honors);
         result.addProperty("roomId", roomId);
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        
+
         return result;
     }
-    
+
 }

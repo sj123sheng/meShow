@@ -3516,4 +3516,38 @@
 		<constructor-arg name="t" ref="kkPlayFunctions" />
 		<constructor-arg name="methodName" value="getPKGameList" />
 	</bean>
+
+	<!-- 获取用户所有头像挂件 -->
+	<bean id="51011201" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="pendantFunctions"/>
+		<constructor-arg name="methodName" value="getUserPendantList"/>
+	</bean>
+	<!-- 获取用户佩戴的挂件详情 -->
+	<bean id="51011202" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="pendantFunctions"/>
+		<constructor-arg name="methodName" value="getUserPendant"/>
+	</bean>
+	
+	<!-- 用户特权相关接口 -->
+	<!-- 获取用户魔杖详情-->
+	<bean id="51011301" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="privilegeFunctions"/>
+		<constructor-arg name="methodName" value="getUserMagicWand"/>
+	</bean>
+	<!-- 使用魔杖 -->
+	<bean id="51011302" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="privilegeFunctions"/>
+		<constructor-arg name="methodName" value="useMagicWand"/>
+	</bean>
+	<!-- 获取直播间魔杖使用情况 -->
+	<bean id="51011303" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="privilegeFunctions"/>
+		<constructor-arg name="methodName" value="getMagicWandUsageSituation"/>
+	</bean>
+	<!-- 获取用户佩戴的挂件详情 -->
+	<bean id="51011304" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="privilegeFunctions"/>
+		<constructor-arg name="methodName" value="operateUserProp"/>
+	</bean>
+
 </beans>

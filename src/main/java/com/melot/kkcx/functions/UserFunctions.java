@@ -1121,7 +1121,7 @@ public class UserFunctions {
 	    
         int loginType, appId, channel, inviterId, userId = 0, platform = 0, roomFrom;
         int gpsCityId;// 客户端通过GPS拿到的城市定位ID【参数里面是city】
-        String isSafe, username = null, phoneNum = null, psword = null, token = null, uuid = null, unionid = null, deviceUId = null, clientIp = null;
+        String isSafe, username = null, phoneNum = null, psword = null, token = null, uuid = null, unionid = null, deviceUId = null, clientIp = null, sessionId = null;;
         try {
             loginType = CommonUtil.getJsonParamInt(jsonObject, "loginType", 0, "01130001", Integer.MIN_VALUE, Integer.MAX_VALUE);
             isSafe = CommonUtil.getJsonParamString(jsonObject, "isSafe", null, null, 0, 256);
@@ -1131,6 +1131,7 @@ public class UserFunctions {
             roomFrom = CommonUtil.getJsonParamInt(jsonObject, "roomFrom", 0, null, 0, Integer.MAX_VALUE);
             platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, "01130009", 0, Integer.MAX_VALUE);
             gpsCityId = CommonUtil.getJsonParamInt(jsonObject, "city", 0, null, 0, Integer.MAX_VALUE);
+            sessionId = CommonUtil.getJsonParamString(jsonObject, "sessionId", null, null, 1, Integer.MAX_VALUE);
             
             if (platform != PlatformEnum.WEB) {
                 // 为了兼容旧版本,这里不强制要求传入设备唯一标识
@@ -1169,7 +1170,7 @@ public class UserFunctions {
                 }
                 if (loginType == LoginTypeEnum.QQ) {
                     QQService qqService = (QQService) MelotBeanFactory.getBean("qqService");
-                    unionid = qqService.getUnionID(uuid);
+                    unionid = qqService.getUnionID(sessionId);
                 }
                 if (loginType == LoginTypeEnum.DIDA) {
                     //70091 固定channelid

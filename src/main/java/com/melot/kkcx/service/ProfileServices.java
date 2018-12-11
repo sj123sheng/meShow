@@ -19,6 +19,9 @@ import com.melot.kk.otherlogin.api.service.OtherLoginService;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.model.CommonDevice;
+import com.melot.kkcx.model.UserProp;
+import com.melot.kkcx.util.PropTypeEnum;
+import com.melot.kkcx.util.ValidTypeEnum;
 import com.melot.kktv.domain.UserInfo;
 import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.QQVipSource;
@@ -30,6 +33,7 @@ import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.db.DB;
 import com.melot.kktv.util.db.SqlMapClientHelper;
+import com.melot.module.packagegift.driver.domain.UserChatBubbleDTO;
 import com.melot.sdk.core.util.MelotBeanFactory;
 
 public class ProfileServices {
@@ -500,6 +504,30 @@ public class ProfileServices {
             }
         } catch(Exception e) {
             logger.error("ProfileServices.identifyPhone(userId: " + userId + "phoneNum: " + phoneNum + ") return exception.", e);
+        }
+        return result;
+    }
+    
+    public static UserProp switchBubbleToUserProp (UserChatBubbleDTO userChatBubbleDTO) {
+        UserProp result = null;
+        if (userChatBubbleDTO != null) {
+            UserProp userProp = new UserProp();
+            userProp.setId(userChatBubbleDTO.getChatBubbleId());
+            userProp.setType(PropTypeEnum.CHAT_BUBBLE.getCode());
+            userProp.setLevel(userChatBubbleDTO.getLevel());
+            userProp.setSubType(userChatBubbleDTO.getChatBubbleType());
+            userProp.setIsLight(userChatBubbleDTO.getIsEnable());
+            userProp.setValidType(userChatBubbleDTO.getValidType());
+            if (ValidTypeEnum.INDEFINITELY.getCode().equals(userChatBubbleDTO.getValidType())
+                    && userChatBubbleDTO.getEndTime() != null) {
+                userProp.setLeftTime(userChatBubbleDTO.getEndTime().getTime() - System.currentTimeMillis());
+            }
+            userProp.setName(userChatBubbleDTO.getChatBubbleName());
+            userProp.setDesc(userChatBubbleDTO.getChatBubbleDescribe());
+            userProp.setAppLargeUrl(userChatBubbleDTO.getChatBubbleAppBigUrl());
+            userProp.setWebLargeUrl(userChatBubbleDTO.getChatBubbleWebBigUrl());
+            userProp.setSmallUrl(userChatBubbleDTO.getChatBubbleSmallUrl());
+            result = userProp;
         }
         return result;
     }

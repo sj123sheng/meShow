@@ -58,6 +58,8 @@
 	<kkrpc:reference id="xmanService" interface="com.melot.module.packagegift.driver.service.XmanService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="mallService" interface="com.melot.module.packagegift.driver.service.MallService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="storehouseService" interface="com.melot.storehouse.service.StorehouseService" version="1.0.2"></kkrpc:reference>
+	<kkrpc:reference id="chatBubbleService" interface="com.melot.module.packagegift.driver.service.ChatBubbleService" version="1.0.0"></kkrpc:reference>
+	<kkrpc:reference id="privilegeService" interface="com.melot.module.packagegift.driver.service.PrivilegeService" version="1.0.0"></kkrpc:reference>
 	<!-- 家族模块 -->
 	<kkrpc:reference id="newFamilyInfoService" interface="com.melot.family.driver.service.FamilyInfoService" version="1.0.0"></kkrpc:reference>
 	<kkrpc:reference id="familyAdminService" interface="com.melot.family.driver.service.FamilyAdminService" version="1.0.0"></kkrpc:reference>
@@ -256,4 +258,6 @@
 	<kkrpc:reference id="pkGameService" interface="com.melot.kk.pkgame.api.service.PKGameService" version="1.0.0"/>
 	<kkrpc:reference id="matchService" interface="com.melot.kk.pkgame.api.service.MatchService" version="1.0.0"/>
 	<kkrpc:reference id="quizPKService" interface="com.melot.kk.pkgame.api.service.QuizPKService" version="1.0.0"/>
+
+	<kkrpc:reference id="pendantService" interface="com.melot.room.pendant.service.PendantService" version="1.0.0"/>
 </beans>

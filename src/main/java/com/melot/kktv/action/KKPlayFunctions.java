@@ -8,11 +8,13 @@
  */
 package com.melot.kktv.action;
 
+import java.util.Calendar;
 import java.util.List;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import com.melot.kk.pkgame.api.dto.*;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
@@ -26,13 +28,6 @@ import com.melot.kk.hall.api.domain.HallPartConfDTO;
 import com.melot.kk.hall.api.domain.HallRoomInfoDTO;
 import com.melot.kk.hall.api.service.SysMenuService;
 import com.melot.kk.pkgame.api.constant.ReturnResultCode;
-import com.melot.kk.pkgame.api.dto.GameConfDTO;
-import com.melot.kk.pkgame.api.dto.GamePropDTO;
-import com.melot.kk.pkgame.api.dto.MultipleConfDTO;
-import com.melot.kk.pkgame.api.dto.QuziPKUserDTO;
-import com.melot.kk.pkgame.api.dto.ReturnResult;
-import com.melot.kk.pkgame.api.dto.UserKKPlayRank;
-import com.melot.kk.pkgame.api.dto.UserKkplayScoreDTO;
 import com.melot.kk.pkgame.api.enums.GameEnum;
 import com.melot.kk.pkgame.api.enums.UserTypeEnum;
 import com.melot.kk.pkgame.api.service.MatchService;
@@ -107,6 +102,26 @@ public class KKPlayFunctions {
             if (configArray.size() > 0) {
                 for (int i=0; i < configArray.size(); i++) {
                     JsonObject jsonObj = (JsonObject) configArray.get(i);
+                    JsonArray openTimes = jsonObj.getAsJsonArray("openTime");
+                    Calendar calendar = Calendar.getInstance();
+                    Integer hour = calendar.get(Calendar.HOUR_OF_DAY);
+                    Integer minute = calendar.get(Calendar.MINUTE);
+                    Integer second = calendar.get(Calendar.SECOND);
+                    Long time = hour * 3600L + minute * 60 + second;
+                    if(openTimes!=null){
+                        for(int n=0;n<openTimes.size();n++){
+                            JsonObject openTime = (JsonObject)openTimes.get(n);
+                            if (openTime.get("endTime").getAsLong() >= time) {
+                                jsonObj.addProperty("startTime",openTime.get("startTime").getAsLong());
+                                jsonObj.addProperty("endTime",openTime.get("endTime").getAsLong());
+                                break;
+                            }
+                            if(n == openTimes.size()-1){
+                                jsonObj.addProperty("startTime",((JsonObject)openTimes.get(0)).get("startTime").getAsLong());
+                                jsonObj.addProperty("endTime",((JsonObject)openTimes.get(0)).get("endTime").getAsLong());
+                            }
+                        }
+                    }
                     //置顶时显示大海报
                     if (jsonObj.get("isTop").getAsBoolean()) {
                         jsonObj.addProperty("title_poster", jsonObj.get("full_title_poster").getAsString());
@@ -494,10 +509,31 @@ public class KKPlayFunctions {
      */
     public JsonObject getPKGameList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
-        
         try {
             List<GameConfDTO> gameConfList = pkGameService.getGameConfList();
             if (!CollectionUtils.isEmpty(gameConfList)) {
+                Calendar calendar = Calendar.getInstance();
+                Integer hour = calendar.get(Calendar.HOUR_OF_DAY);
+                Integer minute = calendar.get(Calendar.MINUTE);
+                Integer second = calendar.get(Calendar.SECOND);
+                Long time = hour * 3600L + minute * 60 + second;
+                for (GameConfDTO gameConfDTO : gameConfList) {
+                    List<OpenTimeDTO> openTimeDTOList = gameConfDTO.getOpenTime();
+                    if(openTimeDTOList!=null){
+                        for(int i=0;i<openTimeDTOList.size();i++){
+                            OpenTimeDTO openTimeDTO = openTimeDTOList.get(i);
+                            if (openTimeDTO.getEndTime() >= time) {
+                                gameConfDTO.setStartTime(openTimeDTO.getStartTime());
+                                gameConfDTO.setEndTime(openTimeDTO.getEndTime());
+                                break;
+                            }
+                            if(i == openTimeDTOList.size()-1){
+                                gameConfDTO.setStartTime(openTimeDTOList.get(0).getStartTime());
+                                gameConfDTO.setEndTime(openTimeDTOList.get(0).getEndTime());
+                            }
+                        }
+                    }
+                }
                 result.add("gameConfList", new JsonParser().parse(JSON.toJSONString(gameConfList)).getAsJsonArray()); 
             }
             result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
@@ -511,18 +547,25 @@ public class KKPlayFunctions {
         return result;
     }
     
-    private boolean checkMatchOpenStatus(int gameId) {
-        boolean result = false;
+    private boolean checkMatchOpenStatus(Integer gameId) {
+        boolean isOpen = false;
         try {
             List<GameConfDTO> gameConfList = pkGameService.getGameConfList();
+            Calendar calendar = Calendar.getInstance();
+            Integer hour = calendar.get(Calendar.HOUR_OF_DAY);
+            Integer minute = calendar.get(Calendar.MINUTE);
+            Integer second = calendar.get(Calendar.SECOND);
+            Long time = hour * 3600L + minute * 60 + second;
             for (GameConfDTO gameConfDTO : gameConfList) {
-                if (gameConfDTO.getGameId() != null && gameId == gameConfDTO.getGameId()) {
-                    long currentTime = System.currentTimeMillis();
-                    long dayBeginTime = DateUtil.getDayBeginTime(currentTime);
-                    if (gameConfDTO.getStartTime() == null || (((dayBeginTime 
-                            + gameConfDTO.getStartTime()*1000) < currentTime) 
-                            && (dayBeginTime + gameConfDTO.getEndTime()*1000) > currentTime)) {
-                        result = true;
+                if (gameId.equals(gameConfDTO.getGameId())) {
+                    List<OpenTimeDTO> openTimeDTOList = gameConfDTO.getOpenTime();
+                    if(openTimeDTOList!=null){
+                        for(OpenTimeDTO openTimeDTO:openTimeDTOList){
+                            if (openTimeDTO.getStartTime() <= time && openTimeDTO.getEndTime() >= time) {
+                                isOpen = true;
+                                break;
+                            }
+                        }
                     }
                     break;
                 }
@@ -530,7 +573,7 @@ public class KKPlayFunctions {
         } catch (Exception e) {
             logger.error("Error checkMatchOpenStatus(), gameId: " + gameId, e);
         }
-        return result;
+        return isOpen;
     }
 
 }

@@ -147,8 +147,9 @@ public class RoomTF {
 		
 	    extractCommonRoomInfoCore(roomInfo, roomObject);
 		
+	    int roomId = roomInfo.getRoomId() != null ? roomInfo.getRoomId() : roomInfo.getActorId();
 	    // 轮播房添加roomId，非轮播房正在直播的主播等于actorId
-	    roomObject.addProperty("roomId", roomInfo.getRoomId() != null ? roomInfo.getRoomId() : roomInfo.getActorId());
+	    roomObject.addProperty("roomId", roomId);
         
         if (roomInfo.getScreenType() != null) {
             roomObject.addProperty("screenType", roomInfo.getScreenType());
@@ -274,6 +275,12 @@ public class RoomTF {
             }
         }
         
+        //魔杖标签
+        String privilegeLabelPath = UserService.getPrivilegeLabelPath(roomId);
+        if (!StringUtil.strIsNull(privilegeLabelPath)) {
+            roomObject.addProperty("privilegeLabelPath", privilegeLabelPath);
+        }
+        
         // 读取星级
         roomObject.addProperty("starLevel", UserService.getStarLevel(roomInfo.getActorId()));
         
@@ -333,9 +340,9 @@ public class RoomTF {
 	    
 		JsonObject roomObject = new JsonObject();
 		if (roomInfo.getActorId() != null) {
-			
+			int roomId = roomInfo.getRoomId() != null ? roomInfo.getRoomId() : roomInfo.getActorId();
 			// 轮播房添加roomId，非轮播房正在直播的主播等于actorId
-		    roomObject.addProperty("roomId", roomInfo.getRoomId() != null ? roomInfo.getRoomId() : roomInfo.getActorId());
+		    roomObject.addProperty("roomId", roomId);
 			roomObject.addProperty("userId", roomInfo.getActorId());
             
             if (roomInfo.getScreenType() != null) {
@@ -540,6 +547,12 @@ public class RoomTF {
 	            if (modeLabelPath != null) {
 	                roomObject.addProperty("modeLabelPath", modeLabelPath);
 	            }
+	        }
+	        
+	        //魔杖标签
+	        String privilegeLabelPath = UserService.getPrivilegeLabelPath(roomId);
+	        if (!StringUtil.strIsNull(privilegeLabelPath)) {
+	            roomObject.addProperty("privilegeLabelPath", privilegeLabelPath);
 	        }
 		}
 		

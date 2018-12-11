@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.log4j.Logger;
+import org.springframework.util.CollectionUtils;
 
 import com.esotericsoftware.reflectasm.MethodAccess;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
@@ -41,14 +42,27 @@ import com.melot.kkcx.model.ActorLevel;
 import com.melot.kkcx.model.ActorProfit;
 import com.melot.kkcx.model.RichLevel;
 import com.melot.kkcx.model.StarInfo;
+import com.melot.kktv.base.Page;
 import com.melot.kktv.domain.UserInfo;
+import com.melot.kktv.redis.HotDataSource;
+import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConstantEnum;
+import com.melot.kktv.util.DateUtil;
 import com.melot.kktv.util.LoginTypeEnum;
 import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
+import com.melot.kktv.util.confdynamic.SystemConfig;
 import com.melot.kktv.util.db.SqlMapClientHelper;
+import com.melot.module.packagegift.driver.domain.ConfChatBubbleDTO;
+import com.melot.module.packagegift.driver.domain.MagicWandRoomDTO;
+import com.melot.module.packagegift.driver.service.ChatBubbleService;
+import com.melot.module.packagegift.driver.service.PrivilegeService;
 import com.melot.module.packagegift.driver.service.VipService;
+import com.melot.room.pendant.domain.ReturnResult;
+import com.melot.room.pendant.dto.PendantDTO;
+import com.melot.room.pendant.param.SendPendantParam;
+import com.melot.room.pendant.service.PendantService;
 import com.melot.sdk.core.util.MelotBeanFactory;
 
 public class UserService {
@@ -361,6 +375,14 @@ public class UserService {
 	}
 	
 	private static Logger logger = Logger.getLogger(UserService.class);	
+	
+	private static final String STAR_PENDANT_KEY = "star_pendant_%s";
+	
+	private static final String LOCK_STAR_PENDANT_KEY = "lock_star_pendant_%s";
+	
+	private static final String STAR_BUBBLE_KEY = "star_bubble_%s";
+	
+	private static final String PRIVILEGE_LABEL_KEY = "privilege_label_%s";
     
     /**
      * 判断用户是否是真实主播
@@ -685,11 +707,84 @@ public class UserService {
     	    com.melot.common.driver.domain.StarInfo starInfo =  starService.getStarInfo(userId);
 	        if (starInfo != null) {
 	        	level = starInfo.getLevel();
+	        	refreshStarPendant(userId, level);
+	        	refreshStarChatBubble(userId, level);
 			}
     	}catch (Exception e) {
     		 logger.error("fail to get StarService.getStarInfo, userId: " + userId, e);
     	}
         return level;
+    }
+    
+    /**
+     * 刷新用户闪星头像挂件
+     * 
+     * @param userId 用户id
+     * @param level 闪星级别
+     */
+    public static void refreshStarPendant(int userId, int level) {
+        try {
+            //闪星级别需达到1月及以上
+            if (level >= 6) {
+                String key = String.format(STAR_PENDANT_KEY, userId);
+                String lockKey = String.format(LOCK_STAR_PENDANT_KEY, userId);
+                String oldLevelStr = HotDataSource.getTempDataString(key);
+                int oldLevel = StringUtil.parseFromStr(oldLevelStr, 0);
+                if (level > oldLevel && HotDataSource.incTempDataString(lockKey, 1, 3) == 1) {
+                    PendantService pendantService = (PendantService) MelotBeanFactory.getBean("pendantService");
+                    ReturnResult<List<PendantDTO>> pendantResp = pendantService.listByPendantType(3);
+                    List<PendantDTO> pendantDTOList = pendantResp.getData();
+                    if (!CollectionUtils.isEmpty(pendantDTOList)) {
+                        for (PendantDTO pendantDTO : pendantDTOList) {
+                            int pendantLevel = pendantDTO.getLevel();
+                            if (level >= pendantLevel && oldLevel < pendantLevel) {
+                                SendPendantParam sendPendantParam = new SendPendantParam();
+                                sendPendantParam.setUserId(userId);
+                                sendPendantParam.setPendantId(pendantDTO.getPendantId());
+                                sendPendantParam.setDay(1);
+                                pendantService.sendPendantToUser(sendPendantParam);
+                            }
+                        }
+                        HotDataSource.setTempDataString(key, String.valueOf(level), (int) ((DateUtil.getNextDay(new Date()).getTime() - System.currentTimeMillis()) / 1000));
+                    }
+                }
+            }
+        }catch (Exception e) {
+            logger.error("refreshStarPendant execute exception, userId: " + userId, e);
+        }
+    }
+    
+    /**
+     * 刷新用户闪星聊天气泡
+     * 
+     * @param userId 用户id
+     * @param level 闪星级别
+     */
+    public static void refreshStarChatBubble(int userId, int level) {
+        try {
+            //闪星级别达到3月及以上
+            if (level >= 8) {
+                String key = String.format(STAR_BUBBLE_KEY, userId);
+                String oldLevelStr = HotDataSource.getTempDataString(key);
+                int oldLevel = StringUtil.parseFromStr(oldLevelStr, 0);
+                if (level > oldLevel) {
+                    ChatBubbleService chatBubbleService = (ChatBubbleService) MelotBeanFactory.getBean("chatBubbleService");
+                    Page<ConfChatBubbleDTO> confBubbleResp = chatBubbleService.getConfChatBubbleList(2, 1, 10);
+                    List<ConfChatBubbleDTO> confChatBubbleDTOList = confBubbleResp.getList();
+                    if (!CollectionUtils.isEmpty(confChatBubbleDTOList)) {
+                        for (ConfChatBubbleDTO confChatBubbleDTO : confChatBubbleDTOList) {
+                            int bubbleLevel = confChatBubbleDTO.getLevel();
+                            if (level >= bubbleLevel && oldLevel < bubbleLevel) {
+                                chatBubbleService.addUserChatBubble(userId, confChatBubbleDTO.getCbId(), 0, "闪星赠送聊天气泡");
+                            }
+                        }
+                        HotDataSource.setTempDataString(key, String.valueOf(level), (int) ((DateUtil.getNextDay(new Date()).getTime() - System.currentTimeMillis()) / 1000));
+                    }
+                }
+            }
+        }catch (Exception e) {
+             logger.error("refreshStarChatBubble execute exception, userId: " + userId, e);
+        }
     }
     
     /**
@@ -705,6 +800,9 @@ public class UserService {
 	        try {
 	        	if (redisStarInfo != null) {
 	        		BeanUtils.copyProperties(starInfo, redisStarInfo);
+	        		int level = starInfo.getLevel();
+	                refreshStarPendant(userId, level);
+	                refreshStarChatBubble(userId, level);
 				}
 	        } catch (Exception e) {
                 logger.error("UserService.getStarInfo(" + "userId:" + userId + ") execute exception.", e);
@@ -713,6 +811,39 @@ public class UserService {
    		 	logger.error("fail to get StarService.getStarInfo, userId: " + userId, e);
         }
         return starInfo;
+    }
+    
+    /**
+     * 获取房间魔杖角标
+     * 
+     * @param roomId 房间id
+     * @return
+     */
+    public static String getPrivilegeLabelPath(int roomId) {
+        String result = null;
+        try {
+            String key = String.format(PRIVILEGE_LABEL_KEY, roomId);
+            String privilegeLabelPath = HotDataSource.getTempDataString(key);
+            if (!StringUtil.strIsNull(privilegeLabelPath)) {
+                if (!"null".equals(privilegeLabelPath.trim())) {
+                    result = privilegeLabelPath;
+                }
+            } else {
+                int expireSeconds = 15;
+                PrivilegeService privilegeService = (PrivilegeService) MelotBeanFactory.getBean("privilegeService");
+                MagicWandRoomDTO magicWandRoomDTO = privilegeService.getMagicWandRoom(roomId);
+                if (magicWandRoomDTO != null && magicWandRoomDTO.getIsOpenMagicWand()) {
+                    result = SystemConfig.getValue("privilegeLabel", AppIdEnum.AMUSEMENT);
+                    if (magicWandRoomDTO.getExpireTime() != null) {
+                        expireSeconds = (int) (magicWandRoomDTO.getExpireTime().getTime() - System.currentTimeMillis()) / 1000;
+                    }
+                }
+                HotDataSource.setTempDataString(key, String.valueOf(result), expireSeconds);
+            }
+        }catch (Exception e) {
+            logger.error(" getPrivilegeLabelPath execute exception, roomId: " + roomId, e);
+        }
+        return result;
     }
     
     public static UserInfoDetail getUserInfoDetail(int userId) {
