@@ -4,32 +4,41 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.springframework.util.CollectionUtils;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import com.melot.kk.activity.domain.FamilyDefineActivity;
 import com.melot.kk.activity.service.FamilyDefineActivityService;
 import com.melot.kk.activity.service.GiftHistoryBoardService;
+import com.melot.kk.config.api.domain.ConfigInfo;
+import com.melot.kk.config.api.service.ConfigInfoService;
 import com.melot.kkactivity.driver.domain.ActEpisode;
 import com.melot.kkactivity.driver.domain.ActInfo;
 import com.melot.kkactivity.driver.domain.CarouselBanner;
+import com.melot.kkactivity.driver.domain.ConfActivityExpressionDTO;
 import com.melot.kkactivity.driver.domain.KkBanner;
 import com.melot.kkactivity.driver.domain.KkPreviewAct;
 import com.melot.kkactivity.driver.domain.StarActor;
+import com.melot.kkactivity.driver.domain.UserExpressionPrivilege;
 import com.melot.kkactivity.driver.service.KkActivityService;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcx.model.ActivityEmoticon;
 import com.melot.kkcx.model.ActorNotice;
 import com.melot.kkcx.model.HistoryRankInfo;
+import com.melot.kktv.base.Page;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConfigHelper;
 import com.melot.kktv.util.DBEnum;
 import com.melot.kktv.util.DateUtil;
+import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.confdynamic.GiftInfoConfig;
 import com.melot.kktv.util.db.SqlMapClientHelper;
@@ -49,6 +58,9 @@ public class ActivityCenterFunctions {
     
     /** 日志记录对象 */
     private static Logger logger = Logger.getLogger(ActivityCenterFunctions.class);
+    
+    @Resource
+    KkActivityService kkActivityService;
     
     /**
      * 获取通栏轮播图列表（50002001）
@@ -74,7 +86,6 @@ public class ActivityCenterFunctions {
         }
         
         try {
-            KkActivityService kkActivityService = (KkActivityService) MelotBeanFactory.getBean("kkActivityService");
             List<CarouselBanner> bannerList = kkActivityService.getCarouselBannerByType(type);
             JsonArray carouselBannerList = new JsonArray();
             for (CarouselBanner banner : bannerList) {
@@ -135,7 +146,6 @@ public class ActivityCenterFunctions {
         }
         
         try {
-            KkActivityService kkActivityService = (KkActivityService) MelotBeanFactory.getBean("kkActivityService");
             List<KkBanner> kkBannerList = kkActivityService.getKKBannersByType(bannerType, locationType, channelId, start, offset, appId);
             JsonArray bannerList = new JsonArray();
             //置顶位置排序
@@ -197,7 +207,6 @@ public class ActivityCenterFunctions {
         }
         
         try {
-            KkActivityService kkActivityService = (KkActivityService) MelotBeanFactory.getBean("kkActivityService");
             int kkPreviewActListCount = kkActivityService.getPreviewActListCountByType(type);
             JsonArray previewActList = new JsonArray();
             if (kkPreviewActListCount > 0) {
@@ -280,7 +289,6 @@ public class ActivityCenterFunctions {
         }
         
         try {
-            KkActivityService kkActivityService = (KkActivityService) MelotBeanFactory.getBean("kkActivityService");
             int actEpisodeListCount = kkActivityService.getActEpisodeListCount(actId);
             JsonArray episodeList = new JsonArray();
             if (actEpisodeListCount > 0) {
@@ -346,7 +354,6 @@ public class ActivityCenterFunctions {
         }
         
         try {
-            KkActivityService kkActivityService = (KkActivityService) MelotBeanFactory.getBean("kkActivityService");
             int startActorListCount = kkActivityService.getStarActorListCount(null, null);
             JsonArray startActorList = new JsonArray();
             if (startActorListCount > 0) {
@@ -396,7 +403,6 @@ public class ActivityCenterFunctions {
         }
         
         try {
-            KkActivityService kkActivityService = (KkActivityService) MelotBeanFactory.getBean("kkActivityService");
             StarActor starActor = kkActivityService.getStarActorById(sId);
             if (starActor != null) {
                 result.addProperty("sId", starActor.getSid());
@@ -442,7 +448,6 @@ public class ActivityCenterFunctions {
         }
         
         try {
-            KkActivityService kkActivityService = (KkActivityService) MelotBeanFactory.getBean("kkActivityService");
             JsonArray startActorList = new JsonArray();
             List<StarActor> actorList = kkActivityService.getRecommendStarActorList(sId, offset);
             for (StarActor starActor : actorList) {
@@ -490,7 +495,6 @@ public class ActivityCenterFunctions {
         }
         
         try {
-            KkActivityService kkActivityService = (KkActivityService) MelotBeanFactory.getBean("kkActivityService");
             int kkPreviewActListCount = kkActivityService.getEndedPreviewActListCount(3);
             JsonArray previewActList = new JsonArray();
             if (kkPreviewActListCount > 0) {
@@ -549,7 +553,6 @@ public class ActivityCenterFunctions {
         }
         
         try {
-            KkActivityService kkActivityService = (KkActivityService) MelotBeanFactory.getBean("kkActivityService");
             List<ActInfo> actInfoList = kkActivityService.getRoomPreviewActList(2, null, null, null, String.valueOf(roomId));
             int isWeekly = 0;
             if (actInfoList != null && actInfoList.size() > 0) {
@@ -902,6 +905,105 @@ public class ActivityCenterFunctions {
         result.add("noticeList", noticeList);
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 
+        return result;
+    }
+    
+    /**
+     * 获取活动表情配置（50002014）
+     * 
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getConfActivityExpression(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        int pageIndex, countPerPage;
+        try {
+            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
+            countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 20, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        try {
+            ConfigInfoService configInfoService = (ConfigInfoService) MelotBeanFactory.getBean("configInfoService");
+            ConfigInfo configInfo = configInfoService.getConfigInfoByKey("confActivityExpression");
+            if (configInfo != null && !StringUtil.strIsNull(configInfo.getConfigValueApp())) {
+                result = new JsonParser().parse(configInfo.getConfigValueApp()).getAsJsonObject();
+            }
+            
+            JsonArray jsonArray = new JsonArray();
+            int count = 0;
+            Page<ConfActivityExpressionDTO> resp = kkActivityService.getConfActivityExpressionList(null, null, null, true, pageIndex, countPerPage);
+            if (resp != null && !CollectionUtils.isEmpty(resp.getList())) {
+                count = resp.getCount();
+                List<ConfActivityExpressionDTO> confActivityExpressionDTOs = resp.getList();
+                for (ConfActivityExpressionDTO confActivityExpressionDTO : confActivityExpressionDTOs) {
+                    JsonObject jsonObj = new JsonObject();
+                    jsonObj.addProperty("id", confActivityExpressionDTO.getExpId());
+                    jsonObj.addProperty("name", confActivityExpressionDTO.getExpName());
+                    jsonArray.add(jsonObj);
+                }
+            }
+
+            result.addProperty("count", count);
+            result.add("emotionList", jsonArray);
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error getConfActivityExpression()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+    
+    /**
+     * 校验用户是否拥有活动表情（50002015）
+     * 
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject hasActivityExpression(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+        
+        int userId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+        } catch(CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch(Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        try {
+            boolean hasExpression = false;
+            UserExpressionPrivilege userExpressionPrivilege = kkActivityService.getUserExpressionPrivilege(userId);
+            if (userExpressionPrivilege != null) {
+                hasExpression = userExpressionPrivilege.getHasExpression();
+                if (userExpressionPrivilege.getExpireTime() != null) {
+                    result.addProperty("expireTime", userExpressionPrivilege.getExpireTime().getTime());
+                }
+            }
+            result.addProperty("hasExpression", hasExpression);
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        } catch (Exception e) {
+            logger.error("Error hasActivityExpression()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+        
         return result;
     }
 }

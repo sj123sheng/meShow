@@ -2035,6 +2035,18 @@
 		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
 	</bean>
 	
+	<!-- 获取活动表情配置 -->
+	<bean id="50002014" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="activityCenterFunctions" />
+		<constructor-arg name="methodName" value="getConfActivityExpression" />
+	</bean>
+	
+	<!-- 校验用户是否拥有活动表情 -->
+	<bean id="50002015" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="activityCenterFunctions" />
+		<constructor-arg name="methodName" value="hasActivityExpression" />
+	</bean>
+	
 	<!-- IM相关接口 -->
 	<!-- 腾讯IM云账号注册 -->
 	<bean id="50001009" class="com.melot.sdk.core.function.GenericFunction">
