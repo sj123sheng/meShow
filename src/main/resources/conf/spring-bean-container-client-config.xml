@@ -97,10 +97,10 @@
 	<kkrpc:reference id="friendEmoticonService" interface="com.melot.common.driver.service.FriendEmoticonService" version="1.0.0"></kkrpc:reference>
 
     <!-- 礼物配置信息 -->
-	<kkrpc:reference id="giftListService" interface="com.melot.room.gift.service.GiftListService" version="1.0.9"></kkrpc:reference>
-    <kkrpc:reference id="roomGiftService" interface="com.melot.room.gift.service.RoomGiftService" version="1.0.9"></kkrpc:reference>
+	<kkrpc:reference id="giftListService" interface="com.melot.room.gift.service.GiftListService" version="1.1.4"></kkrpc:reference>
+    <kkrpc:reference id="roomGiftService" interface="com.melot.room.gift.service.RoomGiftService" version="1.1.4"></kkrpc:reference>
 	<!-- 主播心愿礼物 -->
-	<kkrpc:reference id="actorPersonalizedGiftService" interface="com.melot.room.gift.service.ActorPersonalizedGiftService" version="1.0.9"></kkrpc:reference>
+	<kkrpc:reference id="actorPersonalizedGiftService" interface="com.melot.room.gift.service.ActorPersonalizedGiftService" version="1.1.4"></kkrpc:reference>
 	
 	<!-- 动态模块 -->
 	<kkrpc:reference id="newsCenter" interface="com.melot.news.service.NewsService" version="1.2.3"></kkrpc:reference>
