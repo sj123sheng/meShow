@@ -835,7 +835,10 @@ public class UserService {
                 if (magicWandRoomDTO != null && magicWandRoomDTO.getIsOpenMagicWand()) {
                     result = SystemConfig.getValue("privilegeLabel", AppIdEnum.AMUSEMENT);
                     if (magicWandRoomDTO.getExpireTime() != null) {
-                        expireSeconds = (int) (magicWandRoomDTO.getExpireTime().getTime() - System.currentTimeMillis()) / 1000;
+                        int magicSeconds = (int) (magicWandRoomDTO.getExpireTime().getTime() - System.currentTimeMillis()) / 1000;
+                        if (magicSeconds > 0) {
+                            expireSeconds = magicSeconds;
+                        }
                     }
                 }
                 HotDataSource.setTempDataString(key, String.valueOf(result), expireSeconds);
