@@ -8,6 +8,10 @@ import java.net.URL;
 import java.util.Map;
 import java.util.Set;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSession;
+
 import org.apache.log4j.Logger;
 
 import com.dianping.cat.Cat;
@@ -17,6 +21,8 @@ import com.google.gson.JsonParser;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.confdynamic.ThirdAppConfig;
+
+import oracle.net.jndi.TrustManager;
 
 public class ThirdVerifyUtil {
 	
@@ -62,7 +68,7 @@ public class ThirdVerifyUtil {
 			String url = (String) confMap.get("URL");
 			String key = (String) confMap.get("KEY");
 			String desc = (String) confMap.get("DESCRIBE");
-			String param = constructParam(openId, sessionId, key);
+			String param = constructParam(openPlatform, openId, sessionId, key);
 			JsonObject result = doGet(param, url, desc);
 			if (result != null && checkResult(result)) {
 				return TagCodeEnum.SUCCESS;
@@ -79,6 +85,15 @@ public class ThirdVerifyUtil {
 		HttpURLConnection url_con = null;
 		Transaction t = Cat.getProducer().newTransaction("MCall", "ThirdVerifyUtil.doGet");
 		try {
+		    trustAllHttpsCertificates();
+            HostnameVerifier hv = new HostnameVerifier() {
+                public boolean verify(String urlHostName, SSLSession session) {
+                    logger.info("Warning: URL Host: " + urlHostName + " vs. " + session.getPeerHost());
+                    return true;
+                }
+            };
+            HttpsURLConnection.setDefaultHostnameVerifier(hv);
+		    
 			URL url = new URL(serverUrl + param);
 			url_con = (HttpURLConnection) url.openConnection();
             url_con.setRequestMethod("GET");
@@ -107,10 +122,19 @@ public class ThirdVerifyUtil {
 		return null;
 	}
 	
-	private static String constructParam(String openId, String sessionId, String key) {
+	private static String constructParam(int openPlatform, String openId, String sessionId, String key) {
 		long btime = System.currentTimeMillis() / 1000;
-		String bsign = CommonUtil.md5(openId + sessionId + btime + key).toUpperCase();
-		return "?uuid=" + openId + "&sessionId=" + sessionId + "&time=" + btime + "&sign=" + bsign;
+		String result = null;
+		String bsign = null;
+		if (openPlatform >= 57 && sessionId == null) {
+		    bsign = CommonUtil.md5(openId + btime + key).toUpperCase();
+		    result = "?uuid=" + openId + "&time=" + btime + "&sign=" + bsign;
+		} else {
+		    bsign = CommonUtil.md5(openId + sessionId + btime + key).toUpperCase();
+		    result = "?uuid=" + openId + "&sessionId=" + sessionId + "&time=" + btime + "&sign=" + bsign;
+		}
+
+		return result;
 	}
 	
 	private static boolean checkResult(JsonObject result) {
@@ -118,4 +142,13 @@ public class ThirdVerifyUtil {
 		if (result.get("status") != null && result.get("status").getAsInt() == 0) return true;
 		return false;
 	}
+	
+	private static void trustAllHttpsCertificates() throws Exception {
+        javax.net.ssl.TrustManager[] trustAllCerts = new javax.net.ssl.TrustManager[1];
+        javax.net.ssl.TrustManager tm = new TrustManager();
+        trustAllCerts[0] = tm;
+        javax.net.ssl.SSLContext sc = javax.net.ssl.SSLContext.getInstance("SSL");
+        sc.init(null, trustAllCerts, null);
+        javax.net.ssl.HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+    }
 }

@@ -536,9 +536,10 @@ public class ConfigFunctions {
     public JsonObject isPlaybackActor(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
 
-        int actorId;
+        int actorId,appId;
         try {
             actorId = CommonUtil.getJsonParamInt(jsonObject, "actorId", 1, TagCodeEnum.PARAMETER_PARSE_ERROR, 1, Integer.MAX_VALUE);
+            appId = CommonUtil.getJsonParamInt(jsonObject, "a", 0, TagCodeEnum.APPID_MISSING, 0, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -551,7 +552,7 @@ public class ConfigFunctions {
         boolean isPlaybackActor;
         try {
             PlaybackActorService playbackActorService = (PlaybackActorService) MelotBeanFactory.getBean("playbackActorService");
-            isPlaybackActor = playbackActorService.isPlaybackActor(actorId);
+            isPlaybackActor = playbackActorService.isPlaybackActor(actorId,appId);
         } catch (Exception e) {
             logger.error(String.format("Module Error: playbackActorService.isPlaybackActor(actorId=%s)", actorId), e);
             result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);

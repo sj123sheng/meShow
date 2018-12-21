@@ -166,8 +166,8 @@ public class MessageBoxV2Functions {
                 
                 //only new versions of client would give the parameter named maxType.
                 JsonElement maxTypeje = jsonObject.get("maxType");
-                // appId = 15为麻辣，不需要新鲜播报
-                if (maxTypeje != null && !maxTypeje.isJsonNull() && appId != 15) {
+                // appId = 15,16为麻辣愚乐区域化版本，不需要新鲜播报
+                if (maxTypeje != null && !maxTypeje.isJsonNull() && appId != 15 && appId != 16) {
                     recMessage.generateRecommendedMessages(userId, jedis);
                 }
             } catch (Exception e) {

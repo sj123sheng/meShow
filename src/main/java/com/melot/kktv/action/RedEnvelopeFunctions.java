@@ -103,6 +103,7 @@ public class RedEnvelopeFunctions {
      */
     public JsonObject sendRedEvelope(JsonObject paramJsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
+        
         if (!checkTag) {
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_NOT_CHECKED);
             return result;

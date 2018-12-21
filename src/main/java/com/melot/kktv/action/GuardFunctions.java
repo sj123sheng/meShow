@@ -156,6 +156,10 @@ public class GuardFunctions {
                 logger.error(e.getMessage());
                 result.addProperty("TagCode" , TagCodeEnum.USER_MONEY_SHORTNESS);
                 break;
+            case 103:
+                logger.error(e.getMessage());
+                result.addProperty("TagCode" , "2003100201");
+                break;
 
             default:
                 logger.error(e.getMessage());

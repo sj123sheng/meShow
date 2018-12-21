@@ -282,7 +282,7 @@ public class HallFunctions {
 					int dist;
 					while (i < roomList.size()) {
 						roomInfo = roomList.get(i);
-						json = HallRoomTF.roomInfoWithPlaybackToJson(roomInfo, platform);
+						json = HallRoomTF.roomInfoWithPlaybackToJson(roomInfo, platform,appId);
 						if (!Objects.equals(cityId, Math.abs(roomList.get(i).getRegisterCity()))) {
 							break;
 						}
@@ -300,7 +300,7 @@ public class HallFunctions {
 				}
 				while (i < roomList.size()) {
 					roomInfo = roomList.get(i++);
-					json = HallRoomTF.roomInfoWithPlaybackToJson(roomInfo, platform);
+					json = HallRoomTF.roomInfoWithPlaybackToJson(roomInfo, platform,appId);
 					if (sysMenu.getDataSourceType() != null 
 					        && (sysMenu.getDataSourceType() == 16
 					        || sysMenu.getDataSourceType() == 17)) {
@@ -747,7 +747,7 @@ public class HallFunctions {
                         List<HallRoomInfoDTO> roomList = temp.getRooms();
                         if (roomList != null) {
                             for (HallRoomInfoDTO roomInfo : roomList) {
-                                roomArray.add(HallRoomTF.roomInfoWithPlaybackToJson(roomInfo, platform));
+                                roomArray.add(HallRoomTF.roomInfoWithPlaybackToJson(roomInfo, platform,appId));
                             }
                         }
                         json.add("result", roomArray);
@@ -764,7 +764,7 @@ public class HallFunctions {
         } else {
             result.addProperty("TagCode", TagCodeEnum.FAIL_TO_CALL_API_MENU_MODULE);
         }
-        
+
         return result;
     }
     

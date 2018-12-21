@@ -1491,10 +1491,10 @@ public class OtherFunctions {
      */
     public JsonObject getOpenPage(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
     	JsonObject result = new JsonObject();
-    	int platform;
+    	int platform,appId;
     	try {
-			
     	platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, "5109020201", 1, Integer.MAX_VALUE);
+			appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 0, Integer.MAX_VALUE);
 		} catch (CommonUtil.ErrorGetParameterException e) {
 			result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -1502,7 +1502,7 @@ public class OtherFunctions {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-    	OpenPageDO openPageDO = openPageService.getOpenPage();
+    	OpenPageDO openPageDO = openPageService.getOpenPage(appId);
     	if(openPageDO != null){
     		result.addProperty("pageId", openPageDO.getPageId());
     		result.addProperty("startTime", openPageDO.getStartTime().getTime());

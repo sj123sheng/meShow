@@ -34,7 +34,7 @@ public class HallRoomTF {
 
     private static PlaybackActorService playbackActorService;
 
-    private static final String PLAYBACK_ACTORS_CACHE = "playback_actors_cache";
+    private static final String PLAYBACK_ACTORS_CACHE = "playback_actors_cache_%s";
 
     private static final String CACHE_KEY = "modeLabelPathConfig_%s";
 
@@ -44,15 +44,15 @@ public class HallRoomTF {
         playbackActorService = (PlaybackActorService) MelotBeanFactory.getBean("playbackActorService");
     }
 
-    public static JsonObject roomInfoWithPlaybackToJson(HallRoomInfoDTO roomInfo, int platform) {
+    public static JsonObject roomInfoWithPlaybackToJson(HallRoomInfoDTO roomInfo, int platform,int appId) {
         Set<String> playbackIds = new HashSet<>();
         try {
             // 查询缓存
-            playbackIds = (Set<String>) EhCache.getFromCache(PLAYBACK_ACTORS_CACHE);
+            playbackIds = (Set<String>) EhCache.getFromCache(String.format(PLAYBACK_ACTORS_CACHE,appId));
             // 缓存若不存在，查询服务
             if (CollectionUtils.isEmpty(playbackIds)) {
-                playbackIds = playbackActorService.getPlaybackActorIds();
-                EhCache.putInCacheByLive(PLAYBACK_ACTORS_CACHE, playbackIds, 60);
+                playbackIds = playbackActorService.getPlaybackActorIds(appId);
+                EhCache.putInCacheByLive(String.format(PLAYBACK_ACTORS_CACHE,appId), playbackIds, 60);
             }
         } catch (Exception e) {
             logger.error(String.format("module error：playbackActorService.isPlaybackActor(actorId=%s)", roomInfo.getActorId()), e);

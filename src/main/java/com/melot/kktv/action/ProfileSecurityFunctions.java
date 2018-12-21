@@ -52,7 +52,7 @@ public class ProfileSecurityFunctions {
 	
 	private static final String RETRIEVEPW_DPHONE_KEY = "retrievePwdPhone_%s";
 	
-	private static final String RETRIEVEPW_DUSER_KEY = "retrievePwdUser_%s"; 
+	private static final String RETRIEVEPW_DUSER_KEY = "retrievePwdUser_%s";
 	
 	@Resource
     UserVerifyService userVerifyService;
@@ -1134,7 +1134,11 @@ public class ProfileSecurityFunctions {
         //小于11位账户查询
         if (idNum.length() < 11) {
             retrieveType = 2;
-            int userId = Integer.valueOf(idNum);
+            int userId = StringUtil.parseFromStr(idNum, 0);
+            if (userId <= 0) {
+                result.addProperty("TagCode", "5101010602");
+                return result;
+            }
             
             // 黑名单用户或封号用户不能找回密码
             if (com.melot.kkcx.service.UserService.blackListUser(userId) || UserService.checkUserIsLock(userId)) {
@@ -1177,7 +1181,7 @@ public class ProfileSecurityFunctions {
                     } catch (Exception e) {
                         logger.error("fail to BlacklistService, phone: " + phoneNum, e);
                     }   
-                    result.addProperty("phoneNum", phoneNum);
+//                    result.addProperty("phoneNum", phoneNum);
                 }
                 
                 ResUserBoundAccount resUserBoundAccount = AccountService.getUserBoundAccount(userId);

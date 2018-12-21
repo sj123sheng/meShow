@@ -133,4 +133,7 @@ public class LoginTypeEnum {
     
     /**麻辣*/
     public static final int MALA = 40;
+    
+    /**内涵小视屏*/
+    public static final int DZSHIPIN = 57;
 }
