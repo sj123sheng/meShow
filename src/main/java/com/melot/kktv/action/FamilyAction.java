@@ -87,18 +87,6 @@ public class FamilyAction {
         String[] trumpFamilyIdsArr = configService.getTrumpFamilyIds().trim().split(REGEX);
         String trumpFamilyName = trumpFamilyArr[0];
         String trumpFamilyBackground = trumpFamilyArr[1];
-        
-        //金牌家族
-        String[] goldFamilyArr = configService.getGoldFamily().trim().split(REGEX);
-        String[] goldFamilyIdsArr = configService.getGoldFamilyIds().trim().split(REGEX);
-        String goldFamilyName = goldFamilyArr[0];
-        String goldFamilyBackground = goldFamilyArr[1];
-        
-        //晋级家族
-        String[] promotionFamilyArr = configService.getPromotionFamily().trim().split(REGEX);
-        String[] promotionFamilyIdsArr = configService.getPromotionFamilyIds().trim().split(REGEX);
-        String promotionFamilyName = promotionFamilyArr[0];
-        String promotionFamilyBackground = promotionFamilyArr[1];
 
         // 定义使用的参数
 		int platform = 0;
@@ -203,30 +191,23 @@ public class FamilyAction {
                         boolean showCorner = false;
 						String cornerName = "";
 						String cornerBackground = "";
-                        for (String trumpFamilyStr : trumpFamilyIdsArr) { //王牌家族
-                            if (trumpFamilyStr.equals(String.valueOf(familyId))) {
-                                showCorner = true;
-                                cornerName = trumpFamilyName;
-                                cornerBackground = trumpFamilyBackground;
-                                break;
-                            }
-                        }
-                        if (!showCorner) {
-                            for (String goldFamilyStr : goldFamilyIdsArr) { //金牌家族
-                                if (goldFamilyStr.equals(String.valueOf(familyId))) {
+						if(trumpFamilyIdsArr != null) {
+                            for (int j = 0; j < trumpFamilyIdsArr.length; j++) { //王牌家族
+                                int trumpFamilyId = Integer.parseInt(trumpFamilyIdsArr[j]);
+                                if (trumpFamilyId == familyId) {
                                     showCorner = true;
-                                    cornerName = goldFamilyName;
-                                    cornerBackground = goldFamilyBackground;
-                                    break;
-                                }
-                            }
-                        }
-                        if (!showCorner) {
-                            for (String promotionFamilyStr : promotionFamilyIdsArr) { //晋级家族
-                                if (promotionFamilyStr.equals(String.valueOf(familyId))) {
-                                    showCorner = true;
-                                    cornerName = promotionFamilyName;
-                                    cornerBackground = promotionFamilyBackground;
+                                    String rank;
+                                    if(j == 0) {
+                                        rank = "冠军";
+                                    } else if(j == 1) {
+                                        rank = "亚军";
+                                    } else if(j == 2) {
+                                        rank = "季军";
+                                    } else {
+                                        rank = j + 1 + "强";
+                                    }
+                                    cornerName = trumpFamilyName + rank;
+                                    cornerBackground = trumpFamilyBackground;
                                     break;
                                 }
                             }
