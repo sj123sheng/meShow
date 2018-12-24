@@ -1,20 +1,33 @@
 package com.melot.kktv.action;
 
 import java.net.URLDecoder;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.springframework.util.CollectionUtils;
 
+import com.alibaba.fastjson.JSON;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.melot.asset.driver.domain.ResVirtualIdInfo;
+import com.melot.asset.driver.service.AssetService;
 import com.melot.blacklist.service.BlacklistService;
 import com.melot.common.melot_utils.StringUtils;
 import com.melot.kk.module.resource.domain.QiNiuTokenConf;
 import com.melot.kk.module.resource.service.ResourceNewService;
+import com.melot.kk.otherlogin.api.constant.AppealStatusEnum;
+import com.melot.kk.otherlogin.api.dto.AccountAppealInfoDTO;
+import com.melot.kk.otherlogin.api.dto.ChargeRecordDTO;
+import com.melot.kk.otherlogin.api.dto.ConfPaymentDTO;
+import com.melot.kk.otherlogin.api.service.AccountAppealService;
+import com.melot.kk.pkgame.api.constant.ReturnResultCode;
 import com.melot.kk.userSecurity.api.domain.DO.UserVerifyDO;
 import com.melot.kk.userSecurity.api.service.UserVerifyService;
 import com.melot.kkcore.account.api.ResResetPassword;
@@ -24,6 +37,7 @@ import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kkcx.functions.UserFunctions;
 import com.melot.kkcx.service.GeneralService;
 import com.melot.kkcx.service.ProfileServices;
+import com.melot.kkcx.service.UserAssetServices;
 import com.melot.kkcx.service.UserService;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
@@ -54,8 +68,21 @@ public class ProfileSecurityFunctions {
 	
 	private static final String RETRIEVEPW_DUSER_KEY = "retrievePwdUser_%s";
 	
+	//账户申诉缓存key
+	private static final String APPEAL_ACCOUNT_KEY = "appeal_account_%s";
+	
+	private static String REGEX = ",";
+	
+	private static final long dayTime = 24 * 3600 * 1000; 
+	
 	@Resource
     UserVerifyService userVerifyService;
+	
+	@Resource
+	AccountAppealService accountAppealService;
+	
+	@Resource
+	AssetService assetService;
 
 	private static JsonObject setUserNameAndPassword(JsonObject jsonObject, String up){
 
@@ -816,7 +843,7 @@ public class ProfileSecurityFunctions {
 		}
 		
 		//找回密码不需验证token
-        if (!checkTag && type != 39) {
+        if (!checkTag && type == 30) {
             result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
             return result;
         }
@@ -824,8 +851,10 @@ public class ProfileSecurityFunctions {
 		String data = SmsSource.getPhoneSmsData(phoneNum, String.valueOf(type));
 		if (data != null && data.equals(verifyCode)) {
 			if (type == 30) {
+			    //验证手机号
 				HotDataSource.setTempDataString(String.format(IDENTIFYPHONE_KEY, userId), "1", 300);
 			} else if (type == 39){
+			    //找回密码
 			    HotDataSource.setTempDataString(String.format(RETRIEVEPW_DPHONE_KEY, phoneNum), "1", 300);
 			    KkUserService kkUserService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
 			    if (kkUserService != null) {
@@ -844,6 +873,9 @@ public class ProfileSecurityFunctions {
 			            result.add("accountList", accountList);
 			        }
 			    }
+			} else if (type == 51) {
+			    //账户申诉
+			    HotDataSource.setTempDataString(String.format(APPEAL_ACCOUNT_KEY, phoneNum), "1", 1800);
 			}
 			result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 		} else {
@@ -1118,9 +1150,10 @@ public class ProfileSecurityFunctions {
         JsonObject result = new JsonObject();
 
         String idNum;
-        int platform;
+        int platform, type;
         try {
             idNum = CommonUtil.getJsonParamString(jsonObject, "idNum", null, "5101010601", 1, Integer.MAX_VALUE);
+            type = CommonUtil.getJsonParamInt(jsonObject, "type", 1, null, 1, Integer.MAX_VALUE);
             platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, TagCodeEnum.PLATFORM_MISSING, 1, Integer.MAX_VALUE);
         } catch(CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
@@ -1138,6 +1171,28 @@ public class ProfileSecurityFunctions {
             if (userId <= 0) {
                 result.addProperty("TagCode", "5101010602");
                 return result;
+            }
+            
+            //靓号返回账户不存在
+            ResVirtualIdInfo resVirtualIdInfo = assetService.getVirtualIdInfo(userId);
+            if (resVirtualIdInfo != null) {
+                result.addProperty("TagCode", "5101010602");
+                return result;
+            }
+            
+            //账户申诉
+            if (type == 2) {
+                AccountAppealInfoDTO accountAppealInfoDTO = accountAppealService.getAccountAppealInfo(null, userId);
+                if (accountAppealInfoDTO != null) {
+                    if (accountAppealInfoDTO.getStatus() == AppealStatusEnum.PENDING) {
+                        result.addProperty("TagCode", "5101010604");
+                        return result;
+                    } else if (accountAppealInfoDTO.getStatus() == AppealStatusEnum.PASS &&
+                            (System.currentTimeMillis() - accountAppealInfoDTO.getDtime().getTime() < dayTime)) {
+                        result.addProperty("TagCode", "5101010605");
+                        return result;
+                    }
+                }
             }
             
             // 黑名单用户或封号用户不能找回密码
@@ -1325,6 +1380,173 @@ public class ProfileSecurityFunctions {
         } else {
             result.addProperty("TagCode", "5101010701");
         }
+        return result;
+    }
+    
+    /**
+     * 账户申诉(51010109)
+     *
+     * @param jsonObject 请求对象
+     * @param checkTag   是否验证token标记
+     * @param request    请求
+     * @return
+     */
+    public JsonObject appealAccount(JsonObject jsonObject, Boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        int userId;
+        String appealPhoneNum, name, identity, mobiles, passwords;
+        List<ChargeRecordDTO> chargeList = new ArrayList<ChargeRecordDTO>();
+        JsonArray chargeArr;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            appealPhoneNum = CommonUtil.getJsonParamString(jsonObject, "appealPhoneNum", null, "5101010905", 1, Integer.MAX_VALUE);
+            name = CommonUtil.getJsonParamString(jsonObject, "name", null, null, 1, Integer.MAX_VALUE);
+            identity = CommonUtil.getJsonParamString(jsonObject, "identity", null, null, 1, Integer.MAX_VALUE);
+            mobiles = CommonUtil.getJsonParamString(jsonObject, "mobiles", null, null, 1, Integer.MAX_VALUE);
+            passwords = CommonUtil.getJsonParamString(jsonObject, "passwords", null, null, 1, Integer.MAX_VALUE);
+            
+            JsonElement chargeElement = jsonObject.get("chargeList");
+            if (chargeElement != null) {
+                chargeArr = chargeElement.getAsJsonArray();
+                if (!chargeArr.isJsonNull()) {
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd" );
+                    for (int i = 0; i < chargeArr.size(); i++) {
+                        JsonObject jsonObj = (JsonObject) chargeArr.get(i);
+                        ChargeRecordDTO chargeRecordDTO = new ChargeRecordDTO();
+                        chargeRecordDTO.setAmount(jsonObj.get("amount").getAsInt());
+                        chargeRecordDTO.setChargeTime(sdf.parse(jsonObj.get("chargeTime").getAsString()));
+                        chargeRecordDTO.setPaymentMode(jsonObj.get("paymentMode").getAsInt());
+                        chargeList.add(chargeRecordDTO);
+                    }
+                }
+            }
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        try {
+            //未验证手机验证码不可申诉
+            if (!"1".equals(HotDataSource.getTempDataString(String.format(APPEAL_ACCOUNT_KEY, appealPhoneNum)))) {
+                result.addProperty("TagCode", "5101010904");
+                return result;
+            }
+            
+            // 黑名单用户或封号用户不可申诉
+            if (com.melot.kkcx.service.UserService.blackListUser(userId) || UserService.checkUserIsLock(userId)) {
+                result.addProperty("TagCode", "5101010903");
+                return result;
+            }
+            
+            AccountAppealInfoDTO accountAppealInfoDTO = accountAppealService.getAccountAppealInfo(null, userId);
+            if (accountAppealInfoDTO != null) {
+                if (accountAppealInfoDTO.getStatus() == AppealStatusEnum.PENDING) {
+                    result.addProperty("TagCode", "5101010901");
+                    return result;
+                } else if (accountAppealInfoDTO.getStatus() == AppealStatusEnum.PASS &&
+                        (System.currentTimeMillis() - accountAppealInfoDTO.getDtime().getTime() < dayTime)) {
+                    result.addProperty("TagCode", "5101010902");
+                    return result;
+                }
+            }
+            
+            List<String> mobileList = new ArrayList<String>();
+            List<String> passwordList = new ArrayList<String>();
+            if (!StringUtil.strIsNull(mobiles)) {
+                String[] mobileArr = mobiles.split(REGEX);
+                for (String mobile : mobileArr) {
+                    mobileList.add(mobile.toString());
+                }
+            }
+            if (!StringUtil.strIsNull(passwords)) {
+                String[] passwordArr = passwords.split(REGEX);
+                for (String password : passwordArr) {
+                    passwordList.add(password.toString());
+                }
+            }
+            
+            Result<String> resp = accountAppealService.appealAccount(userId, appealPhoneNum, name, identity, mobileList, passwordList, chargeList);
+            String returnCode = resp.getCode();
+            if (ReturnResultCode.SUCCESS.getCode().equals(returnCode)) {
+                result.addProperty("appealCode", resp.getData());
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            } else {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            }
+        } catch (Exception e) {
+            logger.error("accountAppealService.appealAccount() return exception.", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+        }
+
+        return result;
+    }
+    
+    /**
+     * 获取账户申诉详情信息(51010110)
+     *
+     * @param jsonObject 请求对象
+     * @param checkTag   是否验证token标记
+     * @param request    请求
+     * @return
+     */
+    public JsonObject getAppealInfo(JsonObject jsonObject, Boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        String appealCode;
+
+        try {
+            appealCode = CommonUtil.getJsonParamString(jsonObject, "appealCode", null, "5101011001", 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        try {
+            AccountAppealInfoDTO accountAppealInfoDTO = accountAppealService.getAccountAppealInfo(appealCode, null);
+            if (accountAppealInfoDTO != null) {
+                result.addProperty("checkCode", accountAppealInfoDTO.getStatus());
+                if (accountAppealInfoDTO.getCheckDesc() != null) {
+                    result.addProperty("checkDesc", accountAppealInfoDTO.getCheckDesc());
+                }
+            }
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        } catch (Exception e) {
+            logger.error("accountAppealService.getAccountAppealInfo(" + appealCode + ") return exception.", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+        }
+
+        return result;
+    }
+    
+    /**
+     * 获取申诉充值方式配置(51010111)
+     *
+     * @param jsonObject 请求对象
+     * @param checkTag   是否验证token标记
+     * @param request    请求
+     * @return
+     */
+    public JsonObject getConfPaymentList(JsonObject jsonObject, Boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        try {
+            List<ConfPaymentDTO> confPaymentList = accountAppealService.getConfPaymentList();
+            if (!CollectionUtils.isEmpty(confPaymentList)) {
+                result.add("confPaymentList", new JsonParser().parse(JSON.toJSONString(confPaymentList)).getAsJsonArray());
+            }
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        } catch (Exception e) {
+            logger.error("accountAppealService.getConfPaymentList() return exception: ", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+        }
+
         return result;
     }
     

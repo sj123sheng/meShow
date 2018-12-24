@@ -12,6 +12,9 @@ import com.melot.family.driver.domain.FamilyInfo;
 import com.melot.family.driver.service.FamilyOperatorService;
 import com.melot.family.driver.service.UserApplyActorService;
 import com.melot.game.config.sdk.utils.StringUtils;
+import com.melot.kk.liveshop.api.constant.SellerApplyCheckStatusEnum;
+import com.melot.kk.liveshop.api.dto.SellerApplyInfoDTO;
+import com.melot.kk.liveshop.api.service.SellerApplyInfoService;
 import com.melot.kk.userSecurity.api.constant.IdPicStatusEnum;
 import com.melot.kk.userSecurity.api.constant.UserVerifyStatusEnum;
 import com.melot.kk.userSecurity.api.constant.UserVerifyTypeEnum;
@@ -23,8 +26,6 @@ import com.melot.kk.userSecurity.api.service.UserVerifyService;
 import com.melot.kk.userSecurity.api.service.ZmrzApplyService;
 import com.melot.kkcore.actor.api.ActorInfo;
 import com.melot.kkcore.actor.service.ActorService;
-import com.melot.kkcore.user.api.ShowMoneyHistory;
-import com.melot.kkcore.user.api.UserAssets;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.api.UserStaticInfo;
 import com.melot.kkcore.user.service.KkUserService;
@@ -78,6 +79,9 @@ public class ActorFunction {
 
     @Resource
     ZmrzApplyService zmrzApplyService;
+
+    @Resource
+    SellerApplyInfoService sellerApplyInfoService;
 
     /**
      * 获取主播代言团列表【51020101】
@@ -630,6 +634,25 @@ public class ActorFunction {
     }
 
     private Boolean verifyApplyForActor(JsonObject result,int userId, String identityId, int familyId) {
+
+        // 申请直播购家族的主播必须是已经入驻成功的直播购商家
+        Integer liveshopFamilyId = configService.getLiveshopFamilyId();
+        if(liveshopFamilyId != null && familyId == liveshopFamilyId) {
+            boolean isSeller = false;
+            List<SellerApplyInfoDTO> list = sellerApplyInfoService.getUserSellerApplyInfoList(userId);
+            if (list != null && list.size() > 0) {
+                for (SellerApplyInfoDTO item : list) {
+                    if (item.getCheckStatus() == SellerApplyCheckStatusEnum.PASS.value()) {
+                        isSeller = true;
+                        break;
+                    }
+                }
+            }
+            if(!isSeller) {
+                result.addProperty("TagCode", TagCodeEnum.NOT_SELLER_ERROR);
+                return false;
+            }
+        }
 
         // 身份证黑名单不得申请
         BlacklistService blacklistService = (BlacklistService) MelotBeanFactory.getBean("blacklistService");

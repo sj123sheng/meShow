@@ -125,7 +125,7 @@ public class LiveShopTF {
         if (productPictureDTOList != null) {
             for (LiveShopProductPictureDTO productPictureDTO : productPictureDTOList) {
                 JsonObject json = new JsonObject();
-                json.addProperty("productUrl", productPictureDTO.getResourceUrl() + "!512");
+                json.addProperty("productUrl", productPictureDTO.getResourceUrl() + "!640x640");
                 json.addProperty("productUrlBig", productPictureDTO.getResourceUrl() + "!1280");
                 productBannerUrls.add(json);
             }
@@ -187,6 +187,8 @@ public class LiveShopTF {
         result.addProperty("payMoney", orderDTO.getPayMoney());
         result.addProperty("refundMoney", orderDTO.getRefundMoney());
 
+        result.addProperty("orderChannel", orderDTO.getOrderChannel());
+
         if(orderDTO.getCouponAmount() != null){
             result.addProperty("couponAmount",orderDTO.getCouponAmount());
         }
@@ -210,11 +212,17 @@ public class LiveShopTF {
 
         if (addressDO != null &&
                 !StringUtil.strIsNull(orderDTO.getConsigneeName())) {
+            //拼接地址
+            String province = addressDO.getProvince() == null ? "" : addressDO.getProvince();
+            String city = addressDO.getCity() == null ? "" : addressDO.getCity();
+            String district = addressDO.getDistrict() == null ? "" : addressDO.getDistrict();
+            String detailAddress = province + city + district + orderDTO.getDetailAddress();
+
             JsonObject addrInfo = new JsonObject();
             addrInfo.addProperty("addressId", addressDO.getAddressId());
             addrInfo.addProperty("consigneeName", orderDTO.getConsigneeName());
             addrInfo.addProperty("consigneeMobile", orderDTO.getConsigneeMobile());
-            addrInfo.addProperty("detailAddress", orderDTO.getDetailAddress());
+            addrInfo.addProperty("detailAddress", detailAddress);
             result.add("addrInfo", addrInfo);
         }
 

@@ -129,6 +129,9 @@
 	<kkrpc:reference id="bountyService" interface="com.melot.kk.bounty.api.service.BountyService" version="1.0.0" />
 	<!-- 登录相关模块 -->
 	<kkrpc:reference id="otherLoginService" interface="com.melot.kk.otherlogin.api.service.OtherLoginService" version="1.0.1" />
+	
+	<!-- 账户申诉相关模块 -->
+	<kkrpc:reference id="accountAppealService" interface="com.melot.kk.otherlogin.api.service.AccountAppealService" version="1.0.0" />
 
     <!-- 抓娃娃模块 -->
     <kkrpc:reference id="dollMachineService" interface="com.melot.kk.doll.api.service.DollMachineService" version="1.0.0" />
@@ -188,6 +191,7 @@
 	<kkrpc:reference id="productService" interface="com.melot.kk.liveshop.api.service.ProductService" version="1.0.0"/>
 	<kkrpc:reference id="orderService" interface="com.melot.kk.liveshop.api.service.OrderService" version="1.0.0"/>
 	<kkrpc:reference id="couponService" interface="com.melot.kk.liveshop.api.service.CouponService" version="1.0.0"/>
+	<kkrpc:reference id="newYearActivityService" interface="com.melot.kk.liveshop.api.service.NewYearActivityService" version="1.0.0"/>
 
 	<kkrpc:reference id="rechargeService" interface="com.melot.kk.recharge.api.service.RechargeService" version="1.0.1"/>
 

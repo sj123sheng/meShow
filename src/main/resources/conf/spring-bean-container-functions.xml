@@ -226,4 +226,7 @@
 	
 	<!-- 用户特权相关接口 -->
 	<bean id="privilegeFunctions" class="com.melot.kkcx.functions.PrivilegeFunctions"/>
+
+	<!-- 直播购活动相关接口 -->
+	<bean id="liveShopActivityFunctions" class="com.melot.kkcx.functions.LiveShopActivityFunctions" />
 </beans>

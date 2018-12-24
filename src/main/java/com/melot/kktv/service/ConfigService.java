@@ -216,6 +216,26 @@ public class ConfigService {
      */
     private Boolean isShowChargeBanner;
 
+    /**
+     * 直播购家族id
+     */
+    private Integer liveshopFamilyId;
+
+    /**
+     * 直播购活动栏目id
+     */
+    private String liveShopActivityCataIds;
+
+    /**
+     * 直播购活动栏目显示时间
+     */
+    private String liveShopActivityCataShowTime;
+
+    @DisconfFileItem(name = "liveshop.familyId", associateField = "liveshopFamilyId")
+    public Integer getLiveshopFamilyId() {
+        return liveshopFamilyId;
+    }
+
     @DisconfFileItem(name = "nearbyStartDistance", associateField = "nearbyStartDistance")
     public int getNearbyStartDistance() {
         return nearbyStartDistance;
@@ -557,5 +577,14 @@ public class ConfigService {
     public Boolean getIsShowChargeBanner() {
         return isShowChargeBanner;
     }
-    
+
+    @DisconfFileItem(name = "liveShopActivityCataIds", associateField = "liveShopActivityCataIds")
+    public String getLiveShopActivityCataIds() {
+        return liveShopActivityCataIds;
+    }
+
+    @DisconfFileItem(name = "liveShopActivityCataShowTime", associateField = "liveShopActivityCataShowTime")
+    public String getLiveShopActivityCataShowTime() {
+        return liveShopActivityCataShowTime;
+    }
 }

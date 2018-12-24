@@ -477,9 +477,11 @@ public class OtherFunctions {
 			}
 			return result;
 		} catch (CommonUtil.ErrorGetParameterException e) {
+			logger.error("Fail to call commitReportV2", e);
 			result.addProperty("TagCode", e.getErrCode());
 			return result;
 		} catch (Exception e) {
+			logger.error("Fail to call commitReportV2", e);
 			result.addProperty("TagCode", tagCode_prefix + "08");
 			return result;
 		}

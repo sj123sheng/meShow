@@ -1288,6 +1288,21 @@
 		<constructor-arg name="t" ref="profileSecurityFunction" />
 		<constructor-arg name="methodName" value="retrieveNewPassword" />
 	</bean>
+	<!-- 账户申诉 -->
+	<bean id="51010109" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="profileSecurityFunction" />
+		<constructor-arg name="methodName" value="appealAccount" />
+	</bean>
+	<!-- 获取账户申诉详情信息-->
+	<bean id="51010110" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="profileSecurityFunction" />
+		<constructor-arg name="methodName" value="getAppealInfo" />
+	</bean>
+	<!-- 获取申诉充值方式配置-->
+	<bean id="51010111" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="profileSecurityFunction" />
+		<constructor-arg name="methodName" value="getConfPaymentList" />
+	</bean>
 	
 	<!-- 系统资源相关的接口类 -->
 	<!-- 商城车市获取车辆列表 -->
@@ -3094,6 +3109,27 @@
 	<bean id="51060567" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="liveShopFunctions" />
 		<constructor-arg name="methodName" value="isFirstTimeToBuy" />
+	</bean>
+
+	<!--直播购跨年活动相关接口-->
+    <bean id="51051001" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="liveShopActivityFunctions" />
+        <constructor-arg name="methodName" value="getActivityConfInfo" />
+    </bean>
+
+    <bean id="51051002" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="liveShopActivityFunctions" />
+        <constructor-arg name="methodName" value="showActivityEntrance" />
+    </bean>
+
+	<bean id="51051003" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopActivityFunctions" />
+		<constructor-arg name="methodName" value="getActivitySellerList" />
+	</bean>
+
+	<bean id="51051004" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopActivityFunctions" />
+		<constructor-arg name="methodName" value="lottery" />
 	</bean>
 
 	<!-- 获取积分礼物列表 -->
