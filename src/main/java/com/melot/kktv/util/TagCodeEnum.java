@@ -1,5 +1,6 @@
 package com.melot.kktv.util;
 
+
 public class TagCodeEnum {
 
 	/** 处理正确，无错误返回 */
@@ -661,6 +662,12 @@ public class TagCodeEnum {
 
 	/** 已停用 **/
 	public static final String COUPON_DISABLE = "5106052026";
+
+	/** 订单状态错误 **/
+	public static final String ORDER_STATE_ERROR = "5106052037";
+
+	/** 已经使用了优惠券 **/
+	public static final String HAS_BEEN_COUPON_CODE = "5106052038";
 
 	/*------小镇错误码 -------*/
 	/**

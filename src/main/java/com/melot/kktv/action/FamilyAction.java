@@ -1,5 +1,7 @@
 package com.melot.kktv.action;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
@@ -7,6 +9,7 @@ import com.melot.blacklist.service.BlacklistService;
 import com.melot.family.driver.constant.UserApplyActorStatusEnum;
 import com.melot.family.driver.domain.*;
 import com.melot.family.driver.domain.DO.UserApplyActorDO;
+import com.melot.family.driver.domain.DTO.FamilyTagConfDTO;
 import com.melot.family.driver.service.FamilyAdminNewService;
 import com.melot.family.driver.service.FamilyAdminService;
 import com.melot.family.driver.service.FamilyInfoService;
@@ -82,12 +85,6 @@ public class FamilyAction {
 	 */
 	public JsonObject getFamilyList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws UnsupportedEncodingException {
 
-	    //王牌家族
-        String[] trumpFamilyArr = configService.getTrumpFamily().trim().split(REGEX);
-        String[] trumpFamilyIdsArr = configService.getTrumpFamilyIds().trim().split(REGEX);
-        String trumpFamilyName = trumpFamilyArr[0];
-        String trumpFamilyBackground = trumpFamilyArr[1];
-
         // 定义使用的参数
 		int platform = 0;
 		int start = 0;
@@ -151,9 +148,23 @@ public class FamilyAction {
 		result.addProperty("familyTotal", familyTotal);
 		// 获取家族列表
 		JsonArray familyJsonArray = new JsonArray();
-		if (familyTotal > 0) {
+        FamilyInfoService familyInfoService = (FamilyInfoService) MelotBeanFactory.getBean("newFamilyInfoService");
+        if (familyTotal > 0) {
 			List<Integer> familyIdList = FAMILYID_JSON_ARRAY_CACHE.subList(start, ((end>=familyTotal)?(familyTotal):end));
+            List<Integer> familyIds = Lists.newArrayList();
+            if(!CollectionUtils.isEmpty(familyIdList)) {
+                for (Integer familyId : familyIdList) {
+                    familyIds.add(familyId);
+                }
+            }
+			List<FamilyTagConfDTO> familyTagInfoList = familyInfoService.getFamilyTagConfList(familyIds);
 			List<Family> familyList = FamilyService.getFamilyListByIds(familyIdList, platform);
+			Map<Integer, FamilyTagConfDTO> familyTagInfoMap = Maps.newHashMap();
+			if(!CollectionUtils.isEmpty(familyTagInfoList)) {
+			    for(FamilyTagConfDTO familyTagConfDTO : familyTagInfoList) {
+                    familyTagInfoMap.put(familyTagConfDTO.getFamilyId(), familyTagConfDTO);
+                }
+            }
 			if (familyList != null && familyList.size() > 0) {
 				try {
 					JsonArray jFamilyList = new JsonParser().parse(new Gson().toJson(familyList)).getAsJsonArray();
@@ -188,34 +199,13 @@ public class FamilyAction {
 						}
 
 						//加家族角标
-                        boolean showCorner = false;
-						String cornerName = "";
-						String cornerBackground = "";
-						if(trumpFamilyIdsArr != null) {
-                            for (int j = 0; j < trumpFamilyIdsArr.length; j++) { //王牌家族
-                                int trumpFamilyId = Integer.parseInt(trumpFamilyIdsArr[j]);
-                                if (trumpFamilyId == familyId) {
-                                    showCorner = true;
-                                    String rank;
-                                    if(j == 0) {
-                                        rank = "冠军";
-                                    } else if(j == 1) {
-                                        rank = "亚军";
-                                    } else if(j == 2) {
-                                        rank = "季军";
-                                    } else {
-                                        rank = j + 1 + "强";
-                                    }
-                                    cornerName = trumpFamilyName + rank;
-                                    cornerBackground = trumpFamilyBackground;
-                                    break;
-                                }
-                            }
+                        FamilyTagConfDTO familyTagConfDTO = familyTagInfoMap.get(familyId);
+                        if (familyTagConfDTO != null) {
+                            familyObj.addProperty("showCorner", true);
+                            familyObj.addProperty("cornerName", familyTagConfDTO.getTagName());
+                            familyObj.addProperty("cornerBackground", familyTagConfDTO.getTagColor());
                         }
-                        familyObj.addProperty("showCorner", showCorner);
-                        familyObj.addProperty("cornerName", cornerName);
-                        familyObj.addProperty("cornerBackground", cornerBackground);
-						
+
 						// 删除属性不用判断其中是否存在
 						familyObj.remove("familyNotice");
 						familyObj.remove("createTime");
@@ -1766,8 +1756,9 @@ public class FamilyAction {
 	{
 		JsonObject result = new JsonObject();
 		result.addProperty("TagCode", strErrCode);
-		if (showMoneyBalance!=null)
+		if (showMoneyBalance!=null) {
 			result.addProperty("showMoney", showMoneyBalance);
+		}
 		return result;
 	}
 	

@@ -518,7 +518,7 @@ public class ProfileServices {
             userProp.setSubType(userChatBubbleDTO.getChatBubbleType());
             userProp.setIsLight(userChatBubbleDTO.getIsEnable());
             userProp.setValidType(userChatBubbleDTO.getValidType());
-            if (ValidTypeEnum.INDEFINITELY.getCode().equals(userChatBubbleDTO.getValidType())
+            if (ValidTypeEnum.COMMON.getCode().equals(userChatBubbleDTO.getValidType())
                     && userChatBubbleDTO.getEndTime() != null) {
                 userProp.setLeftTime(userChatBubbleDTO.getEndTime().getTime() - System.currentTimeMillis());
             }

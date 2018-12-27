@@ -745,7 +745,11 @@ public class UserService {
                                 pendantService.sendPendantToUser(sendPendantParam);
                             }
                         }
-                        HotDataSource.setTempDataString(key, String.valueOf(level), (int) ((DateUtil.getNextDay(new Date()).getTime() - System.currentTimeMillis()) / 1000));
+                        int expireSeconds = (int) ((DateUtil.getNextDay(new Date()).getTime() - System.currentTimeMillis()) / 1000);
+                        if (expireSeconds < 0) {
+                            expireSeconds = 15;
+                        } 
+                        HotDataSource.setTempDataString(key, String.valueOf(level), expireSeconds);
                     }
                 }
             }
@@ -778,7 +782,11 @@ public class UserService {
                                 chatBubbleService.addUserChatBubble(userId, confChatBubbleDTO.getCbId(), 0, "闪星赠送聊天气泡");
                             }
                         }
-                        HotDataSource.setTempDataString(key, String.valueOf(level), (int) ((DateUtil.getNextDay(new Date()).getTime() - System.currentTimeMillis()) / 1000));
+                        int expireSeconds = (int) ((DateUtil.getNextDay(new Date()).getTime() - System.currentTimeMillis()) / 1000);
+                        if (expireSeconds < 0) {
+                            expireSeconds = 15;
+                        }
+                        HotDataSource.setTempDataString(key, String.valueOf(level), expireSeconds);
                     }
                 }
             }

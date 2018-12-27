@@ -4206,4 +4206,66 @@ public class LiveShopFunctions {
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
+
+    /**
+     * 更新订单优惠券(51060568)
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject updateOrderCoupon(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+        int userId;
+        String couponCode;
+        String orderNo;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, ParamCodeEnum.USER_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+            couponCode = CommonUtil.getJsonParamString(jsonObject, "couponCode", "", TagCodeEnum.PARAMETER_MISSING, 1, 100);
+            orderNo = CommonUtil.getJsonParamString(jsonObject, "orderNo", "", TagCodeEnum.PARAMETER_MISSING, 1, 500);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        Result<Boolean> couponResult = orderService.updateOrderCoupon(userId,orderNo,couponCode);
+        if(CommonStateCode.SUCCESS.equals(couponResult.getCode())){
+            result.addProperty("TagCode",TagCodeEnum.SUCCESS);
+            return result;
+        } else {
+            String code = couponResult.getCode();
+            if("NOT_EXIST".equals(code)){
+                result.addProperty("TagCode",TagCodeEnum.NOT_EXIST_COUPON);
+                return result;
+            } else if("SQL_ERROR".equals(code)){
+                result.addProperty("TagCode",TagCodeEnum.EXECSQL_EXCEPTION);
+                return result;
+            } else if("NOT_ACTOR_COUPON".equals(code)) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.NOT_ACTOR_COUPON);
+                return result;
+            } else if("COUPON_NOT_EXIST".equals(code)) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.NOT_EXIST_COUPON);
+                return result;
+            } else if("DISABLE".equals(code)) {
+                result.addProperty("TagCode", TagCodeEnum.COUPON_DISABLE);
+                return result;
+            } else if("AMOUNT_ERROR".equals(code)) {
+                result.addProperty("TagCode",TagCodeEnum.AMOUNT_ERROR);
+                return result;
+            } else if("NOT_WAIT_PAY".equals(code)) {
+                result.addProperty("TagCode",TagCodeEnum.ORDER_STATE_ERROR);
+                return result;
+            } else if("HAS_BEEN_COUPON_CODE".equals(code)) {
+                result.addProperty("TagCode",TagCodeEnum.HAS_BEEN_COUPON_CODE);
+                return result;
+            } else {
+                result.addProperty("TagCode",TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+                return result;
+            }
+        }
+    }
 }

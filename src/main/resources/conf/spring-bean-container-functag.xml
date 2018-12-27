@@ -3111,6 +3111,11 @@
 		<constructor-arg name="methodName" value="isFirstTimeToBuy" />
 	</bean>
 
+	<bean id="51060568" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="updateOrderCoupon" />
+	</bean>
+
 	<!--直播购跨年活动相关接口-->
     <bean id="51051001" class="com.melot.sdk.core.function.GenericFunction">
         <constructor-arg name="t" ref="liveShopActivityFunctions" />
