@@ -31,14 +31,11 @@ import com.melot.module.packagegift.driver.service.XmanService;
 import com.melot.sdk.core.util.MelotBeanFactory;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.commons.lang3.time.DateUtils;
-import org.apache.ibatis.annotations.Param;
 import org.apache.log4j.Logger;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.text.ParseException;
 import java.util.*;
 
 public class LiveShopFunctions {
@@ -4267,5 +4264,110 @@ public class LiveShopFunctions {
                 return result;
             }
         }
+    }
+
+    /**
+     * 根据订单id获取下单优惠券列表(51060569)
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getOrderCouponListByOrderNo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        if (!checkTag) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_INCORRECT);
+            return result;
+        }
+
+        int userId;
+        int pageIndex;
+        int countPerPage;
+        int type = 0;
+        String orderNo;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, ParamCodeEnum.USER_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 0, TagCodeEnum.PARAMETER_MISSING, 1, Integer.MAX_VALUE);
+            countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 0, TagCodeEnum.PARAMETER_MISSING, 1, 200);
+            type = CommonUtil.getJsonParamInt(jsonObject, "type", 0, TagCodeEnum.PARAMETER_MISSING, 0, 1);
+            orderNo = CommonUtil.getJsonParamString(jsonObject, "orderNo", "", TagCodeEnum.PARAMETER_MISSING, 1, 500);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        LiveShopOrderV3DTO liveShopOrderV3DTO = orderService.getOrderInfoV2(orderNo);
+        if(liveShopOrderV3DTO == null){
+            result.addProperty("TagCode",TagCodeEnum.NOT_EXIST_COUPON);
+            return result;
+        }
+        if(liveShopOrderV3DTO.getOrderState() != LiveShopOrderState.WAIT_PAY){
+            result.addProperty("TagCode",TagCodeEnum.ORDER_STATE_ERROR);
+            return result;
+        }
+
+        Page<CouponOrderDTO> page;
+        if(type == 1){
+            page = couponService.getOrderAvailableCouponList(liveShopOrderV3DTO.getActorId(),userId,
+                    liveShopOrderV3DTO.getOrderMoney(), pageIndex,countPerPage);
+        } else {
+            page = couponService.getOrderDisabledCouponList(liveShopOrderV3DTO.getActorId(),userId,
+                    liveShopOrderV3DTO.getOrderMoney(), pageIndex,countPerPage);
+        }
+        JsonArray jsonArray = new JsonArray();
+        if(!CollectionUtils.isEmpty(page.getList())){
+            for(CouponOrderDTO item : page.getList()){
+                JsonObject json = new JsonObject();
+                json.addProperty("couponAmount",item.getCouponAmount());
+                json.addProperty("couponType",item.getdType());
+                json.addProperty("reductionAmount",item.getReductionAmount());
+                json.addProperty("startTime",item.getStartTime().getTime());
+                json.addProperty("endTime",item.getEndTime().getTime());
+                json.addProperty("couponCode",item.getCouponCode());
+                json.addProperty("state",type);
+                jsonArray.add(json);
+            }
+        }
+        result.addProperty("count",page.getCount() != null ? page.getCount() : 0);
+        result.add("list",jsonArray);
+        result.addProperty("TagCode",TagCodeEnum.SUCCESS);
+        return result;
+    }
+
+    /**
+     * 根据订单id获取下单优惠券可用数量(51060570)
+     */
+    public JsonObject getOrderCouponUserUsableCountByOrderNo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        if (!checkTag) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_INCORRECT);
+            return result;
+        }
+
+        int userId;
+        String orderNo;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, ParamCodeEnum.USER_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+            orderNo = CommonUtil.getJsonParamString(jsonObject, "orderNo", "", TagCodeEnum.PARAMETER_MISSING, 1, 500);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        }
+
+        LiveShopOrderV3DTO liveShopOrderV3DTO = orderService.getOrderInfoV2(orderNo);
+        if(liveShopOrderV3DTO == null){
+            result.addProperty("TagCode",TagCodeEnum.NOT_EXIST_COUPON);
+            return result;
+        }
+        if(liveShopOrderV3DTO.getOrderState() != LiveShopOrderState.WAIT_PAY){
+            result.addProperty("TagCode",TagCodeEnum.ORDER_STATE_ERROR);
+            return result;
+        }
+
+        int count = couponService.getOrderAvailableCouponCount(liveShopOrderV3DTO.getActorId(),userId,
+                liveShopOrderV3DTO.getOrderMoney());
+        result.addProperty("count",count);
+        result.addProperty("TagCode",TagCodeEnum.SUCCESS);
+        return result;
     }
 }
