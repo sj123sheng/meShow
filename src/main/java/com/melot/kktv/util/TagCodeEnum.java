@@ -663,11 +663,47 @@ public class TagCodeEnum {
 	/** 已停用 **/
 	public static final String COUPON_DISABLE = "5106052026";
 
+	/** 数据不存在 **/
+	public static final String NOT_EXIST = "5106052027";
+
+	/** 该商家主播没有发起过抽奖 **/
+	public static final String SELLER_NOT_HAVE_DRAW = "5106052028";
+
+	/** 无法组团 **/
+	public static final String CAN_NOT_GROUP = "5106052029";
+
+	/** 已参加过抽奖 **/
+	public static final String HAS_BEEN_DRAW = "5106052030";
+
+	/** drawId不匹配 **/
+	public static final String DRAW_ID_NOT_MATCH = "5106052031";
+
+	/** 已参团 **/
+	public static final String HAS_BEEN_GROUP = "5106052032";
+
+	/** 超出组团人数 **/
+	public static final String EXCEED_GROUP_COUNT = "5106052033";
+
+	/** 抽奖已结束 **/
+	public static final String DRAW_WAS_OVER = "5106052034";
+
+	/** 抽奖基本属性错误 **/
+	public static final String PARAMETERS_ERROR ="5106052035";
+
+	/** 无法参加自己的抽奖 **/
+	public static final String CAN_NOT_IN_SELF_DRAW = "5106052036";
+
 	/** 订单状态错误 **/
 	public static final String ORDER_STATE_ERROR = "5106052037";
 
 	/** 已经使用了优惠券 **/
 	public static final String HAS_BEEN_COUPON_CODE = "5106052038";
+
+	/** 奖品描述含有敏感词 **/
+	public static final String DESCRIPTION_HAS_SENSITIVE_WORD = "5106052039";
+
+	/** 奖品名称含有敏感词 **/
+	public static final String DRAW_NAME_HAS_SENSITIVE_WORD = "5106052040";
 
 	/*------小镇错误码 -------*/
 	/**

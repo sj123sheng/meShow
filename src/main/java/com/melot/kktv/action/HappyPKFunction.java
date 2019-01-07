@@ -457,13 +457,13 @@ public class HappyPKFunction {
 
         try {
 
-            Result<List<ConsumeUserDO>> listResult =  histActorLadderMatchService.getRichList();
-            if(listResult.getCode().equals(CommonStateCode.SUCCESS) && listResult.getData() != null){
+            Result<RichRankAndUserConsumeDO> richRankAndUserConsumeDOResult = histActorLadderMatchService.getUserRichRank(userId);
+            if (richRankAndUserConsumeDOResult.getCode().equals(CommonStateCode.SUCCESS) && richRankAndUserConsumeDOResult.getData() != null && richRankAndUserConsumeDOResult.getData().getConsumeUserDOList() != null) {
 
                 JsonArray richList = new JsonArray();
-                List<ConsumeUserDO> consumeUserDOS = listResult.getData();
+                List<ConsumeUserDO> consumeUserDOS = richRankAndUserConsumeDOResult.getData().getConsumeUserDOList();
 
-                for(ConsumeUserDO consumeUserDO : consumeUserDOS) {
+                for (ConsumeUserDO consumeUserDO : consumeUserDOS) {
 
                     int consumeUserId = consumeUserDO.getUserId();
                     UserProfile userProfile = kkUserService.getUserProfile(consumeUserId);
@@ -486,7 +486,7 @@ public class HappyPKFunction {
                 result.add("richList", richList);
 
                 if(userId > 0) {
-                    ConsumeUserDO consumeUserDO = histActorLadderMatchService.getUserConsumeInfo(userId).getData();
+                    ConsumeUserDO consumeUserDO = richRankAndUserConsumeDOResult.getData().getConsumeUserDO();
                     if(consumeUserDO != null) {
                         UserProfile userProfile = kkUserService.getUserProfile(userId);
                         if(userProfile != null) {

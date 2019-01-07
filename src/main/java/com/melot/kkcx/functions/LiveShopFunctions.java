@@ -3210,13 +3210,13 @@ public class LiveShopFunctions {
                 result.addProperty(ParameterKeys.TAG_CODE, "5106050303");
                 return result;
             }
-            UserAddressDO addressDO = null;
-            Result<UserAddressDO> addressResult = userAddressService.getUserDefaultAddressDOByUserId(orderV2DTO.getUserId());
-            if (addressResult != null && CommonStateCode.SUCCESS.equals(addressResult.getCode())) {
-                addressDO = addressResult.getData();
+            HistDeliveryDO histDeliveryDO = null;
+            Result<HistDeliveryDO> histDeliveryDOResult = histDeliveryService.getHistDeliveryDO(orderV2DTO.getOrderId(), 3);
+            if (histDeliveryDOResult != null && CommonStateCode.SUCCESS.equals(histDeliveryDOResult.getCode())) {
+                histDeliveryDO = histDeliveryDOResult.getData();
             }
 
-            LiveShopTF.orderV2Info2Json(result, orderV2DTO, addressDO, subShopIds);
+            LiveShopTF.orderV2Info2Json(result, orderV2DTO, histDeliveryDO, subShopIds);
 
             // 获取供货商手机号
             Result<LiveShopInfoDTO> shopInfoResult = liveShopService.getShopInfo(orderV2DTO.getActorId(), LiveShopMode.AUCTION_SHOP);
@@ -4335,7 +4335,7 @@ public class LiveShopFunctions {
     }
 
     /**
-     * 根据订单id获取下单优惠券可用数量(51060570)
+     * 根据订单id获取下单优惠券可用数量 (51060570)
      */
     public JsonObject getOrderCouponUserUsableCountByOrderNo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();

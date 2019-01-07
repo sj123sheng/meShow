@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.melot.kk.liveshop.api.constant.LiveShopOrderState;
 import com.melot.kk.liveshop.api.dto.*;
+import com.melot.kk.logistics.api.domain.HistDeliveryDO;
 import com.melot.kk.logistics.api.domain.UserAddressDO;
 import com.melot.kktv.util.StringUtil;
 import org.apache.commons.collections.CollectionUtils;
@@ -160,8 +161,8 @@ public class LiveShopTF {
         result.add("subShopIds", subShopArray);
     }
 
-    public static void orderV2Info2Json(JsonObject result, LiveShopOrderV3DTO orderDTO, UserAddressDO addressDO, List<Integer> subShopIds) {
-        orderV2Info2Json(result, orderDTO, addressDO);
+    public static void orderV2Info2Json(JsonObject result, LiveShopOrderV3DTO orderDTO, HistDeliveryDO histDeliveryDO, List<Integer> subShopIds) {
+        orderV2Info2Json(result, orderDTO, histDeliveryDO);
         JsonArray subShopArray = new JsonArray();
         if (CollectionUtils.isNotEmpty(subShopIds)) {
             for (Integer subShopId : subShopIds) {
@@ -172,7 +173,7 @@ public class LiveShopTF {
         result.add("subShopIds", subShopArray);
     }
 
-    public static void orderV2Info2Json(JsonObject result, LiveShopOrderV3DTO orderDTO, UserAddressDO addressDO) {
+    public static void orderV2Info2Json(JsonObject result, LiveShopOrderV3DTO orderDTO, HistDeliveryDO histDeliveryDO) {
 
         result.addProperty("buyerId", orderDTO.getUserId());
         result.addProperty("sellerId", orderDTO.getSellerId());
@@ -210,18 +211,18 @@ public class LiveShopTF {
             result.addProperty("receiveTime", orderDTO.getReceiveTime().getTime());
         }
 
-        if (addressDO != null &&
-                !StringUtil.strIsNull(orderDTO.getConsigneeName())) {
+        if (histDeliveryDO != null) {
             //拼接地址
-            String province = addressDO.getProvince() == null ? "" : addressDO.getProvince();
-            String city = addressDO.getCity() == null ? "" : addressDO.getCity();
-            String district = addressDO.getDistrict() == null ? "" : addressDO.getDistrict();
-            String detailAddress = province + city + district + orderDTO.getDetailAddress();
+            String province = histDeliveryDO.getProvince() == null ? "" : histDeliveryDO.getProvince();
+            String city = histDeliveryDO.getCity() == null ? "" : histDeliveryDO.getCity();
+            String district = histDeliveryDO.getDistrict() == null ? "" : histDeliveryDO.getDistrict();
+            String detailAddress = histDeliveryDO.getDetailAddress() == null ? "" : histDeliveryDO.getDetailAddress();
+            detailAddress = province + city + district + detailAddress;
 
             JsonObject addrInfo = new JsonObject();
-            addrInfo.addProperty("addressId", addressDO.getAddressId());
-            addrInfo.addProperty("consigneeName", orderDTO.getConsigneeName());
-            addrInfo.addProperty("consigneeMobile", orderDTO.getConsigneeMobile());
+            addrInfo.addProperty("addressId", histDeliveryDO.getAddressId());
+            addrInfo.addProperty("consigneeName", histDeliveryDO.getConsigneeName());
+            addrInfo.addProperty("consigneeMobile", histDeliveryDO.getConsigneeMobile());
             addrInfo.addProperty("detailAddress", detailAddress);
             result.add("addrInfo", addrInfo);
         }

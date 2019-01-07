@@ -82,8 +82,14 @@ public enum ParamCodeEnum {
     RECEIVE_START_TIME("receiveStartTime","53000056"),
     RECEIVE_END_TIME("receiveEndTime","53000057"),
     USING_TYPE("usingType","53000058"),
-    COUPON_COUNT("couponCount","53000059")
-    ;
+    COUPON_COUNT("couponCount","53000059"),
+    DRAW_NAME("drawName","53000060"),
+    PRIZE_COUNT ("prizeCount","53000061"),
+    PRICE ("price","53000062"),
+    NUMBER_OF_DRAWING ("numberOfDrawing","53000063"),
+    IS_GROUP ("isGroup","53000064"),
+    DRAWING_TIME ("drawingTime","53000065"),
+    DRAW_IMG ("drawImg","53000066");
 
 
     private String id;

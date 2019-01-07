@@ -3563,4 +3563,32 @@
 		<constructor-arg name="methodName" value="operateUserProp"/>
 	</bean>
 
+
+	<!-- 物流相关接口 -->
+	<!-- 获取用户收货地址列表 -->
+	<bean id="51011401" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="logisticsFunctions"/>
+		<constructor-arg name="methodName" value="getUserAddressList"/>
+	</bean>
+	<!-- 获取用户收货地址信息 -->
+	<bean id="51011402" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="logisticsFunctions"/>
+		<constructor-arg name="methodName" value="getUserAddressInfo"/>
+	</bean>
+	<!-- 添加收货地址 -->
+	<bean id="51011403" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="logisticsFunctions"/>
+		<constructor-arg name="methodName" value="addUserAddress"/>
+	</bean>
+	<!-- 编辑收货地址 -->
+	<bean id="51011404" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="logisticsFunctions"/>
+		<constructor-arg name="methodName" value="editUserAddress"/>
+	</bean>
+	<!-- 删除收货地址 -->
+	<bean id="51011405" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="logisticsFunctions"/>
+		<constructor-arg name="methodName" value="deleteUserAddress"/>
+	</bean>
+
 </beans>

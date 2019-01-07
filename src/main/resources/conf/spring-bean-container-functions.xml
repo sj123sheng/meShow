@@ -226,4 +226,9 @@
 
 	<!-- 直播购活动相关接口 -->
 	<bean id="liveShopActivityFunctions" class="com.melot.kkcx.functions.LiveShopActivityFunctions" />
+
+
+	<!-- 物流相关接口 -->
+	<bean id="logisticsFunctions" class="com.melot.kkcx.functions.LogisticsFunctions" />
+
 </beans>
