@@ -231,6 +231,11 @@ public class ConfigService {
      */
     private String liveShopActivityCataShowTime;
 
+    /**
+     * 麻辣区域化版本搜索需要屏蔽的id
+     */
+    private String malaBlock;
+
     @DisconfFileItem(name = "liveshop.familyId", associateField = "liveshopFamilyId")
     public Integer getLiveshopFamilyId() {
         return liveshopFamilyId;
@@ -586,5 +591,10 @@ public class ConfigService {
     @DisconfFileItem(name = "liveShopActivityCataShowTime", associateField = "liveShopActivityCataShowTime")
     public String getLiveShopActivityCataShowTime() {
         return liveShopActivityCataShowTime;
+    }
+
+    @DisconfFileItem(name = "malaBlock", associateField = "malaBlock")
+    public String getMalaBlock() {
+        return malaBlock;
     }
 }

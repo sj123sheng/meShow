@@ -27,7 +27,7 @@ public class SearchWordsSource {
 	private static final String HOT_SEARCHRESULT = "searchResult_%s";
 	
 	//key格式 热门关键字搜索结果——分页
-    private static final String HOT_SEARCHRESULT_PAGE = "searchResult_page_%s";
+    private static final String HOT_SEARCHRESULT_PAGE = "searchResult_page_%s_%s";
 	
 	private static Jedis getInstance() {
 		return RedisConfigHelper.getJedis(SOURCE_NAME);
@@ -169,19 +169,19 @@ public class SearchWordsSource {
 	 * @param searchWord
 	 * @param searchResult
 	 */
-	public static boolean setSearchResultPage(String searchWord, List<String> searchResult) {
+	public static boolean setSearchResultPage(String searchWord,int appId, List<String> searchResult) {
 	    Jedis jedis = null;
 	    try {
             jedis = getInstance();
-            String key = String.format(HOT_SEARCHRESULT_PAGE, searchWord);
+            String key = String.format(HOT_SEARCHRESULT_PAGE, searchWord,appId);
             for (int i = 0; i < searchResult.size(); i++) {
                 jedis.zadd(key, i + 1D, searchResult.get(i));
             }
             jedis.expire(key, 60);
-            logger.info("SearchWordsSource.setSearchResult(" + searchWord + ", " + searchResult + ")");
+            logger.info("SearchWordsSource.setSearchResult(" + searchWord+","+appId + ", " + searchResult + ")");
             return true;
         } catch (Exception e) {
-            logger.error("SearchWordsSource.setSearchResult(" + searchWord + ", " + searchResult + ") execute exception", e);
+            logger.error("SearchWordsSource.setSearchResult(" + searchWord +","+appId+ ", " + searchResult + ") execute exception", e);
         } finally {
             if (jedis != null) {
                 freeInstance(jedis);
@@ -195,15 +195,15 @@ public class SearchWordsSource {
      * @param searchWord
      * @return
      */
-	public static Set<String> getSearchResultPage(String searchWord, long start, long end) {
+	public static Set<String> getSearchResultPage(String searchWord,int appId, long start, long end) {
 	    Set<String> set = null;
         Jedis jedis = null;
         try {
             jedis = getInstance();
-            String key = String.format(HOT_SEARCHRESULT_PAGE, searchWord);
+            String key = String.format(HOT_SEARCHRESULT_PAGE, searchWord,appId);
             set = jedis.zrange(key, start, end);
         } catch (Exception e) {
-            logger.error("SearchWordsSource.getSearchResult(" + searchWord + ") execute exception", e);
+            logger.error("SearchWordsSource.getSearchResult(" + searchWord +","+appId+ ") execute exception", e);
         } finally {
             if (jedis != null) {
                 freeInstance(jedis);
@@ -212,18 +212,18 @@ public class SearchWordsSource {
         return set;
 	}
 	
-	public static long getSearchResultPageCount(String searchWord) {
+	public static long getSearchResultPageCount(String searchWord,int appId) {
         Jedis jedis = null;
         long count = 0;
         try {
             jedis = getInstance();
-            String key = String.format(HOT_SEARCHRESULT_PAGE, searchWord);
+            String key = String.format(HOT_SEARCHRESULT_PAGE, searchWord,appId);
             Long tempCount = jedis.zcard(key);
             if (tempCount != null) {
                 count = tempCount;
             }
         } catch (Exception e) {
-            logger.error("SearchWordsSource.getSearchResult(" + searchWord + ") execute exception", e);
+            logger.error("SearchWordsSource.getSearchResult(" + searchWord +","+appId+ ") execute exception", e);
         } finally {
             if (jedis != null) {
                 freeInstance(jedis);
@@ -232,14 +232,14 @@ public class SearchWordsSource {
         return count;
 	}
 	
-	public static boolean isExistSearchResultKey(String searchWord) {
+	public static boolean isExistSearchResultKey(String searchWord,int appId) {
         Jedis jedis = null;
         try {
             jedis = getInstance();
-            String key = String.format(HOT_SEARCHRESULT_PAGE, searchWord);
+            String key = String.format(HOT_SEARCHRESULT_PAGE, searchWord,appId);
             return jedis.exists(key);
         } catch (Exception e) {
-            logger.error("SearchWordsSource.getSearchResult(" + searchWord + ") execute exception", e);
+            logger.error("SearchWordsSource.getSearchResult(" + searchWord +","+appId+ ") execute exception", e);
         } finally {
             if (jedis != null) {
                 freeInstance(jedis);

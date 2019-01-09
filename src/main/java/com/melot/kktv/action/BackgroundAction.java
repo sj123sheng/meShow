@@ -146,6 +146,7 @@ public class BackgroundAction {
 		JsonElement macje = jsonObject.get("mac");
 		JsonElement appIdje = jsonObject.get("a");
 		JsonElement deviceUIdje = jsonObject.get("deviceUId");
+		JsonElement brand = jsonObject.get("brand");
 
 		OtherLoginService otherLoginService = (OtherLoginService) MelotBeanFactory.getBean("otherLoginService");
 		
@@ -223,6 +224,9 @@ public class BackgroundAction {
 		}
 		if (macje != null && !macje.getAsString().isEmpty()) {
 			mobileDeviceJsonObj.addProperty("mac", macje.getAsString());
+		}
+		if (brand != null && !brand.getAsString().isEmpty()) {
+			mobileDeviceJsonObj.addProperty("brand", brand.getAsString());
 		}
 		
 		try {
@@ -319,6 +323,9 @@ public class BackgroundAction {
 				}
 				if (jsonObj.has("deviceUId")) {
 					mobileDevice.setDeviceUId(jsonObj.get("deviceUId").getAsString());
+				}
+				if (jsonObj.has("brand")) {
+					mobileDevice.setBrand(jsonObj.get("brand").getAsString());
 				}
 			}
 		} catch (Exception e) {

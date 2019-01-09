@@ -1,22 +1,14 @@
 package com.melot.kktv.action;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Random;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import com.melot.kktv.service.ConfigService;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 
@@ -89,6 +81,7 @@ import com.melot.module.medal.driver.domain.UserActivityMedal;
 import com.melot.module.medal.driver.service.ActivityMedalService;
 import com.melot.module.medal.driver.service.UserMedalService;
 import com.melot.sdk.core.util.MelotBeanFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 大厅相关的接口类
@@ -116,6 +109,9 @@ public class IndexFunctions {
 
 	@Resource
 	private HomeService hallHomeService;
+
+	@Autowired
+	private ConfigService configService;
 
 
     /**
@@ -853,11 +849,12 @@ public class IndexFunctions {
 	public JsonObject findRoomList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
 		JsonObject result = new JsonObject();
 		JsonArray jRoomList = new JsonArray();
-		int platform, recordCount;
+		int platform, recordCount,appId;
 		String fuzzyString;
 		int pageNum, pageCount;
 		try {
 			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+			appId = CommonUtil.getJsonParamInt(jsonObject, "a", 1, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
 			fuzzyString = CommonUtil.getJsonParamString(jsonObject, "fuzzyString", null, null, 1, 30);
 			pageNum = CommonUtil.getJsonParamInt(jsonObject, "pageNum", 0, null, 0, Integer.MAX_VALUE);
 			pageCount = CommonUtil.getJsonParamInt(jsonObject, "pageCount", 0, null, 0, Integer.MAX_VALUE);
@@ -897,8 +894,12 @@ public class IndexFunctions {
             nickname = fuzzyString;
         }
 
+        if(appId != 15){
+        	appId = 1;
+		}
+
         // 判断缓存中是否已存在
-        if (!SearchWordsSource.isExistSearchResultKey(fuzzyString)) {
+        if (!SearchWordsSource.isExistSearchResultKey(fuzzyString,appId)) {
         	// 缓存不存在，则默认从数据库查找1000条记录
 			Result<Page<HallRoomInfoDTO>> fuzzyResult = hallRoomService.getFuzzyRoomList(actorId, nickname, 0, 1000);
 			if (!checkResultData(fuzzyResult)) {
@@ -909,8 +910,10 @@ public class IndexFunctions {
             if (fuzzyResult.getData().getCount() > 0) {
                 if (CollectionUtils.isNotEmpty(fuzzyResult.getData().getList())) {
                     for (HallRoomInfoDTO rinfo : fuzzyResult.getData().getList()) {
-                        JsonObject roomJson = HallRoomTF.roomInfoToJson(rinfo, platform, true);
-                        newList.add(roomJson.toString());
+                    	if(!isMalaBlock(appId,rinfo.getActorId())){
+							JsonObject roomJson = HallRoomTF.roomInfoToJson(rinfo, platform, true);
+							newList.add(roomJson.toString());
+						}
                     }
                 }
             } else {
@@ -918,7 +921,7 @@ public class IndexFunctions {
                 if (isId) {
                     KkUserService userService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
                     UserProfile userProfile = userService.getUserProfile(actorId);
-                    if (userProfile != null) {
+                    if (userProfile != null&&!isMalaBlock(appId,userProfile.getUserId())) {
                         JsonObject jsonObj = new JsonObject();
                         jsonObj.addProperty("userId", userProfile.getUserId());
                         jsonObj.addProperty("roomId", userProfile.getUserId());
@@ -937,13 +940,13 @@ public class IndexFunctions {
                 }
             }
             
-            if(!SearchWordsSource.setSearchResultPage(fuzzyString, newList)){
+            if(!SearchWordsSource.setSearchResultPage(fuzzyString,appId, newList)){
                 logger.error("SearchWordsSource.setSearchResult Fail to add" + fuzzyString + "searchResult to redis");
             }
         } 
 		// 查询结果放入缓存中，然后从缓存中分页
         long start, end;
-        recordCount = (int) SearchWordsSource.getSearchResultPageCount(fuzzyString);
+        recordCount = (int) SearchWordsSource.getSearchResultPageCount(fuzzyString,appId);
         if (recordCount > 0) {
             // pageNum和pageCount未传入，查询全部
             if (pageNum == 0 || pageCount == 0) {
@@ -953,7 +956,7 @@ public class IndexFunctions {
                 start = (pageNum - 1L) * pageCount;
                 end = pageNum * pageCount - 1L;
             }
-            Set<String> tempSet = SearchWordsSource.getSearchResultPage(fuzzyString, start, end);
+            Set<String> tempSet = SearchWordsSource.getSearchResultPage(fuzzyString,appId, start, end);
             if (tempSet != null && !tempSet.isEmpty()) {
                 for (String tempStr : tempSet) {
                     JsonObject jObject = new JsonParser().parse(tempStr).getAsJsonObject();
@@ -975,6 +978,16 @@ public class IndexFunctions {
         result.addProperty("recordCount", recordCount);
         result.add("roomList", jRoomList);
         return result;
+	}
+
+	private boolean isMalaBlock(int appId,int userId){
+        if(appId == 15){
+			List<String> malaBlocks = Arrays.asList(configService.getMalaBlock().split(","));
+			if(malaBlocks.contains(userId+"")){
+				return true;
+			}
+		}
+        return false;
 	}
 	
 	/**
