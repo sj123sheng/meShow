@@ -470,7 +470,7 @@ public class IndexFunctions {
         
 	    try {
 	        rankType = CommonUtil.getJsonParamInt(jsonObject, "rankType", 0, "02040002", 0, Integer.MAX_VALUE);
-	        slotType = CommonUtil.getJsonParamInt(jsonObject, "slotType", 0, "02040004", 0, Integer.MAX_VALUE);
+	        slotType = CommonUtil.getJsonParamInt(jsonObject, "slotType", 0, "02040004", -1, Integer.MAX_VALUE);
             count = CommonUtil.getJsonParamInt(jsonObject, "count", 10, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
@@ -910,7 +910,7 @@ public class IndexFunctions {
             if (fuzzyResult.getData().getCount() > 0) {
                 if (CollectionUtils.isNotEmpty(fuzzyResult.getData().getList())) {
                     for (HallRoomInfoDTO rinfo : fuzzyResult.getData().getList()) {
-                    	if(!isMalaBlock(appId,rinfo.getActorId())){
+                    	if(!isRoomBlock(rinfo.getActorId())&&!isMalaBlock(appId,rinfo.getActorId())){
 							JsonObject roomJson = HallRoomTF.roomInfoToJson(rinfo, platform, true);
 							newList.add(roomJson.toString());
 						}
@@ -921,7 +921,7 @@ public class IndexFunctions {
                 if (isId) {
                     KkUserService userService = (KkUserService) MelotBeanFactory.getBean("kkUserService");
                     UserProfile userProfile = userService.getUserProfile(actorId);
-                    if (userProfile != null&&!isMalaBlock(appId,userProfile.getUserId())) {
+                    if (userProfile != null&&!isRoomBlock(userProfile.getUserId())&&!isMalaBlock(appId,userProfile.getUserId())) {
                         JsonObject jsonObj = new JsonObject();
                         jsonObj.addProperty("userId", userProfile.getUserId());
                         jsonObj.addProperty("roomId", userProfile.getUserId());
@@ -988,6 +988,14 @@ public class IndexFunctions {
 			}
 		}
         return false;
+	}
+
+	private boolean isRoomBlock(int userId){
+		List<String> roomBlocks = Arrays.asList(configService.getRoomBlock().split(","));
+		if(roomBlocks.contains(userId+"")){
+			return true;
+		}
+		return false;
 	}
 	
 	/**

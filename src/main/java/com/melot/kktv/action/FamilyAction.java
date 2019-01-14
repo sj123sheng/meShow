@@ -201,11 +201,12 @@ public class FamilyAction {
 						//加家族角标
                         FamilyTagConfDTO familyTagConfDTO = familyTagInfoMap.get(familyId);
                         if (familyTagConfDTO != null) {
-                            familyObj.addProperty("showCorner", true);
-                            familyObj.addProperty("cornerName", familyTagConfDTO.getTagName());
-                            familyObj.addProperty("cornerBackground", familyTagConfDTO.getTagColor());
+                        	if (familyTagConfDTO.getTagName() != null && familyTagConfDTO.getTagColor() != null) {
+								familyObj.addProperty("showCorner", true);
+                        		familyObj.addProperty("cornerName", familyTagConfDTO.getTagName());
+								familyObj.addProperty("cornerBackground", familyTagConfDTO.getTagColor());
+							}
                         }
-
 						// 删除属性不用判断其中是否存在
 						familyObj.remove("familyNotice");
 						familyObj.remove("createTime");

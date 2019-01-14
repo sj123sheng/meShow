@@ -236,6 +236,11 @@ public class ConfigService {
      */
     private String malaBlock;
 
+    /**
+     * 全版本搜索需要屏蔽的id
+     */
+    private String roomBlock;
+
     @DisconfFileItem(name = "liveshop.familyId", associateField = "liveshopFamilyId")
     public Integer getLiveshopFamilyId() {
         return liveshopFamilyId;
@@ -596,5 +601,10 @@ public class ConfigService {
     @DisconfFileItem(name = "malaBlock", associateField = "malaBlock")
     public String getMalaBlock() {
         return malaBlock;
+    }
+
+    @DisconfFileItem(name = "roomBlock", associateField = "roomBlock")
+    public String getRoomBlock() {
+        return roomBlock;
     }
 }
