@@ -259,4 +259,9 @@
 	<kkrpc:reference id="quizPKService" interface="com.melot.kk.pkgame.api.service.QuizPKService" version="1.0.0"/>
 
 	<kkrpc:reference id="pendantService" interface="com.melot.room.pendant.service.PendantService" version="1.0.0"/>
+
+	<!-- k玩大奖赛 -->
+	<kkrpc:reference id="fingerGuessingService" interface="com.melot.kk.competition.api.service.FingerGuessingService" version="1.0.0"/>
+	<kkrpc:reference id="competitionService" interface="com.melot.kk.competition.api.service.CompetitionService" version="1.0.0"/>
+	<kkrpc:reference id="competitionMatchService" interface="com.melot.kk.competition.api.service.CompetitionMatchService" version="1.0.0"/>
 </beans>

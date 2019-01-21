@@ -746,7 +746,7 @@ public class UserService {
                             }
                         }
                         int expireSeconds = (int) ((DateUtil.getNextDay(new Date()).getTime() - System.currentTimeMillis()) / 1000);
-                        if (expireSeconds < 0) {
+                        if (expireSeconds <= 0) {
                             expireSeconds = 15;
                         } 
                         HotDataSource.setTempDataString(key, String.valueOf(level), expireSeconds);
@@ -783,7 +783,7 @@ public class UserService {
                             }
                         }
                         int expireSeconds = (int) ((DateUtil.getNextDay(new Date()).getTime() - System.currentTimeMillis()) / 1000);
-                        if (expireSeconds < 0) {
+                        if (expireSeconds <= 0) {
                             expireSeconds = 15;
                         }
                         HotDataSource.setTempDataString(key, String.valueOf(level), expireSeconds);

@@ -3591,4 +3591,37 @@
 		<constructor-arg name="methodName" value="deleteUserAddress"/>
 	</bean>
 
+	<!-- K玩大奖赛 -->
+	<bean id="51070409" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="competitionFunctions" />
+		<constructor-arg name="methodName" value="applyFingerGuessing" />
+	</bean>
+	<bean id="51070403" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="competitionFunctions" />
+		<constructor-arg name="methodName" value="listReport" />
+	</bean>
+	<bean id="51070404" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="competitionFunctions" />
+		<constructor-arg name="methodName" value="listOfficalCompetition" />
+	</bean>
+	<bean id="51070405" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="competitionFunctions" />
+		<constructor-arg name="methodName" value="listComeptition" />
+	</bean>
+	<bean id="51070406" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="competitionFunctions" />
+		<constructor-arg name="methodName" value="getCompetitionUserDetail" />
+	</bean>
+	<bean id="51070407" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="competitionFunctions" />
+		<constructor-arg name="methodName" value="pageUserHistory" />
+	</bean>
+	<bean id="51070408" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="competitionFunctions" />
+		<constructor-arg name="methodName" value="createCompetition" />
+	</bean>
+	<bean id="51070410" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="competitionFunctions" />
+		<constructor-arg name="methodName" value="listCompetitionConfig" />
+	</bean>
 </beans>

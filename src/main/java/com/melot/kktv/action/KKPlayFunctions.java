@@ -9,11 +9,16 @@
 package com.melot.kktv.action;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import com.melot.kk.competition.api.constant.ReturnCode;
+import com.melot.kk.competition.api.dto.MatchResult;
+import com.melot.kk.competition.api.service.CompetitionMatchService;
+import com.melot.kk.competition.api.service.CompetitionService;
 import com.melot.kk.pkgame.api.dto.*;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,6 +82,12 @@ public class KKPlayFunctions {
     
     @Resource
     QuizPKService quizPKService;
+
+    @Resource
+    CompetitionMatchService competitionMatchService;
+
+    @Resource
+    CompetitionService competitionService;
     
     /**
      * 获取K玩大厅栏目列表(51070301)
@@ -301,10 +312,20 @@ public class KKPlayFunctions {
             return result;
         }
         
-        int userId, gameId;
+        int userId, gameId,competitionType=0,v=0,platform=0;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
             gameId = CommonUtil.getJsonParamInt(jsonObject, "gameId", 0, "5107030401", 1, Integer.MAX_VALUE);
+            if(gameId == 1){
+                platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 1, null, 1, Integer.MAX_VALUE);
+                v = CommonUtil.getJsonParamInt(jsonObject, "v", 0, null, 1, Integer.MAX_VALUE);
+                if(platform > 1 && v < 6200){
+                    result.addProperty("TagCode", TagCodeEnum.LOW_VERSION_EXCEPTION);
+                    return result;
+                }
+                competitionType = CommonUtil.getJsonParamInt(jsonObject, "competitionType", 0, "5107030408", 1, Integer.MAX_VALUE);
+            }
+
         } catch(CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
@@ -314,6 +335,36 @@ public class KKPlayFunctions {
         }
 
         try {
+            if(gameId == 1){
+                Result<MatchResult> matchResult=competitionMatchService.startMatch(userId,competitionType,1);
+                if(ReturnCode.SUCCESS.getCode().equals(matchResult.getCode())){
+                    MatchResult match = matchResult.getData();
+                    result.addProperty("roomId",match.getRoomId());
+                    result.addProperty("roomSource",match.getRoomSource());
+                    result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                    return result;
+                }
+                else if(ReturnCode.ERROR_TICKET_NOT_ENOUGH.getCode().equals(matchResult.getCode())){
+                    result.addProperty("TagCode", "5107030409");
+                    return result;
+                }
+                else if(ReturnCode.ERROR_COMPETITION_GAMING.getCode().equals(matchResult.getCode())){
+                    result.addProperty("TagCode", "5107030403");
+                    return result;
+                }
+                else if(ReturnCode.ERROR_ON_OTHER_GAME.getCode().equals(matchResult.getCode())){
+                    result.addProperty("TagCode", "5107030410");
+                    return result;
+                }
+                else if(ReturnCode.ERROR_GAME_NOT_OPEN.getCode().equals(matchResult.getCode())){
+                    result.addProperty("TagCode", "5107030411");
+                    return result;
+                }
+                else {
+                    result.addProperty("TagCode", "5107030402");
+                    return result;
+                }
+            }
             if (gameId != GameEnum.ANSWER_PK_FOUR.getCode() && gameId != GameEnum.ANSWER_PK_DOUBLE.getCode()) {
                 result.addProperty("TagCode", "5107030402");
                 return result;
@@ -333,6 +384,8 @@ public class KKPlayFunctions {
                         result.addProperty("TagCode", "5107030406");
                     } else if(ReturnResultCode.ERROR_MATCH_REPEAT.getCode().equals(macthCode)) {
                         result.addProperty("TagCode", "5107030407");
+                    } else if(ReturnResultCode.ERROR_IN_OTHER_MATCH.getCode().equals(macthCode)) {
+                        result.addProperty("TagCode", "5107030410");
                     } else {
                         result.addProperty("TagCode", "5107030403");
                     }
@@ -360,14 +413,29 @@ public class KKPlayFunctions {
             return result;
         }
         
-        int userId;
+        int userId,gameId;
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            gameId = CommonUtil.getJsonParamInt(jsonObject, "gameId", 113, null, 1, Integer.MAX_VALUE);
         } catch(CommonUtil.ErrorGetParameterException e) {
             result.addProperty("TagCode", e.getErrCode());
             return result;
         } catch(Exception e) {
             result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        if(gameId == 1){
+            Result<Integer> roomResult = competitionService.competitionRoomIdByUserId(userId);
+            if(ReturnResultCode.SUCCESS.getCode().equals(roomResult.getCode())) {
+                if(roomResult.getData()!=null){
+                    RoomInfo roomInfo = RoomService.getRoomInfo(roomResult.getData());
+                    if (roomInfo != null) {
+                        result.add("roomInfo", RoomTF.roomInfoToJson(roomInfo, PlatformEnum.WEB, true));
+                    }
+                }
+            }
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
             return result;
         }
 

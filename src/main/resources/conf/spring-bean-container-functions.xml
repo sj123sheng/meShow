@@ -231,4 +231,7 @@
 	<!-- 物流相关接口 -->
 	<bean id="logisticsFunctions" class="com.melot.kkcx.functions.LogisticsFunctions" />
 
+	<!-- K玩大奖赛接口 -->
+	<bean id="competitionFunctions" class="com.melot.kkcx.functions.CompetitionFunctions" />
+
 </beans>
