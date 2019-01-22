@@ -34,7 +34,7 @@
                 </excludes>
 			</resource>
 		</resources>
-		
+
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -470,7 +470,7 @@
 		<dependency>
 		    <groupId>com.melot.module</groupId>
 		    <artifactId>kkcore-relation-api</artifactId>
-		    <version>1.0.1</version>
+		    <version>1.0.2</version>
 		</dependency>
 
 		<dependency>
@@ -656,7 +656,7 @@
 		<dependency>
 			<groupId>com.melot.kk</groupId>
 			<artifactId>kk-redEnvelopers-api</artifactId>
-			<version>1.0.0</version>
+			<version>1.0.2</version>
 		</dependency>
 		
 		<!-- 新版勋章模块 -->

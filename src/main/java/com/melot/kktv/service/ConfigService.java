@@ -210,6 +210,8 @@ public class ConfigService {
      * K玩大厅栏目
      */
     private String kkPlayConfig;
+
+    private String kkPlayConfigForAudio;
     
     /**
      * 是否显示充值banner
@@ -576,6 +578,11 @@ public class ConfigService {
     @DisconfFileItem(name = "kkPlayConfig", associateField = "kkPlayConfig")
     public String getKkPlayConfig() {
         return kkPlayConfig;
+    }
+
+    @DisconfFileItem(name = "kkPlayConfigForAudio", associateField = "kkPlayConfigForAudio")
+    public String getKkPlayConfigForAudio() {
+        return kkPlayConfigForAudio;
     }
     
     @DisconfFileItem(name = "kkPlaySeasonConf", associateField = "kkPlaySeasonConf")

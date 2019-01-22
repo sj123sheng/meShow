@@ -617,6 +617,12 @@
 		<constructor-arg name="t" ref="userRelationFunction" />
 		<constructor-arg name="methodName" value="userCancelRoomAdmin" />
 	</bean>
+
+	<!-- 用户取消房间管理员权限 -->
+	<bean id="10003021" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="userRelationFunction" />
+		<constructor-arg name="methodName" value="getUserFollowedListByRoomSource" />
+	</bean>
 	
 	<!-- 家族 -->
 	<!-- 获取家族列表 -->
@@ -3528,6 +3534,11 @@
 	<bean id="51070310" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="kkPlayFunctions" />
 		<constructor-arg name="methodName" value="getPKGameList" />
+	</bean>
+
+	<bean id="51070311" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kkPlayFunctions" />
+		<constructor-arg name="methodName" value="getPKGameListForAudio" />
 	</bean>
 
 	<!-- 获取用户所有头像挂件 -->

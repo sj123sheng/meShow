@@ -93,10 +93,12 @@ public class RoomService {
                                     JsonObject rankJson = (JsonObject) jsonArray.get(i);
                                     int userId = rankJson.get("userId").getAsInt();
                                     long contribution = rankJson.get("score").getAsLong();
-                                    FansRankingItem fansRankingItem = new FansRankingItem();
-                                    fansRankingItem.setUserId(userId);
-                                    fansRankingItem.setContribution(contribution);
-                                    fansList.add(fansRankingItem);
+                                    if (contribution > 0) {
+                                        FansRankingItem fansRankingItem = new FansRankingItem();
+                                        fansRankingItem.setUserId(userId);
+                                        fansRankingItem.setContribution(contribution);
+                                        fansList.add(fansRankingItem);
+                                    }
                                 }
                             }
                         }

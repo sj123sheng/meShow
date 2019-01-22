@@ -614,6 +614,28 @@ public class KKPlayFunctions {
         
         return result;
     }
+
+    /**
+     * 电台房获取pk游戏配置(51070311)
+     *
+     * @param jsonObject 请求对象
+     * @param checkTag 是否验证token标记
+     * @return
+     */
+    public JsonObject getPKGameListForAudio(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        try {
+            result.add("gameConfList", new JsonParser().parse(configService.getKkPlayConfigForAudio()).getAsJsonArray());
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        } catch (Exception e) {
+            logger.error("Error getPKGameList()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+
+        return result;
+    }
     
     private boolean checkMatchOpenStatus(Integer gameId) {
         boolean isOpen = false;
