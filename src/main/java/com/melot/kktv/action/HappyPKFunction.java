@@ -93,7 +93,7 @@ public class HappyPKFunction {
                     result.addProperty("title", title);
                     result.addProperty("subTitle", confLadderMatchDO.getSeasonName().replace(title, ""));
                     result.addProperty("position", kkPlayJson.get("position").getAsString());
-                    result.addProperty("desc", kkPlayJson.get("desc").getAsString());
+                    result.addProperty("desc", confLadderMatchDO.getSeasonName().replace(title, ""));
                 }
                 result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
                 result.addProperty("TagCode", TagCodeEnum.SUCCESS);

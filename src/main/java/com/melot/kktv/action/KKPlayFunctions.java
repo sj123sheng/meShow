@@ -360,6 +360,10 @@ public class KKPlayFunctions {
                     result.addProperty("TagCode", "5107030411");
                     return result;
                 }
+                else if(ReturnCode.ERROR_COMPETITION_TIME.getCode().equals(matchResult.getCode())){
+                    result.addProperty("TagCode", "5107030404");
+                    return result;
+                }
                 else {
                     result.addProperty("TagCode", "5107030402");
                     return result;
