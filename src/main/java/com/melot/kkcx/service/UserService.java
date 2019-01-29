@@ -376,11 +376,11 @@ public class UserService {
 	
 	private static Logger logger = Logger.getLogger(UserService.class);	
 	
-	private static final String STAR_PENDANT_KEY = "star_pendant_%s";
+	private static final String STAR_PENDANT_KEY = "star_pendant_v2_%s";
 	
 	private static final String LOCK_STAR_PENDANT_KEY = "lock_star_pendant_%s";
 	
-	private static final String STAR_BUBBLE_KEY = "star_bubble_%s";
+	private static final String STAR_BUBBLE_KEY = "star_bubble_v2_%s";
 	
 	private static final String PRIVILEGE_LABEL_KEY = "privilege_label_%s";
     
