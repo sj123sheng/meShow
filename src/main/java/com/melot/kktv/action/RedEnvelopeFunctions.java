@@ -83,7 +83,7 @@ public class RedEnvelopeFunctions {
             result.addProperty("timelag", redEvelopModel.getTimelag());
             result.addProperty("minRichLevel", redEvelopModel.getMinRichLevel());
             result.addProperty("maxCoffers", redEvelopModel.getMaxCoffers());
-            
+            result.addProperty("needSecret", redEvelopModel.getNeedSecret());
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
         } catch(Exception e) {
             logger.error(String.format("Module Error: redEnvelopersService, roomId=%s", roomId), e);
@@ -110,8 +110,9 @@ public class RedEnvelopeFunctions {
         }
         
         //解析参数
-        int userId, roomId, count, sendSpeak, appId, isDelay;
+        int userId, roomId, count, sendSpeak, appId, isDelay,v,platform;
         long amount, actorCoffers;
+        String secretKey;
         try {
             //解析参数
             userId = CommonUtil.getJsonParamInt(paramJsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
@@ -122,11 +123,19 @@ public class RedEnvelopeFunctions {
             sendSpeak = CommonUtil.getJsonParamInt(paramJsonObject, "sendSpeak", 0, null, 1, Integer.MAX_VALUE);
             isDelay = CommonUtil.getJsonParamInt(paramJsonObject, "isDelay", 0, null, 0, 1);
             appId = CommonUtil.getJsonParamInt(paramJsonObject, "a", 0, TagCodeEnum.APPID_MISSING, 1, Integer.MAX_VALUE);
+            secretKey = CommonUtil.getJsonParamString(paramJsonObject, "secretKey", "", null, 1, 36);
+            v = CommonUtil.getJsonParamInt(paramJsonObject, "v", 0, null, 1, Integer.MAX_VALUE);
+            platform = CommonUtil.getJsonParamInt(paramJsonObject, "platform", PlatformEnum.WEB, null, PlatformEnum.WEB, PlatformEnum.IPAD);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
             return result;
         } catch (Exception e) {
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        if(platform > 1 && v < 6210 && StringUtil.strIsNull(secretKey)){
+            result.addProperty("TagCode", TagCodeEnum.LOW_VERSION_EXCEPTION);
             return result;
         }
         
@@ -180,6 +189,7 @@ public class RedEnvelopeFunctions {
         redEnvelopersParam.setActorCoffers(actorCoffers);
         redEnvelopersParam.setHasSpeak(sendSpeak);
         redEnvelopersParam.setIsDelay(isDelay);
+        redEnvelopersParam.setSecretKey(secretKey);
         try {
             if (userId != roomId && actorCoffers > 0) {
                 // 不是房主不能使用红包金库
@@ -219,6 +229,9 @@ public class RedEnvelopeFunctions {
                 case 106:
                     result.addProperty(ParameterKeys.TAG_CODE , "2003100601");
                     break;
+                case 111:
+                    result.addProperty(ParameterKeys.TAG_CODE , TagCodeEnum.LOW_VERSION_EXCEPTION);
+                    break;
                 default:
                     logger.error(String.format("模块返回其他异常：errCode=%s, message=%s", errCode, e.getMessage()));
                     result.addProperty(ParameterKeys.TAG_CODE , TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
@@ -249,14 +262,16 @@ public class RedEnvelopeFunctions {
         }
       
         //解析参数
-        int userId, roomId, appId, platform;
-        String sendId;
+        int userId, roomId, appId, platform,v;
+        String sendId,secretKey;
         try {
             userId = CommonUtil.getJsonParamInt(paramJsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
             roomId = CommonUtil.getJsonParamInt(paramJsonObject, "roomId", 0, TagCodeEnum.ROOMID_MISSING, 1, Integer.MAX_VALUE);
             appId = CommonUtil.getJsonParamInt(paramJsonObject, "a", AppIdEnum.AMUSEMENT, null, 1, Integer.MAX_VALUE);
             sendId = CommonUtil.getJsonParamString(paramJsonObject, "sendId", "", "31070001", 1, 36);
             platform = CommonUtil.getJsonParamInt(paramJsonObject, "platform", PlatformEnum.WEB, null, PlatformEnum.WEB, PlatformEnum.IPAD);
+            secretKey = CommonUtil.getJsonParamString(paramJsonObject, "secretKey", "", null, 1, 36);
+            v = CommonUtil.getJsonParamInt(paramJsonObject, "v", 0, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
             return result;
@@ -264,14 +279,18 @@ public class RedEnvelopeFunctions {
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
             return result;
         }
-        
 
+        if(platform > 1 && v < 6210 && StringUtil.strIsNull(secretKey)){
+            result.addProperty("TagCode", TagCodeEnum.LOW_VERSION_EXCEPTION);
+            return result;
+        }
+        
         JsonArray redEvelopArray = new JsonArray();
         try {
             String userIp = GeneralService.getIpAddr(request, appId, platform, null);
             Map<String, Object> extraParams = new HashMap<>(2);
             extraParams.put("userIp", userIp);
-
+            extraParams.put("secretKey",secretKey);
             //调用模块
             CurrentGetRedEnvelopersModel evelopModel = redEnvelopersService.insertGetRedEnvelopers(userId, roomId, sendId, extraParams);
             
@@ -376,6 +395,9 @@ public class RedEnvelopeFunctions {
             case 107:
                 // 	普通VIP用户每天最多只能抢50个红包
                 result.addProperty(ParameterKeys.TAG_CODE, "31070009");
+                break;
+            case 108:
+                result.addProperty(ParameterKeys.TAG_CODE, "31070010");
                 break;
             default:
                 result.addProperty(ParameterKeys.TAG_CODE , TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
@@ -500,9 +522,10 @@ public class RedEnvelopeFunctions {
         JsonObject result = new JsonObject();
 
         // 解析参数
-        int roomId;
+        int roomId,userId;
         try {
             roomId = CommonUtil.getJsonParamInt(paramJsonObject, "roomId", 0, TagCodeEnum.ROOMID_MISSING, 1, Integer.MAX_VALUE);
+            userId = CommonUtil.getJsonParamInt(paramJsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
             return result;
@@ -527,7 +550,11 @@ public class RedEnvelopeFunctions {
                     }
                     jsonObject.addProperty("amount", redInfoModel.getAmount());
                     jsonObject.addProperty("dtime", redInfoModel.getDtime());
+                    jsonObject.addProperty("redEnveloperName", redInfoModel.getRedEnveloperName());
                     jsonObject.addProperty("deadLine", redInfoModel.getDeadLine());
+                    if(checkTag&&(userId==roomId||userId == redInfoModel.getUserId())){
+                        jsonObject.addProperty("secretKey", redInfoModel.getSecretKey());
+                    }
                     listArray.add(jsonObject);
                 }
             }

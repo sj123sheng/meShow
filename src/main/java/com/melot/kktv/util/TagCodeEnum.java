@@ -705,6 +705,12 @@ public class TagCodeEnum {
 	/** 奖品名称含有敏感词 **/
 	public static final String DRAW_NAME_HAS_SENSITIVE_WORD = "5106052040";
 
+	/** 小于当前时间 **/
+	public static final String LESS_CURRENT_TIME = "5106052041";
+
+	/** 已结束 **/
+	public static final String END_STATUS = "5106052042";
+
 	/*------小镇错误码 -------*/
 	/**
 	 * 申请红人数据已存在
