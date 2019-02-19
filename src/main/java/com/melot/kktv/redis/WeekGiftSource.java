@@ -161,8 +161,10 @@ private static final String SOURCE_NAME = "WeekGift";
 		try {
 			jedis = getInstance();
 			String key = String.format(WEEKGIFT_TOTAL_RANK, type);
-			jedis.rpush(key, giftRank);
-			jedis.expireAt(key, System.currentTimeMillis() / 1000 + 60);
+			if (getWeekGiftRankListCount(type) <= 0) {
+			    jedis.rpush(key, giftRank);
+	            jedis.expireAt(key, System.currentTimeMillis() / 1000 + 60);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {

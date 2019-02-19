@@ -1482,43 +1482,6 @@ public class NodeFunctions {
     }
 
     /**
-     * 根据userId获取用户token(仅供Node使用,密码secretKey)(10001026)
-     *
-     * @param jsonObject
-     * @return
-     */
-    public JsonObject getUserToken(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-        JsonObject result = new JsonObject();
-
-        int userId, appId;
-        String secretKey = null;
-        try {
-            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, "01260001", 1, Integer.MAX_VALUE);
-            secretKey = CommonUtil.getJsonParamString(jsonObject, "secretKey", null, "01260003", 1, Integer.MAX_VALUE);
-            if (!secretKey.equals(Constant.secret_key_of_access_token)) {
-                result.addProperty("TagCode", "01260005");
-                return result;
-            }
-            appId = CommonUtil.getJsonParamInt(jsonObject, "appId", AppIdEnum.AMUSEMENT, null, 1, Integer.MAX_VALUE);
-        } catch (CommonUtil.ErrorGetParameterException e) {
-            result.addProperty("TagCode", e.getErrCode());
-            return result;
-        } catch (Exception e) {
-            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-            return result;
-        }
-        String token = com.melot.kktv.service.UserService.getUserToken(userId, appId);
-        if (token != null) {
-            result.addProperty("token", token);
-            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        } else {
-            result.addProperty("TagCode", "01260006");
-        }
-
-        return result;
-    }
-
-    /**
      * 根据userId、token验证用户(For Node)(10001030)
      *
      * @param jsonObject

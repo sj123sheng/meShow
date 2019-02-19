@@ -296,11 +296,6 @@
 		<constructor-arg name="t" ref="nodeFunction" />
 		<constructor-arg name="methodName" value="getRoomTypeForNode" />
 	</bean>
-	<!-- 根据userId获取用户token -->
-	<bean id="10001026" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="nodeFunction" />
-		<constructor-arg name="methodName" value="getUserToken" />
-	</bean>
 	<!-- 根据userId、token验证用户 -->
 	<bean id="10001030" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="nodeFunction" />
