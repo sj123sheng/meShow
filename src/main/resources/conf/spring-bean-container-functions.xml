@@ -201,6 +201,9 @@
 	
 	<!-- 直播购相关接口 -->
 	<bean id="liveShopFunctions" class="com.melot.kkcx.functions.LiveShopFunctions" />
+
+	<!-- 直播购组团抽奖相关接口 -->
+	<bean id="liveShopDrawFunctions" class="com.melot.kkcx.functions.LiveShopDrawFunctions" />
     
     <!-- 财富等级升级接口 -->
     <bean id="userLevelFunctions" class="com.melot.kkcx.functions.UserLevelFunctions" />

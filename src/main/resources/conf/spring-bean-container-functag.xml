@@ -3127,6 +3127,62 @@
 		<constructor-arg name="methodName" value="getOrderCouponUserUsableCountByOrderNo" />
 	</bean>
 
+	<!-- 直播购组团抽奖 -->
+	<bean id="51130101" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopDrawFunctions" />
+		<constructor-arg name="methodName" value="saveDraw" />
+	</bean>
+
+	<bean id="51130102" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopDrawFunctions" />
+		<constructor-arg name="methodName" value="getActorDrawList" />
+	</bean>
+
+	<bean id="51130103" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopDrawFunctions" />
+		<constructor-arg name="methodName" value="getActorDrawDetail" />
+	</bean>
+
+	<bean id="51130104" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopDrawFunctions" />
+		<constructor-arg name="methodName" value="getDrawUserList" />
+	</bean>
+
+	<bean id="51130105" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopDrawFunctions" />
+		<constructor-arg name="methodName" value="getLiveRoomDrawCount" />
+	</bean>
+
+	<bean id="51130106" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopDrawFunctions" />
+		<constructor-arg name="methodName" value="getLiveRoomLuckUserList" />
+	</bean>
+
+	<bean id="51130107" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopDrawFunctions" />
+		<constructor-arg name="methodName" value="getUserDrawDetail" />
+	</bean>
+
+	<bean id="51130108" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopDrawFunctions" />
+		<constructor-arg name="methodName" value="draw" />
+	</bean>
+
+	<bean id="51130109" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopDrawFunctions" />
+		<constructor-arg name="methodName" value="getMyDrawList" />
+	</bean>
+
+	<bean id="51130110" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopDrawFunctions" />
+		<constructor-arg name="methodName" value="disableDraw" />
+	</bean>
+
+	<bean id="51130111" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopDrawFunctions" />
+		<constructor-arg name="methodName" value="getDrawGroupList" />
+	</bean>
+
 	<!--直播购跨年活动相关接口-->
     <bean id="51051001" class="com.melot.sdk.core.function.GenericFunction">
         <constructor-arg name="t" ref="liveShopActivityFunctions" />

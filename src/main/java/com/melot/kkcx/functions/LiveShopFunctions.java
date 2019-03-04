@@ -81,6 +81,9 @@ public class LiveShopFunctions {
 
     @Resource
     private LocationService locationService;
+
+    @Resource
+    private LiveShopDrawService drawService;
     
     /**
      * 主播生成订单【51060502】
@@ -3106,10 +3109,23 @@ public class LiveShopFunctions {
                 List<LiveShopOrderV3DTO> list = page.getList();
                 JsonArray orders = new JsonArray();
                 if(CollectionUtils.isNotEmpty(list)) {
+                    List<String> orderNoList = new ArrayList<>();
+                    for(LiveShopOrderV3DTO item : list){
+                        orderNoList.add(item.getOrderNo());
+                    }
+                    Map<String,Integer> drawOrderMap = drawService.getDrawIdByOrderNoBatch(orderNoList);
+
                     for (LiveShopOrderV3DTO orderV2DTO : list) {
                         JsonObject orderJson = new JsonObject();
                         JsonArray products = new JsonArray();
                         orderJson.addProperty("orderNo", orderV2DTO.getOrderNo());
+
+                        if(!org.springframework.util.CollectionUtils.isEmpty(drawOrderMap)){
+                            Integer drawId = drawOrderMap.get(orderV2DTO.getOrderNo());
+                            if(drawId != null){
+                                orderJson.addProperty("drawId",drawId);
+                            }
+                        }
                         orderJson.addProperty("orderMoney", orderV2DTO.getOrderMoney());
                         orderJson.addProperty("expressMoney", orderV2DTO.getExpressMoney());
                         orderJson.addProperty("sellerNickname", orderV2DTO.getSellerNickname());
@@ -3122,12 +3138,25 @@ public class LiveShopFunctions {
                             orderJson.addProperty("couponAmount",orderV2DTO.getCouponAmount());
                         }
 
+                        List<Integer> productIdList = new ArrayList<>();
+                        for(LiveShopOrderItemV2DTO itemV2DTO : orderV2DTO.getOrderItems()) {
+                            productIdList.add(itemV2DTO.getProductId());
+                        }
+                        Map<Integer,Integer> drawProductMap = drawService.getDrawGroupInfoByByProductIdBatch(productIdList);
+
                         for(LiveShopOrderItemV2DTO itemV2DTO : orderV2DTO.getOrderItems()) {
                             JsonObject itemJson = new JsonObject();
                             if(itemV2DTO.getProductId() != null) {
                                 itemJson.addProperty("productId", itemV2DTO.getProductId());
                             }
-                            itemJson.addProperty("productName", itemV2DTO.getProductName());
+                            if(!org.springframework.util.CollectionUtils.isEmpty(drawProductMap)){
+                                Integer isGroup = drawProductMap.get(itemV2DTO.getProductId());
+                                if(isGroup != null){
+                                    itemJson.addProperty("productName", this.getDrawProductName(itemV2DTO.getProductName(),isGroup));
+                                }
+                            } else {
+                                itemJson.addProperty("productName", itemV2DTO.getProductName());
+                            }
                             itemJson.addProperty("productUrl", itemV2DTO.getResourceUrl() + "!256");
                             itemJson.addProperty("productPrice", itemV2DTO.getProductPrice());
                             itemJson.addProperty("productCount", itemV2DTO.getProductCount());
@@ -3160,6 +3189,14 @@ public class LiveShopFunctions {
             logger.error(String.format("Module Error：liveShopService.getOrdersV2(userId=%s, state=%s)", userId, state), e);
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             return result;
+        }
+    }
+
+    private String getDrawProductName(String productName,Integer isGroup) {
+        if(isGroup == 1){
+            return "【组团抽奖】".concat(productName);
+        } else {
+            return "【抽奖】".concat(productName);
         }
     }
 
@@ -3229,6 +3266,16 @@ public class LiveShopFunctions {
                 Result<ConfPaymentInfoDto> rechargeResult = rechargeService.getConfPaymentInfoV2(1, orderV2DTO.getPaymentMode());
                 if (rechargeResult != null && CommonStateCode.SUCCESS.equals(rechargeResult.getCode())) {
                     result.addProperty("paymentName", rechargeResult.getData().getPaymentName());
+                }
+            }
+
+            List<String> orderNoList = new ArrayList<>();
+            orderNoList.add(orderNo);
+            Map<String,Integer> drawOrderMap = drawService.getDrawIdByOrderNoBatch(orderNoList);
+            if(!org.springframework.util.CollectionUtils.isEmpty(drawOrderMap)) {
+                Integer drawId = drawOrderMap.get(orderNo);
+                if(drawId != null) {
+                    result.addProperty("drawId", drawId);
                 }
             }
 
