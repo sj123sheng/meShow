@@ -265,4 +265,6 @@
 	<kkrpc:reference id="fingerGuessingService" interface="com.melot.kk.competition.api.service.FingerGuessingService" version="1.0.0"/>
 	<kkrpc:reference id="competitionService" interface="com.melot.kk.competition.api.service.CompetitionService" version="1.0.0"/>
 	<kkrpc:reference id="competitionMatchService" interface="com.melot.kk.competition.api.service.CompetitionMatchService" version="1.0.0"/>
+
+	<kkrpc:reference id="activityCommonService" interface="com.melot.activity.common.driver.service.ActivityCommonService" version="1.1.0"/>
 </beans>

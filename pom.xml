@@ -746,6 +746,30 @@
 			<artifactId>kk-competition-api</artifactId>
 			<version>1.0.0</version>
 		</dependency>
+
+		<dependency>
+			<groupId>com.melot</groupId>
+			<artifactId>activity-common-driver</artifactId>
+			<version>1.1.6</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>common-driver</artifactId>
+					<groupId>com.melot.module.driver</groupId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.melot.module</groupId>
+					<artifactId>rpc_common</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.melot.module</groupId>
+					<artifactId>kkcore-user-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.melot</groupId>
+					<artifactId>melot-sdk</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
     </dependencies>
  	
 </project>
