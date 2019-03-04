@@ -3530,10 +3530,15 @@
 		<constructor-arg name="t" ref="kkPlayFunctions" />
 		<constructor-arg name="methodName" value="getPKGameList" />
 	</bean>
-
+    <!-- 电台房获取pk游戏配置 -->
 	<bean id="51070311" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="kkPlayFunctions" />
 		<constructor-arg name="methodName" value="getPKGameListForAudio" />
+	</bean>
+	<!-- 获取K玩大厅房间列表 -->
+	<bean id="51070312" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kkPlayFunctions" />
+		<constructor-arg name="methodName" value="getKKPlayRoomList" />
 	</bean>
 
 	<!-- 获取用户所有头像挂件 -->

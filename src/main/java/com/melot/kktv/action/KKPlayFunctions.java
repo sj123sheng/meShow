@@ -669,5 +669,69 @@ public class KKPlayFunctions {
         }
         return isOpen;
     }
+    
+    /**
+     * 获取K玩大厅房间列表(51070312)
+     */
+    public JsonObject getKKPlayRoomList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        int platform;
+        try {
+            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, TagCodeEnum.PLATFORM_MISSING, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        try {
+            JsonArray cataArray = new JsonArray();
+            String kkplayConfig = configService.getKkPlayConfig();
+            JsonArray configArray = new JsonParser().parse(kkplayConfig).getAsJsonArray();
+            
+            //填充全民PK房间
+            JsonObject pkJsonObj = new JsonObject();
+            pkJsonObj.addProperty("cataId", 1101);
+            pkJsonObj.addProperty("title", "全民PK");
+            configArray.add(pkJsonObj);
+            
+            for (int i=0; i < configArray.size(); i++) {
+                JsonObject jsonObj = new JsonObject();
+                JsonObject configObj = (JsonObject) configArray.get(i);
+                int cataId = configObj.get("cataId").getAsInt();
+                jsonObj.addProperty("cataId", cataId);
+                jsonObj.addProperty("title", configObj.get("title").getAsString());
+                Result<HallPartConfDTO> sysMenuResult = hallPartService.getPartList(cataId, 0, 0, 0, AppIdEnum.AMUSEMENT, 0, 4);
+                if (sysMenuResult != null && CommonStateCode.SUCCESS.equals(sysMenuResult.getCode())) {
+                    HallPartConfDTO sysMenu = sysMenuResult.getData();
+                    if (sysMenu != null) {
+                        JsonArray roomArray = new JsonArray();
+                        List<HallRoomInfoDTO> roomList = sysMenu.getRooms();
+                        if (roomList != null) {
+                            for (HallRoomInfoDTO hallRoomInfoDTO : roomList) {
+                                roomArray.add(HallRoomTF.roomInfoToJson(hallRoomInfoDTO, platform));
+                            }
+                        }
+                        if (roomArray.size() > 0) {
+                            jsonObj.add("roomList", roomArray);
+                            cataArray.add(jsonObj);
+                        }
+                    }
+                }
+            }
+
+            result.add("cataList", cataArray);
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error("Error KKPlayFunctions.getKKPlayRoomList()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+            return result;
+        }
+    }
 
 }
