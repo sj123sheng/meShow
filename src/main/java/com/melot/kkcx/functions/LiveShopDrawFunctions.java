@@ -3,7 +3,6 @@ package com.melot.kkcx.functions;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.melot.activity.common.driver.domain.MessageInfo;
 import com.melot.activity.common.driver.service.ActivityCommonService;
 import com.melot.kk.liveshop.api.constant.DrawEndStatus;
 import com.melot.kk.liveshop.api.dto.*;
@@ -360,7 +359,7 @@ public class LiveShopDrawFunctions {
                         }
                     }
                     json.add("productImg", bannerArray);
-                    jsonArray.add(json); 
+                    jsonArray.add(json);
                 }
             }
         }
@@ -797,9 +796,11 @@ public class LiveShopDrawFunctions {
             result.addProperty("groupId", drawResult.getData());
             UserProfile userProfile = kkUserService.getUserProfile(userId);
             if (userProfile != null) {
-                List<MessageInfo> list = new ArrayList<>();
-                list.add(new MessageInfo("" + userProfile.getNickName() + "参与了直播抽奖！", 1, null, null));
-                activityCommonService.pubshMessageByLink(list, 1, 0);
+                ResDrawInfoDTO resDrawInfoDTO = drawService.getDrawInfo(drawId);
+                if (resDrawInfoDTO != null) {
+                    String msg = userProfile.getNickName() + "参与了直播抽奖！";
+                    activityCommonService.pushMessage(msg, 2, resDrawInfoDTO.getUserId());
+                }
             }
             return result;
         } else {
