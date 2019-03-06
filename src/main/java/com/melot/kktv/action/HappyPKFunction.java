@@ -397,6 +397,9 @@ public class HappyPKFunction {
             int seasonId = confLadderMatchDO.getSeasonId();
             if(seasonType == 2) {
                 seasonId = seasonId - 1;
+                if(seasonId == 60) {
+                    seasonId = 28;
+                }
             }
             Result<List<ContributionUserDO>> listResult =  histActorLadderMatchService.getMaxContributionUserList(seasonId, actorId);
             if(listResult.getCode().equals(CommonStateCode.SUCCESS) && listResult.getData() != null){
