@@ -1,6 +1,7 @@
 
 package com.melot.kkcx.functions;
 
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -1185,12 +1186,8 @@ public class UserFunctions {
             return result;
         }
         
-        String ipAddr = com.melot.kktv.service.GeneralService.getIpAddr(request, appId, platform, clientIp);
+        String ipAddr = URLDecoder.decode(com.melot.kktv.service.GeneralService.getIpAddr(request, appId, platform, clientIp), "UTF-8");
         int port = com.melot.kktv.service.GeneralService.getPort(request, appId, platform, 0);
-        String xriIp = ipAddr;
-        if (!StringUtil.strIsNull(xriIp) && ipAddr.indexOf(",") != -1) {
-            xriIp = ipAddr.substring(0, ipAddr.indexOf(","));
-        }
         try {
             // 如果clientIp为null，取realIp
             if (clientIp == null && ipAddr.indexOf(",") != -1) {
@@ -1219,16 +1216,16 @@ public class UserFunctions {
         
         psword = com.melot.kkcx.service.UserService.getMD5Password(psword);
         if (loginType == LoginTypeEnum.NAMEPASSWORD) {
-            resLogin = accountService.loginViaUsernamePasswordNew(username, psword, platform, deviceUId, xriIp, appId, channel, port, extendData);
+            resLogin = accountService.loginViaUsernamePasswordNew(username, psword, platform, deviceUId, ipAddr, appId, channel, port, extendData);
         } else if (loginType == LoginTypeEnum.IDPASSWORD) {
-            resLogin = accountService.loginViaUserIdPasswordNew(userId, psword, platform, deviceUId, xriIp, appId, channel, port, extendData);
+            resLogin = accountService.loginViaUserIdPasswordNew(userId, psword, platform, deviceUId, ipAddr, appId, channel, port, extendData);
         } else if (loginType == LoginTypeEnum.PHONE) {
-            resLogin = accountService.loginViaPhoneNumPasswordNew(phoneNum, psword, platform, deviceUId, xriIp, appId, channel, port, extendData);
+            resLogin = accountService.loginViaPhoneNumPasswordNew(phoneNum, psword, platform, deviceUId, ipAddr, appId, channel, port, extendData);
         } else {
             Transaction t;
             t = Cat.getProducer().newTransaction("MCall", "accountService.loginViaOpenPlatformNew");
             try {
-                resLogin = accountService.loginViaOpenPlatformNew(loginType, uuid, unionid, platform, deviceUId, xriIp, appId, channel, port, extendData);
+                resLogin = accountService.loginViaOpenPlatformNew(loginType, uuid, unionid, platform, deviceUId, ipAddr, appId, channel, port, extendData);
                 t.setStatus(Transaction.SUCCESS);
             } catch (Exception e) {
                 Cat.getProducer().logError(e);
