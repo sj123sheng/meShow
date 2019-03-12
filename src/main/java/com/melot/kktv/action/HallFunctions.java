@@ -1,34 +1,54 @@
 package com.melot.kktv.action;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Random;
+import java.util.Set;
+
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
-import com.melot.kk.hall.api.constant.QueryHallRoomInfoParam;
-import com.melot.kk.hall.api.domain.*;
-import com.melot.kk.hall.api.service.HallRoomService;
-import com.melot.kk.hall.api.service.HomeService;
-import com.melot.kk.hall.api.service.SysMenuService;
-import com.melot.kkcx.transform.HallRoomTF;
-import com.melot.kkcx.transform.RoomTF;
-import com.melot.kktv.base.CommonStateCode;
-import com.melot.kktv.base.Page;
-import com.melot.kktv.base.Result;
-import com.melot.kktv.util.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.math.RandomUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.api.menu.sdk.utils.Collectionutils;
 import com.melot.content.config.domain.GameTagConfig;
 import com.melot.content.config.game.service.GameTagService;
+import com.melot.kk.hall.api.constant.QueryHallRoomInfoParam;
+import com.melot.kk.hall.api.domain.FirstPageConfDTO;
+import com.melot.kk.hall.api.domain.HallPartConfDTO;
+import com.melot.kk.hall.api.domain.HallRoomInfoDTO;
+import com.melot.kk.hall.api.domain.HotRoomInfoDTO;
+import com.melot.kk.hall.api.service.HallRoomService;
+import com.melot.kk.hall.api.service.HomeService;
+import com.melot.kk.hall.api.service.SysMenuService;
 import com.melot.kkcx.functions.KKHallFunctions;
 import com.melot.kkcx.service.GeneralService;
+import com.melot.kkcx.transform.HallRoomTF;
+import com.melot.kkcx.transform.RoomTF;
+import com.melot.kktv.base.CommonStateCode;
+import com.melot.kktv.base.Page;
+import com.melot.kktv.base.Result;
 import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.RoomService;
+import com.melot.kktv.util.AppIdEnum;
+import com.melot.kktv.util.CityUtil;
+import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.ConfigHelper;
+import com.melot.kktv.util.ConstantEnum;
+import com.melot.kktv.util.ParameterKeys;
+import com.melot.kktv.util.PlatformEnum;
+import com.melot.kktv.util.StringUtil;
+import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.confdynamic.SystemConfig;
 import com.melot.sdk.core.util.MelotBeanFactory;
 
@@ -322,7 +342,7 @@ public class HallFunctions {
 					
 					//官方推荐栏目需过滤个性推荐相关数据
                     if (cataId == 1551 || cataId == 1556) {
-                        if (roomList.size() >= offset) {
+                        if (roomArray.size() >= offset) {
                             break;
                         } else if (filterIdList.contains(roomInfo.getRoomId())){
                             continue;
