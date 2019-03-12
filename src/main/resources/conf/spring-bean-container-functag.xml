@@ -2786,7 +2786,32 @@
 		<constructor-arg name="t" ref="wishGoodsFunctions" />
 		<constructor-arg name="methodName" value="checkWishBillState" />
 	</bean>
-	
+
+	<bean id="51050512" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="wishGoodsFunctions" />
+		<constructor-arg name="methodName" value="getWishGoods" />
+	</bean>
+
+	<bean id="51050513" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="wishGoodsFunctions" />
+		<constructor-arg name="methodName" value="queryIsRedPoint" />
+	</bean>
+
+	<bean id="51050514" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="wishGoodsFunctions" />
+		<constructor-arg name="methodName" value="queryIsStockEnough" />
+	</bean>
+
+	<bean id="51050515" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="wishGoodsFunctions" />
+		<constructor-arg name="methodName" value="getUserWishOrderCount" />
+	</bean>
+
+	<bean id="51050516" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="wishGoodsFunctions" />
+		<constructor-arg name="methodName" value="getNeedActorLevel" />
+	</bean>
+
 	<bean id="51010102" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="userFunction" />
 		<constructor-arg name="methodName" value="setUserAddressInfo" />

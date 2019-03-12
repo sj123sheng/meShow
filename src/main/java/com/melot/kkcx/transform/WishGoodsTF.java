@@ -13,7 +13,8 @@ public class WishGoodsTF {
         wishGoodsInfoJson.addProperty("wishGoodsName", wishGoodsInfoDTO.getWishGoodsName());
         wishGoodsInfoJson.addProperty("wishGoodsPrice", wishGoodsInfoDTO.getWishGoodsPrice());
         wishGoodsInfoJson.addProperty("state", 0);
-        
+        wishGoodsInfoJson.addProperty("stockNum", wishGoodsInfoDTO.getStockNum());
+
         String wishGoodsIcon = wishGoodsInfoDTO.getWishGoodsIcon();
         JsonObject wishGoodsIconJson = new JsonObject();
         wishGoodsIconJson.addProperty("web", wishGoodsIcon);
@@ -29,5 +30,21 @@ public class WishGoodsTF {
         actorWishGoodsJson.addProperty("goodsCount", actorWishGoodsDTO.getWishOrderCount());
         actorWishGoodsJson.addProperty("wishCount", actorWishGoodsDTO.getWishCount());
         return actorWishGoodsJson;
+    }
+
+    public static JsonObject wishGoodsInfoDTO2Json(WishGoodsInfoDTO wishGoodsInfoDTO) {
+        JsonObject wishGoodsInfoJson = new JsonObject();
+        wishGoodsInfoJson.addProperty("wishGoodsName", wishGoodsInfoDTO.getWishGoodsName());
+        wishGoodsInfoJson.addProperty("wishGoodsPrice", wishGoodsInfoDTO.getWishGoodsPrice());
+        wishGoodsInfoJson.addProperty("stockNum", wishGoodsInfoDTO.getStockNum());
+        wishGoodsInfoJson.addProperty("wishGoodsDesc", wishGoodsInfoDTO.getNote());
+
+        String wishGoodsIcon = wishGoodsInfoDTO.getWishGoodsIcon();
+        JsonObject wishGoodsIconJson = new JsonObject();
+        wishGoodsIconJson.addProperty("web", wishGoodsIcon);
+        wishGoodsIconJson.addProperty("phone", wishGoodsIcon);
+        wishGoodsInfoJson.add("wishGoodsIcon", wishGoodsIconJson);
+
+        return wishGoodsInfoJson;
     }
 }

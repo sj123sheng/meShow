@@ -7,6 +7,8 @@ import java.util.List;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import com.melot.kk.crowdfunding.api.dto.*;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.apache.log4j.Logger;
 
 import com.google.gson.Gson;
@@ -14,11 +16,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.kk.crowdfunding.api.constant.WishOrderEnum;
-import com.melot.kk.crowdfunding.api.dto.ActorWishGoodsDTO;
-import com.melot.kk.crowdfunding.api.dto.ActorWishOrderDTO;
-import com.melot.kk.crowdfunding.api.dto.BuyWishConfigInfoDTO;
-import com.melot.kk.crowdfunding.api.dto.UserWishHistDTO;
-import com.melot.kk.crowdfunding.api.dto.WishGoodsInfoDTO;
 import com.melot.kk.crowdfunding.api.service.CrowdFundingService;
 import com.melot.kk.recharge.api.dto.ConfPaymentInfoDto;
 import com.melot.kkcore.actor.api.ActorInfo;
@@ -174,7 +171,7 @@ public class WishGoodsFunctions {
                     return result;
                 }
                 if ("2".equals(moduleResult.getCode())) {
-                    result.addProperty(ParameterKeys.TAG_CODE, "5105050204");
+                    result.addProperty(ParameterKeys.TAG_CODE, "5105050207");
                     return result;
                 } else if ("3".equals(moduleResult.getCode())) {
                     result.addProperty(ParameterKeys.TAG_CODE, "5105050205");
@@ -209,9 +206,13 @@ public class WishGoodsFunctions {
         
         int actorId;
         int hasBar;
+        int start;
+        int num;
         try {
             actorId = CommonUtil.getJsonParamInt(jsonObject, ParameterKeys.ACTOR_ID, 0, code01, 1, Integer.MAX_VALUE);
             hasBar = CommonUtil.getJsonParamInt(jsonObject, "hasBar", 0, null, 0, Integer.MAX_VALUE);
+            start = CommonUtil.getJsonParamInt(jsonObject, PARAM_START, 0, null, 0, Integer.MAX_VALUE);
+            num = CommonUtil.getJsonParamInt(jsonObject, "num", 0, null, 1, Integer.MAX_VALUE);
         } catch (CommonUtil.ErrorGetParameterException e) {
             result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
             return result;
@@ -234,13 +235,14 @@ public class WishGoodsFunctions {
         }
         
         try {
-            Result<Page<ActorWishGoodsDTO>> moduleResult = crowdFundingService.getSelectGoods(actorId);
+            Result<Page<ActorWishGoodsDTO>> moduleResult = crowdFundingService.pageGetSelectGoods(actorId,start,num);
             if (moduleResult == null || !CommonStateCode.SUCCESS.equals(moduleResult.getCode())) {
                 result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
                 return result;
             }
             Page<ActorWishGoodsDTO> page = moduleResult.getData();
-            result.addProperty("maxWishGoodsCount", page.getCount());
+            result.addProperty("maxWishGoodsCount", Integer.parseInt(moduleResult.getMsg()));
+            result.addProperty("count",page.getCount());
             JsonArray wishGoodsList = new JsonArray();
             if (page.getList() == null) {
                 result.add(PARAM_WISH_GOODS_LIST, wishGoodsList);
@@ -472,6 +474,11 @@ public class WishGoodsFunctions {
                     actorWishOrderJson.add("addrInfo", addrInfo);
                     actorWishOrderJson.addProperty("waybillNumber", actorWishOrderDTO.getWaybillNumber());
                     actorWishOrderJson.addProperty("courierCompany", actorWishOrderDTO.getCourierCompany());
+                    Long sendTime = null;
+                    if (actorWishOrderDTO.getSendTime() != null) {
+                        sendTime = actorWishOrderDTO.getSendTime().getTime();
+                    }
+                    actorWishOrderJson.addProperty("sendTime", sendTime);
                 }
                 if (actorWishOrderDTO.getOrderType().equals(WishOrderEnum.ORDER_TYPE_VIRTUAL) 
                         && actorWishOrderDTO.getOrderState().equals(WishOrderEnum.ORDER_STATE_HAS_SEND)) {
@@ -560,7 +567,7 @@ public class WishGoodsFunctions {
         try {
             userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
             startTime = CommonUtil.getJsonParamLong(jsonObject, "startTime", getMonthFirstDay(), null, DateUtil.getDayBeginTime(System.currentTimeMillis()) - 180 * 24 * 3600 * 1000L, Long.MAX_VALUE);
-            endTime = CommonUtil.getJsonParamLong(jsonObject, "endTime", getMonthLastDay(startTime), null, startTime, getMonthLastDay(startTime));
+            endTime = CommonUtil.getJsonParamLong(jsonObject, "endTime", getMonthLastDay(startTime), null, startTime, Long.MAX_VALUE);
             start = CommonUtil.getJsonParamInt(jsonObject, PARAM_START, 0, null, 0, Integer.MAX_VALUE);
             offset = CommonUtil.getJsonParamInt(jsonObject, "offset", 10, null, 1, Integer.MAX_VALUE);
             type = CommonUtil.getJsonParamInt(jsonObject, "type", 1, null, 1, Integer.MAX_VALUE);
@@ -713,6 +720,223 @@ public class WishGoodsFunctions {
         } catch (Exception e) {
             logger.error("Module Error：crowdFundingService.checkOrder(" + orderNo + ");", e);
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 获取心愿商品详情【51050512】
+     *
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getWishGoods(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        int wishGoodsId;
+        try {
+            wishGoodsId = CommonUtil.getJsonParamInt(jsonObject, PARAM_WISH_GOODS_ID, 0, "5105051201", 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        try {
+            Result<WishGoodsInfoDTO> moduleResult = crowdFundingService.getWishGoodsInfoDTO(wishGoodsId);
+            if (moduleResult == null) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+
+            if ("2".equals(moduleResult.getCode())) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5105051202");
+                return result;
+            } else if (!CommonStateCode.SUCCESS.equals(moduleResult.getCode())) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+                return result;
+            }
+            WishGoodsInfoDTO wishGoodsInfoDTO = moduleResult.getData();
+            result = WishGoodsTF.wishGoodsInfoDTO2Json(wishGoodsInfoDTO);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+            result.addProperty("expressPrice",0);
+            return result;
+        } catch (Exception e) {
+            logger.error(String.format("Module Error：crowdFundingService.getWishGoodsInfo(wishGoodsId=%s)", wishGoodsId), e);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 查询许愿瓶是否有红点【51050513】
+     *
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject queryIsRedPoint(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        if (!checkTag) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_INCORRECT);
+            return result;
+        }
+
+        int userId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        try {
+            boolean moduleResult = crowdFundingService.queryIsRedPoint(userId);
+            int isRedPoint = moduleResult ? 1 : 0;
+            result.addProperty("isRedPoint", isRedPoint);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error(String.format("Module Error：crowdFundingService.queryIsRedPoint(userId=%s)", userId), e);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 查询库存是否充足【51050514】
+     *
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject queryIsStockEnough(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        int actorId;
+        int wishGoodsId;
+        int wishCount;
+        try {
+            actorId = CommonUtil.getJsonParamInt(jsonObject, "actorId", 0, "5105051401", 1, Integer.MAX_VALUE);
+            wishGoodsId = CommonUtil.getJsonParamInt(jsonObject, "wishGoodsId", 0, "5105051402", 1, Integer.MAX_VALUE);
+            wishCount = CommonUtil.getJsonParamInt(jsonObject, "wishCount", 0, "5105051403", 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        try {
+            Result<Boolean> moduleResult = crowdFundingService.queryIsStockEnough(actorId, wishGoodsId, wishCount);
+            if (moduleResult == null) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            } else if ("1".equals(moduleResult.getCode())) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5105051406");
+                return result;
+            } else if ("2".equals(moduleResult.getCode())) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5105051404");
+                return result;
+            } else if ("3".equals(moduleResult.getCode())) {
+                result.addProperty(ParameterKeys.TAG_CODE, "5105051405");
+                result.addProperty("maxWishCount", Integer.parseInt(moduleResult.getMsg()));
+                return result;
+            } else if (!CommonStateCode.SUCCESS.equals(moduleResult.getCode())) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+                return result;
+            }
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error(String.format("Module Error：crowdFundingService.getNeedActorLevel()"), e);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 获得主播各种类型的心愿订单数量【51050515】
+     *
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getUserWishOrderCount(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        if (!checkTag) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_INCORRECT);
+            return result;
+        }
+
+        int userId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        try {
+            Result<ActorWishOrderCountDTO> moduleResult = crowdFundingService.getActorWishOrderCount(userId);
+            if (moduleResult == null) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+
+            if (!CommonStateCode.SUCCESS.equals(moduleResult.getCode())) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+                return result;
+            }
+            ActorWishOrderCountDTO wishOrderCountDTO = moduleResult.getData();
+            result.addProperty("unApplyCount", wishOrderCountDTO.getUnApplyCount());
+            result.addProperty("unSendCount", wishOrderCountDTO.getUnSendCount());
+            result.addProperty("hasSendCount", wishOrderCountDTO.getHasSendCount());
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error(String.format("Module Error：crowdFundingService.getActorWishOrderCount(userId=%s)", userId), e);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
+
+    /**
+     * 获得解锁许愿瓶功能所需明星等级【51050516】
+     *
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getNeedActorLevel(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        try {
+            int needActorLevel = crowdFundingService.getNeedActorLevel();
+
+            result.addProperty("needActorLevel", needActorLevel);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error(String.format("Module Error：crowdFundingService.getNeedActorLevel()"), e);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE) ;
             return result;
         }
     }
