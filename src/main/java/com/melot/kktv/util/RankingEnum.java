@@ -18,9 +18,13 @@ public class RankingEnum {
 	public static final int RANKING_TYPE_RICH_POPULAR = 5; // 阳光粉丝排行榜
 	public static final int RANKING_TYPE_RICH_GOLDCOIN = 6; //金币富豪排行榜
     public static final int RANKING_TYPE_ACTOR_GOLDCOIN = 7; //金币明星排行榜
+    public static final int RANKING_TYPE_HOUR = 12; //小时榜
 
 	public static final int THIS_WEEK_GIFT_RANKING = 0; //本周礼物排行榜
 	public static final int LAST_WEEK_GIFT_RANKING = -1; //上周礼物排行榜
+	
+	public static final int RANKING_LAST_HOUR = -1; //上一小时
+    public static final int RANKING_THIS_HOUR = 0; //本小时
 	
 	public static String getCollection(Integer rankType, Integer slotType) {
 		switch (rankType) {
@@ -38,6 +42,8 @@ public class RankingEnum {
             return getGoldCoinRichCollection(slotType);
 		case RANKING_TYPE_ACTOR_GOLDCOIN:
             return getGoldCoinActorCollection(slotType);
+		case RANKING_TYPE_HOUR:
+		    return getHourActorCollection(slotType);
 		default:
 			return null;
 		}
@@ -125,6 +131,17 @@ public class RankingEnum {
             return "lastWeekGoldCoinActorRankingNew";
         case RANKING_THIS_WEEK:
             return "thisWeekGoldCoinActorRankingNew";
+        default:
+            return null;
+        }
+    }
+    
+    private static String getHourActorCollection(Integer slotType) {
+        switch (slotType) {
+        case RANKING_LAST_HOUR:
+            return "lastHourActorRanking";
+        case RANKING_THIS_HOUR:
+            return "thisHourActorRanking";
         default:
             return null;
         }

@@ -1,6 +1,7 @@
 package com.melot.kkcx.functions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -12,6 +13,7 @@ import java.util.Set;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -26,12 +28,14 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.api.menu.sdk.utils.Collectionutils;
+import com.melot.blacklist.service.BlacklistService;
 import com.melot.common.driver.domain.GiftRecord;
 import com.melot.common.driver.domain.GiftRecordDTO;
 import com.melot.common.driver.service.GiftHistoryService;
 import com.melot.family.driver.domain.FamilyInfo;
 import com.melot.family.driver.domain.DO.UserApplyActorDO;
 import com.melot.family.driver.service.UserApplyActorService;
+import com.melot.kk.hall.api.domain.HallRoomInfoDTO;
 import com.melot.kk.module.report.util.CommonStateCode;
 import com.melot.kk.opus.api.constant.OpusCostantEnum;
 import com.melot.kk.recharge.api.dto.HistBuyProductRechargeDto;
@@ -40,6 +44,7 @@ import com.melot.kk.showmoney.api.dto.PageGameMoneyHistory;
 import com.melot.kk.showmoney.api.dto.PageShowMoneyHistory;
 import com.melot.kk.showmoney.api.dto.ShowMoneyHistory;
 import com.melot.kk.showmoney.api.service.ShowMoneyService;
+import com.melot.kk.town.api.constant.TownTaskStatusEnum;
 import com.melot.kk.userSecurity.api.domain.DO.UserVerifyDO;
 import com.melot.kk.userSecurity.api.service.UserVerifyService;
 import com.melot.kkcore.actor.api.RoomInfoKeys;
@@ -61,8 +66,8 @@ import com.melot.kkcx.service.MessageBoxServices;
 import com.melot.kkcx.service.ProfileServices;
 import com.melot.kkcx.service.UserAssetServices;
 import com.melot.kkcx.service.UserService;
+import com.melot.kkcx.transform.HallRoomTF;
 import com.melot.kkcx.util.PropTypeEnum;
-import com.melot.kkcx.util.ValidTypeEnum;
 import com.melot.kkgame.redis.LiveTypeSource;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.model.Family;
@@ -132,6 +137,9 @@ public class ProfileFunctions {
 
     @Resource
     ChatBubbleService chatBubbleService;
+    
+    @Resource
+    BlacklistService blacklistService;
 
     private LiveTypeSource liveTypeSource;
 
@@ -2484,6 +2492,77 @@ public class ProfileFunctions {
 
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         result.add("consumeList", moneyList);
+        return result;
+    }
+    
+    /**
+     * 获取用户是否开启同城 (51010112)
+     *
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getSameCityStatus(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        int userId;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        boolean isOpen = true;
+        Map<Integer, Boolean> resp = blacklistService.isSameCityBlacklist(Arrays.asList(userId));
+        if (resp != null && resp.get(userId)) {
+            isOpen = false;
+        }
+        
+        result.addProperty("isOpen", isOpen);
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+    
+    /**
+     * 开启 / 关闭 同城 (51010113)
+     *
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject operateSameCity(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+
+        int userId, operateType;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            operateType = CommonUtil.getJsonParamInt(jsonObject, "operateType", 0, "5101011301", 0, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        if (operateType == 0) {
+            blacklistService.addSameCityBlacklist(String.valueOf(userId), new Date());
+        } else {
+            blacklistService.removeSameCityBlacklist(String.valueOf(userId));
+        }
+        
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
 

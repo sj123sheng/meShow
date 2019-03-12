@@ -12,6 +12,7 @@ import com.melot.kk.hall.api.service.SysMenuService;
 import com.melot.kkcx.transform.HallRoomTF;
 import com.melot.kkcx.transform.RoomTF;
 import com.melot.kktv.base.CommonStateCode;
+import com.melot.kktv.base.Page;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.util.*;
 import org.apache.commons.collections.CollectionUtils;
@@ -21,8 +22,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
+import com.melot.api.menu.sdk.utils.Collectionutils;
 import com.melot.content.config.domain.GameTagConfig;
 import com.melot.content.config.game.service.GameTagService;
+import com.melot.kkcx.functions.KKHallFunctions;
 import com.melot.kkcx.service.GeneralService;
 import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.service.RoomService;
@@ -178,9 +181,11 @@ public class HallFunctions {
 			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
 			return result;
 		}
+        
+        String cityIp = com.melot.kktv.service.GeneralService.getIpAddr(request, appId, platform, null);
         Integer cityIdByIpAddr;
         if (cityId < 1 || area < 1) {
-            cityIdByIpAddr = CityUtil.getProvincialCapital(CityUtil.getCityIdByIpAddr(com.melot.kktv.service.GeneralService.getIpAddr(request, AppIdEnum.AMUSEMENT, platform, null)));
+            cityIdByIpAddr = CityUtil.getProvincialCapital(CityUtil.getCityIdByIpAddr(cityIp));
             if (cityId < 1) {
                 cityId = cityIdByIpAddr;
             }
@@ -212,7 +217,6 @@ public class HallFunctions {
 		
         // 周边达人
         if (cataId == 42 && cityId == 0) {
-        	String cityIp = com.melot.kktv.service.GeneralService.getIpAddr(request, appId, platform, null);
     		if (cityIp != null && cityIp.indexOf(',') > 0) {
     			cityIp = cityIp.substring(cityIp.indexOf(',') + 1, cityIp.length());
     		}
@@ -223,6 +227,8 @@ public class HallFunctions {
         }
 		
         HallPartConfDTO sysMenu = null;
+        int filterCount = 0;
+        Set<Integer> filterIdList = new HashSet<>();
         
 		try {
 		    if (cataId == 42) {
@@ -231,7 +237,20 @@ public class HallFunctions {
                     sysMenu = sysMenuResult.getData();
                 }
 		    } else {
-		        Result<HallPartConfDTO> sysMenuResult = hallPartService.getPartList(cataId, userId, cityId, area, appId, start, offset);
+		        //官方推荐栏目需过滤个性推荐相关数据
+		        if (cataId == 1551 || cataId == 1556) {
+		            KKHallFunctions kkHallFunctions = (KKHallFunctions) MelotBeanFactory.getBean("kkHallFunction");
+		            Page<HallRoomInfoDTO> resp = kkHallFunctions.getRecommendedList(appId, userId, cityIp, 0, 19);
+		            if (Collectionutils.isEmpty(resp.getList())) {
+		                List<HallRoomInfoDTO> hallRoomInfoDTOList = resp.getList();
+		                filterCount = hallRoomInfoDTOList.size();
+		                for (HallRoomInfoDTO hallRoomInfoDTO : hallRoomInfoDTOList) {
+		                    filterIdList.add(hallRoomInfoDTO.getRoomId());
+		                }
+		            }
+		        }
+		        
+		        Result<HallPartConfDTO> sysMenuResult = hallPartService.getPartList(cataId, userId, cityId, area, appId, start, offset + filterCount);
                 if (sysMenuResult != null && CommonStateCode.SUCCESS.equals(sysMenuResult.getCode())) {
                     sysMenu = sysMenuResult.getData();
                 }
@@ -300,6 +319,16 @@ public class HallFunctions {
 				}
 				while (i < roomList.size()) {
 					roomInfo = roomList.get(i++);
+					
+					//官方推荐栏目需过滤个性推荐相关数据
+                    if (cataId == 1551 || cataId == 1556) {
+                        if (roomList.size() >= offset) {
+                            break;
+                        } else if (filterIdList.contains(roomInfo.getRoomId())){
+                            continue;
+                        }
+                    }
+                    
 					json = HallRoomTF.roomInfoWithPlaybackToJson(roomInfo, platform,appId);
 					if (sysMenu.getDataSourceType() != null 
 					        && (sysMenu.getDataSourceType() == 16

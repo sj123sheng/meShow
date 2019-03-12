@@ -7,9 +7,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.log4j.Logger;
+
+import com.melot.kkcx.model.HourRankInfo;
+import com.melot.kktv.util.RankingEnum;
 import com.melot.kktv.util.redis.RedisConfigHelper;
 
-import org.apache.log4j.Logger;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Tuple;
 
@@ -438,6 +442,40 @@ public class HotDataSource {
                 freeInstance(jedis);
             }
         }
+        return null;
+    }
+    
+    public static HourRankInfo getHourRankInfo(int roomId) {
+        Jedis jedis = null;
+        try {
+            jedis = getInstance();
+            HourRankInfo hourRankInfo = new HourRankInfo();
+            String key = RankingEnum.getCollection(RankingEnum.RANKING_TYPE_HOUR, RankingEnum.RANKING_THIS_HOUR);
+            int position = jedis.zrevrank(key, String.valueOf(roomId)).intValue();
+            hourRankInfo.setPosition(position);
+            hourRankInfo.setRoomId(roomId);
+            int prePosition = position > 0 ? position - 1 : position;
+            Set<Tuple> set = jedis.zrevrangeWithScores(key, prePosition, position);
+            if (CollectionUtils.isNotEmpty(set)) {
+                for (Tuple tuple : set) {
+                    if (roomId == Integer.parseInt(tuple.getElement())) {
+                        hourRankInfo.setScore(tuple.getScore());
+                    } else {
+                        hourRankInfo.setPreRoomId(Integer.parseInt(tuple.getElement()));
+                        hourRankInfo.setPreScore(tuple.getScore());
+                        hourRankInfo.setPrePosition(prePosition);
+                    }
+                }
+            }
+            return hourRankInfo;
+        } catch (Exception e) {
+            logger.error("HotDataSource.getHourRankInfo(" + roomId + ") execute exception.", e);
+        } finally {
+            if (jedis != null) {
+                freeInstance(jedis);
+            }
+        }
+        
         return null;
     }
 }

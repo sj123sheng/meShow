@@ -329,6 +329,14 @@ public class HallRoomTF {
         } else {
             roomObject.addProperty("gender", 0);
         }
+        
+        if (roomInfo.getRecommendType() != null) {
+            roomObject.addProperty("recommendType", roomInfo.getRecommendType());
+        }
+        
+        if (roomInfo.getRecommendAttribute() != null) {
+            roomObject.addProperty("recommendAttribute", roomInfo.getRecommendAttribute());
+        }
 
         if (roomInfo.getRegisterCity() != null) {
             roomObject.addProperty("cityId", Math.abs(roomInfo.getRegisterCity()));

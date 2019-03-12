@@ -1,39 +1,25 @@
 package com.melot.kkcx.functions;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.melot.api.menu.sdk.dao.domain.HDRoomPoster;
-import com.melot.api.menu.sdk.dao.domain.RoomInfo;
-import com.melot.api.menu.sdk.redis.KKHallSource;
-import com.melot.api.menu.sdk.service.RoomInfoService;
-import com.melot.family.driver.domain.DO.ResRoomInfoDO;
-import com.melot.family.driver.domain.FamilyTopConf;
-import com.melot.family.driver.service.FamilyTopConfService;
-import com.melot.kk.demo.api.service.NewRcmdService;
-import com.melot.kk.hall.api.constant.HallRedisKeyConstant;
-import com.melot.kk.hall.api.domain.*;
-import com.melot.kk.hall.api.service.*;
-import com.melot.kkcore.relation.api.ActorRelation;
-import com.melot.kkcore.relation.api.RelationType;
-import com.melot.kkcore.relation.service.ActorRelationService;
-import com.melot.kkcx.service.RoomService;
-import com.melot.kkcx.transform.HallRoomTF;
-import com.melot.kkcx.transform.RoomTF;
-import com.melot.kktv.base.CommonStateCode;
-import com.melot.kktv.base.Page;
-import com.melot.kktv.base.Result;
-import com.melot.kktv.redis.RecommendAlgorithmSource;
-import com.melot.kktv.service.ConfigService;
-import com.melot.kktv.service.UserRelationService;
-import com.melot.kktv.util.*;
-import com.melot.kktv.util.db.DB;
-import com.melot.kktv.util.db.SqlMapClientHelper;
-import com.melot.sdk.core.util.MelotBeanFactory;
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Random;
+import java.util.Set;
+import java.util.TreeMap;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpResponse;
@@ -45,11 +31,63 @@ import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.melot.api.menu.sdk.dao.domain.HDRoomPoster;
+import com.melot.api.menu.sdk.dao.domain.RoomInfo;
+import com.melot.api.menu.sdk.redis.KKHallSource;
+import com.melot.api.menu.sdk.service.RoomInfoService;
+import com.melot.api.menu.sdk.utils.Collectionutils;
+import com.melot.blacklist.service.BlacklistService;
+import com.melot.family.driver.domain.FamilyTopConf;
+import com.melot.family.driver.domain.DO.ResRoomInfoDO;
+import com.melot.family.driver.service.FamilyTopConfService;
+import com.melot.kk.demo.api.service.NewRcmdService;
+import com.melot.kk.hall.api.constant.HallRedisKeyConstant;
+import com.melot.kk.hall.api.domain.FamilyPointConsume;
+import com.melot.kk.hall.api.domain.FirstPageConfDTO;
+import com.melot.kk.hall.api.domain.HallPartConfDTO;
+import com.melot.kk.hall.api.domain.HallRoomInfoDTO;
+import com.melot.kk.hall.api.domain.RecommendSpecifyRoomDTO;
+import com.melot.kk.hall.api.domain.WebSkinConf;
+import com.melot.kk.hall.api.service.HallRoomService;
+import com.melot.kk.hall.api.service.HomeService;
+import com.melot.kk.hall.api.service.SysMenuService;
+import com.melot.kk.hall.api.service.WebSkinConfService;
+import com.melot.kkcore.relation.api.ActorRelation;
+import com.melot.kkcore.relation.api.RelationType;
+import com.melot.kkcore.relation.service.ActorRelationService;
+import com.melot.kkcx.model.HourRankInfo;
+import com.melot.kkcx.service.RoomService;
+import com.melot.kkcx.transform.HallRoomTF;
+import com.melot.kkcx.transform.RoomTF;
+import com.melot.kkcx.util.ResultUtils;
+import com.melot.kkgame.action.BaseAction;
+import com.melot.kktv.base.CommonStateCode;
+import com.melot.kktv.base.Page;
+import com.melot.kktv.base.Result;
+import com.melot.kktv.redis.HotDataSource;
+import com.melot.kktv.redis.RecommendAlgorithmSource;
+import com.melot.kktv.service.ConfigService;
+import com.melot.kktv.service.UserRelationService;
+import com.melot.kktv.util.AppChannelEnum;
+import com.melot.kktv.util.AppIdEnum;
+import com.melot.kktv.util.BeanMapper;
+import com.melot.kktv.util.CityUtil;
+import com.melot.kktv.util.CommonUtil;
+import com.melot.kktv.util.ConfigHelper;
+import com.melot.kktv.util.ParameterKeys;
+import com.melot.kktv.util.PlatformEnum;
+import com.melot.kktv.util.StringUtil;
+import com.melot.kktv.util.TagCodeEnum;
+import com.melot.kktv.util.db.DB;
+import com.melot.kktv.util.db.SqlMapClientHelper;
+import com.melot.sdk.core.util.MelotBeanFactory;
 
 /**
  * Title: HallFunctions
@@ -61,13 +99,18 @@ import java.util.*;
  * @version V1.0
  * @since 2016-3-12 上午10:02:10
  */
-public class KKHallFunctions {
+public class KKHallFunctions extends BaseAction {
 
     private static Logger logger = Logger.getLogger(KKHallFunctions.class);
 
     private static final String KK_USER_ROOM_CACHE_KEY = "KKHallFunctions.getKKUserRelationRoomList.%s.%s";
 
     private static final String KK_BAIDU_ACTOR_CACHE_KEY = "baidu_actor";
+    
+    /**
+     * 新版推荐房间缓存
+     */
+    private static final String KK_PERSONALITY_RECOMMEND_ROOM_CACHE_KEY = "KKHallFunctions.personality.recommendRooms.%s.%s";
 
     @Resource
     FamilyTopConfService familyTopConfService;
@@ -910,7 +953,7 @@ public class KKHallFunctions {
         // 获取HD主播
         HallPartConfDTO sysMenu = null;
         try {
-            Result<HallPartConfDTO> sysMenuResult = hallPartService.getPartList(486, 0, 0, 0, appId, 0, 9);
+            Result<HallPartConfDTO> sysMenuResult = hallPartService.getPartList(486, 0, 0, 0, appId, 0, 10);
             if (sysMenuResult != null && CommonStateCode.SUCCESS.equals(sysMenuResult.getCode())) {
                 sysMenu = sysMenuResult.getData();
             }
@@ -947,16 +990,16 @@ public class KKHallFunctions {
                 }
             }
 
-            // 高清房数据不足9条，则用热门主播补充
-            if (roomArray.size() < 9) {
-                Result<List<HallRoomInfoDTO>> hotRoomsResult = hallRoomService.getHotRooms(1, -1, 0, 9);
+            // 高清房数据不足10条，则用热门主播补充
+            if (roomArray.size() < 10) {
+                Result<List<HallRoomInfoDTO>> hotRoomsResult = hallRoomService.getHotRooms(1, -1, 0, 10);
                 if (hotRoomsResult != null && CommonStateCode.SUCCESS.equals(hotRoomsResult.getCode())) {
                     roomList = hotRoomsResult.getData();
                 }
                 if (CollectionUtils.isNotEmpty(roomList)) {
                     for (HallRoomInfoDTO roomInfo : roomList) {
                         if ((hdRoomIdList.isEmpty() || !hdRoomIdList.contains(roomInfo.getRoomId()))
-                                && roomArray.size() < 9) {
+                                && roomArray.size() < 10) {
                             roomArray.add(HallRoomTF.roomInfoToJson(roomInfo, platform));
                         }
                     }
@@ -1174,6 +1217,537 @@ public class KKHallFunctions {
             result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
             return result;
         }
+    }
+    
+    /**
+     * 获取小时榜排名信息(51070103)
+     * @param jsonObject
+     * @return
+     */
+    public JsonObject getHourRankInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+        JsonObject result = new JsonObject();
+        int roomId;
+        try {
+            roomId = CommonUtil.getJsonParamInt(jsonObject, "roomId", 0, TagCodeEnum.ROOMID_MISSING, 0, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        HourRankInfo hourRankInfo = HotDataSource.getHourRankInfo(roomId);
+        
+        if (hourRankInfo != null && hourRankInfo.getScore() > 0) {
+            result.addProperty("roomId", hourRankInfo.getRoomId());
+            result.addProperty("score", hourRankInfo.getScore());
+            result.addProperty("position", hourRankInfo.getPosition() + 1);
+            if (hourRankInfo.getPreRoomId() != 0) {
+                result.addProperty("preRoomId", hourRankInfo.getPreRoomId());
+                result.addProperty("preScore", hourRankInfo.getPreScore());
+                result.addProperty("prePosition", hourRankInfo.getPrePosition() + 1);
+            }
+        }
+        
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+    
+    /**
+     * 获取新版推荐列表接口（51070104）
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     * @throws Exception
+     */
+    public JsonObject getV2KKRecommendedList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+        JsonObject result = new JsonObject();
+
+        int appId, pageIndex, countPerPage, platform, userId;
+        try {
+            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
+            countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 20, null, 1, Integer.MAX_VALUE);
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
+            appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, null, 0, Integer.MAX_VALUE);
+            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, TagCodeEnum.PLATFORM_MISSING, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        int start = (pageIndex - 1) * countPerPage;
+        int offset = pageIndex * countPerPage;
+
+        JsonArray roomArray = new JsonArray();
+        
+        Page<HallRoomInfoDTO> resp = getRecommendedList(appId, userId, CommonUtil.getIpAddr(request), start, offset);
+        if (!Collectionutils.isEmpty(resp.getList())) {
+            List<HallRoomInfoDTO> hallRoomInfoDTOList = resp.getList();
+            for (HallRoomInfoDTO hallRoomInfoDTO : hallRoomInfoDTOList) {
+                roomArray.add(HallRoomTF.roomInfoToJson(hallRoomInfoDTO, platform));
+            }
+        }
+        result.add("roomList", roomArray);
+        result.addProperty("roomTotal", resp.getCount());
+        result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+
+        return result;
+    }
+    
+    /**
+     * 获取指定类型房间类表（小时榜、附近、新宠、个性化推荐）（51070105）
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     * @throws Exception
+     */
+    @SuppressWarnings("unchecked")
+    public JsonObject getSpecifyRoomList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+        JsonObject result = new JsonObject();
+
+        int type, pageIndex, countPerPage, platform, userId, recommendAttribute;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
+            recommendAttribute = CommonUtil.getJsonParamInt(jsonObject, "recommendAttribute", 0, null, 1, Integer.MAX_VALUE);
+            type = CommonUtil.getJsonParamInt(jsonObject, "type", 1, null, 0, Integer.MAX_VALUE);
+            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
+            countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 20, null, 1, Integer.MAX_VALUE);
+            platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, TagCodeEnum.PLATFORM_MISSING, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        int start = (pageIndex - 1) * countPerPage;
+        int count = 0;
+        JsonArray roomArray = new JsonArray();
+        List<HallRoomInfoDTO> roomList = null;
+        
+        Map<String, Object> resp = null;
+        switch (type) {
+        case 0:
+            //30分钟全平台房间消耗列表
+            try {
+                count = hallRoomService.getHalfhourRoomCount(AppIdEnum.AMUSEMENT, -1).getData();
+                Result<List<HallRoomInfoDTO>> roomListResult = hallRoomService.getHalfhourRooms(AppIdEnum.AMUSEMENT, -1, null, start, countPerPage);
+                if (roomListResult != null) {
+                    roomList = roomListResult.getData();
+                }
+            } catch (Exception e) {
+                logger.error("Fail to call firstPageHandler.getHalfhourRooms("+ start + ", " + countPerPage + ")", e);
+            }
+            break;
+        case 1:
+            //小时榜
+            try {
+                count = hallRoomService.getHourRoomCount().getData();
+                Result<List<HallRoomInfoDTO>> roomListResult = hallRoomService.getHourRooms(start, countPerPage);
+                if (roomListResult != null) {
+                    roomList = roomListResult.getData();
+                }
+            } catch (Exception e) {
+                logger.error("Fail to call firstPageHandler.getHourRooms(" + start + ", " + countPerPage + ")", e);
+            }
+            break;
+        case 2:
+            //附近的人
+            resp = getNearActor(CommonUtil.getIpAddr(request), start, countPerPage, platform, null);
+            break;
+        case 3:
+            //新宠
+            resp = getNewfavoriteRooms(start, countPerPage, null);
+            break;
+        case 4:
+            //个性化推荐
+            resp = getPersonalityRecommendRooms(userId, recommendAttribute, start, countPerPage, null);
+            break;
+        }
+        
+        if (resp != null && resp.get("roomList") != null && resp.get("count") != null) {
+            roomList = (List<HallRoomInfoDTO>) resp.get("roomList");
+            count = (int) resp.get("count");
+        }
+        
+        if (CollectionUtils.isNotEmpty(roomList)) {
+            for (HallRoomInfoDTO roomInfo : roomList) {
+                roomArray.add(HallRoomTF.roomInfoToJson(roomInfo, platform));
+            }
+        }
+        result.add("roomList", roomArray);
+        result.addProperty("count", count);
+        result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+
+        return result;
+    }
+    
+    @SuppressWarnings("serial")
+    public Page<HallRoomInfoDTO> getRecommendedList(int appId, int userId, String ip, int start, int offset) {
+        Page<HallRoomInfoDTO> result = new Page<>();
+        int roomCount = 0;
+        List<HallRoomInfoDTO> hallRoomInfoDTOList = Lists.newArrayList();
+        try {
+            String recommendRoomKey= String.format(KK_PERSONALITY_RECOMMEND_ROOM_CACHE_KEY, userId, appId);
+            Set<String> recommendRooms;
+            Gson gson = new Gson();
+            
+            if (!KKHallSource.exists(recommendRoomKey)) {
+                refreshRecommendRoom(appId, userId, ip);
+            }
+            
+            roomCount = KKHallSource.countSortedSet(recommendRoomKey);
+            recommendRooms = KKHallSource.rangeSortedSet(recommendRoomKey, start, offset - 1);
+            if (!CollectionUtils.isEmpty(recommendRooms)) {
+                Type type = new TypeToken<HallRoomInfoDTO>(){}.getType();
+                for (String recommendRoom : recommendRooms) {
+                    HallRoomInfoDTO hallRoomInfoDTO = gson.fromJson(recommendRoom, type);
+                    hallRoomInfoDTOList.add(hallRoomInfoDTO);
+                }
+            }
+        } catch (Exception e) {
+            logger.error(String.format("getRecommendedList(appId=%s, start=%s, offset=%s, ip=%s, userId=%s)", appId, start, offset, ip, userId), e);
+        }
+        
+        result.setCount(roomCount);
+        result.setList(hallRoomInfoDTOList);
+        return result;
+    }
+    
+    /**
+     * 刷新用户推荐房间缓存
+     * 
+     * @param appId
+     * @param userId
+     */
+    @SuppressWarnings("unchecked")
+    private void refreshRecommendRoom(int appId, int userId, String ip) {
+        try {
+            HashMap<Integer, HallRoomInfoDTO> specifyRoomMap = new HashMap<>();
+            List<Integer> topRoomIdList = Lists.newArrayList();
+            //获取新版推荐指定位置（人工置顶 + 头条（1号位） + 小时榜（4号位） + 家族推荐点数）房间列表
+            RecommendSpecifyRoomDTO recommendSpecifyRoomDTO = hallRoomService.getRecommendSpecifyRooms();
+            if (recommendSpecifyRoomDTO != null) {
+                specifyRoomMap = recommendSpecifyRoomDTO.getSpecifyRoomMap();
+                if (recommendSpecifyRoomDTO.getTopRoomIdList() != null) {
+                    topRoomIdList = recommendSpecifyRoomDTO.getTopRoomIdList();
+                }
+            }
+            
+            //6号位或12号位未被置顶时，取附近的人填充
+            HallRoomInfoDTO nearHallRoomInfo = null;
+            List<HallRoomInfoDTO> nearHallRoomInfoDTOList = null;
+            if (specifyRoomMap.get(6) == null || specifyRoomMap.get(12) == null) {
+                Map<String, Object> resp = getNearActor(ip, 0, 3, AppIdEnum.AMUSEMENT, topRoomIdList);
+                if (resp != null && resp.get("roomList") != null) {
+                    nearHallRoomInfoDTOList = (List<HallRoomInfoDTO>) resp.get("roomList");
+                    if (CollectionUtils.isNotEmpty(nearHallRoomInfoDTOList)) {
+                        nearHallRoomInfo = nearHallRoomInfoDTOList.get(0);
+                        nearHallRoomInfo.setRecommendType(2);
+                        nearHallRoomInfo.setRecommendAttribute(2);
+                        topRoomIdList.add(nearHallRoomInfo.getRoomId());
+                    }
+                }
+            }
+            
+            //10号位未被置顶时，取新宠填充
+            HallRoomInfoDTO newfavoriteRoomInfo = null;
+            if (specifyRoomMap.get(10) == null) {
+                Map<String, Object> newfavoriteResp = getNewfavoriteRooms(0, 1, topRoomIdList);
+                if (newfavoriteResp != null && newfavoriteResp.get("roomList") != null) {
+                    List<HallRoomInfoDTO> newfavoriteRoomInfoList = (List<HallRoomInfoDTO>) newfavoriteResp.get("roomList");
+                    if (CollectionUtils.isNotEmpty(newfavoriteRoomInfoList)) {
+                        newfavoriteRoomInfo = newfavoriteRoomInfoList.get(0);
+                        newfavoriteRoomInfo.setRecommendType(3);
+                        newfavoriteRoomInfo.setRecommendAttribute(3);
+                        topRoomIdList.add(newfavoriteRoomInfo.getRoomId());
+                    }
+                }
+            }
+            
+            //12号位填充区域推荐
+            HallRoomInfoDTO areaRoomInfo = null;
+            if (specifyRoomMap.get(12) == null && CollectionUtils.isNotEmpty(nearHallRoomInfoDTOList)) {
+                for (int i = 0; i < nearHallRoomInfoDTOList.size(); i++) {
+                    areaRoomInfo = nearHallRoomInfoDTOList.get(i);
+                    if (!topRoomIdList.contains(areaRoomInfo.getRoomId())) {
+                        areaRoomInfo.setRecommendType(4);
+                        areaRoomInfo.setRecommendAttribute(8);
+                        topRoomIdList.add(areaRoomInfo.getRoomId());
+                        break;
+                    }
+                }
+            }
+            
+            //获取个性推荐主播列表
+            List<HallRoomInfoDTO> personalityRecommendList = Lists.newArrayList();
+            Map<String, Object> personalityResp = getPersonalityRecommendRooms(userId, 0, 0, 4, topRoomIdList);
+            if (personalityResp != null && personalityResp.get("roomList") != null) {
+                List<HallRoomInfoDTO> personalityRecommendRooms = (List<HallRoomInfoDTO>) personalityResp.get("roomList");
+                for (HallRoomInfoDTO hallRoomInfoDTO : personalityRecommendRooms) {
+                    hallRoomInfoDTO.setRecommendType(4);
+                    personalityRecommendList.add(hallRoomInfoDTO);
+                    topRoomIdList.add(hallRoomInfoDTO.getRoomId());
+                }
+            }
+            
+            //获取综合排序主播列表
+            List<HallRoomInfoDTO> comprehensiveList = Lists.newArrayList();
+            Map<String, Object> comprehensiveResp = getComprehensiveRooms(0, 5000, topRoomIdList);
+            if (comprehensiveResp != null && comprehensiveResp.get("roomList") != null) {
+                comprehensiveList = (List<HallRoomInfoDTO>) comprehensiveResp.get("roomList");
+            }
+            
+            int comprehensiveCount = comprehensiveList.size();
+            int count = topRoomIdList.size() + comprehensiveCount;
+            if (count > 0) {
+                List<String> recommondRoomList = Lists.newArrayList();
+                
+                //总房间数不小于6个，6号位填充附件的人数据
+                if (nearHallRoomInfo != null && count >= 6) {
+                    specifyRoomMap.put(6, nearHallRoomInfo);
+                }
+                //总房间数不小10个，10号位填充新宠数据
+                if (newfavoriteRoomInfo != null && count >= 10) {
+                    specifyRoomMap.put(10, newfavoriteRoomInfo);
+                }
+                //总房间数不小12个，12号位填充地域兴趣推荐数据
+                if (areaRoomInfo != null && count >= 12) {
+                    specifyRoomMap.put(12, areaRoomInfo);
+                }
+                //总房间数不小于14个，填充个性推荐数据（14号位（兴趣标签推荐）、16号位（关联家族推荐）、18号位（过往周行为推荐））
+                if (!CollectionUtils.isEmpty(personalityRecommendList) && count >= 14) {
+                    for (int i = 0; i < personalityRecommendList.size(); i++) {
+                        int position = 14 + 2*i;
+                        if (position <= count) {
+                            if (specifyRoomMap.get(position) == null) {
+                                specifyRoomMap.put(position, personalityRecommendList.get(i));
+                            }
+                        } else {
+                            break;
+                        }
+                    }
+                }
+                
+                //获取置顶位置超过房间总数的房间
+                List<HallRoomInfoDTO> overRoomList = Lists.newArrayList();
+                TreeMap<Integer, HallRoomInfoDTO> outputMap = new TreeMap<Integer, HallRoomInfoDTO>();
+                for (Entry<Integer, HallRoomInfoDTO> entry : specifyRoomMap.entrySet()) {
+                    if (entry.getKey() > count) {
+                        outputMap.put(entry.getKey(), entry.getValue());
+                    }
+                }
+                if (!outputMap.isEmpty()) {
+                    overRoomList = new ArrayList<HallRoomInfoDTO>(outputMap.values());
+                }
+                
+                //置顶越界房间数
+                int overCount = overRoomList.size();
+                //置顶越界房间角标
+                int overIndex = 0;
+                //综合排序房间角标
+                int comprehensiveIndex = 0;
+                Gson gson = new Gson();
+                for (int i = 0; i < count; i++) {
+                    int position = i + 1;
+                    if (specifyRoomMap.get(position) != null) {
+                        recommondRoomList.add(gson.toJson(specifyRoomMap.get(position)));
+                    } else {
+                        //未指定位置房间优先填充综合排序数据，无则填充置顶越界房间
+                        if (comprehensiveCount > 0 && comprehensiveIndex < comprehensiveCount) {
+                            recommondRoomList.add(gson.toJson(comprehensiveList.get(comprehensiveIndex)));
+                            comprehensiveIndex ++;
+                        } else {
+                            if (overCount > 0 && overIndex < overCount) {
+                                recommondRoomList.add(gson.toJson(overRoomList.get(overIndex)));
+                                overIndex ++;
+                            }
+                        }
+                    }
+                }
+                
+                KKHallSource.addSortedSet(String.format(KK_PERSONALITY_RECOMMEND_ROOM_CACHE_KEY, userId, appId), recommondRoomList, 60);
+            }
+        } catch (Exception e) {
+            logger.error("refreshRecommendRoom execute exception : ", e);
+        }
+    }
+    
+    private Map<String, Object> getNearActor(String ip, int start, int offset, int platform, List<Integer> filterIds) {
+        Map<String, Object> result = new HashMap<>();
+        
+        int cityId = CityUtil.getCityIdByIpAddr(ip);
+        int total = 0;
+        Result<Page<HallRoomInfoDTO>> moduleResult = hallRoomService.getActorNear(cityId, -1, -1, start, filterIds == null ? offset : offset + filterIds.size());
+        List<HallRoomInfoDTO> hallRoomInfoDTOList = null;
+        if (ResultUtils.checkResultNotNull(moduleResult)) {
+            total = moduleResult.getData().getCount();
+            hallRoomInfoDTOList = moduleResult.getData().getList();
+        }
+        List<Integer> actorList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(hallRoomInfoDTOList)) {
+            for (HallRoomInfoDTO roomInfo : hallRoomInfoDTOList) {
+                actorList.add(roomInfo.getActorId());
+            }
+        }
+        
+        int num = offset - start;
+        List<HallRoomInfoDTO> roomList = Lists.newArrayList(); 
+        BlacklistService blacklistService = (BlacklistService) MelotBeanFactory.getBean("blacklistService");
+        Map<Integer, Boolean> isBlack = blacklistService.isSameCityBlacklist(actorList);
+        if (CollectionUtils.isNotEmpty(hallRoomInfoDTOList)) {
+            for (HallRoomInfoDTO roomInfo : hallRoomInfoDTOList) {
+                int actorId = roomInfo.getActorId();
+                if ((!isBlack.containsKey(actorId) || isBlack.get(actorId) == false)
+                        && (filterIds == null || !filterIds.contains(actorId))) {
+                    roomList.add(roomInfo);
+                }
+                
+                if (roomList.size() >= num) {
+                    break;
+                }
+            }
+        }
+        result.put("roomList", roomList);
+        result.put("cityId", cityId);
+        result.put("count", total);
+        
+        return result;
+    }
+    
+    /**
+     * 获取新宠房间列表
+     * 
+     * @param start
+     * @param offset
+     * @param filterIds
+     * @return
+     */
+    private Map<String, Object> getNewfavoriteRooms(int start, int offset, List<Integer> filterIds) {
+        Map<String, Object> result = new HashMap<>();
+        
+        int num = offset - start;
+        Result<HallPartConfDTO> sysMenuResult = hallPartService.getPartList(1156, 0, 0, 0, AppIdEnum.AMUSEMENT, start, filterIds == null ? offset : offset + filterIds.size());
+        if (sysMenuResult != null && CommonStateCode.SUCCESS.equals(sysMenuResult.getCode())) {
+            List<HallRoomInfoDTO> roomList = Lists.newArrayList();
+            HallPartConfDTO sysMenu = sysMenuResult.getData();
+            if (sysMenu != null) {
+                List<HallRoomInfoDTO> hallRoomInfoDTOList = sysMenu.getRooms();
+                if (hallRoomInfoDTOList != null) {
+                    for (HallRoomInfoDTO hallRoomInfoDTO : hallRoomInfoDTOList) {
+                        if (filterIds == null || !filterIds.contains(hallRoomInfoDTO.getActorId())) {
+                            roomList.add(hallRoomInfoDTO);
+                        }
+                        
+                        if (roomList.size() >= num) {
+                            break;
+                        }
+                    }
+                }
+                result.put("roomList", roomList);
+                result.put("count", sysMenu.getRoomCount());
+            }
+        }
+        
+        return result;
+    }
+    
+    /**
+     * 个性推荐
+     * 
+     * @param start
+     * @param offset
+     * @param filterIds
+     * @return
+     */
+    private Map<String, Object> getPersonalityRecommendRooms(int userId, int recommendAttribute, int start, int offset, List<Integer> filterIds) {
+        //TODO
+//        Map<String, Object> result = new HashMap<>();
+//        
+////        String filterIdStr = "";
+////        if (!Collectionutils.isEmpty(filterIds)) {
+////            StringBuilder sb = new StringBuilder();
+////            for (int filterId : filterIds) {
+////                sb.append(filterId).append(",");
+////            }
+////            filterIdStr = sb.substring(0, sb.length() - 1);
+////        }
+////        
+////        CloseableHttpClient httpClient = new DefaultHttpClient();
+////        HttpGet get = new HttpGet(configService.getPersonalityRecommendUrl() + "userid=" + userId + "/actorid=" + filterIdStr);
+////        HttpResponse res = null;
+////        res = httpClient.execute(get);
+////        if (res.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+////            String str = EntityUtils.toString(res.getEntity());
+////            if(!("None").equals(str)){
+////                JsonObject jsonObject = new JsonParser().parse(str).getAsJsonObject().get("message").getAsJsonObject();
+////            }
+////        }
+//        
+//        int num = offset - start;
+//        Result<HallPartConfDTO> sysMenuResult = hallPartService.getPartList(4181, 0, 0, 0, AppIdEnum.AMUSEMENT, start, filterIds == null ? offset : offset + filterIds.size());
+//        if (sysMenuResult != null && CommonStateCode.SUCCESS.equals(sysMenuResult.getCode())) {
+//            List<HallRoomInfoDTO> roomList = Lists.newArrayList();
+//            HallPartConfDTO sysMenu = sysMenuResult.getData();
+//            if (sysMenu != null) {
+//                List<HallRoomInfoDTO> hallRoomInfoDTOList = sysMenu.getRooms();
+//                if (hallRoomInfoDTOList != null) {
+//                    for (HallRoomInfoDTO hallRoomInfoDTO : hallRoomInfoDTOList) {
+//                        if (filterIds == null || !filterIds.contains(hallRoomInfoDTO.getActorId())) {
+//                            roomList.add(hallRoomInfoDTO);
+//                        }
+//                        
+//                        if (roomList.size() >= num) {
+//                            break;
+//                        }
+//                    }
+//                }
+//                result.put("roomList", roomList);
+//                result.put("count", sysMenu.getRoomCount());
+//            }
+//        }
+        
+        return null;
+    }
+    
+    /**
+     * 获取综合排序房间列表
+     * 
+     * @param start
+     * @param offset
+     * @param filterIds
+     * @return
+     */
+    private Map<String, Object> getComprehensiveRooms(int start, int offset, List<Integer> filterIds) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            Set<Integer> filterIdList = null;
+            if (!Collectionutils.isEmpty(filterIds)) {
+                filterIdList = new HashSet<>(filterIds);
+            }
+            int count = hallRoomService.getComprehensiveRoomCount(AppIdEnum.AMUSEMENT).getData();
+            List<HallRoomInfoDTO> roomList = Lists.newArrayList();
+            Result<List<HallRoomInfoDTO>> roomListResult = hallRoomService.getComprehensiveRooms(AppIdEnum.AMUSEMENT, filterIdList, start, offset);
+            if (roomListResult != null) {
+                roomList = roomListResult.getData();
+                result.put("roomList", roomList);
+                result.put("count", count);
+            }
+        } catch (Exception e) {
+            logger.error("Fail to call hallRoomService.getComprehensiveRooms execute exception: ", e);
+        }
+        
+        return result;
     }
 }
 

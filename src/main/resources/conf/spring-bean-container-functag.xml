@@ -426,6 +426,16 @@
 		<constructor-arg name="t" ref="profileFunction" />
 		<constructor-arg name="methodName" value="getUserGameMoneyConsumeList" />
 	</bean>
+	<!-- 获取用户是否开启同城 -->
+	<bean id="51010112" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="profileFunction" />
+		<constructor-arg name="methodName" value="getSameCityStatus" />
+	</bean>
+	<!-- 开启 / 关闭 同城 (51010113)-->
+	<bean id="51010113" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="profileFunction" />
+		<constructor-arg name="methodName" value="operateSameCity" />
+	</bean>
 	
 	<!-- 充值接口类 -->
 	<!-- 获取充值的说明信息 -->
@@ -2635,6 +2645,21 @@
 	<bean id="51070102" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="kkHallFunction" />
 		<constructor-arg name="methodName" value="getWebSkinInfo" />
+	</bean>
+	<!-- 获取小时榜排名信息 -->
+	<bean id="51070103" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kkHallFunction" />
+		<constructor-arg name="methodName" value="getHourRankInfo" />
+	</bean>
+	<!-- 获取新版推荐列表接口 -->
+	<bean id="51070104" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kkHallFunction" />
+		<constructor-arg name="methodName" value="getV2KKRecommendedList" />
+	</bean>
+	<!-- 获取指定类型房间类表（小时榜、附近、新宠、个性化推荐） -->
+	<bean id="51070105" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kkHallFunction" />
+		<constructor-arg name="methodName" value="getSpecifyRoomList" />
 	</bean>
 	<!-- 用户是否有贵族信息 -->
 	<bean id="51010401" class="com.melot.sdk.core.function.GenericFunction">
