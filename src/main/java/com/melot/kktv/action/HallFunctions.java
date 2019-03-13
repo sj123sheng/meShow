@@ -261,7 +261,7 @@ public class HallFunctions {
 		        if (cataId == 1551 || cataId == 1556) {
 		            KKHallFunctions kkHallFunctions = (KKHallFunctions) MelotBeanFactory.getBean("kkHallFunction");
 		            Page<HallRoomInfoDTO> resp = kkHallFunctions.getRecommendedList(appId, userId, cityIp, 0, 4);
-		            if (Collectionutils.isEmpty(resp.getList())) {
+		            if (!Collectionutils.isEmpty(resp.getList())) {
 		                List<HallRoomInfoDTO> hallRoomInfoDTOList = resp.getList();
 		                filterCount = hallRoomInfoDTOList.size();
 		                for (HallRoomInfoDTO hallRoomInfoDTO : hallRoomInfoDTOList) {

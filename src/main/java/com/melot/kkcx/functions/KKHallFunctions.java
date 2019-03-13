@@ -1249,9 +1249,11 @@ public class KKHallFunctions extends BaseAction {
                 result.addProperty("preScore", hourRankInfo.getPreScore());
                 result.addProperty("prePosition", hourRankInfo.getPrePosition() + 1);
             }
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        } else {
+            result.addProperty("TagCode", TagCodeEnum.FAIL_TO_CALL_API_MENU_MODULE);
         }
         
-        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
     
