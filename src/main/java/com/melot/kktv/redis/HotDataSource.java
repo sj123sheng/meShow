@@ -447,27 +447,30 @@ public class HotDataSource {
     
     public static HourRankInfo getHourRankInfo(int roomId) {
         Jedis jedis = null;
+        HourRankInfo result = null;
         try {
             jedis = getInstance();
-            HourRankInfo hourRankInfo = new HourRankInfo();
             String key = RankingEnum.getCollection(RankingEnum.RANKING_TYPE_HOUR, RankingEnum.RANKING_THIS_HOUR);
-            int position = jedis.zrevrank(key, String.valueOf(roomId)).intValue();
-            hourRankInfo.setPosition(position);
-            hourRankInfo.setRoomId(roomId);
-            int prePosition = position > 0 ? position - 1 : position;
-            Set<Tuple> set = jedis.zrevrangeWithScores(key, prePosition, position);
-            if (CollectionUtils.isNotEmpty(set)) {
-                for (Tuple tuple : set) {
-                    if (roomId == Integer.parseInt(tuple.getElement())) {
-                        hourRankInfo.setScore(tuple.getScore());
-                    } else {
-                        hourRankInfo.setPreRoomId(Integer.parseInt(tuple.getElement()));
-                        hourRankInfo.setPreScore(tuple.getScore());
-                        hourRankInfo.setPrePosition(prePosition);
+            Long rank = jedis.zrevrank(key, String.valueOf(roomId));
+            if (rank != null) {
+                result = new HourRankInfo();
+                int position = rank.intValue();
+                result.setPosition(position);
+                result.setRoomId(roomId);
+                int prePosition = position > 0 ? position - 1 : position;
+                Set<Tuple> set = jedis.zrevrangeWithScores(key, prePosition, position);
+                if (CollectionUtils.isNotEmpty(set)) {
+                    for (Tuple tuple : set) {
+                        if (roomId == Integer.parseInt(tuple.getElement())) {
+                            result.setScore(tuple.getScore());
+                        } else {
+                            result.setPreRoomId(Integer.parseInt(tuple.getElement()));
+                            result.setPreScore(tuple.getScore());
+                            result.setPrePosition(prePosition);
+                        }
                     }
                 }
             }
-            return hourRankInfo;
         } catch (Exception e) {
             logger.error("HotDataSource.getHourRankInfo(" + roomId + ") execute exception.", e);
         } finally {
@@ -476,6 +479,6 @@ public class HotDataSource {
             }
         }
         
-        return null;
+        return result;
     }
 }
