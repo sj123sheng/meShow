@@ -201,9 +201,15 @@ public class UserRelationService {
 		if (roomInfo.getPoster() != null) {
 			jObject.addProperty("poster_path_272", ConfigHelper.getHttpdir() + roomInfo.getPoster() + "!272");
 			jObject.addProperty("poster_path_1280", ConfigHelper.getHttpdir() + roomInfo.getPoster() + "!1280");
+			jObject.addProperty("poster_path_256", ConfigHelper.getHttpdir() + roomInfo.getPoster() + "!256");
+			jObject.addProperty("poster_path_300", ConfigHelper.getHttpdir() + roomInfo.getPoster() + "!300");
+			jObject.addProperty("poster_path_400", ConfigHelper.getHttpdir() + roomInfo.getPoster() + "!400");
 		}
 		if (roomInfo.getLivePoster() != null) {
 			jObject.addProperty("live_poster_272", ConfigHelper.getHttpdir() + roomInfo.getLivePoster() + "!272");
+			jObject.addProperty("live_poster_256", ConfigHelper.getHttpdir() + roomInfo.getLivePoster() + "!256");
+			jObject.addProperty("live_poster_300", ConfigHelper.getHttpdir() + roomInfo.getLivePoster() + "!300");
+			jObject.addProperty("live_poster_400", ConfigHelper.getHttpdir() + roomInfo.getLivePoster() + "!400");
 		}
 	    if (roomInfo.getActorLevel() != null) {
 	        jObject.addProperty("actorLevel", roomInfo.getActorLevel());
