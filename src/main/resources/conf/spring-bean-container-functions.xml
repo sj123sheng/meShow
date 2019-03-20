@@ -236,5 +236,8 @@
 
 	<!-- K玩大奖赛接口 -->
 	<bean id="competitionFunctions" class="com.melot.kkcx.functions.CompetitionFunctions" />
+	
+	<!-- K玩大奖赛接口 -->
+	<bean id="contractFunctions" class="com.melot.kkcx.functions.ContractFunctions" />
 
 </beans>

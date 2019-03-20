@@ -3741,4 +3741,18 @@
 		<constructor-arg name="t" ref="competitionFunctions" />
 		<constructor-arg name="methodName" value="listCompetitionConfig" />
 	</bean>
+	
+	<!-- 上上签 -->
+	<bean id="51011501" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="contractFunctions" />
+		<constructor-arg name="methodName" value="getSignContractList" />
+	</bean>
+	<bean id="51011502" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="contractFunctions" />
+		<constructor-arg name="methodName" value="getSignCertificateInfo" />
+	</bean>
+	<bean id="51011503" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="contractFunctions" />
+		<constructor-arg name="methodName" value="renewalSignCertificate" />
+	</bean>
 </beans>

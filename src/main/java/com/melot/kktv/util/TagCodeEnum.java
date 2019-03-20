@@ -116,7 +116,10 @@ public class TagCodeEnum {
 	
 	/** 参数roomId缺失*/
 	public static final String ROOMID_MISSING = "30001022";
-	
+
+	/** 参数URL缺失 */
+	public static final String URL_MISSING = "30001049";
+
 	/** 用户不存在 */
 	public static final String USER_NOT_EXIST = "30002001";
 
