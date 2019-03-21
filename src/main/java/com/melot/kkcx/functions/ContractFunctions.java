@@ -8,11 +8,25 @@
  */
 package com.melot.kkcx.functions;
 
+import java.util.Date;
+import java.util.List;
+
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.melot.common.melot_utils.CollectionUtils;
+import com.melot.kk.contract.api.constant.CertificateStatusEnum;
+import com.melot.kk.contract.api.constant.ContractStatusEnum;
+import com.melot.kk.contract.api.constant.SignStatusEnum;
+import com.melot.kk.contract.api.constant.SignTypeEnum;
+import com.melot.kk.contract.api.dto.ResSignCertificateDTO;
+import com.melot.kk.contract.api.dto.SignContractDTO;
+import com.melot.kk.contract.api.service.ContractService;
+import com.melot.kktv.base.Page;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.TagCodeEnum;
 
@@ -29,6 +43,9 @@ import com.melot.kktv.util.TagCodeEnum;
 public class ContractFunctions {
     
     private static Logger logger = Logger.getLogger(ContractFunctions.class);
+    
+    @Resource
+    ContractService contractService;
     
     /**
      * 获取协议列表(51011501)
@@ -57,6 +74,29 @@ public class ContractFunctions {
         }
 
         try {
+            Page<SignContractDTO> resp = contractService.listSignContracts(null, null, userId, null, ContractStatusEnum.SIGNATURING, SignTypeEnum.ACTOR_SIGNER, pageIndex, countPerPage);
+            if (resp != null && CollectionUtils.isNotEmpty(resp.getList())) {
+                int count = resp.getCount();
+                List<SignContractDTO> signContractDTOList = resp.getList();
+                JsonArray jsonArray = new JsonArray();
+                for (SignContractDTO signContractDTO : signContractDTOList) {
+                    JsonObject jsonObj = new JsonObject();
+                    jsonObj.addProperty("contractName", signContractDTO.getContractTypeName());
+                    jsonObj.addProperty("familyName", signContractDTO.getFamilyName());
+                    jsonObj.addProperty("contractNo", signContractDTO.getContractNo());
+                    int signStatus = signContractDTO.getSignStatus();
+                    if (signContractDTO.getContractEndTime().before(new Date())) {
+                        signStatus = -1;
+                    }
+                    jsonObj.addProperty("signStatus", signStatus);
+                    if (signContractDTO.getCheckUrl() != null && signStatus == SignStatusEnum.UN_SIGN) {
+                        jsonObj.addProperty("checkUrl", signContractDTO.getCheckUrl());
+                    }
+                    jsonArray.add(jsonObj);
+                }
+                result.add("contractList", jsonArray);
+                result.addProperty("count", count);
+            }
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         } catch (Exception e) {
             logger.error("Error getSignCertificateInfo()", e);
@@ -90,6 +130,25 @@ public class ContractFunctions {
         }
 
         try {
+            int status = CertificateStatusEnum.UN_AUDITED;
+            ResSignCertificateDTO resSignCertificateDTO = contractService.getResSignCertificateDTO(userId);
+            if (resSignCertificateDTO != null) {
+                status = resSignCertificateDTO.getStatus();
+                if (status == CertificateStatusEnum.CERTIFIED) {
+                    Date certEndTime = resSignCertificateDTO.getCertEndTime();
+                    if (certEndTime.before(new Date())) {
+                        //证书已过期
+                        status = CertificateStatusEnum.EXPIRED;
+                    } else {
+                        result.addProperty("certId", resSignCertificateDTO.getCertId());
+                        result.addProperty("certType", resSignCertificateDTO.getCertType());
+                        result.addProperty("certStartTime", resSignCertificateDTO.getCertStartTime().getTime());
+                        result.addProperty("certEndTime", resSignCertificateDTO.getCertEndTime().getTime());
+                    }
+                }
+            } 
+
+            result.addProperty("status", status);
             result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         } catch (Exception e) {
             logger.error("Error getSignCertificateInfo()", e);
@@ -123,7 +182,19 @@ public class ContractFunctions {
         }
 
         try {
-            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            ResSignCertificateDTO resSignCertificateDTO = contractService.getResSignCertificateDTO(userId);
+            if (resSignCertificateDTO != null 
+                    && resSignCertificateDTO.getStatus() != CertificateStatusEnum.UN_AUDITED) {
+                if (resSignCertificateDTO.getStatus() == CertificateStatusEnum.GENERATING 
+                        || resSignCertificateDTO.getCertEndTime().after(new Date())) {
+                    result.addProperty("TagCode", "5101150302");
+                } else {
+                    contractService.confirmSignCertificate(userId);
+                    result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+                }
+            } else {
+                result.addProperty("TagCode", "5101150301");
+            }
         } catch (Exception e) {
             logger.error("Error renewalSignCertificate()", e);
             result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);

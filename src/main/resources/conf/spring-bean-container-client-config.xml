@@ -267,4 +267,7 @@
 	<kkrpc:reference id="competitionMatchService" interface="com.melot.kk.competition.api.service.CompetitionMatchService" version="1.0.0"/>
 
 	<kkrpc:reference id="activityCommonService" interface="com.melot.activity.common.driver.service.ActivityCommonService" version="1.1.0"/>
+	
+	<!-- 合同模块 -->
+	<kkrpc:reference id="contractService" interface="com.melot.kk.contract.api.service.ContractService" version="1.0.0"/>
 </beans>
