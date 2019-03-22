@@ -8,6 +8,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.blacklist.service.BlacklistService;
+import com.melot.common.driver.service.ShareService;
 import com.melot.common.melot_utils.StringUtils;
 import com.melot.content.config.domain.GalleryInfo;
 import com.melot.content.config.domain.GalleryOrderRecord;
@@ -72,6 +73,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -1797,6 +1801,73 @@ public class OtherFunctions {
 		JsonObject result = new JsonObject();
 		result.add("cataList",jsonArray);
 		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+		return result;
+	}
+
+	/**
+	 * 获取短链地址(51090203)
+	 *
+	 * @param jsonObject
+	 * @param checkTag
+	 * @return
+	 */
+	public JsonObject getShortUrl(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+		JsonObject result = new JsonObject();
+
+		String longUrl;
+		try {
+			longUrl = CommonUtil.getJsonParamString(jsonObject, "longUrl", null, TagCodeEnum.URL_MISSING, 1, Integer.MAX_VALUE);
+		} catch (CommonUtil.ErrorGetParameterException e) {
+			result.addProperty("TagCode", e.getErrCode());
+			return result;
+		} catch (Exception e) {
+			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+			return result;
+		}
+
+		try {
+			longUrl = URLDecoder.decode(longUrl, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			logger.error("decode long url fail, longUrl:" + longUrl, e);
+		}
+		// 调用服务获取短链地址
+		ShareService shareService = (ShareService) MelotBeanFactory.getBean("shareService");
+		String shortUrl = shareService.transformLongUrlToShortUrl(longUrl);
+
+		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+		result.addProperty("shortUrl", shortUrl);
+		return result;
+	}
+
+	/**
+	 * 获取长链地址(51090204)
+	 *
+	 * @param jsonObject
+	 * @param checkTag
+	 * @return
+	 */
+	public JsonObject getLongUrl(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+
+		JsonObject result = new JsonObject();
+
+		String shortUrl;
+		try {
+			shortUrl = CommonUtil.getJsonParamString(jsonObject, "shortUrl", null, TagCodeEnum.URL_MISSING, 1, Integer.MAX_VALUE);
+		} catch (CommonUtil.ErrorGetParameterException e) {
+			result.addProperty("TagCode", e.getErrCode());
+			return result;
+		} catch (Exception e) {
+			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+			return result;
+		}
+
+		// 调用服务获取短链地址
+		ShareService shareService = (ShareService) MelotBeanFactory.getBean("shareService");
+		String longUrl = shareService.getLongUrlFromShortUrl(shortUrl);
+
+		result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+		result.addProperty("longUrl", longUrl);
 		return result;
 	}
 }

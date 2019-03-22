@@ -2310,6 +2310,15 @@
 		<constructor-arg name="t" ref="otherFunction" />
 		<constructor-arg name="methodName" value="getOpenPage" />
 	</bean>
+	<!-- 获取短链地址 -->
+	<bean id="51090203" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="otherFunction" />
+		<constructor-arg name="methodName" value="getShortUrl" />
+	</bean>
+	<bean id="51090204" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="otherFunction" />
+		<constructor-arg name="methodName" value="getLongUrl" />
+	</bean>
 
 	<bean id="51100101" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="videoBgmFunction" />
