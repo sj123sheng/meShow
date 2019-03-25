@@ -256,7 +256,7 @@ public class HallRoomTF {
         }
 
         //直播间角标
-        if (roomInfo.getSideLabelValue() != null) {
+        if (roomObject.get("sideLabelContent") == null && roomInfo.getSideLabelValue() != null) {
             Gson gson = new Gson();
             RoomSideLabel roomSideLabel = (RoomSideLabel) gson.fromJson(roomInfo.getSideLabelValue(), new TypeToken<RoomSideLabel>(){}.getType());
             if (roomSideLabel != null && roomSideLabel.getContent() != null) {
@@ -523,7 +523,7 @@ public class HallRoomTF {
             if (roomInfo.getSideLabelValue() != null) {
                 Gson gson = new Gson();
                 RoomSideLabel roomSideLabel = (RoomSideLabel) gson.fromJson(roomInfo.getSideLabelValue(), new TypeToken<RoomSideLabel>(){}.getType());
-                if (roomSideLabel != null && roomSideLabel.getContent() != null) {
+                if (roomObject.get("sideLabelContent") == null && roomSideLabel != null && roomSideLabel.getContent() != null) {
                     //有效时间内显示
                     if (roomSideLabel.getEffectiveStartTime() == null || roomSideLabel.getEffectiveStartTime().getTime() < System.currentTimeMillis()) {
                         if (roomSideLabel.getEffectiveEndTime() == null || roomSideLabel.getEffectiveEndTime().getTime() > System.currentTimeMillis()) {
