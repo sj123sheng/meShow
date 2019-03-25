@@ -1351,10 +1351,10 @@ public class KKHallFunctions extends BaseAction {
             }
             break;
         case 1:
-            //小时榜
+            //上一小时小时榜
             try {
-                count = hallRoomService.getHourRoomCount().getData();
-                Result<List<HallRoomInfoDTO>> roomListResult = hallRoomService.getHourRooms(start, countPerPage);
+                count = hallRoomService.getHourRoomByTypeCount(-1).getData();
+                Result<List<HallRoomInfoDTO>> roomListResult = hallRoomService.getHourRoomsByType(-1, start, countPerPage);
                 if (roomListResult != null) {
                     roomList = roomListResult.getData();
                 }
@@ -1373,6 +1373,10 @@ public class KKHallFunctions extends BaseAction {
         case 4:
             //个性化推荐
             resp = getPersonalityRecommendRooms(userId, recommendAttribute, start, countPerPage, null);
+            break;
+        case 5:
+            //金牌艺人
+            resp = getGoldMedalActors(start, countPerPage, null);
             break;
         }
         
@@ -1437,7 +1441,7 @@ public class KKHallFunctions extends BaseAction {
         try {
             HashMap<Integer, HallRoomInfoDTO> specifyRoomMap = new HashMap<>();
             List<Integer> topRoomIdList = Lists.newArrayList();
-            //获取新版推荐指定位置（人工置顶 + 头条（1号位） + 小时榜（4号位） + 家族推荐点数）房间列表
+            //获取新版推荐指定位置（人工置顶 + 头条（1号位） + 金牌艺人（3号位） + 小时榜（4号位） + 家族推荐点数）房间列表
             RecommendSpecifyRoomDTO recommendSpecifyRoomDTO = hallRoomService.getRecommendSpecifyRooms();
             if (recommendSpecifyRoomDTO != null) {
                 specifyRoomMap = recommendSpecifyRoomDTO.getSpecifyRoomMap();
@@ -1590,7 +1594,7 @@ public class KKHallFunctions extends BaseAction {
         
         int cityId = CityUtil.getCityIdByIpAddr(ip);
         int total = 0;
-        Result<Page<HallRoomInfoDTO>> moduleResult = hallRoomService.getActorNear(cityId, -1, -1, start, filterIds == null ? offset : offset + filterIds.size());
+        Result<Page<HallRoomInfoDTO>> moduleResult = hallRoomService.getActorNear(cityId, -1, -1, start, filterIds == null ? offset : offset + filterIds.size() + 50);
         List<HallRoomInfoDTO> hallRoomInfoDTOList = null;
         if (ResultUtils.checkResultNotNull(moduleResult)) {
             total = moduleResult.getData().getCount();
@@ -1647,6 +1651,11 @@ public class KKHallFunctions extends BaseAction {
                 List<HallRoomInfoDTO> hallRoomInfoDTOList = sysMenu.getRooms();
                 if (hallRoomInfoDTOList != null) {
                     for (HallRoomInfoDTO hallRoomInfoDTO : hallRoomInfoDTOList) {
+                        //未开播不返回
+                        if (hallRoomInfoDTO.getLiveEndtime() != null) {
+                            break;
+                        }
+                        
                         if (filterIds == null || !filterIds.contains(hallRoomInfoDTO.getActorId())) {
                             roomList.add(hallRoomInfoDTO);
                         }
@@ -1747,6 +1756,48 @@ public class KKHallFunctions extends BaseAction {
             }
         } catch (Exception e) {
             logger.error("Fail to call hallRoomService.getComprehensiveRooms execute exception: ", e);
+        }
+        
+        return result;
+    }
+    
+    /**
+     * 获取金牌艺人房间列表
+     * 
+     * @param start
+     * @param offset
+     * @param filterIds
+     * @return
+     */
+    private Map<String, Object> getGoldMedalActors(int start, int offset, List<Integer> filterIds) {
+        Map<String, Object> result = new HashMap<>();
+        
+        int num = offset - start;
+        Result<HallPartConfDTO> sysMenuResult = hallPartService.getPartList(1598, 0, 0, 0, AppIdEnum.AMUSEMENT, start, filterIds == null ? offset : offset + filterIds.size());
+        if (sysMenuResult != null && CommonStateCode.SUCCESS.equals(sysMenuResult.getCode())) {
+            List<HallRoomInfoDTO> roomList = Lists.newArrayList();
+            HallPartConfDTO sysMenu = sysMenuResult.getData();
+            if (sysMenu != null) {
+                List<HallRoomInfoDTO> hallRoomInfoDTOList = sysMenu.getRooms();
+                if (hallRoomInfoDTOList != null) {
+                    for (HallRoomInfoDTO hallRoomInfoDTO : hallRoomInfoDTOList) {
+                        //未开播不返回
+                        if (hallRoomInfoDTO.getLiveEndtime() != null) {
+                            break;
+                        }
+                        
+                        if (filterIds == null || !filterIds.contains(hallRoomInfoDTO.getActorId())) {
+                            roomList.add(hallRoomInfoDTO);
+                        }
+                        
+                        if (roomList.size() >= num) {
+                            break;
+                        }
+                    }
+                }
+                result.put("roomList", roomList);
+                result.put("count", sysMenu.getRoomCount());
+            }
         }
         
         return result;

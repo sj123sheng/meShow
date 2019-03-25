@@ -12,7 +12,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 
-import com.alibaba.fastjson.JSON;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -25,6 +24,8 @@ import com.melot.asset.driver.domain.ReletVirtualIdConfig;
 import com.melot.asset.driver.domain.ResVirtualIdInfo;
 import com.melot.asset.driver.service.AssetService;
 import com.melot.asset.driver.service.VirtualIdService;
+import com.melot.kk.hall.api.domain.HallRoomInfoDTO;
+import com.melot.kk.hall.api.service.DefaultPartService;
 import com.melot.kkcore.user.api.ResourceType;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.api.UserResource;
@@ -34,7 +35,6 @@ import com.melot.kkcx.service.ProfileServices;
 import com.melot.kkcx.service.StorehouseService;
 import com.melot.kkcx.service.UserAssetServices;
 import com.melot.kkcx.util.PropTypeEnum;
-import com.melot.kkcx.util.ValidTypeEnum;
 import com.melot.kktv.domain.CarConfigInfo;
 import com.melot.kktv.domain.CarPriceInfo;
 import com.melot.kktv.domain.StorehouseInfo;
@@ -82,6 +82,9 @@ public class UserAssetAction {
 	
 	@Resource
 	ChatBubbleService chatBubbleService;
+	
+	@Resource
+	DefaultPartService defaultPartService;
 
 	/**
 	 * 获取用户所拥有的财产列表(VIP 车 门票)(10005019)
@@ -1552,7 +1555,7 @@ public class UserAssetAction {
                     }
                 });
             }
-
+            
             for (UserResource userActivityMedal : list) {
                 MedalInfo medalInfo = MedalConfig.getMedal(userActivityMedal.getResourceId());
                 if (medalInfo != null && medalInfo.getMedalType() == 4 && userActivityMedal.getEndTime() > System.currentTimeMillis()) {
@@ -1568,6 +1571,24 @@ public class UserAssetAction {
                     honors.add(jObject);
                 }
             }
+        }
+        
+        //金牌艺人（栏目titleId=1598）添加金牌艺人勋章
+        HallRoomInfoDTO queryCondition = new HallRoomInfoDTO();
+        queryCondition.setQueryRoomIds(String.valueOf(roomId));
+        List<HallRoomInfoDTO> hallRoomInfoDTOs = defaultPartService.getPartRoomListForManage(1598, 0, 1, queryCondition);
+        if (!Collectionutils.isEmpty(hallRoomInfoDTOs)) {
+            JsonObject jObject = new JsonObject();
+            jObject.addProperty("medalTitle", "金牌艺人");
+            jObject.addProperty("medalType", 4);
+            JsonObject jObj = new JsonObject();
+            jObj.addProperty("web", ConfigHelper.getHttpdir() + "/activitymedal/web/goldmedal_web.png");
+            jObj.addProperty("phone_large", ConfigHelper.getHttpdir() + "/activitymedal/phone/large/goldmedal_phone_large.png");
+            jObj.addProperty("phone_small", ConfigHelper.getHttpdir() +"/activitymedal/phone/small/goldmedal_phone_small.png");
+            jObject.addProperty("medalIcon", jObj.toString());
+            jObject.addProperty("medalDesc", "金牌艺人");
+            jObject.addProperty("lightState", 1);
+            honors.add(jObject);
         }
 
         result.add("medalList", honors);

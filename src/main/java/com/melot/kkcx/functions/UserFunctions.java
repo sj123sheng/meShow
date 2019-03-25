@@ -1122,7 +1122,7 @@ public class UserFunctions {
 	    
         int loginType, appId, channel, inviterId, userId = 0, platform = 0, roomFrom;
         int gpsCityId;// 客户端通过GPS拿到的城市定位ID【参数里面是city】
-        String isSafe, username = null, phoneNum = null, psword = null, token = null, uuid = null, unionid = null, deviceUId = null, clientIp = null, sessionId = null;;
+        String isSafe, username = null, phoneNum = null, psword = null, token = null, uuid = null, unionid = null, deviceUId = null, clientIp = null, sessionId = null;
         try {
             loginType = CommonUtil.getJsonParamInt(jsonObject, "loginType", 0, "01130001", Integer.MIN_VALUE, Integer.MAX_VALUE);
             isSafe = CommonUtil.getJsonParamString(jsonObject, "isSafe", null, null, 0, 256);
