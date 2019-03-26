@@ -43,88 +43,88 @@ public class PrivateLetterFunctions {
 	private static final String GENERAL_SESSION_KEY = "generalSession";
 	
 	/**
-	 * 设置用户私信配置(55001001) ok
+	 * 设置用户私信配置(55010001) ok
 	 * @param jsonObject
 	 * @return
 	 */
 	public JsonObject setPrivateLetterConfig(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 		
-		// 定义使用的参数
-		int userId = 0;
-		int receiveType = 0;
-		int richLevel = 0;
-		int actorLevel = 0;
-		// 定义返回结果
+//		// 定义使用的参数
+//		int userId = 0;
+//		int receiveType = 0;
+//		int richLevel = 0;
+//		int actorLevel = 0;
+//		// 定义返回结果
 		JsonObject result = new JsonObject();
-		
-		// 该接口需要验证token,未验证的返回错误码
-		if (!checkTag) {
-			result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_NOT_CHECKED);
-			return result;
-		}
-		
-		// 解析参数
-		try {
-			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-			receiveType = CommonUtil.getJsonParamInt(jsonObject, "receiveType", 1, "55100001", 0, Integer.MAX_VALUE);
-			richLevel = CommonUtil.getJsonParamInt(jsonObject, "richLevel", 1, null, 0, Integer.MAX_VALUE);
-			actorLevel = CommonUtil.getJsonParamInt(jsonObject, "actorLevel", 1, null, 0, Integer.MAX_VALUE);
-		} catch (ErrorGetParameterException e) {
-			result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
-			return result;
-		}
-		
-		boolean status = true;
-		try{
-			// 调用模块接口
-			PrivateLetterService privateLetterService = (PrivateLetterService)MelotBeanFactory.getBean("privateLetterService");
-			status = privateLetterService.setPrivateLetterConfig(userId, receiveType, richLevel, actorLevel);
-		} catch (Exception e) {
-			logger.error("PrivateLetterService.setPrivateLetterConfig is errer!", e);
-		}
+//
+//		// 该接口需要验证token,未验证的返回错误码
+//		if (!checkTag) {
+//			result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_NOT_CHECKED);
+//			return result;
+//		}
+//
+//		// 解析参数
+//		try {
+//			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+//			receiveType = CommonUtil.getJsonParamInt(jsonObject, "receiveType", 1, "55100001", 0, Integer.MAX_VALUE);
+//			richLevel = CommonUtil.getJsonParamInt(jsonObject, "richLevel", 1, null, 0, Integer.MAX_VALUE);
+//			actorLevel = CommonUtil.getJsonParamInt(jsonObject, "actorLevel", 1, null, 0, Integer.MAX_VALUE);
+//		} catch (ErrorGetParameterException e) {
+//			result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
+//			return result;
+//		}
+//
+//		boolean status = true;
+//		try{
+//			// 调用模块接口
+//			PrivateLetterService privateLetterService = (PrivateLetterService)MelotBeanFactory.getBean("privateLetterService");
+//			status = privateLetterService.setPrivateLetterConfig(userId, receiveType, richLevel, actorLevel);
+//		} catch (Exception e) {
+//			logger.error("PrivateLetterService.setPrivateLetterConfig is errer!", e);
+//		}
 		// 返回结果
-		result.addProperty(ParameterKeys.TAG_CODE, status?TagCodeEnum.SUCCESS:"55100002");
+		result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
 		return result;
 		
 	}
 	
 	
 	/**
-	 * 获取用户私信配置(55001002) ok
+	 * 获取用户私信配置(55010002) ok
 	 * @param jsonObject
 	 * @return
 	 */
 	public JsonObject getPrivateLetterConfig(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
 		
-		// 定义使用的参数
-		int userId = 0;
-		// 定义返回结果
+//		// 定义使用的参数
+//		int userId = 0;
+//		// 定义返回结果
 		JsonObject result = new JsonObject();
-		
-		// 该接口需要验证token,未验证的返回错误码
-		if (!checkTag) {
-			result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_NOT_CHECKED);
-			return result;
-		}
-		
-		// 解析参数
-		try {
-			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-		} catch (ErrorGetParameterException e) {
-			result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
-			return result;
-		}
-		
-		// 调用模块接口
-		PrivateLetterService privateLetterService = (PrivateLetterService)MelotBeanFactory.getBean("privateLetterService");
-		
-		PrivateLetterSysConfig privateLetterSysConfig = privateLetterService.getPrivateLetterSysConfig(userId);
-		if (privateLetterSysConfig!=null) {
-			result = jsonParser.parse(new Gson().toJson(privateLetterSysConfig)).getAsJsonObject();
-		}
+//
+//		// 该接口需要验证token,未验证的返回错误码
+//		if (!checkTag) {
+//			result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_NOT_CHECKED);
+//			return result;
+//		}
+//
+//		// 解析参数
+//		try {
+//			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+//		} catch (ErrorGetParameterException e) {
+//			result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
+//			return result;
+//		}
+//
+//		// 调用模块接口
+//		PrivateLetterService privateLetterService = (PrivateLetterService)MelotBeanFactory.getBean("privateLetterService");
+//
+//		PrivateLetterSysConfig privateLetterSysConfig = privateLetterService.getPrivateLetterSysConfig(userId);
+//		if (privateLetterSysConfig!=null) {
+//			result = jsonParser.parse(new Gson().toJson(privateLetterSysConfig)).getAsJsonObject();
+//		}
 		
 		// 返回结果
-		result.addProperty(ParameterKeys.TAG_CODE, result.has("userId")?TagCodeEnum.SUCCESS:"55100003");
+		result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
 		return result;
 		
 	}

@@ -9,17 +9,11 @@
 package com.melot.kktv.action;
 
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
-import com.melot.kk.competition.api.constant.ReturnCode;
-import com.melot.kk.competition.api.dto.MatchResult;
-import com.melot.kk.competition.api.service.CompetitionMatchService;
-import com.melot.kk.competition.api.service.CompetitionService;
-import com.melot.kk.pkgame.api.dto.*;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
@@ -29,10 +23,22 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
+import com.melot.kk.competition.api.constant.ReturnCode;
+import com.melot.kk.competition.api.dto.MatchResult;
+import com.melot.kk.competition.api.service.CompetitionMatchService;
+import com.melot.kk.competition.api.service.CompetitionService;
 import com.melot.kk.hall.api.domain.HallPartConfDTO;
 import com.melot.kk.hall.api.domain.HallRoomInfoDTO;
 import com.melot.kk.hall.api.service.SysMenuService;
 import com.melot.kk.pkgame.api.constant.ReturnResultCode;
+import com.melot.kk.pkgame.api.dto.GameConfDTO;
+import com.melot.kk.pkgame.api.dto.GamePropDTO;
+import com.melot.kk.pkgame.api.dto.MultipleConfDTO;
+import com.melot.kk.pkgame.api.dto.OpenTimeDTO;
+import com.melot.kk.pkgame.api.dto.QuziPKUserDTO;
+import com.melot.kk.pkgame.api.dto.ReturnResult;
+import com.melot.kk.pkgame.api.dto.UserKKPlayRank;
+import com.melot.kk.pkgame.api.dto.UserKkplayScoreDTO;
 import com.melot.kk.pkgame.api.enums.GameEnum;
 import com.melot.kk.pkgame.api.enums.UserTypeEnum;
 import com.melot.kk.pkgame.api.service.MatchService;
@@ -49,7 +55,6 @@ import com.melot.kktv.service.ConfigService;
 import com.melot.kktv.util.AppIdEnum;
 import com.melot.kktv.util.CommonUtil;
 import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.DateUtil;
 import com.melot.kktv.util.PlatformEnum;
 import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.TagCodeEnum;

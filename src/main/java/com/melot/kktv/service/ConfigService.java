@@ -243,6 +243,8 @@ public class ConfigService {
      */
     private String roomBlock;
 
+    private Integer privateLetterErrorCode;
+
     @DisconfFileItem(name = "liveshop.familyId", associateField = "liveshopFamilyId")
     public Integer getLiveshopFamilyId() {
         return liveshopFamilyId;
@@ -613,5 +615,10 @@ public class ConfigService {
     @DisconfFileItem(name = "roomBlock", associateField = "roomBlock")
     public String getRoomBlock() {
         return roomBlock;
+    }
+
+    @DisconfFileItem(name = "privateLetterErrorCode", associateField = "privateLetterErrorCode")
+    public Integer getPrivateLetterErrorCode() {
+        return privateLetterErrorCode;
     }
 }

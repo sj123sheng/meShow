@@ -3764,4 +3764,19 @@
 		<constructor-arg name="t" ref="contractFunctions" />
 		<constructor-arg name="methodName" value="renewalSignCertificate" />
 	</bean>
+
+	<bean id="51011601" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="storyFunctions" />
+		<constructor-arg name="methodName" value="getAStory" />
+	</bean>
+
+	<bean id="51011602" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="storyFunctions" />
+		<constructor-arg name="methodName" value="bindUserToRoom" />
+	</bean>
+
+	<bean id="51011603" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="storyFunctions" />
+		<constructor-arg name="methodName" value="checkBind" />
+	</bean>
 </beans>

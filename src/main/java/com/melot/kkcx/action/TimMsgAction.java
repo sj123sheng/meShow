@@ -11,6 +11,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.melot.kktv.service.ConfigService;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.struts2.ServletActionContext;
@@ -32,6 +33,12 @@ public class TimMsgAction extends ActionSupport {
 	private static final long serialVersionUID = -8850731119336469628L;
 	private Logger logger = Logger.getLogger(TimMsgAction.class);
 
+	private ConfigService configService;
+
+	{
+		configService = MelotBeanFactory.getBean("configService", ConfigService.class);
+	}
+
 	/**
 	 * 腾讯云单聊发送消息回调
 	 * 
@@ -51,7 +58,7 @@ public class TimMsgAction extends ActionSupport {
 			return null;
 		}
 
-		final int ErrorCode = 120002;
+		int ErrorCode = configService.getPrivateLetterErrorCode();
 		
 		JsonObject result = new JsonObject();
 		if (request == null) {
@@ -143,7 +150,7 @@ public class TimMsgAction extends ActionSupport {
 					if (fromUserId >= 100 && isCheck) {
 						
 						// 私信模块校验：V0用户发送对象限制，用户收信设置
-						String resultCode = TimService.checkPrivateLetterWords(fromUserId, toUserId, item.getMsgType());
+						String resultCode = TimService.checkPrivateLetterWords(fromUserId, toUserId);
 						if (!"0".equals(resultCode)) {
 							result.addProperty("ActionStatus", "OK");
 							result.addProperty("ErrorCode", ErrorCode);
@@ -156,7 +163,7 @@ public class TimMsgAction extends ActionSupport {
 						if (item.getMsgType().equalsIgnoreCase("TIMTextElem")) {
 							if(TimService.hasSensitiveWords(fromUserId, toUserId, item.getMsgContent().getText())) {
 								result.addProperty("ActionStatus", "FAIL");
-								result.addProperty("ErrorCode", ErrorCode);
+								result.addProperty("ErrorCode", 120002);
 								result.addProperty("ErrorInfo", "内容包含敏感信息，发送失败");
 								out.println(result.toString());
 								return null;

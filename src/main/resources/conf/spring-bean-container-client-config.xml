@@ -271,4 +271,6 @@
 	
 	<!-- 合同模块 -->
 	<kkrpc:reference id="contractService" interface="com.melot.kk.contract.api.service.ContractService" version="1.0.0"/>
+
+	<kkrpc:reference id="storyService" interface="com.melot.kk.story.api.service.StoryService" version="1.0.0"/>
 </beans>

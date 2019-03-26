@@ -240,4 +240,7 @@
 	<!-- K玩大奖赛接口 -->
 	<bean id="contractFunctions" class="com.melot.kkcx.functions.ContractFunctions" />
 
+	<!-- 故事接口 -->
+	<bean id="storyFunctions" class="com.melot.kkcx.functions.StoryFunctions" />
+
 </beans>

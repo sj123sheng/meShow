@@ -417,7 +417,7 @@
 		<dependency>
 		  	<groupId>com.melot.module.driver.msgbuilder</groupId>
 		  	<artifactId>private-letter-msgbuilder</artifactId>
-		  	<version>1.0.4</version>
+		  	<version>1.0.6</version>
 		</dependency>
 		<dependency>
   			<groupId>com.melot.module.driver.msgbuilder</groupId>
@@ -751,6 +751,12 @@
   			<groupId>com.melot.kk</groupId>
   			<artifactId>kk-contract-api</artifactId>
  		    <version>1.0.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.melot.kk</groupId>
+			<artifactId>kk-story-api</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 		<dependency>

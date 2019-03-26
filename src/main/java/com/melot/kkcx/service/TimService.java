@@ -242,31 +242,19 @@ public class TimService {
 	/**
 	 * 用户私信发送检测
 	 * @param userId 用户ID
-	 * @param roomId 直播ID
-	 * @param msgType text:文本消息; image:图片消息
 	 * @return
 	 */
-	public static String checkPrivateLetterWords(int userId, int receiveId, String msgType) {
+	public static String checkPrivateLetterWords(int userId, int receiveId) {
 		try {
 		    PrivateLetterService privateLetterService = (PrivateLetterService) MelotBeanFactory.getBean("privateLetterService");
 		    if (privateLetterService != null) {
-		    	if ("TIMCustomElem".equalsIgnoreCase(msgType)) {
-                    return "0";
-                }
-		    	
-		        if (msgType.equalsIgnoreCase("TIMTextElem")) {
-		    		msgType = "text";
-		    	}else if ("TIMImageElem".equalsIgnoreCase(msgType)) {
-		    	    msgType = "image";
-                }
-		    	
-		        String resultCode = privateLetterService.checkSendPrivateLetter(userId, receiveId, msgType);
+		        String resultCode = privateLetterService.checkSendPrivateLetterV2(userId, receiveId);
 		        if (!StringUtils.isEmpty(resultCode)) {
 		            return resultCode;
 		        }
 		    }
 		} catch (Exception e) {
-		    logger.error("ChatAnalyzerService.checkPhrase(" + userId + ", " + msgType + ") execute exception.", e);
+		    logger.error("checkPrivateLetterWords(" + userId + ", " + receiveId + ") execute exception.", e);
 		}
 		return "0";
 	}
