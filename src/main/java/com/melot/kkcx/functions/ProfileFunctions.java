@@ -476,7 +476,7 @@ public class ProfileFunctions {
             try {
                 PendantService pendantService = (PendantService) MelotBeanFactory.getBean("pendantService");
                 com.melot.room.pendant.domain.ReturnResult<UserPendantDTO> pendantDTOResult = pendantService.getUserPendant(userId);
-                if ("0".equals(pendantDTOResult.getCode()) && pendantDTOResult.getData() != null) {
+                if (pendantDTOResult != null && "0".equals(pendantDTOResult.getCode()) && pendantDTOResult.getData() != null) {
                     UserPendantDTO userPendantDTO = pendantDTOResult.getData();
                     UserProp userProp = new UserProp();
                     userProp.setId(userPendantDTO.getPendantId());

@@ -57,7 +57,7 @@ public class PendantFunctions {
         try {
             PendantService pendantService = (PendantService) MelotBeanFactory.getBean("pendantService");
             ReturnResult<List<UserPendantDTO>> pendantDTOResult = pendantService.listByUserId(userId);
-            if ("0".equals(pendantDTOResult.getCode())) {
+            if (pendantDTOResult != null && "0".equals(pendantDTOResult.getCode())) {
                 final String pathPrefix = ConfigHelper.getHttpdir();
                 List<UserPendantDTO> userPendantDTOList = pendantDTOResult.getData();
                 result.addProperty("TagCode", TagCodeEnum.SUCCESS);
@@ -104,7 +104,7 @@ public class PendantFunctions {
         try {
             PendantService pendantService = (PendantService) MelotBeanFactory.getBean("pendantService");
             ReturnResult<UserPendantDTO> pendantDTOResult = pendantService.getUserPendant(userId);
-            if ("0".equals(pendantDTOResult.getCode())) {
+            if (pendantDTOResult != null && "0".equals(pendantDTOResult.getCode())) {
                 final String pathPrefix = ConfigHelper.getHttpdir();
                 UserPendantDTO userPendantDTO = pendantDTOResult.getData();
                 result.addProperty("TagCode", TagCodeEnum.SUCCESS);

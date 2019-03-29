@@ -112,7 +112,7 @@ public class UserAssetAction {
             PendantService pendantService = (PendantService) MelotBeanFactory.getBean("pendantService");
             ReturnResult<List<UserPendantDTO>> pendantDTOResult = pendantService.listByUserId(userId);
 
-            if ("0".equals(pendantDTOResult.getCode())) {
+            if (pendantDTOResult != null && "0".equals(pendantDTOResult.getCode())) {
                 List<UserPendantDTO> userPendantDTOList = pendantDTOResult.getData();
                 for (UserPendantDTO userPendantDTO : userPendantDTOList) {
                     UserProp userProp = new UserProp();

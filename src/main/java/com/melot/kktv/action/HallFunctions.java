@@ -260,7 +260,7 @@ public class HallFunctions {
 		        //官方推荐栏目需过滤个性推荐相关数据
 		        if (cataId == 1551 || cataId == 1556) {
 		            KKHallFunctions kkHallFunctions = (KKHallFunctions) MelotBeanFactory.getBean("kkHallFunction");
-		            Page<HallRoomInfoDTO> resp = kkHallFunctions.getRecommendedList(appId, userId, cityIp, 0, 4);
+		            Page<HallRoomInfoDTO> resp = kkHallFunctions.getRecommendedList(appId, userId, cityIp, 0, 10);
 		            if (!Collectionutils.isEmpty(resp.getList())) {
 		                List<HallRoomInfoDTO> hallRoomInfoDTOList = resp.getList();
 		                filterCount = hallRoomInfoDTOList.size();

@@ -1454,11 +1454,12 @@ public class KKHallFunctions extends BaseAction {
             HallRoomInfoDTO nearHallRoomInfo = null;
             List<HallRoomInfoDTO> nearHallRoomInfoDTOList = null;
             if (specifyRoomMap.get(6) == null || specifyRoomMap.get(12) == null) {
-                Map<String, Object> resp = getNearActor(ip, 0, 3, AppIdEnum.AMUSEMENT, topRoomIdList);
+                Map<String, Object> resp = getNearActor(ip, 0, 20, AppIdEnum.AMUSEMENT, topRoomIdList);
                 if (resp != null && resp.get("roomList") != null) {
                     nearHallRoomInfoDTOList = (List<HallRoomInfoDTO>) resp.get("roomList");
                     if (CollectionUtils.isNotEmpty(nearHallRoomInfoDTOList)) {
-                        nearHallRoomInfo = nearHallRoomInfoDTOList.get(0);
+                        //随机获取前20位
+                        nearHallRoomInfo = nearHallRoomInfoDTOList.get(new Random().nextInt(nearHallRoomInfoDTOList.size()));
                         nearHallRoomInfo.setRecommendType(2);
                         nearHallRoomInfo.setRecommendAttribute(2);
                         topRoomIdList.add(nearHallRoomInfo.getRoomId());
@@ -1469,11 +1470,12 @@ public class KKHallFunctions extends BaseAction {
             //10号位未被置顶时，取新宠填充
             HallRoomInfoDTO newfavoriteRoomInfo = null;
             if (specifyRoomMap.get(10) == null) {
-                Map<String, Object> newfavoriteResp = getNewfavoriteRooms(0, 1, topRoomIdList);
+                Map<String, Object> newfavoriteResp = getNewfavoriteRooms(0, 20, topRoomIdList);
                 if (newfavoriteResp != null && newfavoriteResp.get("roomList") != null) {
                     List<HallRoomInfoDTO> newfavoriteRoomInfoList = (List<HallRoomInfoDTO>) newfavoriteResp.get("roomList");
                     if (CollectionUtils.isNotEmpty(newfavoriteRoomInfoList)) {
-                        newfavoriteRoomInfo = newfavoriteRoomInfoList.get(0);
+                        //随机获取前20位
+                        newfavoriteRoomInfo = newfavoriteRoomInfoList.get(new Random().nextInt(newfavoriteRoomInfoList.size()));
                         newfavoriteRoomInfo.setRecommendType(3);
                         newfavoriteRoomInfo.setRecommendAttribute(3);
                         topRoomIdList.add(newfavoriteRoomInfo.getRoomId());
