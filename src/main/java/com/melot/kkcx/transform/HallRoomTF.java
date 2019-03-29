@@ -340,20 +340,24 @@ public class HallRoomTF {
             if (recommendAttribute == 5) {
                //头条
                roomObject.addProperty("sideLabelContent", "头条");
+               roomObject.addProperty("sideLabelColor", "2");
             } else if (recommendAttribute == 1) {
                 //小时榜
                 roomObject.addProperty("sideLabelContent", "小时榜");
+                roomObject.addProperty("sideLabelColor", "2");
             } else if (recommendAttribute == 12) {
                 //金牌艺人
                 roomObject.addProperty("sideLabelContent", "金牌艺人");
+                roomObject.addProperty("sideLabelColor", "2");
             } else if (recommendAttribute == 2) {
                 //附近
                 roomObject.addProperty("sideLabelContent", "附近");
+                roomObject.addProperty("sideLabelColor", "2");
             } else if (recommendAttribute == 3) {
                 //新宠
                 roomObject.addProperty("sideLabelContent", "新宠");
+                roomObject.addProperty("sideLabelColor", "2");
             }
-            roomObject.addProperty("sideLabelColor", "2");
         }
 
         if (roomInfo.getRegisterCity() != null) {
