@@ -115,10 +115,10 @@ public class ContractFunctions {
      */
     public JsonObject getSignCertificateInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
         JsonObject result = new JsonObject();
-//        if (!checkTag) {
-//            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-//            return result;
-//        }
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
         
         int userId;
         
