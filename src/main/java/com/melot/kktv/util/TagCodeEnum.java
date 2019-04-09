@@ -212,6 +212,9 @@ public class TagCodeEnum {
 
 	/** 非法参数 */
 	public static final String INVALID_PARAMETERS = "30001048";
+
+    /** 自由主播开播黑名单用户 */
+    public static final String USER_IN_OFFICAL_BLACK = "30001050";
 	
 	/** 模块服务返回空数据 */
 	public static final String MODULE_RETURN_NULL = "10000000";

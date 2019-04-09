@@ -3186,6 +3186,11 @@
 		<constructor-arg name="methodName" value="getOrderCouponUserUsableCountByOrderNo" />
 	</bean>
 
+	<bean id="51060575" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="liveShopFunctions" />
+		<constructor-arg name="methodName" value="getSourceProductsByKey" />
+	</bean>
+
 	<!-- 直播购组团抽奖 -->
 	<bean id="51130101" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="liveShopDrawFunctions" />

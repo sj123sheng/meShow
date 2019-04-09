@@ -197,6 +197,16 @@ public class ConfigService {
     private String baiduChannelUrl;
     
     /**
+     * 大数据中心个性化推荐主播url
+     */
+    private String personalityRecommendUrl;
+    
+    /**
+     * 大数据中心个性推荐主播列表url
+     */
+    private String personalityRecommendRoomsUrl;
+    
+    /**
      * K玩大厅游戏规则
      */
     private String kkPlayRule;
@@ -570,6 +580,16 @@ public class ConfigService {
 
     public void setBaiduChannelUrl(String baiduChannelUrl) {
         this.baiduChannelUrl = baiduChannelUrl;
+    }
+    
+    @DisconfFileItem(name = "personalityRecommendUrl", associateField = "personalityRecommendUrl")
+    public String getPersonalityRecommendUrl() {
+        return personalityRecommendUrl;
+    }
+    
+    @DisconfFileItem(name = "personalityRecommendRoomsUrl", associateField = "personalityRecommendRoomsUrl")
+    public String getPersonalityRecommendRoomsUrl() {
+        return personalityRecommendRoomsUrl;
     }
     
     @DisconfFileItem(name = "kkPlayRule", associateField = "kkPlayRule")

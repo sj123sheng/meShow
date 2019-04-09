@@ -4417,4 +4417,79 @@ public class LiveShopFunctions {
         result.addProperty("TagCode",TagCodeEnum.SUCCESS);
         return result;
     }
+
+    /**
+     * 根据搜索条件得到货源列表【51060575】
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getSourceProductsByKey(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        int userId;
+        String searchKey;
+        int start;
+        int num;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, ParamCodeEnum.USER_ID.getId(), 0, ParamCodeEnum.USER_ID.getErrorCode(), 1, Integer.MAX_VALUE);
+            searchKey = CommonUtil.getJsonParamString(jsonObject, "searchKey", null, null, 0, Integer.MAX_VALUE);
+            start = CommonUtil.getJsonParamInt(jsonObject, PARAM_START, 0, null, 0, Integer.MAX_VALUE);
+            num = CommonUtil.getJsonParamInt(jsonObject, "num", 20, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty(ParameterKeys.TAG_CODE, e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        try {
+            Page<SourceProductInfoDTO> page = productService.getSourceProductsByKey(userId, searchKey, start, num);
+
+            if (page == null) {
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+            result.addProperty("count", page.getCount());
+            JsonArray products = new JsonArray();
+            if (page.getList() == null) {
+                result.add("products", products);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+                return result;
+            }
+
+            for (SourceProductInfoDTO productDTO : page.getList()) {
+                UserProfile userProfile = kkUserService.getUserProfile(productDTO.getSupplierId());
+                if(userProfile != null){
+                    JsonObject productJson = new JsonObject();
+                    productJson.addProperty("productId", productDTO.getProductId());
+                    productJson.addProperty("productName", productDTO.getProductName());
+                    productJson.addProperty("productPrice", productDTO.getProductPrice());
+                    productJson.addProperty("productUrl", productDTO.getProductUrl() + "!256");
+                    productJson.addProperty("stockNum", productDTO.getStockNum());
+                    productJson.addProperty("proxy", productDTO.getProxy());
+                    productJson.addProperty("distributorCommissionRate", productDTO.getDistributorCommissionRate());
+                    productJson.addProperty("distributorCommissionAmount", productDTO.getDistributorCommissionAmount());
+                    productJson.addProperty("supplierId", productDTO.getSupplierId());
+                    productJson.addProperty("supplierNickname", productDTO.getSupplierNickname());
+                    if(userProfile.getPortrait() != null){
+                        productJson.addProperty("supplierPortrait",userProfile.getPortrait());
+                    }
+                    productJson.addProperty("supplierIdGender",userProfile.getGender());
+
+                    products.add(productJson);
+                }
+            }
+
+            result.add("products", products);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+            return result;
+        } catch (Exception e) {
+            logger.error(String.format("Module Error：productService.getSourceProductsByKey(userId=%s, searchKey=%s, start=%s, num=%s)", userId, searchKey, start, num), e);
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+    }
 }
