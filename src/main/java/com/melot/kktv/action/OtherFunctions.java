@@ -75,7 +75,6 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -451,15 +450,21 @@ public class OtherFunctions {
 			String reason = CommonUtil.getJsonParamString(jsonObject, "reason", null, null, 1, 50);
 			String evidenceUrls = CommonUtil.getJsonParamString(jsonObject, "evidenceUrls", null, null, 1, 500);
 			int roomId = CommonUtil.getJsonParamInt(jsonObject, "roomId", 0, null, 1, Integer.MAX_VALUE);
-			int newsId = CommonUtil.getJsonParamInt(jsonObject, "newsId", 0, null, 1, Integer.MAX_VALUE);
 			if(reportTag == 2 && roomId == 0){
 				result.addProperty("TagCode", tagCode_prefix + "06");
 				return result;
 			}
-			else if(reportTag == 3 && newsId == 0){
+			int newsId = CommonUtil.getJsonParamInt(jsonObject, "newsId", 0, null, 1, Integer.MAX_VALUE);
+			if(reportTag == 3 && newsId == 0){
 				result.addProperty("TagCode", tagCode_prefix + "07");
 				return result;
 			}
+			String chatRecords = null;
+			if(jsonObject.get("chatRecords") != null){
+				chatRecords = jsonObject.get("chatRecords").toString();
+			}
+//			String chatRecords = CommonUtil.getJsonParamString(jsonObject, "chatRecords", null, null, 1, Integer.MAX_VALUE);
+			int platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 1, null, 1, Integer.MAX_VALUE);
 			ReportFlowService reportFlowService = (ReportFlowService)MelotBeanFactory.getBean("reportFlowService");
 			ReportFlowRecord reportFlowRecord = new ReportFlowRecord();
 			reportFlowRecord.setUserId(userId);
@@ -472,6 +477,13 @@ public class OtherFunctions {
 			reportFlowRecord.setEvidenceUrls(evidenceUrls);
 			reportFlowRecord.setRoomId(roomId);
 			reportFlowRecord.setNewsId(newsId);
+			reportFlowRecord.setChatRecords(chatRecords);
+			if(platform == 1){
+				reportFlowRecord.setAutoShot(0);
+			}
+			else {
+				reportFlowRecord.setAutoShot(1);
+			}
 			Result<Boolean> flag = reportFlowService.saveReportFlowRecord(reportFlowRecord);
 			if (flag.getCode().equals(CommonStateCode.SUCCESS) && flag.getData()) {
 				logger.info("CommitReportV2 api : userId" + userId + "to report toUserId" + toUserId);

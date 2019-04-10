@@ -1702,6 +1702,7 @@ public class KKHallFunctions extends BaseAction {
                     if (res.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
                         String str = EntityUtils.toString(res.getEntity());
                         if(!StringUtil.strIsNull(str)){
+                            logger.error("getPersonalityRecommendRooms: " + str);
                             JsonArray jsonArray = new JsonParser().parse(str).getAsJsonObject().get("message").getAsJsonArray();
                             roomCount = jsonArray.size();
                             List<String> actors = Lists.newArrayList();
@@ -1758,7 +1759,8 @@ public class KKHallFunctions extends BaseAction {
                 res = httpClient.execute(get);
                 if (res.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
                     String str = EntityUtils.toString(res.getEntity());
-                    if(!StringUtil.strIsNull(str)){
+                    if (!StringUtil.strIsNull(str)) {
+                        logger.error("getPersonalityRecommendSpecifyRooms: " + str);
                         JsonObject jsonObject = new JsonParser().parse(str).getAsJsonObject().get("message").getAsJsonObject();
                         
                         //兴趣标签推荐（14号位）
