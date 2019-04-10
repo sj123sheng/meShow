@@ -32,8 +32,10 @@ import com.melot.kk.module.report.util.Result;
 import com.melot.kk.userSecurity.api.constant.IdPicStatusEnum;
 import com.melot.kk.userSecurity.api.constant.UserVerifyStatusEnum;
 import com.melot.kk.userSecurity.api.constant.UserVerifyTypeEnum;
+import com.melot.kk.userSecurity.api.domain.DO.OfficalActorBlacklistDO;
 import com.melot.kk.userSecurity.api.domain.DO.UserVerifyDO;
 import com.melot.kk.userSecurity.api.domain.param.UserVerifyParam;
+import com.melot.kk.userSecurity.api.service.OfficalActorBlacklistService;
 import com.melot.kk.userSecurity.api.service.UserVerifyService;
 import com.melot.kkactivity.driver.domain.NewUserBootPageConf;
 import com.melot.kkactivity.driver.service.NewUserTaskService;
@@ -125,6 +127,9 @@ public class OtherFunctions {
 
     @Resource
     ActorService actorService;
+
+    @Resource
+    OfficalActorBlacklistService officalActorBlacklistService;
 
     public void setActorInfoSource(ActorInfoSource actorInfoSource) {
         this.actorInfoSource = actorInfoSource;
@@ -629,6 +634,12 @@ public class OtherFunctions {
             result.addProperty("TagCode", TagCodeEnum.USER_IN_BLACK);
             return result;
         }
+
+        // 自由主播开播黑名单用户不能开播
+        //if (officalActorBlacklistService.getOfficalActorBlacklist(userId) != null) {
+        //    result.addProperty("TagCode", TagCodeEnum.USER_IN_OFFICAL_BLACK);
+        //    return result;
+        //}
 
         UserApplyActorDO applyActor;
         UserVerifyDO userVerifyDO;
@@ -1357,7 +1368,10 @@ public class OtherFunctions {
             if(configService.getIsCloseFreeApply()) {
                 ActorInfo actorInfo = actorService.getActorInfoById(actorId);
                 if (actorInfo != null && actorInfo.getFamilyId() == 11222) {
-                    freeActor = true;
+                    OfficalActorBlacklistDO blacklistDO = officalActorBlacklistService.getOfficalActorBlacklist(actorId);
+                    if(blacklistDO != null) {
+                        freeActor = true;
+                    }
                 }
             }
 
@@ -1365,7 +1379,7 @@ public class OtherFunctions {
             if (broadcastTypeStr != null) {
                 int roomType = ProfileServices.getRoomType(actorId);
                 String[] broadcastAllType = broadcastTypeStr.split(",");
-                int isBroadcast = 0;
+                int isBroadcast;
                 for (String broadcastType : broadcastAllType) {
                     isBroadcast = isBroadcastByType(broadcastType, roomType);
                     if(freeActor) {

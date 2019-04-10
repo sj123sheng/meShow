@@ -170,6 +170,7 @@
 	<kkrpc:reference id="actorWithdrawService" interface="com.melot.kk.userSecurity.api.service.ActorWithdrawService" version="1.0.0"/>
 	<kkrpc:reference id="userBankService" interface="com.melot.kk.userSecurity.api.service.UserBankService" version="1.0.0"/>
 	<kkrpc:reference id="zmrzApplyService" interface="com.melot.kk.userSecurity.api.service.ZmrzApplyService" version="1.0.0"/>
+	<kkrpc:reference id="officalActorBlacklistService" interface="com.melot.kk.userSecurity.api.service.OfficalActorBlacklistService" version="1.0.0"/>
 
 	<!-- 新家族模块 -->
 	<kkrpc:reference id="userApplyActorService" interface="com.melot.family.driver.service.UserApplyActorService" version="1.0.0"/>
