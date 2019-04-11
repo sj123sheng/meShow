@@ -1689,45 +1689,45 @@ public class KKHallFunctions extends BaseAction {
         List<HallRoomInfoDTO> roomList = Lists.newArrayList();
         int roomCount = 0;
         
-        String personalityKey = String.format(KK_PERSONALITY_ACTOR_CACHE_KEY, userId, recommendAttribute);
-        try {
-            roomCount = KKHallSource.countSortedSet(personalityKey);
-            if (roomCount == 0) {
-                String url = configService.getPersonalityRecommendRoomsUrl() + "/userid=" + userId + "/types=" + recommendAttribute + "/nums=2000";
-                if(!StringUtil.strIsNull(url)){
-                    CloseableHttpClient httpClient = new DefaultHttpClient();
-                    HttpGet get = new HttpGet(url);
-                    HttpResponse res = null;
-                    res = httpClient.execute(get);
-                    if (res.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-                        String str = EntityUtils.toString(res.getEntity());
-                        if(!StringUtil.strIsNull(str)){
-                            JsonArray jsonArray = new JsonParser().parse(str).getAsJsonObject().get("message").getAsJsonArray();
-                            roomCount = jsonArray.size();
-                            List<String> actors = Lists.newArrayList();
-                            for (int i =0; i < roomCount; i++) {
-                                actors.add(jsonArray.get(i).getAsString());
-                            }
-                            KKHallSource.addSortedSet(personalityKey, actors, 60);
-                        }
-                    }
-                }
-            }
-            
-            if (roomCount > 0) {
-                Set<String> actors = KKHallSource.rangeSortedSet(personalityKey, start, start + offset - 1);
-                if (CollectionUtils.isNotEmpty(actors)) {
-                    String roomIds = StringUtils.join(actors.toArray(), ",");
-                    Result<List<HallRoomInfoDTO>> roomInfosResult = hallRoomService.getRoomListByRoomIds(roomIds);
-                    if (roomInfosResult != null && CommonStateCode.SUCCESS.equals(roomInfosResult.getCode())
-                            && CollectionUtils.isNotEmpty(roomInfosResult.getData())) {
-                        roomList = roomInfosResult.getData();
-                    }
-                }
-            }
-        } catch (Exception ex) {
-            logger.error("getPersonalityRecommendRooms fail: ", ex);
-        }
+//        String personalityKey = String.format(KK_PERSONALITY_ACTOR_CACHE_KEY, userId, recommendAttribute);
+//        try {
+//            roomCount = KKHallSource.countSortedSet(personalityKey);
+//            if (roomCount == 0) {
+//                String url = configService.getPersonalityRecommendRoomsUrl() + "/userid=" + userId + "/types=" + recommendAttribute + "/nums=2000";
+//                if(!StringUtil.strIsNull(url)){
+//                    CloseableHttpClient httpClient = new DefaultHttpClient();
+//                    HttpGet get = new HttpGet(url);
+//                    HttpResponse res = null;
+//                    res = httpClient.execute(get);
+//                    if (res.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+//                        String str = EntityUtils.toString(res.getEntity());
+//                        if(!StringUtil.strIsNull(str)){
+//                            JsonArray jsonArray = new JsonParser().parse(str).getAsJsonObject().get("message").getAsJsonArray();
+//                            roomCount = jsonArray.size();
+//                            List<String> actors = Lists.newArrayList();
+//                            for (int i =0; i < roomCount; i++) {
+//                                actors.add(jsonArray.get(i).getAsString());
+//                            }
+//                            KKHallSource.addSortedSet(personalityKey, actors, 60);
+//                        }
+//                    }
+//                }
+//            }
+//            
+//            if (roomCount > 0) {
+//                Set<String> actors = KKHallSource.rangeSortedSet(personalityKey, start, start + offset - 1);
+//                if (CollectionUtils.isNotEmpty(actors)) {
+//                    String roomIds = StringUtils.join(actors.toArray(), ",");
+//                    Result<List<HallRoomInfoDTO>> roomInfosResult = hallRoomService.getRoomListByRoomIds(roomIds);
+//                    if (roomInfosResult != null && CommonStateCode.SUCCESS.equals(roomInfosResult.getCode())
+//                            && CollectionUtils.isNotEmpty(roomInfosResult.getData())) {
+//                        roomList = roomInfosResult.getData();
+//                    }
+//                }
+//            }
+//        } catch (Exception ex) {
+//            logger.error("getPersonalityRecommendRooms fail: ", ex);
+//        }
         
         result.put("roomList", roomList);
         result.put("count", roomCount);
