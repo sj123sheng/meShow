@@ -36,6 +36,7 @@ import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.api.menu.sdk.dao.domain.HDRoomPoster;
@@ -49,7 +50,6 @@ import com.melot.family.driver.domain.DO.ResRoomInfoDO;
 import com.melot.family.driver.service.FamilyTopConfService;
 import com.melot.kk.demo.api.service.NewRcmdService;
 import com.melot.kk.hall.api.constant.HallRedisKeyConstant;
-import com.melot.kk.hall.api.domain.FamilyPointConsume;
 import com.melot.kk.hall.api.domain.FirstPageConfDTO;
 import com.melot.kk.hall.api.domain.HallPartConfDTO;
 import com.melot.kk.hall.api.domain.HallRoomInfoDTO;
@@ -1702,14 +1702,16 @@ public class KKHallFunctions extends BaseAction {
                     if (res.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
                         String str = EntityUtils.toString(res.getEntity());
                         if(!StringUtil.strIsNull(str)){
-                            logger.error("getPersonalityRecommendRooms: " + str);
-                            JsonArray jsonArray = new JsonParser().parse(str).getAsJsonObject().get("message").getAsJsonArray();
-                            roomCount = jsonArray.size();
-                            List<String> actors = Lists.newArrayList();
-                            for (int i =0; i < roomCount; i++) {
-                                actors.add(jsonArray.get(i).getAsString());
+                            JsonElement jsonElement = new JsonParser().parse(str).getAsJsonObject().get("message");
+                            if (jsonElement != null && !jsonElement.isJsonNull()) {
+                                JsonArray jsonArray = jsonElement.getAsJsonArray();
+                                roomCount = jsonArray.size();
+                                List<String> actors = Lists.newArrayList();
+                                for (int i =0; i < roomCount; i++) {
+                                    actors.add(jsonArray.get(i).getAsString());
+                                }
+                                KKHallSource.addSortedSet(personalityKey, actors, 60);
                             }
-                            KKHallSource.addSortedSet(personalityKey, actors, 60);
                         }
                     }
                 }
@@ -1760,49 +1762,50 @@ public class KKHallFunctions extends BaseAction {
                 if (res.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
                     String str = EntityUtils.toString(res.getEntity());
                     if (!StringUtil.strIsNull(str)) {
-                        logger.error("getPersonalityRecommendSpecifyRooms: " + str);
-                        
-                        JsonObject jsonObject = new JsonParser().parse(str).getAsJsonObject().get("message").getAsJsonObject();
-                        
-                        //兴趣标签推荐（14号位）
-                        if (jsonObject.get("savor") != null) {
-                            Result<List<HallRoomInfoDTO>> roomInfosResult = hallRoomService.getLiveRooms(jsonObject.get("savor").getAsString());
-                            if (roomInfosResult != null && CommonStateCode.SUCCESS.equals(roomInfosResult.getCode())
-                                    && CollectionUtils.isNotEmpty(roomInfosResult.getData())) {
-                                HallRoomInfoDTO hallRoomInfoDTO = roomInfosResult.getData().get(0);
-                                hallRoomInfoDTO.setRecommendType(4);
-                                hallRoomInfoDTO.setRecommendAttribute(9);
-                                topRoomIdList.add(hallRoomInfoDTO.getActorId());
-                                topMap.put(14, hallRoomInfoDTO);
+                        JsonElement jsonElement = new JsonParser().parse(str).getAsJsonObject().get("message");
+                        if (jsonElement != null && !jsonElement.isJsonNull()) {
+                            JsonObject jsonObject = jsonElement.getAsJsonObject();
+                            
+                            //兴趣标签推荐（14号位）
+                            if (jsonObject.get("savor") != null) {
+                                Result<List<HallRoomInfoDTO>> roomInfosResult = hallRoomService.getLiveRooms(jsonObject.get("savor").getAsString());
+                                if (roomInfosResult != null && CommonStateCode.SUCCESS.equals(roomInfosResult.getCode())
+                                        && CollectionUtils.isNotEmpty(roomInfosResult.getData())) {
+                                    HallRoomInfoDTO hallRoomInfoDTO = roomInfosResult.getData().get(0);
+                                    hallRoomInfoDTO.setRecommendType(4);
+                                    hallRoomInfoDTO.setRecommendAttribute(9);
+                                    topRoomIdList.add(hallRoomInfoDTO.getActorId());
+                                    topMap.put(14, hallRoomInfoDTO);
+                                }
+                            }
+                            
+                            //关联家族推荐（16号位）
+                            if (jsonObject.get("family") != null) {
+                                Result<List<HallRoomInfoDTO>> roomInfosResult = hallRoomService.getLiveRooms(jsonObject.get("family").getAsString());
+                                if (roomInfosResult != null && CommonStateCode.SUCCESS.equals(roomInfosResult.getCode())
+                                        && CollectionUtils.isNotEmpty(roomInfosResult.getData())) {
+                                    HallRoomInfoDTO hallRoomInfoDTO = roomInfosResult.getData().get(0);
+                                    hallRoomInfoDTO.setRecommendType(4);
+                                    hallRoomInfoDTO.setRecommendAttribute(10);
+                                    topRoomIdList.add(hallRoomInfoDTO.getActorId());
+                                    topMap.put(16, hallRoomInfoDTO);
+                                }
+                            }
+                            
+                            //过往周行为推荐（18号位）
+                            if (jsonObject.get("action") != null) {
+                                Result<List<HallRoomInfoDTO>> roomInfosResult = hallRoomService.getLiveRooms(jsonObject.get("action").getAsString());
+                                if (roomInfosResult != null && CommonStateCode.SUCCESS.equals(roomInfosResult.getCode())
+                                        && CollectionUtils.isNotEmpty(roomInfosResult.getData())) {
+                                    HallRoomInfoDTO hallRoomInfoDTO = roomInfosResult.getData().get(0);
+                                    hallRoomInfoDTO.setRecommendType(4);
+                                    hallRoomInfoDTO.setRecommendAttribute(11);
+                                    topRoomIdList.add(hallRoomInfoDTO.getActorId());
+                                    topMap.put(18, hallRoomInfoDTO);
+                                }
                             }
                         }
-                        
-                        //关联家族推荐（16号位）
-                        if (jsonObject.get("family") != null) {
-                            Result<List<HallRoomInfoDTO>> roomInfosResult = hallRoomService.getLiveRooms(jsonObject.get("family").getAsString());
-                            if (roomInfosResult != null && CommonStateCode.SUCCESS.equals(roomInfosResult.getCode())
-                                    && CollectionUtils.isNotEmpty(roomInfosResult.getData())) {
-                                HallRoomInfoDTO hallRoomInfoDTO = roomInfosResult.getData().get(0);
-                                hallRoomInfoDTO.setRecommendType(4);
-                                hallRoomInfoDTO.setRecommendAttribute(10);
-                                topRoomIdList.add(hallRoomInfoDTO.getActorId());
-                                topMap.put(16, hallRoomInfoDTO);
-                            }
                         }
-                        
-                        //过往周行为推荐（18号位）
-                        if (jsonObject.get("action") != null) {
-                            Result<List<HallRoomInfoDTO>> roomInfosResult = hallRoomService.getLiveRooms(jsonObject.get("action").getAsString());
-                            if (roomInfosResult != null && CommonStateCode.SUCCESS.equals(roomInfosResult.getCode())
-                                    && CollectionUtils.isNotEmpty(roomInfosResult.getData())) {
-                                HallRoomInfoDTO hallRoomInfoDTO = roomInfosResult.getData().get(0);
-                                hallRoomInfoDTO.setRecommendType(4);
-                                hallRoomInfoDTO.setRecommendAttribute(11);
-                                topRoomIdList.add(hallRoomInfoDTO.getActorId());
-                                topMap.put(18, hallRoomInfoDTO);
-                            }
-                        }
-                    }
                 }
             }
         } catch (Exception ex) {
