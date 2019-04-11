@@ -699,7 +699,7 @@ public class KKPlayFunctions {
             
             //填充全民PK房间
             JsonObject pkJsonObj = new JsonObject();
-            pkJsonObj.addProperty("cataId", 1101);
+            pkJsonObj.addProperty("cataId", 1608);
             pkJsonObj.addProperty("title", "全民PK");
             configArray.add(pkJsonObj);
             
