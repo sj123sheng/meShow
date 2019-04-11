@@ -1745,67 +1745,67 @@ public class KKHallFunctions extends BaseAction {
         RecommendSpecifyRoomDTO result = new RecommendSpecifyRoomDTO();
         HashMap<Integer, HallRoomInfoDTO> topMap = new HashMap<>();
         List<Integer> topRoomIdList = Lists.newArrayList();
-        try {
-            String url = configService.getPersonalityRecommendUrl() + "/userid=" + userId;
-            if (!Collectionutils.isEmpty(filterIds)) {
-                String roomIds = StringUtils.join(filterIds, ",");
-                url = url + "/actorid=" + roomIds;
-            }
-            if(!StringUtil.strIsNull(url)){
-                CloseableHttpClient httpClient = new DefaultHttpClient();
-                HttpGet get = new HttpGet(url);
-                HttpResponse res = null;
-                res = httpClient.execute(get);
-                if (res.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-                    String str = EntityUtils.toString(res.getEntity());
-                    if (!StringUtil.strIsNull(str)) {
-                        JsonObject jsonObject = new JsonParser().parse(str).getAsJsonObject().get("message").getAsJsonObject();
-                        
-                        //兴趣标签推荐（14号位）
-                        if (jsonObject.get("savor") != null) {
-                            Result<List<HallRoomInfoDTO>> roomInfosResult = hallRoomService.getLiveRooms(jsonObject.get("savor").getAsString());
-                            if (roomInfosResult != null && CommonStateCode.SUCCESS.equals(roomInfosResult.getCode())
-                                    && CollectionUtils.isNotEmpty(roomInfosResult.getData())) {
-                                HallRoomInfoDTO hallRoomInfoDTO = roomInfosResult.getData().get(0);
-                                hallRoomInfoDTO.setRecommendType(4);
-                                hallRoomInfoDTO.setRecommendAttribute(9);
-                                topRoomIdList.add(hallRoomInfoDTO.getActorId());
-                                topMap.put(14, hallRoomInfoDTO);
-                            }
-                        }
-                        
-                        //关联家族推荐（16号位）
-                        if (jsonObject.get("family") != null) {
-                            Result<List<HallRoomInfoDTO>> roomInfosResult = hallRoomService.getLiveRooms(jsonObject.get("family").getAsString());
-                            if (roomInfosResult != null && CommonStateCode.SUCCESS.equals(roomInfosResult.getCode())
-                                    && CollectionUtils.isNotEmpty(roomInfosResult.getData())) {
-                                HallRoomInfoDTO hallRoomInfoDTO = roomInfosResult.getData().get(0);
-                                hallRoomInfoDTO.setRecommendType(4);
-                                hallRoomInfoDTO.setRecommendAttribute(10);
-                                topRoomIdList.add(hallRoomInfoDTO.getActorId());
-                                topMap.put(16, hallRoomInfoDTO);
-                            }
-                        }
-                        
-                        //过往周行为推荐（18号位）
-                        if (jsonObject.get("action") != null) {
-                            Result<List<HallRoomInfoDTO>> roomInfosResult = hallRoomService.getLiveRooms(jsonObject.get("action").getAsString());
-                            if (roomInfosResult != null && CommonStateCode.SUCCESS.equals(roomInfosResult.getCode())
-                                    && CollectionUtils.isNotEmpty(roomInfosResult.getData())) {
-                                HallRoomInfoDTO hallRoomInfoDTO = roomInfosResult.getData().get(0);
-                                hallRoomInfoDTO.setRecommendType(4);
-                                hallRoomInfoDTO.setRecommendAttribute(11);
-                                topRoomIdList.add(hallRoomInfoDTO.getActorId());
-                                topMap.put(18, hallRoomInfoDTO);
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (Exception ex) {
-            logger.error("getPersonalityRecommendSpecifyRooms fail: ", ex);
-        }
-        
+//        try {
+//            String url = configService.getPersonalityRecommendUrl() + "/userid=" + userId;
+//            if (!Collectionutils.isEmpty(filterIds)) {
+//                String roomIds = StringUtils.join(filterIds, ",");
+//                url = url + "/actorid=" + roomIds;
+//            }
+//            if(!StringUtil.strIsNull(url)){
+//                CloseableHttpClient httpClient = new DefaultHttpClient();
+//                HttpGet get = new HttpGet(url);
+//                HttpResponse res = null;
+//                res = httpClient.execute(get);
+//                if (res.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+//                    String str = EntityUtils.toString(res.getEntity());
+//                    if (!StringUtil.strIsNull(str)) {
+//                        JsonObject jsonObject = new JsonParser().parse(str).getAsJsonObject().get("message").getAsJsonObject();
+//                        
+//                        //兴趣标签推荐（14号位）
+//                        if (jsonObject.get("savor") != null) {
+//                            Result<List<HallRoomInfoDTO>> roomInfosResult = hallRoomService.getLiveRooms(jsonObject.get("savor").getAsString());
+//                            if (roomInfosResult != null && CommonStateCode.SUCCESS.equals(roomInfosResult.getCode())
+//                                    && CollectionUtils.isNotEmpty(roomInfosResult.getData())) {
+//                                HallRoomInfoDTO hallRoomInfoDTO = roomInfosResult.getData().get(0);
+//                                hallRoomInfoDTO.setRecommendType(4);
+//                                hallRoomInfoDTO.setRecommendAttribute(9);
+//                                topRoomIdList.add(hallRoomInfoDTO.getActorId());
+//                                topMap.put(14, hallRoomInfoDTO);
+//                            }
+//                        }
+//                        
+//                        //关联家族推荐（16号位）
+//                        if (jsonObject.get("family") != null) {
+//                            Result<List<HallRoomInfoDTO>> roomInfosResult = hallRoomService.getLiveRooms(jsonObject.get("family").getAsString());
+//                            if (roomInfosResult != null && CommonStateCode.SUCCESS.equals(roomInfosResult.getCode())
+//                                    && CollectionUtils.isNotEmpty(roomInfosResult.getData())) {
+//                                HallRoomInfoDTO hallRoomInfoDTO = roomInfosResult.getData().get(0);
+//                                hallRoomInfoDTO.setRecommendType(4);
+//                                hallRoomInfoDTO.setRecommendAttribute(10);
+//                                topRoomIdList.add(hallRoomInfoDTO.getActorId());
+//                                topMap.put(16, hallRoomInfoDTO);
+//                            }
+//                        }
+//                        
+//                        //过往周行为推荐（18号位）
+//                        if (jsonObject.get("action") != null) {
+//                            Result<List<HallRoomInfoDTO>> roomInfosResult = hallRoomService.getLiveRooms(jsonObject.get("action").getAsString());
+//                            if (roomInfosResult != null && CommonStateCode.SUCCESS.equals(roomInfosResult.getCode())
+//                                    && CollectionUtils.isNotEmpty(roomInfosResult.getData())) {
+//                                HallRoomInfoDTO hallRoomInfoDTO = roomInfosResult.getData().get(0);
+//                                hallRoomInfoDTO.setRecommendType(4);
+//                                hallRoomInfoDTO.setRecommendAttribute(11);
+//                                topRoomIdList.add(hallRoomInfoDTO.getActorId());
+//                                topMap.put(18, hallRoomInfoDTO);
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        } catch (Exception ex) {
+//            logger.error("getPersonalityRecommendSpecifyRooms fail: ", ex);
+//        }
+//        
         result.setTopRoomIdList(topRoomIdList);
         result.setSpecifyRoomMap(topMap);
         return result;
