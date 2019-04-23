@@ -175,7 +175,7 @@ public class BountyFunctions {
 //                    }
 //                }
 //                result.add("redPackets", redPackets);
-                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.LOW_VERSION_EXCEPTION);
                 return result;
 //            }else {
 //                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
@@ -257,7 +257,7 @@ public class BountyFunctions {
 //                    }
 //                }
 //                result.add("redPackets", redPackets);
-                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.SUCCESS);
+                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.LOW_VERSION_EXCEPTION);
                 return result;
 //            }else {
 //                result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.MODULE_RETURN_NULL);
