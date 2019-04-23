@@ -4,13 +4,17 @@ import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.log4j.Logger;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
-import com.melot.api.menu.sdk.dao.domain.RoomSideLabel;
 import com.melot.kk.config.api.service.PlaybackActorService;
 import com.melot.kk.hall.api.domain.HallRoomInfoDTO;
+import com.melot.kk.hall.api.domain.RoomSideLabel;
 import com.melot.kkcx.service.GeneralService;
+import com.melot.kkcx.service.RoomService;
 import com.melot.kkcx.service.UserAssetServices;
 import com.melot.kkcx.service.UserService;
 import com.melot.kktv.redis.HotDataSource;
@@ -25,8 +29,6 @@ import com.melot.kktv.util.StringUtil;
 import com.melot.kktv.util.cache.EhCache;
 import com.melot.kktv.util.confdynamic.SystemConfig;
 import com.melot.sdk.core.util.MelotBeanFactory;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.log4j.Logger;
 
 public class HallRoomTF {
 
@@ -96,9 +98,9 @@ public class HallRoomTF {
 
         if (roomInfo.getActorId() != null) {
             if (onlyCore) {
-                extractCommonRoomInfoCore(roomInfo, roomObject);
+                extractCommonRoomInfoCore(roomInfo, roomObject, platform);
             }else {
-                extractCommonRoomInfo(roomInfo, roomObject);
+                extractCommonRoomInfo(roomInfo, roomObject, platform);
             }
 
             String basePictureDir = ifHttpPack ? ConfigHelper.getHttpdir() : "";
@@ -159,9 +161,9 @@ public class HallRoomTF {
      * @param roomInfo
      * @param roomObject
      */
-    private static void extractCommonRoomInfo(HallRoomInfoDTO roomInfo, JsonObject roomObject) {
+    private static void extractCommonRoomInfo(HallRoomInfoDTO roomInfo, JsonObject roomObject, int platform) {
 
-        extractCommonRoomInfoCore(roomInfo, roomObject);
+        extractCommonRoomInfoCore(roomInfo, roomObject, platform);
 
         int roomId = roomInfo.getRoomId() != null ? roomInfo.getRoomId() : roomInfo.getActorId();
         // 轮播房添加roomId，非轮播房正在直播的主播等于actorId
@@ -305,7 +307,7 @@ public class HallRoomTF {
         }
     }
 
-    private static void extractCommonRoomInfoCore(HallRoomInfoDTO roomInfo, JsonObject roomObject) {
+    private static void extractCommonRoomInfoCore(HallRoomInfoDTO roomInfo, JsonObject roomObject, int platform) {
         roomObject.addProperty("userId", roomInfo.getActorId());
 
         if (!StringUtil.strIsNull(roomInfo.getNickname())) {
@@ -349,6 +351,11 @@ public class HallRoomTF {
                 //金牌艺人
                 roomObject.addProperty("sideLabelContent", "金牌艺人");
                 roomObject.addProperty("sideLabelColor", "2");
+                if (platform == PlatformEnum.WEB) {
+                    roomObject.addProperty("sideLabelIcon", "/picture/offical/web_goldMedalIcon.png");
+                } else {
+                    roomObject.addProperty("sideLabelIcon", "/picture/offical/goldMedalIcon.png");
+                }
             } else if (recommendAttribute == 2) {
                 //附近
                 roomObject.addProperty("sideLabelContent", "附近");
@@ -534,6 +541,9 @@ public class HallRoomTF {
                             roomObject.addProperty("sideLabelContent", roomSideLabel.getContent());
                             if (roomSideLabel.getColor() != null) {
                                 roomObject.addProperty("sideLabelColor", roomSideLabel.getColor());
+                            }
+                            if (roomSideLabel.getSideLabelIcon() != null) {
+                                roomObject.addProperty("sideLabelIcon", roomSideLabel.getSideLabelIcon());
                             }
                             if (roomSideLabel.getEffectiveStartTime() != null) {
                                 roomObject.addProperty("sideLabelStartTime", roomSideLabel.getEffectiveStartTime().getTime());

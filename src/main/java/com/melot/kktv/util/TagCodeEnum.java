@@ -120,6 +120,12 @@ public class TagCodeEnum {
 	/** 参数URL缺失 */
 	public static final String URL_MISSING = "30001049";
 
+	/** 参数startTime缺失 */
+	public static final String STARTTIME_MISSING = "30001051";
+
+	/** 参数endTime缺失 */
+	public static final String ENDTIME_MISSING = "30001052";
+
 	/** 用户不存在 */
 	public static final String USER_NOT_EXIST = "30002001";
 

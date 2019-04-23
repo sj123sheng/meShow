@@ -349,6 +349,9 @@ public class HallFunctions {
                         }
                     }
                     
+                    if (cataId == 1598) {
+                        roomInfo.setRecommendAttribute(12);
+                    }
 					json = HallRoomTF.roomInfoWithPlaybackToJson(roomInfo, platform,appId);
 					if (sysMenu.getDataSourceType() != null 
 					        && (sysMenu.getDataSourceType() == 16

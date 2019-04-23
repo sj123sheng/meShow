@@ -184,7 +184,7 @@
 		<dependency>
 		  	<groupId>com.melot</groupId>
 		  	<artifactId>melot-api-common</artifactId>
-		  	<version>1.0.14</version>
+		  	<version>1.0.15</version>
 		</dependency>
 		<dependency>
 			<groupId>com.melot.module.api</groupId>
@@ -557,7 +557,7 @@
 		<dependency>
 			<groupId>com.melot.module</groupId>
 			<artifactId>kk-hall-module-api</artifactId>
-			<version>1.0.18</version>
+			<version>1.0.22</version>
 		</dependency>
         
         <!-- 贵族模块 -->
@@ -630,7 +630,7 @@
 		<dependency>
   			<groupId>com.melot.kk</groupId>
   			<artifactId>kk-config-api</artifactId>
-  			<version>1.0.4</version>
+  			<version>1.0.5</version>
 		</dependency>
 		
 		<!-- 用户财富等级升级模块 -->

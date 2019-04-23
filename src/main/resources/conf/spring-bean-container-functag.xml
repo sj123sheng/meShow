@@ -279,6 +279,11 @@
 		<constructor-arg name="t" ref="userFunction" />
 		<constructor-arg name="methodName" value="setPassword" />
 	</bean>
+	<!-- 绑定第三方账号 -->
+	<bean id="10001009" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="userFunction" />
+		<constructor-arg name="methodName" value="bindAccountAll" />
+	</bean>
 	
 	<!-- Node调用接口类 -->
 	<!-- 获取用户信息 -->
@@ -622,11 +627,20 @@
 		<constructor-arg name="t" ref="userRelationFunction" />
 		<constructor-arg name="methodName" value="userCancelRoomAdmin" />
 	</bean>
-
 	<!-- 用户取消房间管理员权限 -->
 	<bean id="10003021" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="userRelationFunction" />
 		<constructor-arg name="methodName" value="getUserFollowedListByRoomSource" />
+	</bean>
+	<!-- 获取用户黑名单 -->
+	<bean id="51011006" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="userRelationFunction" />
+		<constructor-arg name="methodName" value="getConfKKBlacklist" />
+	</bean>
+	<!-- 获取用户黑名单 -->
+	<bean id="51011007" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="userRelationFunction" />
+		<constructor-arg name="methodName" value="getConfKKWhitelist" />
 	</bean>
 	
 	<!-- 家族 -->
@@ -2604,6 +2618,18 @@
     <bean id="52050302" class="com.melot.sdk.core.function.GenericFunction">
         <constructor-arg name="t" ref="newUserTaskFunctions" />
         <constructor-arg name="methodName" value="finishNewUserTask" />
+    </bean>
+    
+    <!-- 兑换新手礼物  -->
+    <bean id="51050302" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="newUserTaskFunctions" />
+        <constructor-arg name="methodName" value="exchangeNewUserGift" />
+    </bean>
+    
+    <!-- 获取新手引导消息文案 -->
+    <bean id="51050303" class="com.melot.sdk.core.function.GenericFunction">
+        <constructor-arg name="t" ref="newUserTaskFunctions" />
+        <constructor-arg name="methodName" value="getNewUserBootMessageList" />
     </bean>
 
     <!-- 获取主播收益列表 -->

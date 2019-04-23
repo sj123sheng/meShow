@@ -16,8 +16,6 @@ import java.util.TreeMap;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
-import com.melot.kkcore.actor.api.ActorInfo;
-import com.melot.kkcore.actor.service.ActorService;
 import org.apache.log4j.Logger;
 
 import com.google.gson.Gson;
@@ -27,6 +25,11 @@ import com.google.gson.JsonParser;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.api.menu.sdk.handler.FirstPageHandler;
 import com.melot.api.menu.sdk.service.RoomInfoService;
+import com.melot.kk.config.api.domain.ConfKkBlacklistDTO;
+import com.melot.kk.config.api.domain.ConfKkWhitelistDTO;
+import com.melot.kk.config.api.service.ConfigInfoService;
+import com.melot.kkcore.actor.api.ActorInfo;
+import com.melot.kkcore.actor.service.ActorService;
 import com.melot.kkcore.relation.api.ActorRelation;
 import com.melot.kkcore.relation.api.RelationType;
 import com.melot.kkcore.relation.service.ActorRelationService;
@@ -71,6 +74,9 @@ public class UserRelationFunctions {
 
     @Resource
     private ActorService actorService;
+    
+    @Resource
+    private ConfigInfoService configInfoService;
 
     /**
      * 关注(10003001)
@@ -1342,6 +1348,76 @@ public class UserRelationFunctions {
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 
         // 返回结果
+        return result;
+    }
+    
+    /**
+     * 获取用户黑名单(51011006)
+     *
+     * @param jsonObject 请求对象
+     * @param checkTag   是否验证token标记
+     * @return 结果字符串
+     */
+    public JsonObject getConfKKBlacklist(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+        JsonObject result = new JsonObject();
+
+        int userId, blackType;
+
+        // 获取参数
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            blackType = CommonUtil.getJsonParamInt(jsonObject, "blackType", 1, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        int status = 0;
+        ConfKkBlacklistDTO confKkBlacklistDTO = configInfoService.getConfKkBlacklist(userId, blackType);
+        if (confKkBlacklistDTO != null) {
+            status = confKkBlacklistDTO.getStatus();
+        }
+        
+        result.addProperty("status", status);
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+    
+    /**
+     * 获取用户白名单(51011007)
+     *
+     * @param jsonObject 请求对象
+     * @param checkTag   是否验证token标记
+     * @return 结果字符串
+     */
+    public JsonObject getConfKKWhitelist(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+        JsonObject result = new JsonObject();
+
+        int userId, whiteType;
+
+        // 获取参数
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            whiteType = CommonUtil.getJsonParamInt(jsonObject, "whiteType", 1, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        int status = 0;
+        ConfKkWhitelistDTO confKkWhitelistDTO = configInfoService.getConfKkWhitelist(userId, whiteType);
+        if (confKkWhitelistDTO != null) {
+            status = confKkWhitelistDTO.getStatus();
+        }
+        
+        result.addProperty("status", status);
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
 

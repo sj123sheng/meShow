@@ -27,6 +27,7 @@ import com.google.gson.JsonParser;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.blacklist.service.BlacklistService;
 import com.melot.cms.admin.api.bean.UserViolationDto;
+import com.melot.common.melot_utils.StringUtils;
 import com.melot.kk.logistics.api.domain.UserAddressDO;
 import com.melot.kk.logistics.api.domain.UserAddressParam;
 import com.melot.kk.logistics.api.service.UserAddressService;
@@ -2825,6 +2826,97 @@ public class UserFunctions {
             result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
             return result;
         }
+    }
+    
+    /**
+     * 绑定第三方账号(10001009)
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject bindAccountAll(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+        
+        int userId, openPlatform;
+        String nickname, uuid, unionId = null, sessionId = null;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            nickname = CommonUtil.getJsonParamString(jsonObject, "nickname", null, null, 1, Integer.MAX_VALUE);
+            openPlatform = CommonUtil.getJsonParamInt(jsonObject, "openPlatform", 0, TagCodeEnum.PLATFORM_MISSING, 1, Integer.MAX_VALUE);
+            sessionId = CommonUtil.getJsonParamString(jsonObject, "sessionId", null, null, 1, Integer.MAX_VALUE);
+        } catch(CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch(Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        uuid = SecurityFunctions.decodeUUID(jsonObject);
+        if (uuid == null) {
+            result.addProperty("TagCode", "01090108");
+            return result;
+        }
+        if (openPlatform == LoginTypeEnum.WEIXIN) {
+            unionId = SecurityFunctions.decodeUnionId(jsonObject);
+            if (unionId == null) {
+                result.addProperty("TagCode", "01090109");
+                return result;
+            }
+        }
+        
+        if (openPlatform == LoginTypeEnum.QQ && StringUtils.isNotEmpty(sessionId)) {
+            QQService qqService = (QQService) MelotBeanFactory.getBean("qqService");
+            unionId = qqService.getUnionID(sessionId);
+        }
+        
+        String TagCode = null;
+        try {
+            com.melot.kkcore.account.service.AccountService accountService = (com.melot.kkcore.account.service.AccountService) MelotBeanFactory.getBean("kkAccountService");
+            //FaceBook
+            if (openPlatform == 45) {
+                unionId = SecurityFunctions.decodeUnionId(jsonObject);
+                String[] uuidArr = unionId.split(",");
+                for (String uuidStr : uuidArr) {
+                    if (accountService.isUuidValid(uuidStr, openPlatform) > 0) {
+                        uuid = uuidStr;
+                        break;
+                    }
+                }
+                unionId = null;
+            }
+            if (accountService != null) {
+                TagCode = accountService.bindAccountAll(userId, openPlatform, nickname, unionId, uuid);
+            } else {
+                result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+                return result;
+            }
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+            return result;
+        }
+        if (TagCode != null) {
+            if (TagCode.equals("00000000")) {
+                result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            } else if (TagCode.equals("01")) {
+                result.addProperty("TagCode", TagCodeEnum.PROCEDURE_EXCEPTION);
+            } else if (TagCode.equals("02")) {
+                //uuid已被其他账号绑定
+                result.addProperty("TagCode", "010901" + TagCode);
+            } else if (TagCode.equals("03")) {
+                //账号已经绑定其他uuid
+                result.addProperty("TagCode", "010901" + TagCode);
+            }
+        } else {
+            result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
+        }
+        
+        return result;
     }
     
 	private static JsonObject checkLogin(int userId, String username, String phoneNum, JsonObject result, ResLogin resLogin, int loginType, JsonObject jsonObject) {

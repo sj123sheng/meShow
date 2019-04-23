@@ -1443,7 +1443,7 @@ public class KKHallFunctions extends BaseAction {
         try {
             HashMap<Integer, HallRoomInfoDTO> specifyRoomMap = new HashMap<>();
             List<Integer> topRoomIdList = Lists.newArrayList();
-            //获取新版推荐指定位置（人工置顶 + 头条（1号位） + 金牌艺人（3号位） + 小时榜（4号位） + 家族推荐点数）房间列表
+            //获取新版推荐指定位置（人工置顶 + 头条（1号位） + 金牌艺人（3号位、5号位） + 小时榜（4号位） + 家族推荐点数）房间列表
             RecommendSpecifyRoomDTO recommendSpecifyRoomDTO = hallRoomService.getRecommendSpecifyRooms();
             if (recommendSpecifyRoomDTO != null) {
                 specifyRoomMap = recommendSpecifyRoomDTO.getSpecifyRoomMap();
