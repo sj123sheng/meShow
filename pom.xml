@@ -1,4 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+﻿<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	
@@ -10,7 +10,7 @@
 	
 	<artifactId>meShow</artifactId>
 	<packaging>war</packaging>
-	<version>2.12.84</version>
+	<version>2.12.85</version>
 	<name>meShow</name>
 	<url>http://maven.apache.org</url>
 	
@@ -184,7 +184,7 @@
 		<dependency>
 		  	<groupId>com.melot</groupId>
 		  	<artifactId>melot-api-common</artifactId>
-		  	<version>1.0.15</version>
+		  	<version>1.0.16</version>
 		</dependency>
 		<dependency>
 			<groupId>com.melot.module.api</groupId>
