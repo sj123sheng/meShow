@@ -281,9 +281,12 @@ public class HallRoomTF {
         }
 
         if (roomInfo.getRoomMode() != null && roomInfo.getRoomMode() > 10) {
-            String modeLabelPath = SystemConfig.getValue(String.format("modeLabelPath_%d", roomInfo.getRoomMode()), AppIdEnum.AMUSEMENT);
-            if (modeLabelPath != null) {
-                roomObject.addProperty("modeLabelPath", modeLabelPath);
+            int roomMode = roomInfo.getRoomMode();
+            if (roomMode != 104 || RoomService.checkRoomByTitleId(roomId, 1650)) {
+                String modeLabelPath = SystemConfig.getValue(String.format("modeLabelPath_%d", roomMode), AppIdEnum.AMUSEMENT);
+                if (modeLabelPath != null) {
+                    roomObject.addProperty("modeLabelPath", modeLabelPath);
+                }
             }
         }
 
@@ -557,21 +560,24 @@ public class HallRoomTF {
             }
 
             if (roomInfo.getRoomMode() != null && roomInfo.getRoomMode() > 10) {
-                String cacheKey = String.format(CACHE_KEY, roomInfo.getRoomMode());
-                String fromCache = HotDataSource.getTempDataString(cacheKey);
-                if (fromCache == null) {
-                    // 缓存不存在，则获取配置
-                    String modeLabelPath = SystemConfig.getValue(String.format("modeLabelPath_%d", roomInfo.getRoomMode()), AppIdEnum.AMUSEMENT);
-                    if (modeLabelPath != null) {
-                        roomObject.addProperty("modeLabelPath", modeLabelPath);
-                        HotDataSource.setTempDataString(cacheKey, modeLabelPath, 180);
-                    } else {
-                        // 配置不存在，设置无效缓存
-                        HotDataSource.setTempDataString(cacheKey, CACHE_NOT_EXIST_VALUE, 180);
+                int roomMode = roomInfo.getRoomMode();
+                if (roomMode != 104 || RoomService.checkRoomByTitleId(roomId, 1650)) {
+                    String cacheKey = String.format(CACHE_KEY, roomInfo.getRoomMode());
+                    String fromCache = HotDataSource.getTempDataString(cacheKey);
+                    if (fromCache == null) {
+                        // 缓存不存在，则获取配置
+                        String modeLabelPath = SystemConfig.getValue(String.format("modeLabelPath_%d", roomInfo.getRoomMode()), AppIdEnum.AMUSEMENT);
+                        if (modeLabelPath != null) {
+                            roomObject.addProperty("modeLabelPath", modeLabelPath);
+                            HotDataSource.setTempDataString(cacheKey, modeLabelPath, 180);
+                        } else {
+                            // 配置不存在，设置无效缓存
+                            HotDataSource.setTempDataString(cacheKey, CACHE_NOT_EXIST_VALUE, 180);
+                        }
+                    } else if (!fromCache.equals(CACHE_NOT_EXIST_VALUE)) {
+                        // 缓存有效，则设置
+                        roomObject.addProperty("modeLabelPath", fromCache);
                     }
-                } else if (!fromCache.equals(CACHE_NOT_EXIST_VALUE)) {
-                    // 缓存有效，则设置
-                    roomObject.addProperty("modeLabelPath", fromCache);
                 }
             }
             

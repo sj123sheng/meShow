@@ -1,7 +1,6 @@
 package com.melot.kkcx.service;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,15 +17,19 @@ import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import com.melot.api.menu.sdk.dao.domain.RoomInfo;
 import com.melot.api.menu.sdk.service.RoomInfoService;
+import com.melot.api.menu.sdk.utils.Collectionutils;
+import com.melot.common.melot_utils.StringUtils;
 import com.melot.content.config.apply.service.ApplyContractService;
 import com.melot.content.config.domain.ApplyContractInfo;
+import com.melot.kk.hall.api.domain.HallRoomInfoDTO;
+import com.melot.kk.hall.api.service.DefaultPartService;
 import com.melot.kkcore.user.api.UserProfile;
 import com.melot.kkcore.user.service.KkUserService;
 import com.melot.kktv.model.FansRankingItem;
 import com.melot.kktv.redis.GiftRecordSource;
+import com.melot.kktv.redis.HotDataSource;
 import com.melot.kktv.redis.MatchSource;
 import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.DateUtil;
 import com.melot.kktv.util.HttpClient;
 import com.melot.kktv.util.RankingEnum;
 import com.melot.kktv.util.StringUtil;
@@ -42,6 +45,8 @@ import com.melot.sdk.core.util.MelotBeanFactory;
 public class RoomService {
 
     private static Logger logger = Logger.getLogger(RoomService.class);
+    
+    private static final String ROOM_TITLE_KEY = "room_title_%s_%s";
     
     /**
      * 获取房间粉丝榜单
@@ -306,6 +311,38 @@ public class RoomService {
                     + "userId " + userId, e);
         }
         return null;
+    }
+    
+    /**
+     * 校验房间是否归属某栏目下
+     * 
+     * @param roomId    房间id
+     * @param titleId   栏目id
+     * @return
+     */
+    public static boolean checkRoomByTitleId(int roomId, int titleId) {
+        boolean result = false;
+        try {
+            String key = String.format(ROOM_TITLE_KEY, roomId, titleId);
+            String tag = HotDataSource.getTempDataString(key);
+            if (StringUtil.strIsNull(tag)) {
+                DefaultPartService defaultPartService = (DefaultPartService) MelotBeanFactory.getBean("defaultPartService");
+                HallRoomInfoDTO queryCondition = new HallRoomInfoDTO();
+                queryCondition.setQueryRoomIds(String.valueOf(roomId));
+                tag = "0";
+                List<HallRoomInfoDTO> hallRoomInfoDTOs = defaultPartService.getPartRoomListForManage(titleId, 0, 1, queryCondition);
+                if (!Collectionutils.isEmpty(hallRoomInfoDTOs)) {
+                    tag = "1";
+                    result = true;
+                }
+                HotDataSource.setTempDataString(key, tag, 180);
+            } else if ("1".equals(tag)){
+                result = true;
+            }
+        } catch (Exception e) {
+            logger.error("Fail to call RoomService.checkRoomByTitleId() fail:, " + "roomId: " + roomId + "titleId: " + titleId, e);
+        }
+        return result;
     }
 	
 }
