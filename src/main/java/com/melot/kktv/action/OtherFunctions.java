@@ -148,6 +148,20 @@ public class OtherFunctions {
         result.addProperty("TagCode", TagCodeEnum.LOW_VERSION_EXCEPTION);
         return result;
     }
+    
+    /**
+     * 通用接口暂停使用实现
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     * @throws Exception
+     */
+    public JsonObject forbiddenExcute(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+        JsonObject result = new JsonObject();
+        result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+        return result;
+    }
 
 	/**
 	 * 发送小喇叭(20000002)
