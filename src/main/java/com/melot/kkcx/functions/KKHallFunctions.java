@@ -36,7 +36,6 @@ import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.api.menu.sdk.dao.domain.HDRoomPoster;
@@ -50,6 +49,7 @@ import com.melot.family.driver.domain.DO.ResRoomInfoDO;
 import com.melot.family.driver.service.FamilyTopConfService;
 import com.melot.kk.demo.api.service.NewRcmdService;
 import com.melot.kk.hall.api.constant.HallRedisKeyConstant;
+import com.melot.kk.hall.api.domain.FamilyPointConsume;
 import com.melot.kk.hall.api.domain.FirstPageConfDTO;
 import com.melot.kk.hall.api.domain.HallPartConfDTO;
 import com.melot.kk.hall.api.domain.HallRoomInfoDTO;
@@ -1395,6 +1395,37 @@ public class KKHallFunctions extends BaseAction {
         result.add("roomList", roomArray);
         result.addProperty("count", count);
         result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+
+        return result;
+    }
+    
+    /**
+     * 判断主播是否归属某栏目（51070106）
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     * @throws Exception
+     */
+    public JsonObject checkRoomByTitleId(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
+        JsonObject result = new JsonObject();
+
+        int roomId;
+        int titleId;
+        try {
+            roomId = CommonUtil.getJsonParamInt(jsonObject, "roomId", 0, TagCodeEnum.ROOMID_MISSING, 1, Integer.MAX_VALUE);
+            titleId = CommonUtil.getJsonParamInt(jsonObject, "titleId", 0, "5107010601", 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+
+        result.addProperty("state", RoomService.checkRoomByTitleId(roomId, titleId));
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 
         return result;

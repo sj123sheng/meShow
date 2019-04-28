@@ -24,6 +24,7 @@ import com.melot.kkactivity.driver.domain.ActEpisode;
 import com.melot.kkactivity.driver.domain.ActInfo;
 import com.melot.kkactivity.driver.domain.CarouselBanner;
 import com.melot.kkactivity.driver.domain.ConfActivityExpressionDTO;
+import com.melot.kkactivity.driver.domain.ConfKkWorkDTO;
 import com.melot.kkactivity.driver.domain.KkBanner;
 import com.melot.kkactivity.driver.domain.KkPreviewAct;
 import com.melot.kkactivity.driver.domain.StarActor;
@@ -1006,4 +1007,61 @@ public class ActivityCenterFunctions {
         
         return result;
     }
+    
+    /**
+     * 获取影视作品列表（50002016）
+     * 
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject getKKWorkList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+        
+        int pageIndex;
+        int countPerPage;
+        
+        try {
+            pageIndex = CommonUtil.getJsonParamInt(jsonObject, "pageIndex", 1, null, 1, Integer.MAX_VALUE);
+            countPerPage = CommonUtil.getJsonParamInt(jsonObject, "countPerPage", 10, null, 1, Integer.MAX_VALUE);
+        } catch (CommonUtil.ErrorGetParameterException e) {
+            result.addProperty("TagCode", e.getErrCode());
+            return result;
+        } catch (Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+        
+        try {
+            int count = 0;
+            JsonArray workList = new JsonArray();
+            Page<ConfKkWorkDTO> resp = kkActivityService.getConfKkWorkList(null, pageIndex, countPerPage);
+            if (resp != null && !CollectionUtils.isEmpty(resp.getList())) {
+                count = resp.getCount();
+                List<ConfKkWorkDTO> confKkWorkDTOList = resp.getList();
+                for (ConfKkWorkDTO confKkWorkDTO : confKkWorkDTOList) {
+                    JsonObject jsonObj = new JsonObject();
+                    jsonObj.addProperty("workName", confKkWorkDTO.getWorkName());
+                    jsonObj.addProperty("workPoster", confKkWorkDTO.getWorkPoster());
+                    jsonObj.addProperty("performer", confKkWorkDTO.getPerformer());
+                    jsonObj.addProperty("desc", confKkWorkDTO.getWorkDesc());
+                    jsonObj.addProperty("duration", confKkWorkDTO.getDuration());
+                    jsonObj.addProperty("workUrl", confKkWorkDTO.getWorkUrl());
+                    workList.add(jsonObj);
+                }
+            }
+            
+            result.add("workList", workList);
+            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
+            result.addProperty("count", count);
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        } catch(Exception e) {
+            logger.error("kkActivityService.getKKWorkList execute fail: ", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+        }
+        
+        return result;
+    }
+    
 }

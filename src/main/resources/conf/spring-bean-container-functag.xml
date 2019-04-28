@@ -2095,6 +2095,12 @@
 		<constructor-arg name="methodName" value="hasActivityExpression" />
 	</bean>
 	
+	<!-- 获取影视作品列表-->
+	<bean id="50002016" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="activityCenterFunctions" />
+		<constructor-arg name="methodName" value="getKKWorkList" />
+	</bean>
+	
 	<!-- IM相关接口 -->
 	<!-- 腾讯IM云账号注册 -->
 	<bean id="50001009" class="com.melot.sdk.core.function.GenericFunction">
@@ -2703,6 +2709,11 @@
 	<bean id="51070105" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="kkHallFunction" />
 		<constructor-arg name="methodName" value="getSpecifyRoomList" />
+	</bean>
+	<!-- 判断主播是否归属某栏目 -->
+	<bean id="51070106" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="kkHallFunction" />
+		<constructor-arg name="methodName" value="checkRoomByTitleId" />
 	</bean>
 	<!-- 用户是否有贵族信息 -->
 	<bean id="51010401" class="com.melot.sdk.core.function.GenericFunction">
