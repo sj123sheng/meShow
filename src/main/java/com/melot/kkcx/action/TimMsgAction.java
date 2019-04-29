@@ -11,7 +11,8 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.melot.kktv.service.ConfigService;
+import com.melot.letter.driver.domain.CheckResult;
+import com.melot.letter.driver.domain.HistPrivateLetter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.struts2.ServletActionContext;
@@ -33,12 +34,6 @@ public class TimMsgAction extends ActionSupport {
 	private static final long serialVersionUID = -8850731119336469628L;
 	private Logger logger = Logger.getLogger(TimMsgAction.class);
 
-	private ConfigService configService;
-
-	{
-		configService = MelotBeanFactory.getBean("configService", ConfigService.class);
-	}
-
 	/**
 	 * 腾讯云单聊发送消息回调
 	 * 
@@ -58,8 +53,6 @@ public class TimMsgAction extends ActionSupport {
 			return null;
 		}
 
-		int ErrorCode = configService.getPrivateLetterErrorCode();
-		
 		JsonObject result = new JsonObject();
 		if (request == null) {
 			result.addProperty("ActionStatus", "FAIL");
@@ -71,6 +64,7 @@ public class TimMsgAction extends ActionSupport {
 
 		@SuppressWarnings("unchecked")
 		Map<String, String[]> params = request.getParameterMap();
+
 		if (params != null && params.size() > 0) {
 			StringBuilder queryString = new StringBuilder();
 			for (String key : params.keySet()) {
@@ -87,16 +81,6 @@ public class TimMsgAction extends ActionSupport {
 		msgTypeList.add("TIMCustomElem");
 
 		String callbackCommand = request.getParameter("CallbackCommand");
-//		String sdkAppid = request.getParameter("SdkAppid");
-//		if (StringUtils.isEmpty(sdkAppid) 
-//		        || (!Constant.TIM_SdkAppId.equals(sdkAppid) 
-//		                && !Constant.TIM_SdkAppIdTest.equals(sdkAppid))) {
-//			result.addProperty("ActionStatus", "FAIL");
-//			result.addProperty("ErrorCode", 1);
-//			result.addProperty("ErrorInfo", "sdkAppid不匹配");
-//			out.println(result.toString());
-//			return null;
-//		}
 		String msgBody = "";
 		try {
 			msgBody = getBodyString(request.getReader());
@@ -108,7 +92,6 @@ public class TimMsgAction extends ActionSupport {
 			out.println(result.toString());
 			return null;
 		}
-//		logger.info("timMsgCallback,callbackCommand:" + callbackCommand + ",sdkAppid:" + sdkAppid + ",msgContent:" + msgBody + "");
 
 		if (StringUtils.isEmpty(msgBody)) {
 			result.addProperty("ActionStatus", "FAIL");
@@ -149,26 +132,50 @@ public class TimMsgAction extends ActionSupport {
 					
 					if (fromUserId >= 100 && isCheck) {
 						
-						// 私信模块校验：V0用户发送对象限制，用户收信设置
-						String resultCode = TimService.checkPrivateLetterWords(fromUserId, toUserId);
-						if (!"0".equals(resultCode)) {
-							result.addProperty("ActionStatus", "OK");
-							result.addProperty("ErrorCode", ErrorCode);
-							result.addProperty("ErrorInfo", resultCode);
+						HistPrivateLetter histPrivateLetter = new HistPrivateLetter();
+						histPrivateLetter.setUserId(fromUserId);
+						histPrivateLetter.setToUserId(toUserId);
+						histPrivateLetter.setLetterTime(new Date());
+						histPrivateLetter.setIp(request.getParameter("ClientIP"));
+						if (item.getMsgType().equalsIgnoreCase("TIMTextElem")) {
+							histPrivateLetter.setLetterType(1);
+							histPrivateLetter.setLetterContent(item.getMsgContent().getText());
+						}
+						else if(item.getMsgType().equalsIgnoreCase("TIMImageElem")){
+							histPrivateLetter.setLetterType(2);
+							histPrivateLetter.setLetterContent(item.getMsgContent().getImageInfoArray().get(0).getUrl());
+						}
+						else {
+							histPrivateLetter.setLetterType(3);
+						}
+
+						CheckResult checkResult = TimService.checkPrivateLetterWords(histPrivateLetter);
+						if(checkResult!= null){
+							result.addProperty("ActionStatus", checkResult.getActionStatus());
+							result.addProperty("ErrorCode", checkResult.getErrorCode());
+							result.addProperty("ErrorInfo", checkResult.getErrorInfo());
 							out.println(result.toString());
 							return null;
 						}
-					
-						// 文本关键字校验
-						if (item.getMsgType().equalsIgnoreCase("TIMTextElem")) {
-							if(TimService.hasSensitiveWords(fromUserId, toUserId, item.getMsgContent().getText())) {
-								result.addProperty("ActionStatus", "FAIL");
-								result.addProperty("ErrorCode", 120002);
-								result.addProperty("ErrorInfo", "内容包含敏感信息，发送失败");
-								out.println(result.toString());
-								return null;
-							}
-						}
+//						String resultCode = TimService.checkPrivateLetterWords(fromUserId, toUserId);
+//						if (!"0".equals(resultCode)) {
+//							result.addProperty("ActionStatus", "OK");
+//							result.addProperty("ErrorCode", ErrorCode);
+//							result.addProperty("ErrorInfo", resultCode);
+//							out.println(result.toString());
+//							return null;
+//						}
+//
+//						// 文本关键字校验
+//						if (item.getMsgType().equalsIgnoreCase("TIMTextElem")) {
+//							if(TimService.hasSensitiveWords(fromUserId, toUserId, item.getMsgContent().getText())) {
+//								result.addProperty("ActionStatus", "FAIL");
+//								result.addProperty("ErrorCode", 120002);
+//								result.addProperty("ErrorInfo", "内容包含敏感信息，发送失败");
+//								out.println(result.toString());
+//								return null;
+//							}
+//						}
 					}
 					
 					// 刷新私信列表

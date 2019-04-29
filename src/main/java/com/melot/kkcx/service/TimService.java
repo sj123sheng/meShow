@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
+import com.melot.letter.driver.domain.CheckResult;
+import com.melot.letter.driver.domain.HistPrivateLetter;
 import org.apache.log4j.Logger;
 
 import com.google.gson.Gson;
@@ -241,21 +243,18 @@ public class TimService {
 	
 	/**
 	 * 用户私信发送检测
-	 * @param userId 用户ID
 	 * @return
 	 */
-	public static String checkPrivateLetterWords(int userId, int receiveId) {
+	public static CheckResult checkPrivateLetterWords(HistPrivateLetter HistPrivateLetter) {
 		try {
 		    PrivateLetterService privateLetterService = (PrivateLetterService) MelotBeanFactory.getBean("privateLetterService");
 		    if (privateLetterService != null) {
-		        String resultCode = privateLetterService.checkSendPrivateLetterV2(userId, receiveId);
-		        if (!StringUtils.isEmpty(resultCode)) {
-		            return resultCode;
-		        }
+				CheckResult resultCode = privateLetterService.checkSendPrivateLetterV3(HistPrivateLetter);
+		        return resultCode;
 		    }
 		} catch (Exception e) {
-		    logger.error("checkPrivateLetterWords(" + userId + ", " + receiveId + ") execute exception.", e);
+		    logger.error("checkPrivateLetterWords(" + new Gson().toJson(HistPrivateLetter) + ") execute exception.", e);
 		}
-		return "0";
+		return null;
 	}
 }

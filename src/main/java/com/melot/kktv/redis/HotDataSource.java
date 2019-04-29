@@ -267,7 +267,26 @@ public class HotDataSource {
         }
         return result == null ? 0 : result.doubleValue();
     }
-	
+
+	public static long incTempDataString(String key, int seconds) {
+		Long result = null;
+		Jedis jedis = null;
+		try {
+			jedis = getInstance();
+			result = jedis.incr(key);
+			if (seconds > 0) {
+				jedis.expire(key, seconds);
+			}
+		} catch (Exception e) {
+			logger.error("HotDataSource.incTempDataString(" + "key:" + key + "seconds:" + seconds + ") execute exception.", e);
+		} finally {
+			if (jedis != null) {
+				freeInstance(jedis);
+			}
+		}
+		return result == null ? 0 : result.longValue();
+	}
+
 	public static String getTempDataString(String key) {
 		Jedis jedis = null;
 		try {
