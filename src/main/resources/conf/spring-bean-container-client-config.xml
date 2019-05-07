@@ -274,4 +274,8 @@
 	<kkrpc:reference id="contractService" interface="com.melot.kk.contract.api.service.ContractService" version="1.0.0"/>
 
 	<kkrpc:reference id="storyService" interface="com.melot.kk.story.api.service.StoryService" version="1.0.0"/>
+
+	<!-- 戏曲服务 -->
+	<kkrpc:reference id="operaService" interface="com.melot.kk.opera.api.service.OperaService" version="1.0.0"/>
+
 </beans>

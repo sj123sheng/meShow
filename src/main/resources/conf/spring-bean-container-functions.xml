@@ -243,4 +243,7 @@
 	<!-- 故事接口 -->
 	<bean id="storyFunctions" class="com.melot.kkcx.functions.StoryFunctions" />
 
+	<!-- 戏曲报名接口 -->
+	<bean id="operaFunctions" class="com.melot.kkcx.functions.OperaFunctions" />
+
 </beans>

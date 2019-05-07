@@ -2,10 +2,19 @@ package com.melot.kktv.action;
 
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.google.gson.reflect.TypeToken;
+import com.melot.kk.config.api.constant.BootMessageTypeEnum;
+import com.melot.kk.config.api.domain.ConfBootMessageDTO;
+import com.melot.kk.config.api.service.ConfigInfoService;
+import com.melot.kktv.redis.HotDataSource;
+import com.melot.kktv.util.StringUtil;
+import com.melot.letter.driver.domain.HistPrivateLetter;
+import com.melot.letter.driver.domain.HistPrivateLetterWarn;
 import org.apache.log4j.Logger;
 
 import com.google.gson.Gson;
@@ -41,6 +50,12 @@ public class PrivateLetterFunctions {
 	private static final String TOP_SESSION_KEY = "topSession";
 	
 	private static final String GENERAL_SESSION_KEY = "generalSession";
+
+	private static final String IM_AUTOSEND_ACTOR_WHITELIST_KEY = "im_autosend_actor_whitelist";
+
+	private static final String IM_AUTOSEND_MSGLIST_KEY = "im_autosend_msglist_%s_%s_%s";
+
+	private static final String IM_AUTOSEND_TIME_KEY = "im_autosend_time_%s_%s";
 	
 	/**
 	 * 设置用户私信配置(55010001) ok
@@ -452,4 +467,102 @@ public class PrivateLetterFunctions {
             
             return result;
     }
+
+	public JsonObject sendIMToNewUser(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+		JsonObject result = new JsonObject();
+
+		// 该接口需要验证token,未验证的返回错误码
+		if (!checkTag) {
+			result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_INCORRECT);
+			return result;
+		}
+
+		int userId,actorId,num,gender;
+		String deviceUId;
+		try {
+			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+			actorId = CommonUtil.getJsonParamInt(jsonObject, "actorId", 0, "5111010301", 1, Integer.MAX_VALUE);
+			num = CommonUtil.getJsonParamInt(jsonObject, "num", 1, null, 1, Integer.MAX_VALUE);
+			gender = CommonUtil.getJsonParamInt(jsonObject, "actorGender", 0, null, 0, Integer.MAX_VALUE);
+			deviceUId = CommonUtil.getJsonParamString(jsonObject, "deviceUId", null, "5111010304", 0, Integer.MAX_VALUE);
+		} catch(Exception e) {
+			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+			return result;
+		}
+
+		try{
+			if(checkWhiteList(actorId)){
+				if(num > 1){
+					num = 2;
+				}
+				String msg = getIMMessage(num,gender,deviceUId);
+				if(checkTime(deviceUId,num)) {
+					if (!StringUtil.strIsNull(msg)) {
+						PrivateLetterService privateLetterService = (PrivateLetterService) MelotBeanFactory.getBean("privateLetterService");
+						privateLetterService.sendOneIMInfo(actorId, userId, msg, "");
+						result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+					}
+					else{
+						result.addProperty("TagCode", "5111010305");
+
+					}
+				}
+				else {
+					result.addProperty("TagCode", "5111010302");
+				}
+			}
+			else{
+				result.addProperty("TagCode", "5111010303");
+			}
+
+		}
+		catch (Exception e){
+			logger.error("Error sendIMToNewUser()", e);
+			result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+		}
+		return result;
+	}
+
+	private boolean checkWhiteList(int actorId) {
+    	if(!HotDataSource.exists(IM_AUTOSEND_ACTOR_WHITELIST_KEY)){
+			ConfigInfoService configInfoService = (ConfigInfoService) MelotBeanFactory.getBean("configInfoService");
+			List<String> whiteList = configInfoService.getWhiteListByType(2);
+			HotDataSource.sadd(IM_AUTOSEND_ACTOR_WHITELIST_KEY,5*3600,whiteList.toArray(new String[whiteList.size()]));
+		}
+		return HotDataSource.hasTempData(IM_AUTOSEND_ACTOR_WHITELIST_KEY,actorId+"");
+	}
+
+	public boolean checkTime(String deviceUId,int num){
+		String key = String.format(IM_AUTOSEND_TIME_KEY,deviceUId,num);
+		return HotDataSource.incTempDataString(key,24*3600)<=num*3;
+	}
+
+	private String getIMMessage(int num,int gender,String deviceUId){
+    	String key = String.format(IM_AUTOSEND_MSGLIST_KEY,deviceUId,num,gender);
+		if(!HotDataSource.exists(key)){
+			ConfigInfoService configInfoService = (ConfigInfoService) MelotBeanFactory.getBean("configInfoService");
+			List<ConfBootMessageDTO> msgList = configInfoService.listConfBootMessagesByType(BootMessageTypeEnum.PRIVATE_LETTER,num,gender);
+			if(msgList !=null && msgList.size()>=0){
+				String msg = msgList.get(0).getContent();
+				msgList.remove(0);
+				HotDataSource.setTempDataString(key,new Gson().toJson(msgList),24*3600);
+				return msg;
+			}
+		}
+		else {
+			String msgs = HotDataSource.getTempDataString(key);
+			if(!StringUtil.strIsNull(msgs)){
+				List<ConfBootMessageDTO> msgList = new Gson().fromJson(msgs, new TypeToken<List<ConfBootMessageDTO>>(){}.getType());
+				if(msgList !=null && msgList.size()>0){
+					String msg = msgList.get(0).getContent();
+					msgList.remove(0);
+					HotDataSource.setTempDataString(key,new Gson().toJson(msgList),24*3600);
+					return msg;
+				}
+			}
+		}
+		return null;
+	}
+
+
 }

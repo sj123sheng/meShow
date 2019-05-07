@@ -7,8 +7,6 @@ import java.util.List;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
-import com.melot.kk.crowdfunding.api.dto.*;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.apache.log4j.Logger;
 
 import com.google.gson.Gson;
@@ -16,6 +14,12 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.melot.kk.crowdfunding.api.constant.WishOrderEnum;
+import com.melot.kk.crowdfunding.api.dto.ActorWishGoodsDTO;
+import com.melot.kk.crowdfunding.api.dto.ActorWishOrderCountDTO;
+import com.melot.kk.crowdfunding.api.dto.ActorWishOrderDTO;
+import com.melot.kk.crowdfunding.api.dto.BuyWishConfigInfoDTO;
+import com.melot.kk.crowdfunding.api.dto.UserWishHistDTO;
+import com.melot.kk.crowdfunding.api.dto.WishGoodsInfoDTO;
 import com.melot.kk.crowdfunding.api.service.CrowdFundingService;
 import com.melot.kk.recharge.api.dto.ConfPaymentInfoDto;
 import com.melot.kkcore.actor.api.ActorInfo;

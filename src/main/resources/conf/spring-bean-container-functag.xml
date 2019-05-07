@@ -2561,6 +2561,11 @@
 		<constructor-arg name="methodName" value="getNextCountdown" />
 	</bean>
 
+	<bean id="51110103" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="privateLetterFunction" />
+		<constructor-arg name="methodName" value="sendIMToNewUser" />
+	</bean>
+
     <!-- 一起玩大厅接口 -->
     <bean id="51070201" class="com.melot.sdk.core.function.GenericFunction">
         <constructor-arg name="t" ref="playTogetherFunction" />
@@ -3828,5 +3833,19 @@
 	<bean id="51011603" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="storyFunctions" />
 		<constructor-arg name="methodName" value="checkBind" />
+	</bean>
+	<bean id="51011801" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="operaFunctions" />
+		<constructor-arg name="methodName" value="addOperaUserInfo" />
+	</bean>
+
+	<bean id="51011802" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="operaFunctions" />
+		<constructor-arg name="methodName" value="updateOperaUserInfo" />
+	</bean>
+
+	<bean id="51011803" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="operaFunctions" />
+		<constructor-arg name="methodName" value="getOperaUserInfo" />
 	</bean>
 </beans>

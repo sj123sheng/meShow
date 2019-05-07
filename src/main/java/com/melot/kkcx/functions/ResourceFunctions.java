@@ -100,7 +100,12 @@ public class ResourceFunctions {
                 		return result;
                 }
             }
-            
+            if(resType == 18 && ProfileServices.incrUserUpdateProfileByType(userId,"18") > 3){
+                result.addProperty("message", "该用户操作次数超过当日限制");
+                result.addProperty("TagCode", TagCodeEnum.FUNCTAG_LIMIT_EXCEPTION);
+                return result;
+            }
+
             Integer mimeType = CommonUtil.getJsonParamInt(jsonObject, "mimeType", 0, tagCode_prefix+"03", 1, Integer.MAX_VALUE);
             String  suffix = CommonUtil.getJsonParamString(jsonObject, "suffix", null, tagCode_prefix+"04", 1, 500);
             Integer appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, TagCodeEnum.APPID_MISSING, 1, Integer.MAX_VALUE);

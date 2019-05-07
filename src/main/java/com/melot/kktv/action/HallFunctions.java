@@ -138,7 +138,14 @@ public class HallFunctions {
                 }
                 if (temp.getDetailId() != null) {
                     // 专区编号
-                    json.addProperty("id", temp.getDetailId());
+                    int id = temp.getDetailId();
+                    json.addProperty("id", id);
+                    
+                    //金牌主播（1598）和趣pk（1650）下拉需随机刷新
+                    if (id == 1598 || id == 1650) {
+                        json.addProperty("needDropdownRandom", 1);
+                    }
+                    
                 }
                 if (temp.getCdnState() != null) {
                     if (temp.getCdnState() > 0 && temp.getSeatType() != 3) {
@@ -184,6 +191,7 @@ public class HallFunctions {
 		int cityId = 0;
 		int appId, channel;
 		int area = 1;
+		int dropDownCount = 0;
         try {
 			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, TagCodeEnum.PLATFORM_MISSING, 1, Integer.MAX_VALUE);
 			cataId = CommonUtil.getJsonParamInt(jsonObject, "cataId", 0, null, 1, Integer.MAX_VALUE);
@@ -194,6 +202,7 @@ public class HallFunctions {
 			area = CommonUtil.getJsonParamInt(jsonObject, "area", 0, null, 1, Integer.MAX_VALUE);
 			appId = CommonUtil.getJsonParamInt(jsonObject, "a", 0, TagCodeEnum.APPID_MISSING, 0, Integer.MAX_VALUE);
 			channel = CommonUtil.getJsonParamInt(jsonObject, "c", 0, TagCodeEnum.CHANNEL_MISSING, 0, Integer.MAX_VALUE);
+			dropDownCount = CommonUtil.getJsonParamInt(jsonObject, "dropDownCount", 0, null, 1, Integer.MAX_VALUE);
 		} catch (CommonUtil.ErrorGetParameterException e) {
 			result.addProperty("TagCode", e.getErrCode());
 			return result;
@@ -267,6 +276,29 @@ public class HallFunctions {
 		                for (HallRoomInfoDTO hallRoomInfoDTO : hallRoomInfoDTOList) {
 		                    filterIdList.add(hallRoomInfoDTO.getRoomId());
 		                }
+		            }
+		        }
+		        
+		        //下拉随机刷新（目前仅 金牌主播（1598）和趣pk（1650）需下拉随机刷新，且该栏目只展示在播主播，以该栏目下在播主播的数量作为主播总量）
+		        if (dropDownCount > 0) {
+		            int liveTotal = (int) hallPartService.getPartLiveCount(cataId);
+		            if (liveTotal > 0) {
+		                int pageNum = liveTotal/offset;
+		                if (liveTotal%offset > 0) {
+		                    pageNum++;
+		                }
+		                //下拉随机刷新偏移两页
+		                int randomPageNum = dropDownCount * 2;
+		                if (randomPageNum >= pageNum) {
+		                    //超过总页数，重新开始计数
+		                    randomPageNum = randomPageNum % pageNum;
+		                }
+		                int randomNum = randomPageNum * offset;
+		                start = start + randomNum;
+		                //尾部填充偏移页的数据
+                        if (randomPageNum > 0 && start >= liveTotal && start < (liveTotal + randomNum)) {
+                            start = start - pageNum * offset;
+                        }
 		            }
 		        }
 		        
@@ -912,8 +944,14 @@ public class HallFunctions {
                     json.addProperty("titleName", hp.getTitleName());
                 }
                 if (hp.getDetailId() != null) {
+                    int id = hp.getDetailId();
                     // 栏目编号
-                    json.addProperty("titleId", hp.getDetailId());
+                    json.addProperty("titleId", id);
+                    
+                    //金牌主播（1598）和趣pk（1650）下拉需随机刷新
+                    if (id == 1598 || id == 1650) {
+                        json.addProperty("needDropdownRandom", 1);
+                    }
                 }
                 if (hp.getIcon() != null) {
                     // 栏目图标

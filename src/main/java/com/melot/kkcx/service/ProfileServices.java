@@ -49,9 +49,11 @@ public class ProfileServices {
     private static final String USER_COMMONDEVICE_KEY = "%s_commonDevice";
     
     private static final String USER_UPDATEPROFILE_KEY = "%s_%s_updateProfileV2";
-    
+
+    private static final String USER_UPDATEPROFILETIME_KEY = "%s_%s_updateProfileV2_time";
+
     private static final String GUEST_NAME_KEY = "%s_guestName";
-	
+
 	/**
 	 * 更新私有redis
 	 * @param userId
@@ -160,16 +162,16 @@ public class ProfileServices {
 					newHotData.put("welcomeMsgHref", userInfo.getGreetMsgHref());
 				}
 				newHotData.put("time", String.valueOf(System.currentTimeMillis()));
-				
+
 				newHotData.put("loadTime", String.valueOf(System.currentTimeMillis()));
 				HotDataSource.setHotData(String.valueOf(userId), newHotData, ConfigHelper.getRedisUserDataExpireTime());
-				
+
 				result.addProperty("TagCode", TagCodeEnum.SUCCESS);
 			} else {
 				return result;
 			}
 		}
-		
+
 		// 返回QQ会员过期时间
 		try {
 		    Long qqVipExpireTime = QQVipSource.getQQVipExpireTime(String.valueOf(userId));
@@ -179,10 +181,10 @@ public class ProfileServices {
         } catch (Exception e) {
             logger.error("QQVipSource.getQQVipExpireTime(" + userId + ") execute exception.", e);
         }
-		
+
 		return result;
 	}
-	
+
 	public static Integer getUserAdminType(int userId) {
 	    Integer adminType = null;
 	    try {
@@ -202,7 +204,7 @@ public class ProfileServices {
         }
         return adminType;
 	}
-	
+
 	public static boolean checkIsOfficial(int userId) {
 	    boolean result = false;
 	    Integer adminType = getUserAdminType(userId);
@@ -211,7 +213,7 @@ public class ProfileServices {
 	    }
         return result;
     }
-	
+
     public static Integer getRoomType(int actorId) {
         Integer roomType = null;
         try {
@@ -233,7 +235,7 @@ public class ProfileServices {
         }
         return roomType;
     }
-    
+
     public static String getRoomSourceActor(int roomSource) {
         String roomSourceActors = null;
         try {
@@ -260,14 +262,14 @@ public class ProfileServices {
         }
         return roomSourceActors;
     }
-    
+
     @SuppressWarnings("unchecked")
     public static boolean setUserCommonDevice(int userId, String deviceUId, String deviceName, String deviceModel) {
         try {
             if (StringUtil.strIsNull(deviceUId) || StringUtil.strIsNull(deviceName) || StringUtil.strIsNull(deviceModel) || userId < 0) {
                 return false;
             }
-            
+
             long curTime = System.currentTimeMillis();
             long endTime = curTime + 7*24*3600*1000;
             boolean existFlag = false;
@@ -290,7 +292,7 @@ public class ProfileServices {
                     }
                 }
             }
-            
+
             if (!existFlag) {
                 CommonDevice commonDevice = new CommonDevice();
                 commonDevice.setDeviceUId(deviceUId);
@@ -299,7 +301,7 @@ public class ProfileServices {
                 commonDevice.setEndTime(endTime);
                 commonDeviceList.add(commonDevice);
             }
-            
+
             //常用设备最多十个
             if (commonDeviceList.size() > 10) {
                 Collections.sort(commonDeviceList,new Comparator<CommonDevice>() {
@@ -309,7 +311,7 @@ public class ProfileServices {
                     }
                });
             }
-            
+
             HotDataSource.setTempDataString(commonDeviceKey, gson.toJson(commonDeviceList.size() > 10 ? commonDeviceList.subList(0, 10) : commonDeviceList), 7*24*3600);
         } catch(Exception e) {
             logger.error("ProfileServices.setUserCommonDevice(" + userId + "," + deviceUId + ") return exception.", e);
@@ -317,7 +319,7 @@ public class ProfileServices {
         }
         return true;
     }
-    
+
     /**
      * @param userId
      * @param type 1:用户昵称  2：用户头像 3:海报
@@ -332,7 +334,7 @@ public class ProfileServices {
             logger.error("ProfileServices.setUserUpdateProfileByType(" + userId + "," + type + ") return exception.", e);
         }
     }
-    
+
     public static boolean checkUserUpdateProfileByType(int userId, String type) {
         boolean result = false;
         try {
@@ -346,11 +348,11 @@ public class ProfileServices {
         }
         return result;
     }
-    
+
 
     /**
      * 设置游客昵称
-     * 
+     *
      * @param guestId
      * @param nickname
      */
@@ -362,7 +364,7 @@ public class ProfileServices {
             logger.error("ProfileServices.setGuestNickName(" + guestId + "," + nickname + ") return exception.", e);
         }
     }
-    
+
     public static String getGuestNickName(int guestId) {
         String result = null;
         try {
@@ -373,14 +375,14 @@ public class ProfileServices {
         }
         return result;
     }
-    
+
     @SuppressWarnings("unchecked")
     public static boolean delUserCommonDevice(int userId, String deviceUId) {
         try {
             if (userId < 0 || StringUtil.strIsNull(deviceUId)) {
                 return false;
             }
-            
+
             long curTime = System.currentTimeMillis();
             long endTime = 0l;
             List<CommonDevice> commonDevices = new ArrayList<CommonDevice>();
@@ -399,7 +401,7 @@ public class ProfileServices {
                             }
                         }
                     }
-                    
+
                     if (commonDeviceNewList.size() > 0) {
                         HotDataSource.setTempDataString(commonDeviceKey, gson.toJson(commonDeviceNewList), (int) (endTime - curTime)/1000);
                     } else {
@@ -413,7 +415,7 @@ public class ProfileServices {
         }
         return true;
     }
-    
+
     @SuppressWarnings("unchecked")
     public static List<CommonDevice> getUserCommonDevice(int userId) {
         try {
@@ -436,7 +438,7 @@ public class ProfileServices {
         }
         return null;
     }
-    
+
     @SuppressWarnings("unchecked")
     public static boolean checkUserCommonDevice(int userId, String deviceUId) {
         try {
@@ -460,7 +462,7 @@ public class ProfileServices {
         }
         return false;
     }
-    
+
     public static int insertChangeUserName(int userId, String nickName, int state) {
         try {
             OtherLoginService otherLoginService = (OtherLoginService) MelotBeanFactory.getBean("otherLoginService");
@@ -470,7 +472,7 @@ public class ProfileServices {
         }
         return 0;
     }
-    
+
     /**
      * 认证手机号
      * @param userId 用户id
@@ -484,7 +486,7 @@ public class ProfileServices {
             if (blacklistService.isPhoneNumBlacklist(phoneNum)) {
                 return result;
             }
-            
+
             UserProfile userProfile = com.melot.kktv.service.UserService.getUserInfoV2(userId);
             if (userProfile != null && userProfile.getPhoneNum() != null) {
                 return result;
@@ -507,7 +509,7 @@ public class ProfileServices {
         }
         return result;
     }
-    
+
     public static UserProp switchBubbleToUserProp (UserChatBubbleDTO userChatBubbleDTO) {
         UserProp result = null;
         if (userChatBubbleDTO != null) {
@@ -531,7 +533,7 @@ public class ProfileServices {
         }
         return result;
     }
-	
+
 	public static int getPasswordSafetyRank(String ps) {
 		if (ps == null) {
 			return -1;
@@ -556,7 +558,7 @@ public class ProfileServices {
 		}
 		return -1;
 	}
-	
+
 	private static boolean checkExistMore(String ps) {
 		int count = 0;
 		if (Pattern.matches(EXIST_UPPER_LETTER, ps)) {
@@ -576,17 +578,28 @@ public class ProfileServices {
 		}
 		return false;
 	}
-	
+
 	private final static String IS_NORMAL = "^[A-Z]+$||^[a-z]+$||^[0-9]+$";
-	
+
 	private final static String IS_PURE_MARS = ".*[a-zA-Z0-9].*";
-	
+
 	private final static String EXIST_MARS = "[a-zA-Z0-9]*";
-	
+
 	private final static String EXIST_UPPER_LETTER = ".*[A-Z].*";
-	
+
 	private final static String EXIST_LOWER_LETTER = ".*[a-z].*";
-	
+
 	private final static String EXIST_NUMBER = ".*[0-9].*";
-	
+
+    public static long incrUserUpdateProfileByType(Integer userId, String type) {
+        try {
+            String key = String.format(USER_UPDATEPROFILE_KEY, userId, type);
+            long curTime = System.currentTimeMillis();
+            long endTime = DateUtil.getNextDay(new Date()).getTime();
+            return HotDataSource.incTempDataString(key,(int) ((endTime - curTime)/1000));
+        } catch(Exception e) {
+            logger.error("ProfileServices.setUserUpdateProfileByType(" + userId + "," + type + ") return exception.", e);
+            return 0;
+        }
+    }
 }
