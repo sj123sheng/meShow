@@ -527,7 +527,7 @@ public class PrivateLetterFunctions {
     	if(!HotDataSource.exists(IM_AUTOSEND_ACTOR_WHITELIST_KEY)){
 			ConfigInfoService configInfoService = (ConfigInfoService) MelotBeanFactory.getBean("configInfoService");
 			List<String> whiteList = configInfoService.getWhiteListByType(2);
-			HotDataSource.sadd(IM_AUTOSEND_ACTOR_WHITELIST_KEY,5*3600,whiteList.toArray(new String[whiteList.size()]));
+			HotDataSource.sadd(IM_AUTOSEND_ACTOR_WHITELIST_KEY,5*60,whiteList.toArray(new String[whiteList.size()]));
 		}
 		return HotDataSource.hasTempData(IM_AUTOSEND_ACTOR_WHITELIST_KEY,actorId+"");
 	}
