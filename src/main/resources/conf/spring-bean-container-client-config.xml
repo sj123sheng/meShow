@@ -278,4 +278,10 @@
 	<!-- 戏曲服务 -->
 	<kkrpc:reference id="operaService" interface="com.melot.kk.opera.api.service.OperaService" version="1.0.0"/>
 
+	<!-- 大转盘 -->
+	<kkrpc:reference id="dialService" interface="com.melot.module.api.service.DialService" version="1.0.0"/>
+
+	<!-- 欢乐券服务 -->
+	<kkrpc:reference id="happyTicketService" interface="com.melot.kk.asset.api.service.HappyTicketService" version="1.0.0"/>
+
 </beans>

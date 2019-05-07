@@ -246,4 +246,11 @@
 	<!-- 戏曲报名接口 -->
 	<bean id="operaFunctions" class="com.melot.kkcx.functions.OperaFunctions" />
 
+	<!-- 大转盘 -->
+	<bean id="dialFunction" class="com.melot.kkcx.functions.DialFunction" />
+
+	<!-- 欢乐券相关接口 -->
+	<bean id="happyTicketFunctions" class="com.melot.kkcx.functions.HappyTicketFunctions" />
+
+
 </beans>

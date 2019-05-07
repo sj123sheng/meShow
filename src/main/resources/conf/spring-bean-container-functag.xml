@@ -3834,6 +3834,16 @@
 		<constructor-arg name="t" ref="storyFunctions" />
 		<constructor-arg name="methodName" value="checkBind" />
 	</bean>
+	<!-- 欢乐券相关接口 -->
+	<bean id="51140001" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="happyTicketFunctions" />
+		<constructor-arg name="methodName" value="getUserHappyTickets" />
+	</bean>
+
+	<bean id="51140002" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="happyTicketFunctions" />
+		<constructor-arg name="methodName" value="listUserHappyTicketsHistory" />
+	</bean>
 	<bean id="51011801" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="operaFunctions" />
 		<constructor-arg name="methodName" value="addOperaUserInfo" />
@@ -3847,5 +3857,47 @@
 	<bean id="51011803" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="operaFunctions" />
 		<constructor-arg name="methodName" value="getOperaUserInfo" />
+	</bean>
+
+	<!-- 大转盘 -->
+	<bean id="51140101" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="dialFunction" />
+		<constructor-arg name="methodName" value="getTreasureBoxGiftMsg" />
+	</bean>
+	<bean id="51140102" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="dialFunction" />
+		<constructor-arg name="methodName" value="getDialReport" />
+	</bean>
+	<bean id="51140103" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="dialFunction" />
+		<constructor-arg name="methodName" value="getDialConfigDetail" />
+	</bean>
+	<bean id="51140104" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="dialFunction" />
+		<constructor-arg name="methodName" value="draw" />
+	</bean>
+	<bean id="51140105" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="dialFunction" />
+		<constructor-arg name="methodName" value="reportSwitch" />
+	</bean>
+	<bean id="51140106" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="dialFunction" />
+		<constructor-arg name="methodName" value="sendGiftRebateDetail" />
+	</bean>
+	<bean id="51140107" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="dialFunction" />
+		<constructor-arg name="methodName" value="getUserBigEventDetail" />
+	</bean>
+	<bean id="51140108" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="dialFunction" />
+		<constructor-arg name="methodName" value="changeBigEventContent" />
+	</bean>
+	<bean id="51140109" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="dialFunction" />
+		<constructor-arg name="methodName" value="listBigEventContent" />
+	</bean>
+	<bean id="51140110" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="dialFunction" />
+		<constructor-arg name="methodName" value="treasureBoxEntrance" />
 	</bean>
 </beans>
