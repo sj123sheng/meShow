@@ -760,6 +760,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>com.melot.kk</groupId>
+			<artifactId>kk-opera-api</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+
+		<dependency>
 			<groupId>com.melot</groupId>
 			<artifactId>activity-common-driver</artifactId>
 			<version>1.1.6</version>
