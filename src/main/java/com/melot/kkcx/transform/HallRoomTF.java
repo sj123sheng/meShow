@@ -348,7 +348,7 @@ public class HallRoomTF {
                roomObject.addProperty("sideLabelColor", "2");
             } else if (recommendAttribute == 1) {
                 //上小时榜
-                roomObject.addProperty("sideLabelContent", "上小时榜TOP20");
+                roomObject.addProperty("sideLabelContent", "本小时榜TOP10");
                 roomObject.addProperty("sideLabelColor", "2");
             } else if (recommendAttribute == 12) {
                 //金牌艺人

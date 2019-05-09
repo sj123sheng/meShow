@@ -269,7 +269,7 @@ public class HallFunctions {
 		        //官方推荐栏目需过滤个性推荐相关数据
 		        if (cataId == 1551 || cataId == 1556) {
 		            KKHallFunctions kkHallFunctions = (KKHallFunctions) MelotBeanFactory.getBean("kkHallFunction");
-		            Page<HallRoomInfoDTO> resp = kkHallFunctions.getRecommendedList(appId, userId, cityIp, 0, 10);
+		            Page<HallRoomInfoDTO> resp = kkHallFunctions.getRecommendedList(appId, userId, cityIp, 0, 10, 0);
 		            if (!Collectionutils.isEmpty(resp.getList())) {
 		                List<HallRoomInfoDTO> hallRoomInfoDTOList = resp.getList();
 		                filterCount = hallRoomInfoDTOList.size();
@@ -293,10 +293,14 @@ public class HallFunctions {
 		                    //超过总页数，重新开始计数
 		                    randomPageNum = randomPageNum % pageNum;
 		                }
-		                int randomNum = randomPageNum * offset;
+		                int randomNum = 0;
+		                //下拉刷新首页必须满屏才可偏移过去，否则默认从首页开始显示
+		                if ((randomPageNum + 1) * offset < liveTotal) {
+		                    randomNum = randomPageNum * offset;
+		                }
 		                start = start + randomNum;
 		                //尾部填充偏移页的数据
-                        if (randomPageNum > 0 && start >= liveTotal && start < (liveTotal + randomNum)) {
+                        if (randomNum > 0 && start >= liveTotal && start < (liveTotal + randomNum)) {
                             start = start - pageNum * offset;
                         }
 		            }
