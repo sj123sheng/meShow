@@ -192,6 +192,9 @@ public class HallFunctions {
 		int appId, channel;
 		int area = 1;
 		int dropDownCount = 0;
+		int randomNum = 0;
+		int liveTotal = 0;
+		int pageNum = 0;
         try {
 			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, TagCodeEnum.PLATFORM_MISSING, 1, Integer.MAX_VALUE);
 			cataId = CommonUtil.getJsonParamInt(jsonObject, "cataId", 0, null, 1, Integer.MAX_VALUE);
@@ -281,9 +284,9 @@ public class HallFunctions {
 		        
 		        //下拉随机刷新（目前仅 金牌主播（1598）和趣pk（1650）需下拉随机刷新，且该栏目只展示在播主播，以该栏目下在播主播的数量作为主播总量）
 		        if (dropDownCount > 0) {
-		            int liveTotal = (int) hallPartService.getPartLiveCount(cataId);
+		            liveTotal = (int) hallPartService.getPartLiveCount(cataId);
 		            if (liveTotal > 0) {
-		                int pageNum = liveTotal/offset;
+		                pageNum = liveTotal/offset;
 		                if (liveTotal%offset > 0) {
 		                    pageNum++;
 		                }
@@ -293,15 +296,21 @@ public class HallFunctions {
 		                    //超过总页数，重新开始计数
 		                    randomPageNum = randomPageNum % pageNum;
 		                }
-		                int randomNum = 0;
 		                //下拉刷新首页必须满屏才可偏移过去，否则默认从首页开始显示
 		                if ((randomPageNum + 1) * offset < liveTotal) {
 		                    randomNum = randomPageNum * offset;
 		                }
 		                start = start + randomNum;
 		                //尾部填充偏移页的数据
-                        if (randomNum > 0 && start >= liveTotal && start < (liveTotal + randomNum)) {
-                            start = start - pageNum * offset;
+		                int randomTotal = liveTotal + randomNum;
+                        if (randomNum > 0 && start >= liveTotal && start < randomTotal) {
+                            if (start + offset > randomTotal) {
+                                offset = randomTotal - start;
+                            }
+                            start = start - liveTotal;
+                            if (start < 0) {
+                                start = 0;
+                            }
                         }
 		            }
 		        }
@@ -349,6 +358,20 @@ public class HallFunctions {
 			List<HallRoomInfoDTO> roomList = sysMenu.getRooms();
 			HallRoomInfoDTO roomInfo;
 			if (roomList != null) {
+			    //下拉随机刷新翻到自然上拉末页可能存在不满屏数据，用自然上拉首页数据填充
+                if (randomNum > 0 && start < liveTotal && start >= (pageNum - 1) * offset) {
+                    Result<HallPartConfDTO> resp = hallPartService.getPartList(cataId, userId, cityId, area, appId, 0, offset + filterCount);
+                    if (resp != null && CommonStateCode.SUCCESS.equals(resp.getCode())) {
+                        HallPartConfDTO fillingSysMenu = resp.getData();
+                        if (fillingSysMenu != null) {
+                            List<HallRoomInfoDTO> fillingRoomList = fillingSysMenu.getRooms();
+                            if (!Collectionutils.isEmpty(fillingRoomList)) {
+                                roomList.addAll(fillingRoomList);
+                            }
+                        }
+                    }
+                }
+			    
 				int i = 0;
 				if (sysMenu.getDataSourceType() != null 
 				        && (sysMenu.getDataSourceType() == 16
@@ -377,12 +400,9 @@ public class HallFunctions {
 					roomInfo = roomList.get(i++);
 					
 					//官方推荐栏目需过滤个性推荐相关数据
-                    if (cataId == 1551 || cataId == 1556) {
-                        if (roomArray.size() >= offset) {
-                            break;
-                        } else if (filterIdList.contains(roomInfo.getRoomId())){
-                            continue;
-                        }
+                    if ((cataId == 1551 || cataId == 1556) 
+                            && filterIdList.contains(roomInfo.getRoomId())) {
+                        continue;
                     }
                     
                     if (cataId == 1598) {
@@ -395,6 +415,10 @@ public class HallFunctions {
 						json.addProperty("distance", 0);
 					}
 					roomArray.add(json);
+					
+					if (roomArray.size() >= offset) {
+                        break;
+                    }
 				}
 			}
 			
