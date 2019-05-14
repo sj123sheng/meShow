@@ -1,5 +1,6 @@
 package com.melot.kktv.action;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -14,12 +15,11 @@ import com.melot.kkcx.service.ProfileServices;
 import com.melot.kktv.base.CommonStateCode;
 import com.melot.kktv.base.Result;
 import com.melot.kktv.service.ConfigService;
-import com.melot.kktv.util.AppIdEnum;
-import com.melot.kktv.util.CommonUtil;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.TagCodeEnum;
+import com.melot.kktv.util.*;
 import com.melot.kktv.util.confdynamic.SystemConfig;
 
+import com.melot.room.pk.dto.PKTaskDTO;
+import com.melot.room.pk.service.RankingPkService;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -34,7 +34,7 @@ import static com.melot.kktv.util.ParamCodeEnum.*;
  * <p>
  * Description: 欢乐跳舞机相关接口
  * </p>
- * 
+ *
  * @author shengjian
  * @version V1.0
  * @since 2017年10月12日
@@ -54,10 +54,13 @@ public class HappyPKFunction {
 
     @Resource
     private KkUserService kkUserService;
-    
+
+    @Resource
+    private RankingPkService rankingPkService;
+
     @Autowired
     ConfigService configService;
-    
+
     /**
      * 获取天梯赛当前赛季信息【51060401】
      */
@@ -76,7 +79,7 @@ public class HappyPKFunction {
                 result.addProperty("seasonName", confLadderMatchDO.getSeasonName());
                 result.addProperty("remainingTime", confLadderMatchDO.getRemainingTime());
                 result.addProperty("goldPool", confLadderMatchDO.getBonusPool());
-                
+
                 //K玩大厅相关显示信息
                 String kkPlaySeasonConf = configService.getKkPlaySeasonConf();
                 if (!StringUtils.isEmpty(kkPlaySeasonConf)) {
@@ -553,7 +556,7 @@ public class HappyPKFunction {
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
         return result;
     }
-    
+
     private int isBroadcastBySource(int roomId, int roomSource) {
         int result = 0;
         String roomSourceActorStr = ProfileServices.getRoomSourceActor(roomSource);
@@ -568,7 +571,7 @@ public class HappyPKFunction {
         }
         return result;
     }
-    
+
     private int isBroadcastByType(String broadcastType, int userId) {
         int result = 0;
         String broadcastTypeStr = SystemConfig.getValue(String.format("broadcastAuthority_%s", broadcastType), AppIdEnum.AMUSEMENT);
@@ -586,4 +589,50 @@ public class HappyPKFunction {
         }
         return result;
     }
+
+    /**
+     * 获取隱身PK任務列表【51060409】
+     */
+    public JsonObject getTaskList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        // 该接口需要验证token,未验证的返回错误码
+        if (!checkTag) {
+            result.addProperty(ParameterKeys.TAG_CODE, TagCodeEnum.TOKEN_INCORRECT);
+            return result;
+        }
+
+        int userId,taskType;
+        try {
+            userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
+            taskType = CommonUtil.getJsonParamInt(jsonObject, "taskType", 1, null, 1, Integer.MAX_VALUE);
+        } catch(Exception e) {
+            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
+            return result;
+        }
+
+        try{
+            Result<List<PKTaskDTO>> tasksResult = rankingPkService.getPKTaskList(userId,taskType);
+            if (tasksResult.getCode().equals(CommonStateCode.SUCCESS) && tasksResult.getData() != null) {
+                List<PKTaskDTO> taskList = tasksResult.getData();
+                if(taskType == 1){
+                    result.add("userTaskList",new Gson().toJsonTree(taskList.subList(0,2)));
+                    result.add("actorTaskList",new Gson().toJsonTree(taskList.subList(2,4)));
+                }
+                else {
+                    result.add("userTaskList",new Gson().toJsonTree(taskList));
+                }
+            }
+
+        }
+        catch (Exception e){
+            logger.error("Error getTaskList()", e);
+            result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
+        }
+        result.addProperty("pathPrefix",ConfigHelper.getHttpdir());
+        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+
+
 }

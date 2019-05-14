@@ -87,10 +87,6 @@
   	
   	<bean id="userGambleService" class="com.melot.kkgame.service.UserGambleService"/>
   	
-	<bean id="activityGameFunction" class="com.melot.kkgame.action.ActivityFunction">
-		<property name="rankingListSource" ref="rankingListSource" />
-	</bean>
-  	
   	<bean id="gameApiAction" class="com.melot.kkgame.action.GameApiAction" />
 	<bean id="gameActivityAction" class="com.melot.kkgame.action.GameActivityAction" />
 	
@@ -245,6 +241,9 @@
 
 	<!-- 戏曲报名接口 -->
 	<bean id="operaFunctions" class="com.melot.kkcx.functions.OperaFunctions" />
+
+	<!-- 宝盒:跑车世界 -->
+	<bean id="sportsCarFunctions" class="com.melot.kkcx.functions.SportsCarFunctions" />
 
 	<!-- 大转盘 -->
 	<bean id="dialFunction" class="com.melot.kkcx.functions.DialFunction" />

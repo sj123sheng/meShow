@@ -228,8 +228,10 @@
     <!-- 管理后台模块 -->
     <kkrpc:reference id="adminDataService" interface="com.melot.cms.admin.api.service.AdminDataService" version="1.0.0"></kkrpc:reference>
 
-	<!-- 活动API服务 -->
-	<kkrpc:reference id="newMissionService" interface="com.melot.kk.activityAPI.api.service.NewMissionService" version="1.0.0"></kkrpc:reference>
+	<!-- 活动API服务(老版) -->
+	<kkrpc:reference id="missionService" interface="com.melot.kk.activity.driver.MissionService" version="1.0.0"/>
+	<!-- 活动API服务(新版) -->
+	<kkrpc:reference id="newMissionService" interface="com.melot.kk.activityAPI.api.service.NewMissionService" version="1.0.0"/>
 	
 	<kkrpc:reference id="recommendedMsgService" interface="com.melot.kk.message.api.service.RecommendedMsgService" version="1.0.0"/>
 	<kkrpc:reference id="messageService" interface="com.melot.common.driver.service.MessageService" version="1.0.0"/>
@@ -278,10 +280,14 @@
 	<!-- 戏曲服务 -->
 	<kkrpc:reference id="operaService" interface="com.melot.kk.opera.api.service.OperaService" version="1.0.0"/>
 
+	<kkrpc:reference id="gameSportsCarService" interface="com.melot.kk.game.sportscar.api.service.GameSportsCarService" version="1.0.0"/>
+
 	<!-- 大转盘 -->
 	<kkrpc:reference id="dialService" interface="com.melot.module.api.service.DialService" version="1.0.0"/>
 
 	<!-- 欢乐券服务 -->
 	<kkrpc:reference id="happyTicketService" interface="com.melot.kk.asset.api.service.HappyTicketService" version="1.0.0"/>
+
+	<kkrpc:reference id="rankingPkService" interface="com.melot.room.pk.service.RankingPkService" version="2.0.6"/>
 
 </beans>

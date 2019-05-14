@@ -10,7 +10,7 @@
 	
 	<artifactId>meShow</artifactId>
 	<packaging>war</packaging>
-	<version>2.12.92</version>
+	<version>2.12.93</version>
 	<name>meShow</name>
 	<url>http://maven.apache.org</url>
 	
@@ -191,9 +191,9 @@
 			<artifactId>moduleapi</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.melot.module.driver.msgbuilder</groupId>
-			<artifactId>storehouse-msgbuilder</artifactId>
-			<version>1.0.9</version>
+  			<groupId>com.melot</groupId>
+  			<artifactId>storehouse-module-api</artifactId>
+  			<version>1.0.8</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-collections</groupId>
@@ -281,10 +281,6 @@
 			<version>1.0.4</version>
 		</dependency>
 
-		<dependency>
-  			<groupId>com.melot.module.driver.msgbuilder</groupId>
- 			<artifactId>storehouse-module-msgbuilder</artifactId>
-		</dependency>
 		<dependency>
   			<groupId>com.melot.module.driver.msgbuilder</groupId>
   			<artifactId>guard-module-msgbuilder</artifactId>
@@ -674,6 +670,12 @@
         </dependency>
 
 		<dependency>
+			<groupId>com.melot</groupId>
+			<artifactId>kk-activity-api-driver</artifactId>
+			<version>1.1.0</version>
+		</dependency>
+
+		<dependency>
 			<groupId>com.melot.kk</groupId>
 			<artifactId>kk-activityAPI-api</artifactId>
 			<version>1.0.1</version>
@@ -690,6 +692,12 @@
 		  <groupId>com.melot.kk</groupId>
 		  <artifactId>kk-message-api</artifactId>
 		  <version>1.0.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.melot.module</groupId>
+			<artifactId>room-pk-module-api</artifactId>
+			<version>2.0.6-SNAPSHOT</version>
 		</dependency>
 
 		<!-- 秀币-->
@@ -756,6 +764,12 @@
 		<dependency>
 			<groupId>com.melot.kk</groupId>
 			<artifactId>kk-story-api</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.melot.kk</groupId>
+			<artifactId>kk-gameSportsCar-api</artifactId>
 			<version>1.0.0</version>
 		</dependency>
 

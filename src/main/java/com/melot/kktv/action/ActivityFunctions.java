@@ -7,6 +7,8 @@ import java.util.Map;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import com.melot.kk.activity.driver.MissionService;
+import com.melot.kktv.util.*;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -25,11 +27,6 @@ import com.melot.kkactivity.driver.domain.GameConfig;
 import com.melot.kkactivity.driver.domain.GameGift;
 import com.melot.kkactivity.driver.service.GameConfigService;
 import com.melot.kktv.base.Result;
-import com.melot.kktv.util.AppIdEnum;
-import com.melot.kktv.util.CommonUtil;
-import com.melot.kktv.util.ConfigHelper;
-import com.melot.kktv.util.PlatformEnum;
-import com.melot.kktv.util.TagCodeEnum;
 import com.melot.kktv.util.confdynamic.SystemConfig;
 import com.melot.module.packagegift.driver.domain.RechargePackage;
 import com.melot.module.packagegift.driver.service.PackageInfoService;
@@ -45,791 +42,11 @@ public class ActivityFunctions {
 	@Resource
     RechargeService rechargeService;
 
-    /**
-     * 获取用户周期内投票信息接口返回码
-     */
-    public class GetUserVoteInfoRespCode {
-        public final static int RESP_CODE_FAILED_ACTIVITY_NONE = -1;
-    }
+	@Resource
+    MissionService missionService;
 
-    /**
-     * 场次投票接口返回码
-     */
-    public class VotePlayRespCode {
-        public final static int RESP_CODE_FAILED_ACTIVITY_NONE = -1;
-        public final static int RESP_CODE_FAILED_NOT_IN_VOTE_TIME = -2;
-        public final static int RESP_CODE_FAILED_OVER_PLAY_MAX_VOTES = -3;
-        public final static int RESP_CODE_FAILED_OVER_PLAYER_MAX_VOTES = -4;
-        public final static int RESP_CODE_FAILED_VOTE_ERROR = -5;
-    }
-
-    /**
-     * 成为选手拉票助理接口返回码
-     */
-    public class BePlayerAsstRespCode {
-        public final static int RESP_CODE_NOT_A_HOST = -1;
-        public final static int RESP_CODE_ALREADY_A_ASSISTANT = -2;
-        public final static int RESP_CODE_NO_ASSISTANT_SLOT_AVAILABLE = -3;
-        public final static int RESP_CODE_FAILED_TO_ADD_ASSIST = -4;
-        public final static int RESP_CODE_UNKNOWN_ERROR = -5;
-        public final static int RESP_CODE_PLAYER_CANNOT_BE_ASSISTANT = -6;
-    }
-	
-	/**
-	 * 获取活动信息(20010001)
-	 * @param jsonObject
-	 * @return
-	 * @throws Exception
-	 */
-	public JsonObject getActivityInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
-	    JsonObject result = new JsonObject();
-	    result.addProperty("TagCode", TagCodeEnum.FUNCTAG_INVALID_EXCEPTION);
-	    return result;
-	    
-//		// define usable parameters
-//		int platform = 0;
-//		int activityId = 0;
-//		// parse the parameters
-//		JsonObject result = new JsonObject();
-//		try {
-//			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.WEB, null, PlatformEnum.WEB, PlatformEnum.IPAD);
-//			activityId = CommonUtil.getJsonParamInt(jsonObject, "activityId", 0, TagCodeEnum.ACTIVITY_ID_MISSING, 1, Integer.MAX_VALUE);
-//		} catch(CommonUtil.ErrorGetParameterException e) {
-//			result.addProperty("TagCode", e.getErrCode());
-//			return result;
-//		} catch(Exception e) {
-//			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-//			return result;
-//		}
-//		
-//		// call module service interface
-//		InterfaceActivity activityInfo = MsgClientInterfaceActivityAgent.getActivityInfo(activityId, platform);
-//		if (activityInfo != null) {
-//			if (activityInfo.getResponseBaseInfo().getTagCode() == MsgClientInterfaceActivityAgent.RESP_CODE_SUCCESS) {
-//				try {
-//					// 定义返回json对象
-//					JsonObject activityJson = new JsonObject();
-//					activityJson.addProperty("activityId", activityInfo.getActivityId());
-//					activityJson.addProperty("startTime", activityInfo.getEndTime());
-//					activityJson.addProperty("endTime", activityInfo.getStartTime());
-//					if (activityInfo.getActivityTitle() != null) {
-//						activityJson.addProperty("activityDesc", activityInfo.getActivityTitle());
-//					}
-//					if (activityInfo.getActivityDesc() != null) {
-//						activityJson.addProperty("activityTitle", activityInfo.getActivityDesc());
-//					}
-//					if (activityInfo.getActivityImg() != null) {
-//						activityJson.addProperty("activityImg", activityInfo.getActivityImg());
-//					}
-//					// 区分平台返回
-//					switch (platform) {
-//					case PlatformEnum.WEB:
-//						if (activityInfo.getDetailWeb() != null)
-//							activityJson.addProperty("detail", activityInfo.getDetailWeb());
-//						if (activityInfo.getUrlWeb() != null)
-//							activityJson.addProperty("url", activityInfo.getUrlWeb());
-//						if (activityInfo.getBannerWeb() != null)
-//							activityJson.addProperty("banner", activityInfo.getBannerWeb());
-//						break;
-//					case PlatformEnum.ANDROID:
-//						if (activityInfo.getDetailAndroid() != null)
-//							activityJson.addProperty("detail", activityInfo.getDetailAndroid());
-//						if (activityInfo.getUrlAndroid() != null)
-//							activityJson.addProperty("url", activityInfo.getUrlAndroid());
-//						if (activityInfo.getBannerAndroid() != null)
-//							activityJson.addProperty("banner", activityInfo.getBannerAndroid());
-//						break;
-//					case PlatformEnum.IPHONE:
-//					case PlatformEnum.IPAD:
-//						if (activityInfo.getDetailIos() != null)
-//							activityJson.addProperty("detail", activityInfo.getDetailIos());
-//						if (activityInfo.getUrlIos() != null)
-//							activityJson.addProperty("url", activityInfo.getUrlIos());
-//						if (activityInfo.getBannerIos() != null)
-//							activityJson.addProperty("banner", activityInfo.getBannerIos());
-//						break;
-//					default:
-//						break;
-//					}
-//					result.add("activity", activityJson);
-//				} catch (Exception e) {
-//					logger.error("fail to parse java object to json object.", e);
-//				}
-//				result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-//			} else {
-//				result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
-//			}
-//		} else {
-//		    result.add("activity", null);
-//		    result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-//		}
-//		return result;
-	}
-	
-	/**
-	 * 获取活动场次列表(20010002)
-	 * @param jsonObject
-	 * @return
-	 * @throws Exception
-	 */
-	public JsonObject getActivityPlayList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
-        JsonObject result = new JsonObject();
-        result.addProperty("TagCode", TagCodeEnum.FUNCTAG_INVALID_EXCEPTION);
-        return result;
-        
-//		// define usable parameters
-//		int platform = 0, activityId = 0;
-//		// parse the parameters
-//		JsonObject result = new JsonObject();
-//		try{
-//			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.WEB, null, PlatformEnum.WEB, PlatformEnum.IPAD);
-//			activityId = CommonUtil.getJsonParamInt(jsonObject, "activityId", 0, TagCodeEnum.ACTIVITY_ID_MISSING, 1, Integer.MAX_VALUE);
-//		} catch(CommonUtil.ErrorGetParameterException e) {
-//			result.addProperty("TagCode", e.getErrCode());
-//			return result;
-//		} catch(Exception e) {
-//			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-//			return result;
-//		}
-//		
-//		// call module service interface
-//		List<InterfaceActivityPlay> activityPlays = MsgClientInterfaceActivityAgent.getActivityPlayInfo(activityId, platform);
-//		if (activityPlays != null && activityPlays.size() > 0) {
-//			if (activityPlays.get(0).getTagCode() == MsgClientInterfaceActivityAgent.RESP_CODE_SUCCESS) {
-//				JsonArray activityPlayList = new JsonArray();
-//				try {
-//					for (InterfaceActivityPlay play : activityPlays) {
-//						JsonObject playJson = new JsonParser().parse(new Gson().toJson(play)).getAsJsonObject();
-//						activityPlayList.add(playJson);
-//					}
-//				} catch (Exception e) {
-//					logger.error("fail to parse java object to json object.", e);
-//				}
-//				result.add("activityPlayList", activityPlayList);
-//				result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-//			} else {
-//				result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
-//			}
-//		} else {
-//		    result.add("activityPlayList", null);
-//		    result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-//		}
-//		return result;
-	}
-	
-	/**
-	 * 获取活动场次榜单(20010003)
-	 * @param jsonObject
-	 * @return
-	 * @throws Exception
-	 */
-	public JsonObject getActivityPlayRank(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
-        JsonObject result = new JsonObject();
-        result.addProperty("TagCode", TagCodeEnum.FUNCTAG_INVALID_EXCEPTION);
-        return result;
-        
-//		// define usable parameters
-//		int platform = 0;
-//		int playId = 0;
-//		int rankType = 0;
-//		int startNum = 0;
-//		int rankCnt = 0;
-//		// parse the parameters
-//		JsonObject result = new JsonObject();
-//		try {
-//			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.WEB, null, PlatformEnum.WEB, PlatformEnum.IPAD);
-//			playId = CommonUtil.getJsonParamInt(jsonObject, "playId", 0, TagCodeEnum.PLAY_ID_MISSING, 1, Integer.MAX_VALUE);
-//			rankType = CommonUtil.getJsonParamInt(jsonObject, "rankType", 0, TagCodeEnum.RANK_TYPE_MISSING, 0, Integer.MAX_VALUE);
-//			startNum = CommonUtil.getJsonParamInt(jsonObject, "startNum", 1, null, 1, Integer.MAX_VALUE);
-//			rankCnt = CommonUtil.getJsonParamInt(jsonObject, "rankCnt", ConstantEnum.return_rank_count, null, 1, Integer.MAX_VALUE);
-//		} catch(CommonUtil.ErrorGetParameterException e) {
-//			result.addProperty("TagCode", e.getErrCode());
-//			return result;
-//		} catch(Exception e) {
-//			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-//			return result;
-//		}
-//		
-//		// call module service interface
-//		List<InterfaceRankPlayer> rankPlayers = MsgClientInterfaceActivityAgent.getPlayRankList(playId, rankType, startNum, rankCnt);
-//		if (rankPlayers != null && rankPlayers.size() > 0) {
-//			if (rankPlayers.get(0).getTagCode() == MsgClientInterfaceActivityAgent.RESP_CODE_SUCCESS) {
-//				JsonArray rankPlayerList = new JsonArray();
-//				try {
-//					for (InterfaceRankPlayer player : rankPlayers) {
-//						RankPlayerInfo playerInfo = rankPlayerToDomain(player);
-//						// 定义返回json对象
-//						JsonObject playerJson = new JsonObject();
-//						playerJson.addProperty("userId", playerInfo.getUserId());
-//						playerJson.addProperty("nickname", playerInfo.getNickname());
-//						playerJson.addProperty("gender", playerInfo.getGender());
-//						playerJson.addProperty("actorLevel", playerInfo.getActorLevel());
-//						playerJson.addProperty("richLevel", playerInfo.getRichLevel());
-//						playerJson.addProperty("rank", playerInfo.getRank());
-//						playerJson.addProperty("score", playerInfo.getScore());
-//						if (playerInfo.getDimensions() != null && playerInfo.getDimensions().size() > 0) {
-//						    JsonArray dimensionsJson = new JsonParser().parse(new Gson().toJson(playerInfo.getDimensions())).getAsJsonArray();
-//						    playerJson.add("dimensions", dimensionsJson);
-//                        } else {
-//                            playerJson.addProperty("dimensions", "");
-//                        }
-//						// 区分平台返回
-//						switch (platform) {
-//						case PlatformEnum.WEB:
-//							if (playerInfo.getPortrait_path() != null)
-//								playerJson.addProperty("portraitPath_256",
-//										playerInfo.getPortrait_path() + ConstantEnum.portrait_path_256_suffix);
-//							break;
-//						case PlatformEnum.ANDROID:
-//						case PlatformEnum.IPHONE:
-//						case PlatformEnum.IPAD:
-//							if (playerInfo.getPortrait_path() != null)
-//								playerJson.addProperty("portraitPath_128",
-//										playerInfo.getPortrait_path() + ConstantEnum.portrait_path_128_suffix);
-//							break;
-//						default:
-//							break;
-//						}
-//						// 临时返回数据 争奇斗艳 20140725
-//						// 用户选手投票信息
-////						int userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, null, 1, Integer.MAX_VALUE);
-////						if (userId > 0) {
-////							MsgActivity.GetUserVoteInfoResp getUserVoteInfoResp = ActivityAgent
-////									.getUserVoteInfo(userId, playId, playerInfo.getUserId());
-////							if (resp != null && resp.getRespMsg().getRespCode() == BaseAgent.RESP_CODE_SUCCESS) {
-////								playerJson.addProperty("restPlayVotes", getUserVoteInfoResp.getRestPlayTickets());
-////								playerJson.addProperty("restPlayerVotes", getUserVoteInfoResp.getRestPlayerTickets());
-////							}
-////						}
-//						// 选手拉票助理
-////						MsgActivity.GetPlayerAsstListResp getPlayerAsstListResp = ActivityAgent
-////								.getPlayerAsstList(playId, playerInfo.getUserId());
-////						if (resp != null && resp.getRespMsg().getRespCode() == BaseAgent.RESP_CODE_SUCCESS) {
-////							JsonArray playerAsstList = new JsonArray();
-////							try {
-////								List<MsgActivity.PlayerAsst> asstList = getPlayerAsstListResp.getPlayerAsstList();
-////								for (MsgActivity.PlayerAsst asst : asstList) {
-////									UserInfo asstInfo = MsgClientInterfaceActivityAgent.playerAsstToDomain(asst);
-////									// 定义返回json对象
-////									JsonObject asstJson = new JsonObject();
-////									asstJson.addProperty("userId", asstInfo.getUserId());
-////									asstJson.addProperty("nickname", asstInfo.getNickname());
-////									asstJson.addProperty("gender", asstInfo.getGender());
-////									// 区分平台返回
-////									switch (platform) {
-////									case PlatformEnum.WEB:
-////									case PlatformEnum.ANDROID:
-////									case PlatformEnum.IPHONE:
-////									case PlatformEnum.IPAD:
-////										if (asstInfo.getPortrait_path() != null)
-////											asstJson.addProperty("portraitPath_128",
-////													asstInfo.getPortrait_path() + ConstantEnum.portrait_path_128_suffix);
-////										break;
-////									default:
-////										break;
-////									}
-////									playerAsstList.add(asstJson);
-////								}
-////							} catch (Exception e) {
-////								logger.error("fail to parse java object to json object.", e);
-////							}
-////							playerJson.add("playerAsstList", playerAsstList);
-////						}
-//						// 临时返回数据 争奇斗艳 20140725
-//						rankPlayerList.add(playerJson);
-//					}
-//				} catch (Exception e) {
-//					logger.error("fail to parse java object to json object.", e);
-//				}
-//				result.add("rankPlayerList", rankPlayerList);
-//				result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
-//				result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-//			} else {
-//				result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
-//			}
-//		} else {
-//		    result.add("rankPlayerList", null);
-//            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-//		}
-//		return result;
-	}
-	
-	/**
-     * 模块对象转化
-     */
-//	private static RankPlayerInfo rankPlayerToDomain(InterfaceRankPlayer rankPlayer) {
-//        RankPlayerInfo rankPlayerInfo = null;
-//        try {
-//            String playerInfoJson = rankPlayer.getPlayerInfo();
-//            rankPlayerInfo = new Gson().fromJson(playerInfoJson,
-//                    RankPlayerInfo.class);
-//        } catch (Exception e) {
-//            return null;
-//        }
-//        try {
-//            String dimensionsJson = rankPlayer.getDimensionInfo();
-//            List<RankDimensionInfo> dimensions = new Gson().fromJson(
-//                    dimensionsJson, new TypeToken<List<RankDimensionInfo>>() {
-//                    }.getType());
-//            rankPlayerInfo.setDimensions(dimensions);
-//        } catch (Exception e) {
-//        }
-//        
-//        rankPlayerInfo.setRank(rankPlayer.getRank());
-//        rankPlayerInfo.setScore(rankPlayer.getScore());
-//        return rankPlayerInfo;
-//    }
-	
-	/**
-	 * 获取活动场次用户投票信息(20010004)
-	 * @param jsonObject
-	 * @return
-	 * @throws Exception
-	 */
-	public JsonObject getActivityPlayUserVoteInfo(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
-        JsonObject result = new JsonObject();
-        result.addProperty("TagCode", TagCodeEnum.FUNCTAG_INVALID_EXCEPTION);
-        return result;
-        
-//	    // 该接口需要验证token,未验证的返回错误码
-//        JsonObject result = new JsonObject();
-//        if (!checkTag) {
-//            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-//            return result;
-//        }
-//	    
-//		int userId = 0;
-//		int playId = 0;
-//		int playerId = 0;
-//		try{
-//			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-//			playId = CommonUtil.getJsonParamInt(jsonObject, "playId", 0, TagCodeEnum.PLAY_ID_MISSING, 1, Integer.MAX_VALUE);
-//			playerId = CommonUtil.getJsonParamInt(jsonObject, "playerId", 0, null, 1, Integer.MAX_VALUE);
-//		} catch(CommonUtil.ErrorGetParameterException e) {
-//			result.addProperty("TagCode", e.getErrCode());
-//			return result;
-//		} catch(Exception e) {
-//			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-//			return result;
-//		}
-//		
-//		// call module service interface
-//		InterfaceVoteRestInfo voteRestInfo = MsgClientInterfaceActivityAgent.getUserVoteInfo(userId, playId, playerId);
-//		if (voteRestInfo != null) {
-//			if (voteRestInfo.getResponseBaseInfo().getTagCode() == MsgClientInterfaceActivityAgent.RESP_CODE_SUCCESS) {
-//				result.addProperty("restPlayVotes", voteRestInfo.getRestPlayTickets());
-//				if (playerId > 0) {
-//					result.addProperty("restPlayerVotes", voteRestInfo.getRestPlayerTickets());
-//				}
-//				result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-//			} else {
-//				if (voteRestInfo.getResponseBaseInfo().getTagCode()
-//						== GetUserVoteInfoRespCode.RESP_CODE_FAILED_ACTIVITY_NONE) {
-//					result.addProperty("TagCode", TagCodeEnum.ACTIVITY_NOT_EXIST);
-//				} else {
-//					result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
-//				}
-//			}
-//		} else {
-//			result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
-//		}
-//		return result;
-	}
-	
-	/**
-	 * 为活动场次选手投票(20010005)
-	 * @param jsonObject
-	 * @return
-	 * @throws Exception
-	 */
-	public JsonObject voteForActivityPlayPlayer(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
-        JsonObject result = new JsonObject();
-        result.addProperty("TagCode", TagCodeEnum.FUNCTAG_INVALID_EXCEPTION);
-        return result;
-        
-//	    // 该接口需要验证token,未验证的返回错误码
-//	    JsonObject result = new JsonObject();
-//        if (!checkTag) {
-//            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-//            return result;
-//        }
-//	    
-//		// define usable parameters
-//		int userId = 0;
-//		int playId = 0;
-//		int playerId = 0;
-//		// parse the parameters
-//		try{
-//			// check user token
-//			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-//			playId = CommonUtil.getJsonParamInt(jsonObject, "playId", 0, TagCodeEnum.PLAY_ID_MISSING, 1, Integer.MAX_VALUE);
-//			playerId = CommonUtil.getJsonParamInt(jsonObject, "playerId", 0, TagCodeEnum.PLAYER_ID_MISSINF, 1, Integer.MAX_VALUE);
-//		} catch(CommonUtil.ErrorGetParameterException e) {
-//			result.addProperty("TagCode", e.getErrCode());
-//			return result;
-//		} catch(Exception e) {
-//			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-//			return result;
-//		}
-//		
-//		// call module service interface
-//		InterfaceVoteRestInfo voteRestInfo = MsgClientInterfaceActivityAgent.votePlay(userId, playId, playerId);
-//		if (voteRestInfo != null) {
-//			if (voteRestInfo.getResponseBaseInfo().getTagCode() == MsgClientInterfaceActivityAgent.RESP_CODE_SUCCESS) {
-//				result.addProperty("restPlayVotes", voteRestInfo.getRestPlayTickets());
-//				if (playerId > 0) {
-//					result.addProperty("restPlayerVotes", voteRestInfo.getRestPlayerTickets());
-//				}
-//				result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-//			} else {
-//				if (voteRestInfo.getResponseBaseInfo().getTagCode()
-//						== VotePlayRespCode.RESP_CODE_FAILED_ACTIVITY_NONE) {
-//					// 活动场次不存在
-//					result.addProperty("TagCode", TagCodeEnum.PLAY_NOT_EXIST);
-//				} else if(voteRestInfo.getResponseBaseInfo().getTagCode()
-//						== VotePlayRespCode.RESP_CODE_FAILED_NOT_IN_VOTE_TIME) {
-//					// 当前时间无法投票
-//					result.addProperty("TagCode", TagCodeEnum.CANNOT_VOTE_NOW);
-//				} else if(voteRestInfo.getResponseBaseInfo().getTagCode()
-//						== VotePlayRespCode.RESP_CODE_FAILED_OVER_PLAY_MAX_VOTES) {
-//					// 已达到一个场次可投票数上限
-//					result.addProperty("TagCode", TagCodeEnum.OVER_PLAY_MAX_VOTES);
-//				} else if(voteRestInfo.getResponseBaseInfo().getTagCode()
-//						== VotePlayRespCode.RESP_CODE_FAILED_OVER_PLAYER_MAX_VOTES) {
-//					// 已达到一个选手可被投票数上限
-//					result.addProperty("TagCode", TagCodeEnum.OVER_PLAYER_MAX_VOTES);
-//				} else if(voteRestInfo.getResponseBaseInfo().getTagCode()
-//						== VotePlayRespCode.RESP_CODE_FAILED_VOTE_ERROR) {
-//					// 场次投票失败
-//					result.addProperty("TagCode", TagCodeEnum.VOTE_FAILED);
-//				} else {
-//					result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
-//				}
-//			}
-//		} else {
-//			result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
-//		}
-//		return result;
-	}
-	
-	/**
-	 * 获取活动场次选手拉票助理(20010006)
-	 * @param jsonObject
-	 * @return
-	 * @throws Exception
-	 */
-	public JsonObject getActivityPlayPlayerAsstList(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
-        JsonObject result = new JsonObject();
-        result.addProperty("TagCode", TagCodeEnum.FUNCTAG_INVALID_EXCEPTION);
-        return result;
-        
-//		// define usable parameters
-//		int platform = 0;
-//		int playId = 0;
-//		int playerId = 0;
-//		//parse the parameters
-//		JsonObject result = new JsonObject();
-//		try{
-//			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.WEB, null, PlatformEnum.WEB, PlatformEnum.IPAD);
-//			playId = CommonUtil.getJsonParamInt(jsonObject, "playId", 0, TagCodeEnum.PLAY_ID_MISSING, 1, Integer.MAX_VALUE);
-//			playerId = CommonUtil.getJsonParamInt(jsonObject, "playerId", 0, TagCodeEnum.PLAYER_ID_MISSINF, 1, Integer.MAX_VALUE);
-//		} catch(CommonUtil.ErrorGetParameterException e) {
-//			result.addProperty("TagCode", e.getErrCode());
-//			return result;
-//		} catch(Exception e) {
-//			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-//			return result;
-//		}
-//		
-//		// call module service interface
-//		List<InterfacePlayerAsstInfo> playerAsstInfos = MsgClientInterfaceActivityAgent.getPlayerAsstList(playId, playerId);
-//		if (playerAsstInfos != null && playerAsstInfos.size() > 0) {
-//			if (playerAsstInfos.get(0).getResponseBaseInfo().getTagCode() == MsgClientInterfaceActivityAgent.RESP_CODE_SUCCESS) {
-//				JsonArray playerAsstList = new JsonArray();
-//				try {
-//					for (InterfacePlayerAsstInfo playerAsst : playerAsstInfos) {
-//						UserInfo asstInfo = playerAsstToDomain(playerAsst);
-//						// 定义返回json对象
-//						JsonObject asstJson = new JsonObject();
-//						asstJson.addProperty("userId", asstInfo.getUserId());
-//						asstJson.addProperty("nickname", asstInfo.getNickname());
-//						asstJson.addProperty("gender", asstInfo.getGender());
-//						asstJson.addProperty("actorLevel", asstInfo.getActorLevel());
-//						asstJson.addProperty("richLevel", asstInfo.getRichLevel());
-//						// 区分平台返回
-//						switch (platform) {
-//						case PlatformEnum.WEB:
-//							if (asstInfo.getPortrait_path() != null)
-//								asstJson.addProperty("portraitPath_256",
-//										asstInfo.getPortrait_path() + ConstantEnum.portrait_path_256_suffix);
-//							break;
-//						case PlatformEnum.ANDROID:
-//						case PlatformEnum.IPHONE:
-//						case PlatformEnum.IPAD:
-//							if (asstInfo.getPortrait_path() != null)
-//								asstJson.addProperty("portraitPath_128",
-//										asstInfo.getPortrait_path() + ConstantEnum.portrait_path_128_suffix);
-//							break;
-//						default:
-//							break;
-//						}
-//						playerAsstList.add(asstJson);
-//					}
-//				} catch (Exception e) {
-//					logger.error("fail to parse java object to json object.", e);
-//				}
-//				result.add("playerAsstList", playerAsstList);
-//				result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
-//				result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-//			} else {
-//				result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
-//			}
-//		} else {
-//		    result.add("playerAsstList", null);
-//            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-//		}
-//		return result;
-	}
-
-    /**
-     * 模块对象转化
-     */
-//	private static UserInfo playerAsstToDomain(InterfacePlayerAsstInfo playerAsst) {
-//        UserInfo userInfo = new UserInfo();
-//        userInfo.setUserId(playerAsst.getUserId());
-//        userInfo.setNickname(playerAsst.getNickname());
-//        userInfo.setGender(playerAsst.getGender());
-//        userInfo.setPortrait_path(playerAsst.getPortrait_path());
-//        return userInfo;
-//    }
-	
-	/**
-	 * 成为活动场次选手拉票助理(20010007)
-	 * @param jsonObject
-	 * @return
-	 * @throws Exception
-	 */
-	public JsonObject beActivityPlayPlayerAsst(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
-        JsonObject result = new JsonObject();
-        result.addProperty("TagCode", TagCodeEnum.FUNCTAG_INVALID_EXCEPTION);
-        return result;
-        
-//	    // 该接口需要验证token,未验证的返回错误码
-//        JsonObject result = new JsonObject();
-//        if (!checkTag) {
-//            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
-//            return result;
-//        }
-//	    
-//		int userId = 0;
-//		int playId = 0;
-//		int playerId = 0;
-//		try{
-//			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-//			playId = CommonUtil.getJsonParamInt(jsonObject, "playId", 0, TagCodeEnum.PLAY_ID_MISSING, 1, Integer.MAX_VALUE);
-//			playerId = CommonUtil.getJsonParamInt(jsonObject, "playerId", 0, TagCodeEnum.PLAYER_ID_MISSINF, 1, Integer.MAX_VALUE);
-//		} catch(CommonUtil.ErrorGetParameterException e) {
-//			result.addProperty("TagCode", e.getErrCode());
-//			return result;
-//		} catch(Exception e) {
-//			result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-//			return result;
-//		}
-//		
-//		// call module service interface
-//		ResponsBaseInfo resp = MsgClientInterfaceActivityAgent.bePlayerAsstResp(userId, playId, playerId);
-//		if (resp != null) {
-//			if (resp.getTagCode() == MsgClientInterfaceActivityAgent.RESP_CODE_SUCCESS) {
-//				result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-//			} else {
-//				if (resp.getTagCode()
-//						== BePlayerAsstRespCode.RESP_CODE_ALREADY_A_ASSISTANT) {
-//					// 已经成为拉票助理
-//					result.addProperty("TagCode", TagCodeEnum.HAS_BEEN_ASSISTANT);
-//				} else if(resp.getTagCode()
-//						== BePlayerAsstRespCode.RESP_CODE_FAILED_TO_ADD_ASSIST) {
-//					// 添加拉票助理失败
-//					result.addProperty("TagCode", TagCodeEnum.ADD_ASSISTANT_FAILED);
-//				} else if(resp.getTagCode()
-//						== BePlayerAsstRespCode.RESP_CODE_NO_ASSISTANT_SLOT_AVAILABLE) {
-//					// 已到达一个选手助理数上限
-//					result.addProperty("TagCode", TagCodeEnum.OVER_PLAYER_ASSISTANT_MAX_COUNT);
-//				} else if(resp.getTagCode()
-//						== BePlayerAsstRespCode.RESP_CODE_NOT_A_HOST) {
-//					// 拉票助理必须是主播
-//					result.addProperty("TagCode", TagCodeEnum.ASSISTANT_MUST_BE_ACTOR);
-//				} else if(resp.getTagCode()
-//						== BePlayerAsstRespCode.RESP_CODE_PLAYER_CANNOT_BE_ASSISTANT) {
-//					// 选手不能成为拉票助理
-//					result.addProperty("TagCode", TagCodeEnum.PLAYER_CANNOT_BE_ASSISTANT);
-//				} else if(resp.getTagCode()
-//						== BePlayerAsstRespCode.RESP_CODE_UNKNOWN_ERROR) {
-//					// 未知错误
-//					result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
-//				} else {
-//					result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
-//				}
-//			}
-//		} else {
-//			result.addProperty("TagCode", TagCodeEnum.MODULE_RETURN_NULL);
-//		}
-//		return result;
-	}
-
-    /**
-     * 获取用户排名（20010009）
-     * @param paramJsonObject
-     * @return
-     */
-    public JsonObject getUserRankOrder(JsonObject paramJsonObject, boolean checkTag, HttpServletRequest request) {
-        JsonObject result = new JsonObject();
-        result.addProperty("TagCode", TagCodeEnum.FUNCTAG_INVALID_EXCEPTION);
-        return result;
-        
-//        JsonObject result = new JsonObject();
-//        int userId, platform, maxOrder;
-//        JsonArray playRankArray = null;
-//        try {
-//            platform = CommonUtil.getJsonParamInt(paramJsonObject, "platform", PlatformEnum.WEB, null, PlatformEnum.WEB, PlatformEnum.IPAD);
-//            userId = CommonUtil.getJsonParamInt(paramJsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-//            maxOrder = CommonUtil.getJsonParamInt(paramJsonObject, "maxOrder", 0, "10090001", 1, Integer.MAX_VALUE);
-//            
-//            playRankArray = paramJsonObject.getAsJsonArray("playRankList");
-//            if (playRankArray == null || playRankArray.size() < 1) {
-//                throw new CommonUtil.ErrorGetParameterException("10090002");
-//            }
-//        } catch (CommonUtil.ErrorGetParameterException e) {
-//            result.addProperty("TagCode", e.getErrCode());
-//            return result;
-//        } catch (Exception e) {
-//            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-//            return result;
-//        }
-//        
-//        Gson gson = new Gson();
-//        JsonObject jsonObject;
-//        String playId, rankId, portraitPath;
-//        RankPlayerInfo rankPlayerInfo = null;
-//        int order = 0;
-//        double score = -1d;
-//        Map<String, Object> beforeUserMap = null, tempMap = null;
-//        JsonArray jsonArray = new JsonArray();
-//        for (JsonElement jsonElement : playRankArray) {
-//            order = 0;
-//            score = -1d;
-//            
-//            jsonObject = jsonElement.getAsJsonObject();
-//            playId = jsonObject.get("playId").getAsString();
-//            rankId = jsonObject.get("rankId").getAsString();
-//            
-//            List<Map<String, Object>> list = ActivitySource.getPlayerRankList(playId, rankId, 1, maxOrder);
-//            if (list != null && list.size() > 0) {
-//                for (Map<String, Object> map : list) {
-//                    order ++;
-//                    if (map.containsKey("playerInfo")) {
-//                        tempMap = gson.fromJson(((String) map.get("playerInfo")), new TypeToken<Map<String, Object>>(){}.getType());
-//                        if (tempMap != null && tempMap.containsKey("userInfo")) {
-//                            rankPlayerInfo = gson.fromJson(((String) tempMap.get("userInfo")), new TypeToken<RankPlayerInfo>(){}.getType());
-//                            if (rankPlayerInfo != null && rankPlayerInfo.getUserId() == userId) {
-//                                
-//                                jsonObject.addProperty("userId", rankPlayerInfo.getUserId());
-//                                jsonObject.addProperty("nickname", rankPlayerInfo.getNickname());
-//                                portraitPath = rankPlayerInfo.getPortrait_path();
-//                                if (portraitPath != null && !"".equals(portraitPath.trim())) {
-//                                    // 区分平台返回
-//                                    switch (platform) {
-//                                    case PlatformEnum.WEB:
-//                                        jsonObject.addProperty("portraitPath_256", portraitPath + ConstantEnum.portrait_path_256_suffix);
-//                                        break;
-//                                    case PlatformEnum.ANDROID:
-//                                    case PlatformEnum.IPHONE:
-//                                    case PlatformEnum.IPAD:
-//                                        jsonObject.addProperty("portraitPath_128", portraitPath + ConstantEnum.portrait_path_128_suffix);
-//                                        break;
-//                                    default:
-//                                        break;
-//                                    }
-//                                }
-//
-//                                jsonObject.addProperty("order", order);
-//                                score = (Double) map.get("score");
-//                                jsonObject.addProperty("score", score);
-//                                break;
-//                            }
-//                        }
-//                    }
-//                    beforeUserMap = map;
-//                }
-//            }
-//            // 不在榜单内
-//            if (order < 1 || score == -1) {
-//                continue;
-//            }
-//            
-//            if (order == 1) {
-//                jsonObject.addProperty("beforeUser", "");
-//            } else {
-//                tempMap = gson.fromJson(((String) beforeUserMap.get("playerInfo")), new TypeToken<Map<String, Object>>(){}.getType());
-//                if (tempMap != null) {
-//                    rankPlayerInfo = gson.fromJson(((String) tempMap.get("userInfo")), new TypeToken<RankPlayerInfo>(){}.getType());
-//                    if (rankPlayerInfo != null) {
-//                        JsonObject beforeUserJson = new JsonObject();
-//                        beforeUserJson.addProperty("userId", rankPlayerInfo.getUserId());
-//                        beforeUserJson.addProperty("nickname", rankPlayerInfo.getNickname());
-//                        beforeUserJson.addProperty("score", ((Double) beforeUserMap.get("score")).longValue());
-//                        beforeUserJson.addProperty("order", order - 1);
-//                        
-//                        portraitPath = rankPlayerInfo.getPortrait_path();
-//                        if (portraitPath != null && !"".equals(portraitPath.trim())) {
-//                            // 区分平台返回
-//                            switch (platform) {
-//                            case PlatformEnum.WEB:
-//                                beforeUserJson.addProperty("portraitPath_256", portraitPath + ConstantEnum.portrait_path_256_suffix);
-//                                break;
-//                            case PlatformEnum.ANDROID:
-//                            case PlatformEnum.IPHONE:
-//                            case PlatformEnum.IPAD:
-//                                beforeUserJson.addProperty("portraitPath_128", portraitPath + ConstantEnum.portrait_path_128_suffix);
-//                                break;
-//                            default:
-//                                break;
-//                            }
-//                        }
-//                        
-//                        jsonObject.add("beforeUser", beforeUserJson);
-//                    } else {
-//                        jsonObject.addProperty("beforeUser", "");
-//                    }
-//                } else {
-//                    jsonObject.addProperty("beforeUser", "");
-//                }
-//            }
-//            jsonArray.add(jsonObject);
-//        }
-//        if (jsonArray.size() < 1) {
-//            result.addProperty("userRankList", "");
-//        } else {
-//            result.add("userRankList", jsonArray);
-//            result.addProperty("pathPrefix", ConfigHelper.getHttpdir());
-//        }
-//
-//        result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-//        
-//        return result;
-    }
-	
-    /**
-     * 获取日半价周星礼物用户\主播榜单（20010008）
-     * @param jsonObject
-     * @return
-     * @throws Exception
-     */
-    public JsonObject getDayHalfGiftRank(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) throws Exception {
-		
-		JsonObject result = new JsonObject();
-		result.addProperty("TagCode", TagCodeEnum.FUNCTAG_INVALID_EXCEPTION);
-		return result;
-	}
+	@Resource
+    NewMissionService newMissionService;
 
 	/**
 	 * 获取房间活动入口信息 (20010010)
@@ -838,102 +55,7 @@ public class ActivityFunctions {
 	 */
     public JsonObject getRoomActivityInfo(JsonObject paramJsonObject, boolean checkTag, HttpServletRequest request) {
         JsonObject result = new JsonObject();
-        
-//        int platform, userId = 0, familyId = 0;
-//        try {
-//            userId = CommonUtil.getJsonParamInt(paramJsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 1, Integer.MAX_VALUE);
-//            familyId = CommonUtil.getJsonParamInt(paramJsonObject, "familyId", 0, null, 1, Integer.MAX_VALUE);
-//            platform = CommonUtil.getJsonParamInt(paramJsonObject, "platform", PlatformEnum.WEB, null, PlatformEnum.WEB, PlatformEnum.IPAD);
-//        } catch (CommonUtil.ErrorGetParameterException e) {
-//            result.addProperty("TagCode", e.getErrCode());
-//            return result;
-//        } catch (Exception e) {
-//            result.addProperty("TagCode", TagCodeEnum.PARAMETER_PARSE_ERROR);
-//            return result;
-//        }
-//        
-//        if (familyId == 0) {
-//            RoomInfo roomInfo = RoomService.getRoomInfo(userId);
-//            if (roomInfo != null && roomInfo.getFamilyId() != null) {
-//                familyId = roomInfo.getFamilyId();
-//            }
-//        }
-//        
-//        String cacheKey = "getRoomActivityInfo_%s_%s_%s";
-//        String cacheValue = HotDataSource.getTempDataString(String.format(cacheKey, userId, familyId, platform));
-//        if (!StringUtil.strIsNull(cacheValue)) {
-//            return new JsonParser().parse(cacheValue).getAsJsonObject();
-//        }
-//        
-//        
-//        // 获取房间活动入口信息接口
-//        RoomShowActivity interfaceActivity = MsgClientInterfaceActivityAgent.getNeedRoomShowActivity(userId, familyId);
-//        
-//        if (interfaceActivity != null ) {
-//            int giftId = StringUtil.parseFromStr(interfaceActivity.getShowGift(), 0);
-//            if (giftId > 0) {
-//                result.addProperty("giftId", giftId);
-//            } else {
-//                result.addProperty("giftId", 0);
-//            }
-//            
-//            switch (platform) {
-//            case PlatformEnum.ANDROID:
-//            	if (!StringUtil.strIsNull(interfaceActivity.getIcon())) {
-//                    result.addProperty("activityIcon", ConfigHelper.getHttpdir() + interfaceActivity.getIcon() + "android.jpg");
-//                } else {
-//                    result.addProperty("activityIcon", "");
-//                }
-//                
-//                if (giftId > 0) {
-//                    result.addProperty("androidIcon", ConfigHelper.getGiftIconAndroidResURL() + giftId + ".png");
-//                }
-//                
-//                result.addProperty("activityUrl", interfaceActivity.getUrlAndroid());
-//                break;
-//                
-//            case PlatformEnum.IPHONE:
-//            case PlatformEnum.IPAD:
-//            case PlatformEnum.IPHONE_GAMAGIC:
-//                if (!StringUtil.strIsNull(interfaceActivity.getIcon())) {
-//                    result.addProperty("activityIcon", ConfigHelper.getHttpdir() + interfaceActivity.getIcon() + "ios.jpg");
-//                } else {
-//                    result.addProperty("activityIcon", "");
-//                }
-//                
-//                if (giftId > 0) {
-//                    result.addProperty("iphoneIcon", ConfigHelper.getGiftIconIphoneResURL() + giftId + ".png");
-//                }
-//                
-//                result.addProperty("activityUrl", interfaceActivity.getUrlIos());
-//                break;
-//                
-//            default:
-//                if (!StringUtil.strIsNull(interfaceActivity.getIcon())) {
-//                    result.addProperty("activityIcon", ConfigHelper.getHttpdir() + interfaceActivity.getIcon() + "web.jpg");
-//                } else {
-//                    result.addProperty("activityIcon", "");
-//                }
-//                result.addProperty("activityUrl", interfaceActivity.getUrlWeb());
-//                break;
-//            }
-//            
-//            result.addProperty("statisticUnit", interfaceActivity.getStatisticUnit());
-//            result.addProperty("backgroundRgb", interfaceActivity.getBackgroundRgb());
-//            result.addProperty("textRgb", interfaceActivity.getTextRgb());
-//            result.addProperty("roomShowType", interfaceActivity.getRoomShowType());
-//            result.addProperty("order", interfaceActivity.getOrder());
-//            result.addProperty("totalCount", interfaceActivity.getTotalCount());
-//            result.addProperty("diffCount", interfaceActivity.getDiffCount());
-//            result.addProperty("familyOrder", interfaceActivity.getFamilyOrder());
-//            result.addProperty("familyTotalCount", interfaceActivity.getFamilyTotalCount());
-//            result.addProperty("familyDiffCount", interfaceActivity.getFamilyDiffCount());
-//        }
-
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
-        
-        // 缓存
-//        HotDataSource.setTempDataString(String.format(cacheKey, userId, familyId, platform), result.toString(), 5);
         
         return result;
     }
@@ -977,17 +99,6 @@ public class ActivityFunctions {
     }
     
     /**
-     * 用户领取首充礼包(20010012)
-     * @param jsonObject
-     * @return
-     */
-	public JsonObject receiveUserFirstRechargePackage(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
-        JsonObject result = new JsonObject();
-        result.addProperty("TagCode", TagCodeEnum.FUNCTAG_INVALID_EXCEPTION);
-        return result;
-    }
-    
-    /**
      * 房间内活动信息展示2.0(50001002)
      * getRoomActivityDetail
      */
@@ -1025,8 +136,7 @@ public class ActivityFunctions {
             if (userId > 0) {
                 paramJson.addProperty("userId", userId);
             }
-            
-            NewMissionService newMissionService = (NewMissionService) MelotBeanFactory.getBean("newMissionService");
+
             if (newMissionService != null) {
                 result = new JsonParser().parse(newMissionService.getVisibleActivity(paramJson.toString())).getAsJsonObject();
             }
@@ -1500,6 +610,60 @@ public class ActivityFunctions {
         }
         
         result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+        return result;
+    }
+
+    /**
+     * 老版活动网关接口(88009000), 对接kk-activity-api-server
+     *
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject doActivityService(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        if (checkTag) {
+            jsonObject.addProperty("isLogin", true);
+        } else {
+            jsonObject.addProperty("isLogin", false);
+        }
+
+        if (missionService == null) {
+            JsonObject result = new JsonObject();
+            result.addProperty(ParameterKeys.TAG_CODE, "40400000");
+            result.addProperty("errorMsg", "missionService is missing");
+            return result;
+        }
+        return missionService.doActivityService(jsonObject);
+    }
+
+    /**
+     * 新版活动网关接口(88009001), 对接kk-activityAPI-server
+     *
+     * @param jsonObject
+     * @param checkTag
+     * @param request
+     * @return
+     */
+    public JsonObject doActivityServiceV2(JsonObject jsonObject, boolean checkTag, HttpServletRequest request) {
+        JsonObject result = new JsonObject();
+
+        // 将是否登录封装到jsonObject
+        jsonObject.addProperty("isLogin", checkTag);
+
+        if (newMissionService == null) {
+            result.addProperty(ParameterKeys.TAG_CODE, "40400000");
+            result.addProperty("errorMsg", "newMissionService is missing");
+            return result;
+        }
+
+        try {
+            String resultStr = newMissionService.doActivityService(jsonObject.toString());
+            result = new JsonParser().parse(resultStr).getAsJsonObject();
+        } catch (Exception e) {
+            logger.error("ActivityFunctions.doActivityServiceV2, parameter:" + jsonObject.toString(), e);
+        }
+
         return result;
     }
 }

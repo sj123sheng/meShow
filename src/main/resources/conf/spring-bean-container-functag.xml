@@ -468,60 +468,10 @@
 	</bean>
 	
 	<!-- 活动类 -->
-	<!-- 获取活动信息 -->
-	<bean id="20010001" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="activityFunction" />
-		<constructor-arg name="methodName" value="getActivityInfo" />
-	</bean>
-	<!-- 获取活动场次列表 -->
-	<bean id="20010002" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="activityFunction" />
-		<constructor-arg name="methodName" value="getActivityPlayList" />
-	</bean>
-	<!-- 获取活动场次榜单 -->
-	<bean id="20010003" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="activityFunction" />
-		<constructor-arg name="methodName" value="getActivityPlayRank" />
-	</bean>
-	<!-- 获取活动场次用户投票信息 -->
-	<bean id="20010004" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="activityFunction" />
-		<constructor-arg name="methodName" value="getActivityPlayUserVoteInfo" />
-	</bean>
-	<!-- 为活动场次选手投票 -->
-	<bean id="20010005" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="activityFunction" />
-		<constructor-arg name="methodName" value="voteForActivityPlayPlayer" />
-	</bean>
-	<!-- 获取活动场次选手拉票助理 -->
-	<bean id="20010006" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="activityFunction" />
-		<constructor-arg name="methodName" value="getActivityPlayPlayerAsstList" />
-	</bean>
-	<!-- 成为活动场次选手拉票助理 -->
-	<bean id="20010007" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="activityFunction" />
-		<constructor-arg name="methodName" value="beActivityPlayPlayerAsst" />
-	</bean>
-	<!-- 获取日半价周星礼物用户\主播榜单 -->
-	<bean id="20010008" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="activityFunction" />
-		<constructor-arg name="methodName" value="getDayHalfGiftRank" />
-	</bean>
-	<!-- 获取用户排名 -->
-	<bean id="20010009" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="activityFunction" />
-		<constructor-arg name="methodName" value="getUserRankOrder" />
-	</bean>
 	<!-- 获取房间活动入口信息 -->
 	<bean id="20010010" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="activityFunction" />
 		<constructor-arg name="methodName" value="getRoomActivityInfo" />
-	</bean>
-	<!-- 用户领取首充礼包 -->
-	<bean id="20010012" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="activityFunction" />
-		<constructor-arg name="methodName" value="receiveUserFirstRechargePackage" />
 	</bean>
 	<!-- 获取用户首充礼包信息 -->
 	<bean id="20010013" class="com.melot.sdk.core.function.GenericFunction">
@@ -562,6 +512,26 @@
 	<bean id="50001031" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="activityFunction" />
 		<constructor-arg name="methodName" value="getFanFeedBackConf" />
+	</bean>
+	<!-- 获取平台可用游戏列表 -->
+	<bean id="51050101" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="activityFunction" />
+		<constructor-arg name="methodName" value="getGameList" />
+	</bean>
+	<!-- 获取游戏对应礼物列表 -->
+	<bean id="51050102" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="activityFunction" />
+		<constructor-arg name="methodName" value="getGameGiftList" />
+	</bean>
+	<!-- 老板活动透传接口 -->
+	<bean id="88009000" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="activityFunction" />
+		<constructor-arg name="methodName" value="doActivityService" />
+	</bean>
+	<!-- 新版活动透传接口 -->
+	<bean id="88009001" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="activityFunction"/>
+		<constructor-arg name="methodName" value="doActivityServiceV2"/>
 	</bean>
 	
 	<!-- 用户关系类 -->
@@ -1939,11 +1909,6 @@
 		<constructor-arg name="t" ref="rankFunction" />
 		<constructor-arg name="methodName" value="getRanking" />
 	</bean>
-		
-	<bean id="88008802" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="activityGameFunction" />
-		<constructor-arg name="methodName" value="doLottery" />
-	</bean>
     
     <!-- 游戏中心版本查询 -->
 	<bean id="80001002" class="com.melot.sdk.core.function.GenericFunction">
@@ -2352,18 +2317,6 @@
 		<constructor-arg name="t" ref="videoBgmFunction" />
 		<constructor-arg name="methodName" value="getVideoBgmList" />
 	</bean>
-
-	<!-- 获取平台可用游戏列表 -->
-	<bean id="51050101" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="activityFunction" />
-		<constructor-arg name="methodName" value="getGameList" />
-	</bean>
-	
-	<!-- 获取游戏对应礼物列表 -->
-	<bean id="51050102" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="activityFunction" />
-		<constructor-arg name="methodName" value="getGameGiftList" />
-	</bean>
 	
     <!-- KK 奖励金相关接口 -->
 	<bean id="52050201" class="com.melot.sdk.core.function.GenericFunction">
@@ -2651,6 +2604,30 @@
         <constructor-arg name="methodName" value="getNewUserBootMessageList" />
     </bean>
 
+	<!-- 用户7天新手任务,获取任务状态信息 -->
+	<bean id="88009100" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="newUserTaskFunctions"/>
+		<constructor-arg name="methodName" value="getTaskInfo"/>
+	</bean>
+
+	<!-- 用户7天新手任务,获取任务奖励 -->
+	<bean id="88009101" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="newUserTaskFunctions"/>
+		<constructor-arg name="methodName" value="getPrize"/>
+	</bean>
+
+	<!-- 用户7天新手任务,使用秀币获取库存礼物 -->
+	<bean id="88009102" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="newUserTaskFunctions"/>
+		<constructor-arg name="methodName" value="buyHalfGift"/>
+	</bean>
+
+	<!-- 用户7天新手任务,使用秀币获取库存礼物 -->
+	<bean id="88009103" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="newUserTaskFunctions"/>
+		<constructor-arg name="methodName" value="getBox"/>
+	</bean>
+
     <!-- 获取主播收益列表 -->
     <bean id="51020201" class="com.melot.sdk.core.function.GenericFunction">
         <constructor-arg name="t" ref="actorKKTVFunction" />
@@ -2688,6 +2665,11 @@
         <constructor-arg name="t" ref="happyPKFunction" />
         <constructor-arg name="methodName" value="getRichList" />
     </bean>
+
+	<bean id="51060409" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="happyPKFunction" />
+		<constructor-arg name="methodName" value="getTaskList" />
+	</bean>
 
 	<!-- 答题比赛 -->
 	<bean id="51050405" class="com.melot.sdk.core.function.GenericFunction">
@@ -3857,6 +3839,27 @@
 	<bean id="51011803" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="operaFunctions" />
 		<constructor-arg name="methodName" value="getOperaUserInfo" />
+	</bean>
+
+	<!-- 宝盒:跑车世界 -->
+	<bean id="51140201" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="sportsCarFunctions" />
+		<constructor-arg name="methodName" value="getSportsCarConfig" />
+	</bean>
+
+	<bean id="51140202" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="sportsCarFunctions" />
+		<constructor-arg name="methodName" value="getSportsCarUserStage" />
+	</bean>
+
+	<bean id="51140203" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="sportsCarFunctions" />
+		<constructor-arg name="methodName" value="upgradeSportsCar" />
+	</bean>
+
+	<bean id="51140204" class="com.melot.sdk.core.function.GenericFunction">
+		<constructor-arg name="t" ref="sportsCarFunctions" />
+		<constructor-arg name="methodName" value="soldSportsCar" />
 	</bean>
 
 	<!-- 大转盘 -->

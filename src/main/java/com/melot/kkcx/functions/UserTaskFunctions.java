@@ -389,6 +389,7 @@ public class UserTaskFunctions {
                 result.addProperty("TagCode", "5101030401");
             }
         } catch (Exception e) {
+            logger.error("lottery fail", e);
             result.addProperty("TagCode", TagCodeEnum.MODULE_UNKNOWN_RESPCODE);
         }
         
