@@ -2021,18 +2021,6 @@
 		<constructor-arg name="cacheKeyExcluedUserId" value="1" />
 	</bean>
 	
-    <!-- 获取家族活动列表 -->
-	<bean id="50002010" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="activityCenterFunctions" />
-		<constructor-arg name="methodName" value="getFamilyActivityList" />
-	</bean>
-	
-	<!-- 获取家族活动详情 -->
-	<bean id="50002011" class="com.melot.sdk.core.function.GenericFunction">
-		<constructor-arg name="t" ref="activityCenterFunctions" />
-		<constructor-arg name="methodName" value="getFamilyActivityInfo" />
-	</bean>
-	
 	<!-- 获取关键字表情列表-->
 	<bean id="50002012" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="activityCenterFunctions" />
