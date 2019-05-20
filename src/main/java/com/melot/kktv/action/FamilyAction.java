@@ -168,6 +168,9 @@ public class FamilyAction {
 					JsonArray jFamilyList = new JsonParser().parse(new Gson().toJson(familyList)).getAsJsonArray();
 					for (int i = 0; i < jFamilyList.size(); i++) {
 						JsonObject familyObj = jFamilyList.get(i).getAsJsonObject();
+						//移除家族海报属性
+						familyObj.remove("familyPoster");
+						
 						int familyId = familyObj.get("familyId").getAsInt();
 						// 返回字段值修改
 						if (familyObj.has("familyLeader")) {
@@ -178,9 +181,6 @@ public class FamilyAction {
 								if (leaderMember.getPortrait_path_original() != null) {
 								    familyObj.addProperty("familyLeader_portrait", leaderMember.getPortrait_path_original());
 								}
-								
-								//用家族长头像覆盖家族海报
-								familyObj.addProperty("familyPoster", leaderMember.getPortrait_path_original());
 							} else {
 								familyObj.remove("familyLeader");
 							}
