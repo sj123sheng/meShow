@@ -189,6 +189,8 @@ public class DialFunction {
                 result.addProperty("TagCode", "5114010402");
             } else if (ReturnCode.ERROR_HAPPY_TICKET_CONSUME.getCode().equals(drawResultDTOResult.getCode())) {
                 result.addProperty("TagCode", "5114010403");
+            } else if (drawResultDTOResult.getCode().equals("1011")) {
+                result.addProperty("TagCode","5114010406");
             }
         } catch (Exception e) {
             logger.error("Error getTreasureBoxGiftMsg()", e);

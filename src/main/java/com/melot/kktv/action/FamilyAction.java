@@ -75,8 +75,6 @@ public class FamilyAction {
 	
 	@Resource
     ActorService actorService;
-
-    private static String REGEX = ",";
     
     /**
 	 * 获取家族列表(10008001)
@@ -177,6 +175,12 @@ public class FamilyAction {
 									FamilyService.getFamilyLeader(familyId, platform);
 							if (leaderMember != null) {
 								familyObj.addProperty("familyLeader", leaderMember.getNickname());
+								if (leaderMember.getPortrait_path_original() != null) {
+								    familyObj.addProperty("familyLeader_portrait", leaderMember.getPortrait_path_original());
+								}
+								
+								//用家族长头像覆盖家族海报
+								familyObj.addProperty("familyPoster", leaderMember.getPortrait_path_original());
 							} else {
 								familyObj.remove("familyLeader");
 							}
@@ -255,14 +259,21 @@ public class FamilyAction {
 		// 定义使用的参数
 		int  familyId = 0;
 		int platform = 0;
+		int userId = 0;
 		
 		// 定义返回结果
 		JsonObject result = new JsonObject();
+		
+		if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
 		
 		// 解析参数
 		try {
 			familyId = CommonUtil.getJsonParamInt(jsonObject, "familyId", 0, "08020002", 1, Integer.MAX_VALUE);
 			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.WEB, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+			userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 0, Integer.MAX_VALUE);
 		} catch (ErrorGetParameterException e) {
 			result.addProperty("TagCode", e.getErrCode());
 			return result;
@@ -274,6 +285,12 @@ public class FamilyAction {
 			result.addProperty("TagCode", "08020003");
 			return result;
 		}
+		
+		if (family.getFamilyLeader() != userId) {
+		    result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+		}
+		
 		try {
 			JsonObject familyObject = new JsonParser().parse(new Gson().toJson(family)).getAsJsonObject();
 			familyObject.remove("familyMedal");
@@ -353,19 +370,35 @@ public class FamilyAction {
 		int  familyId = 0;
 		int rankType = 0;
 		int slotType = 0;
+		int userId = 0;
+		int platform = 0;
 		
 		// 定义返回结果
 		JsonObject result = new JsonObject();
+        
+        if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
 		
 		// 解析参数
 		try {
+		    userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 0, Integer.MAX_VALUE);
 			familyId = CommonUtil.getJsonParamInt(jsonObject, "familyId", 0, "08030002", 1, Integer.MAX_VALUE);
 			rankType = CommonUtil.getJsonParamInt(jsonObject, "rankType", 0, "08030004", 0, Integer.MAX_VALUE);
 			slotType = CommonUtil.getJsonParamInt(jsonObject, "slotType", 0, "08030006", 0, Integer.MAX_VALUE);
+			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", PlatformEnum.WEB, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
 		} catch (ErrorGetParameterException e) {
 			result.addProperty("TagCode", e.getErrCode());
 			return result;
 		}
+		
+		// 获取家族基本信息
+        Family family = FamilyService.getFamilyInfo(familyId, platform);
+        if (family == null || family.getFamilyLeader() != userId) {
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        }
 		
 		// 读取家族内排行榜
 		JsonArray jsonArray = FamilyService.getfamilyMemberRank(rankType, slotType, familyId);
@@ -393,12 +426,19 @@ public class FamilyAction {
 		int platform = 0;
 		int start = 0;
 		int offset = 0;
+		int userId = 0;
 		
 		// 定义返回结果
 		JsonObject result = new JsonObject();
 		
+		if (!checkTag) {
+            result.addProperty("TagCode", TagCodeEnum.TOKEN_NOT_CHECKED);
+            return result;
+        }
+		
 		// 解析参数
 		try {
+		    userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, TagCodeEnum.USERID_MISSING, 0, Integer.MAX_VALUE);
 			familyId = CommonUtil.getJsonParamInt(jsonObject, "familyId", 0, "08040002", 0, Integer.MAX_VALUE);
 			platform = CommonUtil.getJsonParamInt(jsonObject, "platform", 0, "08030006", Integer.MIN_VALUE, Integer.MAX_VALUE);
 			start = CommonUtil.getJsonParamInt(jsonObject, "start", 0, null, 0, Integer.MAX_VALUE);
@@ -407,6 +447,13 @@ public class FamilyAction {
 			result.addProperty("TagCode", e.getErrCode());
 			return result;
 		}
+		
+		// 获取家族基本信息
+        Family family = FamilyService.getFamilyInfo(familyId, platform);
+        if (family == null || family.getFamilyLeader() != userId) {
+            result.addProperty("TagCode", TagCodeEnum.SUCCESS);
+            return result;
+        }
 		
 		// 获取家族内房间总数
 		int roomCount = FamilyService.getFamilyRoomTotalCount(AppIdEnum.AMUSEMENT, familyId);

@@ -24,9 +24,7 @@
 	</bean>
 	
 	<!-- 通用功能暂停使用接口 -->
-	<bean id="51090205"
-		name="10008001,10008002,10008003,10008004"
-		class="com.melot.sdk.core.function.GenericFunction">
+	<bean id="51090205" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="otherFunction" />
 		<constructor-arg name="methodName" value="forbiddenExcute" />
 	</bean>
@@ -623,25 +621,25 @@
 	
 	<!-- 家族 -->
 	<!-- 获取家族列表 -->
-<!-- 	<bean id="10008001" class="com.melot.sdk.core.function.GenericFunction">
+    <bean id="10008001" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="familyFunction" />
 		<constructor-arg name="methodName" value="getFamilyList" />
-	</bean> -->
+	</bean>
 	<!-- 获取家族基本信息 -->
-<!-- 	<bean id="10008002" class="com.melot.sdk.core.function.GenericFunction">
+ 	<bean id="10008002" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="familyFunction" />
 		<constructor-arg name="methodName" value="getFamilyInfo" />
-	</bean> -->
+	</bean>
 	<!-- 获取家族内排行榜 -->
-<!-- 	<bean id="10008003" class="com.melot.sdk.core.function.GenericFunction">
+ 	<bean id="10008003" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="familyFunction" />
 		<constructor-arg name="methodName" value="getFamilyRankingList" />
-	</bean> -->
+	</bean>
 	<!-- 获取家族内主播列表 -->
-<!-- 	<bean id="10008004" class="com.melot.sdk.core.function.GenericFunction">
+ 	<bean id="10008004" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="familyFunction" />
 		<constructor-arg name="methodName" value="getFamilyRoomList" />
-	</bean> -->
+	</bean>
 	<!-- 申请加入家族 -->
 	<bean id="10008005" class="com.melot.sdk.core.function.GenericFunction">
 		<constructor-arg name="t" ref="familyFunction" />
