@@ -189,13 +189,13 @@ public class UserRelationService {
 	    }
 		if (platform == PlatformEnum.WEB) {
 			if (roomInfo.getPortrait() != null) {
-				jObject.addProperty("portrait_path_256", ConfigHelper.getHttpdir() + roomInfo.getPortrait()  + "!256");
+				jObject.addProperty("portrait_path_256", ConfigHelper.getHttpdir() + roomInfo.getPortrait() + "!256");
 			}
 		} else if (platform.equals(PlatformEnum.ANDROID) 
 				|| platform.equals(PlatformEnum.IPHONE)
 				|| platform.equals(PlatformEnum.IPAD)) {
 			if (roomInfo.getPortrait() != null) {
-				jObject.addProperty("portrait_path_128", ConfigHelper.getHttpdir() + roomInfo.getPortrait());
+				jObject.addProperty("portrait_path_128", ConfigHelper.getHttpdir() + roomInfo.getPortrait() + "!128");
 			}
 		}
 		if (roomInfo.getPoster() != null) {
