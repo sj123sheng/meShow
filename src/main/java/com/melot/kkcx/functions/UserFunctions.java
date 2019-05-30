@@ -1898,6 +1898,11 @@ public class UserFunctions {
 		        return result;
             }
 		    
+		    if (configService.getIsCloseRegister()) {
+		        result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+                return result; 
+		    }
+		    
 			// 注册用户 手机注册类型用户 绑定手机号
 		    Map<String, Object> registerMap = new HashMap<String, Object>();
 		    registerMap.put(ExtendDataKeys.INVITERID.key(), inviterId);

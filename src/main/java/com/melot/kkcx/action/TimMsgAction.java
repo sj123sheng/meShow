@@ -11,6 +11,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.melot.kktv.service.ConfigService;
 import com.melot.letter.driver.domain.CheckResult;
 import com.melot.letter.driver.domain.HistPrivateLetter;
 import org.apache.commons.lang.StringUtils;
@@ -33,6 +34,12 @@ public class TimMsgAction extends ActionSupport {
 
 	private static final long serialVersionUID = -8850731119336469628L;
 	private Logger logger = Logger.getLogger(TimMsgAction.class);
+
+	private ConfigService configService;
+
+	{
+		configService = MelotBeanFactory.getBean("configService", ConfigService.class);
+	}
 
 	/**
 	 * 腾讯云单聊发送消息回调
@@ -131,6 +138,14 @@ public class TimMsgAction extends ActionSupport {
 					toUserId = getBangUserId(timContent.getToAccount());
 					
 					if (fromUserId >= 100 && isCheck) {
+
+						if(configService.getIsSpecialTime() && item.getMsgType().equalsIgnoreCase("TIMImageElem")){
+							result.addProperty("ActionStatus", "FAIL");
+							result.addProperty("ErrorCode", configService.getPrivateLetterErrorCode());
+							result.addProperty("ErrorInfo", "系统维护中，暂不支持发送图片");
+							out.println(result.toString());
+							return null;
+						}
 						
 						HistPrivateLetter histPrivateLetter = new HistPrivateLetter();
 						histPrivateLetter.setUserId(fromUserId);

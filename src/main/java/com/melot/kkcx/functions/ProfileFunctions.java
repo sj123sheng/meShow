@@ -1327,12 +1327,12 @@ public class ProfileFunctions {
                 if (isNickNameChange) {
                     //特殊时期 官方号无需过滤
                     if (configService.getIsSpecialTime() && !ProfileServices.checkIsOfficial(userId)) {
-                        UserRegistry userRegistry = UserService.getUserRegistryInfo(userId);
-                        if (userRegistry != null && !ProfileServices.checkUserUpdateProfileByType(userId, "nickName")) {
-                            //特殊时期昵称修改需前置审核
-                            ProfileServices.insertChangeUserName(userId, nickname, 3);
-                            ProfileServices.setUserUpdateProfileByType(userId, "nickName");
-                        }
+//                        UserRegistry userRegistry = UserService.getUserRegistryInfo(userId);
+//                        if (userRegistry != null && !ProfileServices.checkUserUpdateProfileByType(userId, "nickName")) {
+//                            //特殊时期昵称修改需前置审核
+//                            ProfileServices.insertChangeUserName(userId, nickname, 3);
+//                            ProfileServices.setUserUpdateProfileByType(userId, "nickName");
+//                        }
                         tagCode = TagCodeEnum.NICKNAME_PENDINGAUDIT;
                     } else {
                         userMap.put(ProfileKeys.NICKNAME.key(), nickname);

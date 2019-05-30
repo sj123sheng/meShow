@@ -413,25 +413,27 @@ public class AlbumFunctions {
 		
 		//特殊时期接口暂停使用（官方号不限制）
         if (configService.getIsSpecialTime() && !ProfileServices.checkIsOfficial(userId)) {
-            if (pictureType == PictureTypeEnum.family_poster || pictureType == 2) {
+            if (pictureType == PictureTypeEnum.family_poster || pictureType == 2 || pictureType == PictureTypeEnum.portrait
+                    || pictureType ==  PictureTypeEnum.picture || pictureType == PictureTypeEnum.resource) {
                 result.addProperty("message", "系统维护中，本功能暂时停用");
                 result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
                 return result;
-            } else if (pictureType == PictureTypeEnum.portrait) {
-//                UserProfile userProfile = UserService.getUserInfoNew(userId);
-//                if (userProfile != null && userProfile.getPortrait() != null) {
-//                    result.addProperty("message", "系统维护中，本功能暂时停用");
-//                    result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+            } 
+//            else if (pictureType == PictureTypeEnum.portrait) {
+////                UserProfile userProfile = UserService.getUserInfoNew(userId);
+////                if (userProfile != null && userProfile.getPortrait() != null) {
+////                    result.addProperty("message", "系统维护中，本功能暂时停用");
+////                    result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+////                    return result; 
+////                }
+//                if (ProfileServices.checkUserUpdateProfileByType(userId, "2")) {
+//                    result.addProperty("message", "该用户操作次数超过当日限制");
+//                    result.addProperty("TagCode", TagCodeEnum.FUNCTAG_LIMIT_EXCEPTION);
 //                    return result; 
+//                } else {
+//                    ProfileServices.setUserUpdateProfileByType(userId, "2");
 //                }
-                if (ProfileServices.checkUserUpdateProfileByType(userId, "2")) {
-                    result.addProperty("message", "该用户操作次数超过当日限制");
-                    result.addProperty("TagCode", TagCodeEnum.FUNCTAG_LIMIT_EXCEPTION);
-                    return result; 
-                } else {
-                    ProfileServices.setUserUpdateProfileByType(userId, "2");
-                }
-            }
+//            }
         }
 
 		Integer resId = 0;
@@ -555,25 +557,27 @@ public class AlbumFunctions {
 		
 		//特殊时期接口暂停使用（官方号不限制）
         if (configService.getIsSpecialTime() && !ProfileServices.checkIsOfficial(userId)) {
-            if (pictureType == PictureTypeEnum.family_poster || pictureType == 2) {
+            if (pictureType == PictureTypeEnum.family_poster || pictureType == 2 || pictureType == PictureTypeEnum.portrait
+                    || pictureType ==  PictureTypeEnum.picture || pictureType == PictureTypeEnum.resource) {
                 result.addProperty("message", "系统维护中，本功能暂时停用");
                 result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
                 return result;
-            } else if (pictureType == PictureTypeEnum.portrait) {
-//                UserProfile userProfile = UserService.getUserInfoNew(userId);
-//                if (userProfile != null && userProfile.getPortrait() != null) {
-//                    result.addProperty("message", "系统维护中，本功能暂时停用");
-//                    result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+            } 
+//            else if (pictureType == PictureTypeEnum.portrait) {
+////                UserProfile userProfile = UserService.getUserInfoNew(userId);
+////                if (userProfile != null && userProfile.getPortrait() != null) {
+////                    result.addProperty("message", "系统维护中，本功能暂时停用");
+////                    result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+////                    return result; 
+////                }
+//                if (ProfileServices.checkUserUpdateProfileByType(userId, "2")) {
+//                    result.addProperty("message", "该用户操作次数超过当日限制");
+//                    result.addProperty("TagCode", TagCodeEnum.FUNCTAG_LIMIT_EXCEPTION);
 //                    return result; 
+//                } else {
+//                    ProfileServices.setUserUpdateProfileByType(userId, "2");
 //                }
-                if (ProfileServices.checkUserUpdateProfileByType(userId, "2")) {
-                    result.addProperty("message", "该用户操作次数超过当日限制");
-                    result.addProperty("TagCode", TagCodeEnum.FUNCTAG_LIMIT_EXCEPTION);
-                    return result; 
-                } else {
-                    ProfileServices.setUserUpdateProfileByType(userId, "2");
-                }
-            }
+//            }
         }
 
 		// 0:头像 2:相册图片

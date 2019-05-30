@@ -60,53 +60,54 @@ public class ResourceFunctions {
             Integer userId = CommonUtil.getJsonParamInt(jsonObject, "userId", 0, tagCode_prefix+"01", 1, Integer.MAX_VALUE);
             Integer abroad = CommonUtil.getJsonParamInt(jsonObject, "abroad", 1, null, 1, Integer.MAX_VALUE);
             Integer resType = CommonUtil.getJsonParamInt(jsonObject, "resType", 0, tagCode_prefix+"02", 0, Integer.MAX_VALUE);
+            Integer mimeType = CommonUtil.getJsonParamInt(jsonObject, "mimeType", 0, tagCode_prefix+"03", 1, Integer.MAX_VALUE);
             
             //特殊时期接口暂停使用（官方号不过滤）
             if (configService.getIsSpecialTime() && !ProfileServices.checkIsOfficial(userId)) {
-                if (resType == PictureTypeEnum.family_poster || resType == 2) {
+                if (mimeType == 3 || resType == PictureTypeEnum.family_poster || resType == 2 
+                        || resType == PictureTypeEnum.portrait || resType == 1 || resType == PictureTypeEnum.resource) {
                     result.addProperty("message", "系统维护中，本功能暂时停用");
                     result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
                     return result;
-                } else if (resType == PictureTypeEnum.portrait) {
-//                    UserProfile userProfile = UserService.getUserInfoNew(userId);
-//                    if (userProfile != null && userProfile.getPortrait() != null) {
-//                        result.addProperty("message", "系统维护中，本功能暂时停用");
-//                        result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+                } 
+//                else if (resType == PictureTypeEnum.portrait) {
+////                    UserProfile userProfile = UserService.getUserInfoNew(userId);
+////                    if (userProfile != null && userProfile.getPortrait() != null) {
+////                        result.addProperty("message", "系统维护中，本功能暂时停用");
+////                        result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+////                        return result; 
+////                    }
+//                    if (ProfileServices.checkUserUpdateProfileByType(userId, "2")) {
+//                        result.addProperty("message", "该用户操作次数超过当日限制");
+//                        result.addProperty("TagCode", TagCodeEnum.FUNCTAG_LIMIT_EXCEPTION);
 //                        return result; 
 //                    }
-                    if (ProfileServices.checkUserUpdateProfileByType(userId, "2")) {
-                        result.addProperty("message", "该用户操作次数超过当日限制");
-                        result.addProperty("TagCode", TagCodeEnum.FUNCTAG_LIMIT_EXCEPTION);
-                        return result; 
-                    }
-                } else if (resType == 1 && ProfileServices.checkUserUpdateProfileByType(userId, "3")) {
-//                    try {
-//                        PosterService posterService = MelotBeanFactory.getBean("posterService", PosterService.class);
-//                        List<PosterInfo> posterList = posterService.getPosterList(userId);
-//                        //海报池有可用海报
-//                        if (posterList != null && posterList.size() > 0) {
-//                            for (PosterInfo posterInfo : posterList) {
-//                                if (posterInfo.getState() != 3) {
-//                                    result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
-//                                    return result;
-//                                }
-//                            }
-//                        }
-//                    } catch (Exception e) {
-//                        logger.error("call PosterService getPosterList error userId:" + userId, e);
-//                    }
-                		result.addProperty("message", "该用户操作次数超过当日限制");
-                		result.addProperty("TagCode", TagCodeEnum.FUNCTAG_LIMIT_EXCEPTION);
-                		return result;
-                }
+//                } else if (resType == 1 && ProfileServices.checkUserUpdateProfileByType(userId, "3")) {
+////                    try {
+////                        PosterService posterService = MelotBeanFactory.getBean("posterService", PosterService.class);
+////                        List<PosterInfo> posterList = posterService.getPosterList(userId);
+////                        //海报池有可用海报
+////                        if (posterList != null && posterList.size() > 0) {
+////                            for (PosterInfo posterInfo : posterList) {
+////                                if (posterInfo.getState() != 3) {
+////                                    result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
+////                                    return result;
+////                                }
+////                            }
+////                        }
+////                    } catch (Exception e) {
+////                        logger.error("call PosterService getPosterList error userId:" + userId, e);
+////                    }
+//                		result.addProperty("message", "该用户操作次数超过当日限制");
+//                		result.addProperty("TagCode", TagCodeEnum.FUNCTAG_LIMIT_EXCEPTION);
+//                		return result;
+//                }
             }
             if(resType == 18 && ProfileServices.incrUserUpdateProfileByType(userId,"18") > 3){
                 result.addProperty("message", "该用户操作次数超过当日限制");
                 result.addProperty("TagCode", TagCodeEnum.FUNCTAG_LIMIT_EXCEPTION);
                 return result;
             }
-
-            Integer mimeType = CommonUtil.getJsonParamInt(jsonObject, "mimeType", 0, tagCode_prefix+"03", 1, Integer.MAX_VALUE);
             String  suffix = CommonUtil.getJsonParamString(jsonObject, "suffix", null, tagCode_prefix+"04", 1, 500);
             Integer appId = CommonUtil.getJsonParamInt(jsonObject, "a", AppIdEnum.AMUSEMENT, TagCodeEnum.APPID_MISSING, 1, Integer.MAX_VALUE);
             Integer resumeUp = CommonUtil.getJsonParamInt(jsonObject, "resumeUp", 0, null, 1, Integer.MAX_VALUE);

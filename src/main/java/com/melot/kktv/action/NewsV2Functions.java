@@ -149,10 +149,10 @@ public class NewsV2Functions {
 
         //特殊时期修改接口停用
         if (configService.getIsSpecialTime()) {
-            if (!UserService.checkUserIdentify(userId)) {
+//            if (!UserService.checkUserIdentify(userId)) {
                 result.addProperty("TagCode", TagCodeEnum.FUNCTAG_UNUSED_EXCEPTION);
                 return result;
-            }
+//            }
         }
         // 不是主播不可发动态
         /*

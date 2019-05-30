@@ -49,6 +49,9 @@ public class ConfigService {
     //是否特殊时期
     private boolean isSpecialTime;
     
+    //是否关闭注册（特殊时期）
+    private boolean isCloseRegister;
+    
     /**
      * 是否关闭自由主播申请
      */
@@ -389,6 +392,11 @@ public class ConfigService {
     @DisconfFileItem(name = "global.isSpecialTime", associateField = "isSpecialTime")
     public boolean getIsSpecialTime() {
         return isSpecialTime;
+    }
+    
+    @DisconfFileItem(name = "global.isCloseRegister", associateField = "isCloseRegister")
+    public boolean getIsCloseRegister() {
+        return isCloseRegister;
     }
 
     public void setIsSpecialTime(boolean isSpecialTime) {
